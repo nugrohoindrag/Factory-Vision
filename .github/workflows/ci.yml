@@ -18,6 +18,8 @@ concurrency:
 
 env:
   NODE_VERSION: '22'
+  # Corepack must never stop to ask whether it may fetch the pinned pnpm.
+  COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
 
 jobs:
   verify:
@@ -25,17 +27,29 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      # No version pinned here on purpose: pnpm/action-setup reads the
-      # `packageManager` field in package.json, so the runner and a developer's
-      # machine cannot drift apart.
-      - uses: pnpm/action-setup@v4
-
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
+
+      # Corepack rather than pnpm/action-setup: the version comes from the
+      # `packageManager` field, so the runner cannot drift from a developer's
+      # machine or from deploy/Dockerfile.*, which bootstrap pnpm the same way.
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          pnpm --version
+
+      - name: Resolve pnpm store
+        id: pnpm-store
+        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v6
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
 
       - name: Install
         run: pnpm install --frozen-lockfile
@@ -110,18 +124,18 @@ jobs:
             dockerfile: deploy/Dockerfile.web
             app: operator
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
 
-      - uses: docker/login-action@v3
+      - uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           # Spelled out rather than derived from github.repository, which
           # carries capitals ("Factory-Vision") that GHCR rejects.
@@ -134,7 +148,7 @@ jobs:
             type=sha,format=short
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/production' }}
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           context: .
           file: ${{ matrix.dockerfile }}
