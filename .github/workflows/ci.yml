@@ -104,9 +104,59 @@ jobs:
         if: always()
         run: kill "$(cat api.pid)" 2>/dev/null || true
 
+  persistence:
+    name: Migrations & tenant isolation
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: factory
+          POSTGRES_PASSWORD: factory
+          POSTGRES_DB: factory_vision
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U factory -d factory_vision"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          pnpm --version
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # Migrations run as the schema owner. This is also the regression test
+      # for the runner itself, which used to catch a failed migration, log it
+      # and exit 0.
+      - name: Migrate
+        env:
+          DATABASE_URL: postgresql://factory:factory@localhost:5432/factory_vision
+          APP_DB_PASSWORD: ci-app-role-password
+        run: pnpm db:migrate
+
+      # The application role, not the owner: connecting as the superuser is
+      # exactly the defect this job exists to catch, and the first check in the
+      # script asserts the role is one the policies bind.
+      - name: Tenant isolation
+        env:
+          OWNER_DATABASE_URL: postgresql://factory:factory@localhost:5432/factory_vision
+          DATABASE_URL: postgresql://factory_app:ci-app-role-password@localhost:5432/factory_vision
+        run: pnpm verify:isolation
+
   publish:
     name: Publish images
-    needs: verify
+    needs: [verify, persistence]
     # Pull requests verify but never publish: the head of a PR is not a
     # release, and a fork's token could not push to the registry anyway.
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'

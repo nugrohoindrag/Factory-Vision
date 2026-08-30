@@ -29,12 +29,46 @@ export async function runMigrations() {
       console.log(`[DB Migrate] Migration completed: ${file}`);
     }
 
+    await grantAppRoleLogin(client);
+
     console.log('[DB Migrate] All migrations applied successfully!');
   } catch (err: any) {
     console.error('[DB Migrate] Migration failed:', err.message);
+    // Rethrow: a swallowed failure exits 0, so a deploy script or CI job reads
+    // a half-applied schema as success.
+    throw err;
   } finally {
     await client.end();
   }
+}
+
+/**
+ * Gives the RLS-bound application role its password.
+ *
+ * Migration 004 creates `factory_app` NOLOGIN and deliberately carries no
+ * password: a credential in a committed .sql file is a credential in the Git
+ * history forever. The password therefore arrives from the environment, and
+ * the role stays unusable until it does.
+ */
+async function grantAppRoleLogin(client: pg.Client) {
+  const role = process.env.APP_DB_USER || 'factory_app';
+  const password = process.env.APP_DB_PASSWORD;
+
+  if (!password) {
+    console.warn(
+      `[DB Migrate] APP_DB_PASSWORD is not set, so ${role} stays NOLOGIN. ` +
+        'Set it and re-run, then point DATABASE_URL at that role: connecting as the ' +
+        'bootstrap superuser bypasses row-level security and disables tenant isolation.'
+    );
+    return;
+  }
+
+  // The role name cannot be a bind parameter in ALTER ROLE, so it is quoted as
+  // an identifier by the server rather than interpolated raw.
+  const quoted = await client.query<{ ident: string }>('SELECT quote_ident($1) AS ident', [role]);
+  const literal = await client.query<{ lit: string }>('SELECT quote_literal($1) AS lit', [password]);
+  await client.query(`ALTER ROLE ${quoted.rows[0].ident} LOGIN PASSWORD ${literal.rows[0].lit}`);
+  console.log(`[DB Migrate] ${role} can now log in (NOSUPERUSER, NOBYPASSRLS).`);
 }
 
 export async function runSeeds() {
@@ -58,14 +92,12 @@ export async function runSeeds() {
     console.log('[DB Seed] All seeds executed successfully!');
   } catch (err: any) {
     console.error('[DB Seed] Seeding failed:', err.message);
+    throw err;
   } finally {
     await client.end();
   }
 }
 
 const action = process.argv[2];
-if (action === 'seed') {
-  runSeeds();
-} else {
-  runMigrations();
-}
+const run = action === 'seed' ? runSeeds : runMigrations;
+run().catch(() => process.exit(1));

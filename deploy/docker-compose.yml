@@ -48,7 +48,11 @@ services:
  NODE_ENV: production
  PORT: '4000'
  TZ: ${TZ:-Asia/Jakarta}
- DATABASE_URL: postgresql://${POSTGRES_USER:-factory}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-factory_vision}
+ # The API connects as the RLS-bound application role, never as the
+ # POSTGRES_USER superuser: a superuser carries BYPASSRLS and is exempt from
+ # every tenant_isolation policy, which silently disables tenant isolation.
+ # Migrations still run as POSTGRES_USER, which owns the schema.
+ DATABASE_URL: postgresql://${APP_DB_USER:-factory_app}:${APP_DB_PASSWORD:?set APP_DB_PASSWORD in deploy/.env}@db:5432/${POSTGRES_DB:-factory_vision}
  # On-premise pins one tenant; the cloud deployment resolves it per request.
  DEPLOYMENT_MODE: ${DEPLOYMENT_MODE:-ON_PREMISE_SINGLE_TENANT}
  DEFAULT_TENANT_ID: ${DEFAULT_TENANT_ID:-tenant-pilot-factory-01}

@@ -8,7 +8,8 @@
     "dev": "tsx watch src/main.ts",
     "build": "tsc",
     "start": "node dist/main.js",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "verify:isolation": "node scripts/verify-tenant-isolation.mjs"
   },
   "dependencies": {
     "@factory-vision/domain-types": "workspace:*",

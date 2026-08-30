@@ -30,10 +30,16 @@ docker compose -f deploy/docker-compose.yml up -d --build
 
 Then apply the schema:
 
+Migrations run as the schema owner (`POSTGRES_USER`), not as the application
+role, and `APP_DB_PASSWORD` is what lets the migration give `factory_app` its
+login:
+
 ```bash
 docker compose -f deploy/docker-compose.yml exec api node -e "process.exit(0)" # readiness
-DATABASE_URL='postgresql://factory:<password>@localhost:5432/factory_vision' pnpm db:migrate
-DATABASE_URL='postgresql://factory:<password>@localhost:5432/factory_vision' pnpm db:seed
+export DATABASE_URL='postgresql://factory:<POSTGRES_PASSWORD>@localhost:5432/factory_vision'
+export APP_DB_PASSWORD='<APP_DB_PASSWORD from deploy/.env>'
+pnpm db:migrate
+pnpm db:seed
 ```
 
 | Service | URL |
@@ -75,10 +81,26 @@ Tenant isolation is enforced in three places, and all three must hold:
 1. **Session** the bearer token carries the tenant; the API ignores a
  conflicting `X-Tenant-Id` header rather than trusting it.
 2. **Query scope** plant / line / work-centre scope narrows every read.
-3. **Database** migration `002` adds `FORCE ROW LEVEL SECURITY` with a
- `tenant_isolation` policy on every tenant-scoped table, keyed on
+3. **Database** migrations `001` and `002` add `FORCE ROW LEVEL SECURITY`
+ with a `tenant_isolation` policy on every tenant-scoped table, keyed on
  `current_setting('app.tenant_id')`. A connection that does not declare a
  tenant sees no rows at all.
+
+ This last layer only holds if the API connects as a role the policies
+ apply to. A superuser carries `BYPASSRLS` and is exempt from all of them,
+ so `POSTGRES_USER` must never appear in the API's `DATABASE_URL`.
+ Migration `004` creates `factory_app` (`NOSUPERUSER`, `NOBYPASSRLS`) for
+ exactly this, and `pnpm db:migrate` gives it the password in
+ `APP_DB_PASSWORD`. The API logs a `[db] SECURITY:` line at startup and
+ `/api/v1/meta/health` reports `ROW LEVEL SECURITY BYPASSED` if it ever
+ finds itself connected as a privileged role.
+
+ Verify on a real install, as the application role, not the owner:
+
+ ```bash
+ psql "$DATABASE_URL" -c "SET app.tenant_id = 'some-other-tenant'"                       -c 'SELECT count(*) FROM production_record'
+ # must return 0
+ ```
 
 ---
 
@@ -131,7 +153,9 @@ unformed ligature looks like.
 | Variable | Default | Notes |
 |---|---|---|
 | `PORT` | `4000` | API listen port |
-| `DATABASE_URL` |, | PostgreSQL connection string |
+| `DATABASE_URL` |, | PostgreSQL connection string. Use the `factory_app` role, **not** `POSTGRES_USER`: a superuser bypasses row-level security |
+| `APP_DB_USER` | `factory_app` | The RLS-bound role the API connects as |
+| `APP_DB_PASSWORD` |, | Set before `pnpm db:migrate`; the migration grants the role login with it |
 | `DEPLOYMENT_MODE` | `CLOUD_MULTI_TENANT` | Reported by `/api/v1/meta/deployment` |
 | `DEFAULT_TENANT_ID` | `tenant-pilot-factory-01` | On-premise only |
 | `AUTH_REQUIRED` | `true` | **Leave on.** `false` disables authentication and every permission check |
