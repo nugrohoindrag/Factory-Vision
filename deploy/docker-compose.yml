@@ -1,96 +1,213 @@
-# Factory Vision, On-Premise deployment (US-053)
+# Factory Vision, single-VPS / on-premise deployment (US-052, US-053)
 #
-# Brings up the complete MES inside a factory's own network: PostgreSQL, the
-# API, the supervisor console and the operator terminal. Nothing here reaches a
-# public cloud service, which is the requirement states for factories
-# that will not accept cloud deployment.
+# Brings up the complete MES: PostgreSQL, the API, the background worker, and
+# the three front ends (supervisor console, operator terminal, internal admin).
+# Nothing here reaches a public cloud service, which is what factories that
+# will not accept cloud deployment require.
 #
-# docker compose -f deploy/docker-compose.yml up -d --build
+#   cp deploy/.env.example deploy/.env    # then fill it in
+#   docker compose -f deploy/docker-compose.yml up -d
 #
-# For the Cloud SaaS deployment (US-052) the same images run with
-# DEPLOYMENT_MODE=CLOUD_MULTI_TENANT and a managed database; see
-# deploy/DEPLOYMENT.md.
+# Images are pulled from GHCR by default, which is what CI publishes. Add
+# --build to build them locally instead (needs ~2 GB of RAM for the Vite
+# builds, so a small VPS should pull rather than build).
+#
+# Two shapes, one file:
+#
+#   LAN / on-premise (default)  each front end publishes its own port, tablets
+#                               and browsers reach them directly at
+#                               http://<host>:3100 / :3200 / :3300.
+#
+#   Public VPS (--profile proxy) Traefik terminates HTTPS on :443 and routes by
+#                               hostname. Set WEB_BIND=127.0.0.1 so the direct
+#                               ports stay off the public interface.
 
 name: factory-vision
 
+x-images: &image-prefix ${IMAGE_PREFIX:-ghcr.io/nugrohoindrag}
+
 services:
- db:
- image: postgres:16-alpine
- restart: unless-stopped
- environment:
- POSTGRES_USER: ${POSTGRES_USER:-factory}
- POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in deploy/.env}
- POSTGRES_DB: ${POSTGRES_DB:-factory_vision}
- # Indonesian factories run on WIB; keeping the database in the plant's
- # timezone keeps shift_date arithmetic free of surprises.
- TZ: ${TZ:-Asia/Jakarta}
- volumes:
- - db-data:/var/lib/postgresql/data
- healthcheck:
- test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-factory} -d ${POSTGRES_DB:-factory_vision}']
- interval: 10s
- timeout: 5s
- retries: 10
- # Not published by default: the database is reachable only from the compose
- # network. Add a ports mapping deliberately if a DBA needs direct access.
- expose:
- - '5432'
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-factory}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in deploy/.env}
+      POSTGRES_DB: ${POSTGRES_DB:-factory_vision}
+      # Indonesian factories run on WIB; keeping the database in the plant's
+      # timezone keeps shift_date arithmetic free of surprises.
+      TZ: ${TZ:-Asia/Jakarta}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-factory} -d ${POSTGRES_DB:-factory_vision}']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    # Not published: the database is reachable only from the compose network
+    # (§8, §12). Add a ports mapping deliberately if a DBA needs direct access.
+    expose:
+      - '5432'
 
- api:
- build:
- context:..
- dockerfile: deploy/Dockerfile.api
- restart: unless-stopped
- depends_on:
- db:
- condition: service_healthy
- environment:
- NODE_ENV: production
- PORT: '4000'
- TZ: ${TZ:-Asia/Jakarta}
- # The API connects as the RLS-bound application role, never as the
- # POSTGRES_USER superuser: a superuser carries BYPASSRLS and is exempt from
- # every tenant_isolation policy, which silently disables tenant isolation.
- # Migrations still run as POSTGRES_USER, which owns the schema.
- DATABASE_URL: postgresql://${APP_DB_USER:-factory_app}:${APP_DB_PASSWORD:?set APP_DB_PASSWORD in deploy/.env}@db:5432/${POSTGRES_DB:-factory_vision}
- # On-premise pins one tenant; the cloud deployment resolves it per request.
- DEPLOYMENT_MODE: ${DEPLOYMENT_MODE:-ON_PREMISE_SINGLE_TENANT}
- DEFAULT_TENANT_ID: ${DEFAULT_TENANT_ID:-tenant-pilot-factory-01}
- # Authentication is on by default. Never set this to false outside a
- # local demo, it disables the access control the API enforces.
- AUTH_REQUIRED: ${AUTH_REQUIRED:-true}
- # The only way in on a fresh install. Nothing else ships with a password.
- BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:?set BOOTSTRAP_ADMIN_EMAIL in deploy/.env}
- BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:?set BOOTSTRAP_ADMIN_PASSWORD in deploy/.env}
- BOOTSTRAP_ADMIN_NAME: ${BOOTSTRAP_ADMIN_NAME:-Administrator}
- BOOTSTRAP_OPERATOR_PIN: ${BOOTSTRAP_OPERATOR_PIN:-}
- expose:
- - '4000'
+  api:
+    image: ${IMAGE_PREFIX:-ghcr.io/nugrohoindrag}/factory-vision-api:${IMAGE_TAG:-master}
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: '4000'
+      TZ: ${TZ:-Asia/Jakarta}
+      # The API connects as the RLS-bound application role, never as the
+      # POSTGRES_USER superuser: a superuser carries BYPASSRLS and is exempt
+      # from every tenant_isolation policy, which silently disables tenant
+      # isolation. Migrations still run as POSTGRES_USER, which owns the schema.
+      DATABASE_URL: postgresql://${APP_DB_USER:-factory_app}:${APP_DB_PASSWORD:?set APP_DB_PASSWORD in deploy/.env}@db:5432/${POSTGRES_DB:-factory_vision}
+      # On-premise pins one tenant; the cloud deployment resolves it per request.
+      DEPLOYMENT_MODE: ${DEPLOYMENT_MODE:-ON_PREMISE_SINGLE_TENANT}
+      DEFAULT_TENANT_ID: ${DEFAULT_TENANT_ID:-tenant-pilot-factory-01}
+      # Authentication is on by default. Never set this to false outside a
+      # local demo, it disables the access control the API enforces.
+      AUTH_REQUIRED: ${AUTH_REQUIRED:-true}
+      # The only way in on a fresh install. Nothing else ships with a password.
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:?set BOOTSTRAP_ADMIN_EMAIL in deploy/.env}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:?set BOOTSTRAP_ADMIN_PASSWORD in deploy/.env}
+      BOOTSTRAP_ADMIN_NAME: ${BOOTSTRAP_ADMIN_NAME:-Administrator}
+      BOOTSTRAP_OPERATOR_PIN: ${BOOTSTRAP_OPERATOR_PIN:-}
+      # The vendor's own client management, served under /api/internal/v1 and
+      # reachable only with an internal session. Without these the admin
+      # console has no way in, which is deliberate.
+      INTERNAL_ADMIN_EMAIL: ${INTERNAL_ADMIN_EMAIL:-}
+      INTERNAL_ADMIN_PASSWORD: ${INTERNAL_ADMIN_PASSWORD:-}
+      INTERNAL_ADMIN_NAME: ${INTERNAL_ADMIN_NAME:-Internal Administrator}
+      # Leave unset for a real factory, which should start empty and be filled
+      # from its own master data.
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-}
+    expose:
+      - '4000'
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.fv-api.rule: Host(`${API_DOMAIN:-api.localhost}`)
+      traefik.http.routers.fv-api.entrypoints: websecure
+      traefik.http.routers.fv-api.tls.certresolver: le
+      traefik.http.services.fv-api.loadbalancer.server.port: '4000'
 
- console:
- build:
- context:..
- dockerfile: deploy/Dockerfile.web
- args:
- APP: console
- restart: unless-stopped
- depends_on:
- - api
- ports:
- - '${CONSOLE_PORT:-3100}:80'
+  # Scheduled aggregation and other asynchronous jobs (§5). Separate from the
+  # API so a long-running rollup cannot make the shop floor's capture endpoint
+  # slow to answer, and so the two can be restarted independently.
+  worker:
+    image: ${IMAGE_PREFIX:-ghcr.io/nugrohoindrag}/factory-vision-worker:${IMAGE_TAG:-master}
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.worker
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      TZ: ${TZ:-Asia/Jakarta}
+      # The worker shares the API's database, as the same RLS-bound role (§5).
+      DATABASE_URL: postgresql://${APP_DB_USER:-factory_app}:${APP_DB_PASSWORD:?set APP_DB_PASSWORD in deploy/.env}@db:5432/${POSTGRES_DB:-factory_vision}
+      DEFAULT_TENANT_ID: ${DEFAULT_TENANT_ID:-tenant-pilot-factory-01}
 
- operator:
- build:
- context:..
- dockerfile: deploy/Dockerfile.web
- args:
- APP: operator
- restart: unless-stopped
- depends_on:
- - api
- # The shop-floor tablets hit this directly over the plant LAN.
- ports:
- - '${OPERATOR_PORT:-3200}:80'
+  # Supervisor / manager console, "Main Dashboard" in the deployment doc.
+  console:
+    image: ${IMAGE_PREFIX:-ghcr.io/nugrohoindrag}/factory-vision-console:${IMAGE_TAG:-master}
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.web
+      args:
+        APP: console
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - '${WEB_BIND:-0.0.0.0}:${CONSOLE_PORT:-3100}:80'
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.fv-console.rule: Host(`${DASHBOARD_DOMAIN:-dashboard.localhost}`)
+      traefik.http.routers.fv-console.entrypoints: websecure
+      traefik.http.routers.fv-console.tls.certresolver: le
+      traefik.http.services.fv-console.loadbalancer.server.port: '80'
+
+  operator:
+    image: ${IMAGE_PREFIX:-ghcr.io/nugrohoindrag}/factory-vision-operator:${IMAGE_TAG:-master}
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.web
+      args:
+        APP: operator
+    restart: unless-stopped
+    depends_on:
+      - api
+    # The shop-floor tablets hit this directly over the plant LAN.
+    ports:
+      - '${WEB_BIND:-0.0.0.0}:${OPERATOR_PORT:-3200}:80'
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.fv-operator.rule: Host(`${OPERATOR_DOMAIN:-operator.localhost}`)
+      traefik.http.routers.fv-operator.entrypoints: websecure
+      traefik.http.routers.fv-operator.tls.certresolver: le
+      traefik.http.services.fv-operator.loadbalancer.server.port: '80'
+
+  # Internal admin console: the vendor's own client management, not a customer
+  # surface. Keep it off the public internet unless you mean to publish it.
+  admin:
+    image: ${IMAGE_PREFIX:-ghcr.io/nugrohoindrag}/factory-vision-admin:${IMAGE_TAG:-master}
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.web
+      args:
+        APP: admin
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - '${ADMIN_BIND:-127.0.0.1}:${ADMIN_PORT:-3300}:80'
+    labels:
+      traefik.enable: ${ADMIN_PUBLIC:-false}
+      traefik.http.routers.fv-admin.rule: Host(`${ADMIN_DOMAIN:-admin.localhost}`)
+      traefik.http.routers.fv-admin.entrypoints: websecure
+      traefik.http.routers.fv-admin.tls.certresolver: le
+      traefik.http.services.fv-admin.loadbalancer.server.port: '80'
+
+  # Public edge, only with `--profile proxy` (§11, §12, §27). Terminates TLS,
+  # redirects HTTP, and is the single service that needs a public port. Traefik
+  # rather than nginx here because it issues and renews the Let's Encrypt
+  # certificates itself, which is the part a hand-rolled nginx config gets
+  # wrong. The per-app nginx inside each front end still serves the static
+  # bundle and proxies /api to the API on the same origin.
+  proxy:
+    image: traefik:v3
+    profiles: ['proxy']
+    restart: unless-stopped
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.le.acme.email=${ACME_EMAIL:-}
+      - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.le.acme.tlschallenge=true
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      # Read-only: Traefik only needs to watch for container labels.
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt
+    depends_on:
+      - api
+      - console
+      - operator
 
 volumes:
- db-data:
+  db-data:
+  letsencrypt:

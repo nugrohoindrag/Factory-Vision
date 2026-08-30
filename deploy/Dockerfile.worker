@@ -1,0 +1,63 @@
+# Factory Vision — Background Worker
+#
+# Scheduled aggregation, OEE rollups and other asynchronous jobs. It is a
+# separate image from the API so the two can be restarted, scaled and resource-
+# limited independently: a long aggregation must never be able to make the
+# shop floor's capture endpoint slow to answer.
+#
+# The worker shares the API's PostgreSQL. It holds no state of its own.
+
+# --- Build stage ---------------------------------------------------
+FROM node:22-alpine AS build
+
+RUN corepack enable
+
+# The prod prune below re-installs into a populated node_modules, which pnpm 11
+# treats as a purge and refuses to do without confirmation. There is no tty in
+# a build, so the build hangs and then fails; CI=true is pnpm's own answer.
+ENV CI=true
+
+WORKDIR /repo
+
+# Workspace manifests first, so a dependency install is cached across source
+# edits rather than repeated on every commit.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
+COPY packages/domain-types/package.json packages/domain-types/
+COPY apps/worker/package.json apps/worker/
+
+RUN pnpm install --frozen-lockfile --filter @factory-vision/worker...
+
+COPY packages/domain-types packages/domain-types
+COPY apps/worker apps/worker
+
+RUN pnpm --filter @factory-vision/domain-types build \
+ && pnpm --filter @factory-vision/worker build
+
+# Drop dev dependencies before they reach the runtime image.
+RUN pnpm install --frozen-lockfile --prod --filter @factory-vision/worker...
+
+# --- Runtime stage -------------------------------------------------
+FROM node:22-alpine AS runtime
+
+ENV NODE_ENV=production
+
+# Same reasoning as the API: never run as root on infrastructure that is often
+# shared, which an on-premise install usually is.
+RUN addgroup -S factory && adduser -S factory -G factory
+
+WORKDIR /app
+
+COPY --from=build --chown=factory:factory /repo/node_modules ./node_modules
+COPY --from=build --chown=factory:factory /repo/packages ./packages
+COPY --from=build --chown=factory:factory /repo/apps/worker/dist ./apps/worker/dist
+COPY --from=build --chown=factory:factory /repo/apps/worker/package.json ./apps/worker/
+COPY --from=build --chown=factory:factory /repo/apps/worker/node_modules ./apps/worker/node_modules
+
+USER factory
+
+# The worker serves no port, so liveness is "the process is still the one we
+# started". Docker restarts it on exit via the compose restart policy.
+HEALTHCHECK --interval=60s --timeout=5s --start-period=10s --retries=3 \
+  CMD pgrep -f "apps/worker/dist/main.js" > /dev/null || exit 1
+
+CMD ["node", "apps/worker/dist/main.js"]

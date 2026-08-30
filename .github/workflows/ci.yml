@@ -178,6 +178,12 @@ jobs:
           - image: factory-vision-operator
             dockerfile: deploy/Dockerfile.web
             app: operator
+          - image: factory-vision-admin
+            dockerfile: deploy/Dockerfile.web
+            app: admin
+          - image: factory-vision-worker
+            dockerfile: deploy/Dockerfile.worker
+            app: ''
     steps:
       - uses: actions/checkout@v7
 

@@ -22,11 +22,18 @@ has to guess which one an install is running.
 Requires Docker Engine 24+ with the Compose plugin. Nothing else, no cloud
 account, no external service.
 
+The stack is seven services: PostgreSQL, the API, the background worker, the
+three front ends, and, for an internet-facing install only, a reverse proxy.
+
 ```bash
 cp deploy/.env.example deploy/.env
-# set POSTGRES_PASSWORD; leave AUTH_REQUIRED=true
-docker compose -f deploy/docker-compose.yml up -d --build
+# set POSTGRES_PASSWORD and APP_DB_PASSWORD; leave AUTH_REQUIRED=true
+docker compose -f deploy/docker-compose.yml up -d
 ```
+
+That pulls the images CI publishes. Add `--build` to build them on the box
+instead, which needs roughly 2 GB of RAM for the Vite builds; a small VPS
+should pull.
 
 Then apply the schema:
 
@@ -46,10 +53,41 @@ pnpm db:seed
 |---|---|
 | Supervisor / manager console | `http://<host>:3100` |
 | Operator terminal (tablets) | `http://<host>:3200` |
+| Internal admin console | `http://127.0.0.1:3300`, loopback only |
 | API + docs | proxied at `/api/v1`, human-readable index at `/api/v1/docs` |
 
-The database port is deliberately not published: it is reachable only from the
-compose network. Add a `ports` mapping if a DBA genuinely needs direct access.
+Neither the database nor the API publishes a port: both are reachable only
+from the compose network, and each front end proxies `/api` to the API on its
+own origin, which is what keeps the operator terminal free of CORS setup on a
+plant LAN. Add a `ports` mapping if a DBA genuinely needs direct access.
+
+The internal admin console is the vendor's client management, not a customer
+surface, so it binds to loopback. Reach it through an SSH tunnel
+(`ssh -L 3300:127.0.0.1:3300 <host>`) rather than publishing it.
+
+The background worker serves no port. It runs scheduled aggregation against
+the same database as the API.
+
+### Public VPS
+
+For an internet-facing deployment, the `proxy` profile adds Traefik: it
+terminates HTTPS on `:443`, redirects HTTP, and obtains and renews Let's
+Encrypt certificates itself.
+
+```bash
+# in deploy/.env
+WEB_BIND=127.0.0.1          # keep 3100/3200 off the public interface
+ACME_EMAIL=ops@example.com
+DASHBOARD_DOMAIN=dashboard.example.com
+OPERATOR_DOMAIN=operator.example.com
+API_DOMAIN=api.example.com
+
+docker compose -f deploy/docker-compose.yml --profile proxy up -d
+```
+
+Each domain must already resolve to the host, or the ACME challenge fails.
+The firewall then needs only 22, 80 and 443; nothing else should be reachable
+from outside.
 
 ### Tablets
 

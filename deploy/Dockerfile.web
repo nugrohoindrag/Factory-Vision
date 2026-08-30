@@ -25,9 +25,12 @@ RUN pnpm install --frozen-lockfile --filter @factory-vision/${APP}...
 COPY packages packages
 COPY apps/${APP} apps/${APP}
 
-RUN pnpm --filter @factory-vision/domain-types build \
- && pnpm --filter @factory-vision/api-client build \
- && pnpm --filter @factory-vision/i18n build \
+# `^...` selects exactly the workspace packages this app depends on, in
+# topological order. The previous hardcoded list (domain-types, api-client,
+# i18n) broke `APP=admin`: admin does not depend on api-client, so the
+# install above never created packages/api-client/node_modules, and building
+# it anyway failed with "Cannot find module '@factory-vision/domain-types'".
+RUN pnpm --filter "@factory-vision/${APP}^..." build \
  && pnpm --filter @factory-vision/${APP} build
 
 # The build output path depends on APP, so resolve it now rather than in the

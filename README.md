@@ -46,6 +46,7 @@ pnpm dev
 | `pnpm typecheck` | `tsc --noEmit` across all nine packages |
 | `pnpm build` | build every app and package |
 | `pnpm verify:stories` | acceptance suite, 81 assertions over 54 user stories, against a running API |
+| `pnpm verify:isolation` | asserts PostgreSQL row-level security refuses cross-tenant access |
 | `pnpm ds:check` | design-system mirror integrity (needs the upstream system on disk) |
 | `pnpm db:migrate` / `db:seed` | apply `db/migrations` and `db/seeds` |
 
@@ -68,16 +69,20 @@ Promotion is forward-only: `master` → `staging` → `production`.
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every push and
 pull request to those three branches:
 
-1. **verify** — install, typecheck, build, then start the API and run the
+1. **verify** — install, build, typecheck, then start the API and run the
    acceptance suite against it.
-2. **publish** — only after `verify` is green, and never for a pull request.
-   Builds three images and pushes them to GHCR.
+2. **persistence** — apply the migrations against a real PostgreSQL 16 and
+   assert tenant isolation actually refuses cross-tenant reads and writes.
+3. **publish** — only after both are green, and never for a pull request.
+   Builds five images and pushes them to GHCR.
 
 | Image | Built from |
 |---|---|
 | `ghcr.io/nugrohoindrag/factory-vision-api` | `deploy/Dockerfile.api` |
 | `ghcr.io/nugrohoindrag/factory-vision-console` | `deploy/Dockerfile.web` (`APP=console`) |
 | `ghcr.io/nugrohoindrag/factory-vision-operator` | `deploy/Dockerfile.web` (`APP=operator`) |
+| `ghcr.io/nugrohoindrag/factory-vision-admin` | `deploy/Dockerfile.web` (`APP=admin`) |
+| `ghcr.io/nugrohoindrag/factory-vision-worker` | `deploy/Dockerfile.worker` |
 
 Each is tagged with its branch name, a short commit sha, semver for a `v*` tag,
 and `latest` on `production`.
@@ -93,6 +98,10 @@ docker compose -f deploy/docker-compose.yml up -d
 
 The same images serve both supported modes; only configuration differs.
 `GET /api/v1/meta/deployment` reports which one an install is running.
+
+The compose stack is seven services: PostgreSQL, the API, a background worker,
+the three front ends, and — with `--profile proxy`, for an internet-facing
+host — Traefik terminating HTTPS and obtaining Let's Encrypt certificates.
 
 - **On-premise, single tenant** — the whole stack inside a plant's own network,
   no outbound internet required. The operator terminal's assets (fonts, icons)
