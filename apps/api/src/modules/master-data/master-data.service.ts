@@ -1,0 +1,1703 @@
+import {
+  Plant,
+  ProductionLine,
+  WorkCenter,
+  ProductionProcess,
+  Machine,
+  Product,
+  ProductRouting,
+  ProductMachineRate,
+  ProductionBatch,
+  ProductionBatchStatus,
+  Operator,
+  Shift,
+  DowntimeReason,
+  RejectReason,
+  MachineState,
+  DowntimeCategory,
+  RejectCategory,
+  AppUser,
+  DeviceTerminal,
+  UserRole,
+  KpiTarget,
+  KpiMetric,
+} from '@factory-vision/domain-types';
+import { demoRows } from '../../platform/config/demo-seed.js';
+
+export class MasterDataService {
+  private plants: Plant[] = demoRows<Plant>(() => [
+    {
+      id: 'plant-cikarang-01',
+      tenantId: 'tenant-pilot-factory-01',
+      name: 'Main Plant Cikarang',
+      location: 'Kawasan Industri GIIC Cikarang Blok C-12, Jawa Barat',
+      timezone: 'Asia/Jakarta',
+      status: 'ACTIVE',
+    },
+  ]);
+
+  private lines: ProductionLine[] = demoRows<ProductionLine>(() => [
+    {
+      id: 'line-01',
+      tenantId: 'tenant-pilot-factory-01',
+      plantId: 'plant-cikarang-01',
+      code: 'LINE-ALPHA',
+      name: 'Line Tire Production Alpha (Passenger Car)',
+      status: 'ACTIVE',
+      plannedProductionTimeMinutes: 480,
+    },
+    {
+      id: 'line-02',
+      tenantId: 'tenant-pilot-factory-01',
+      plantId: 'plant-cikarang-01',
+      code: 'LINE-BETA',
+      name: 'Line Tire Production Beta (SUV & Light Truck)',
+      status: 'ACTIVE',
+      plannedProductionTimeMinutes: 480,
+    },
+    {
+      id: 'line-03',
+      tenantId: 'tenant-pilot-factory-01',
+      plantId: 'plant-cikarang-01',
+      code: 'LINE-GAMMA',
+      name: 'Line Tire Production Gamma (Light Truck)',
+      status: 'ACTIVE',
+      plannedProductionTimeMinutes: 480,
+    },
+  ]);
+
+  /**
+   * Work centres are what tie a machine to a production line, so the
+   * pilot's three lines each own theirs. Line Gamma holds TBM-002 and CPR-002
+   * because names those two machines as the pilot validation area.
+   */
+  private workCenters: WorkCenter[] = demoRows<WorkCenter>(() => [
+    {
+      id: 'wc-mixing',
+      tenantId: 'tenant-pilot-factory-01',
+      productionLineId: 'line-01',
+      code: 'WC-MIX',
+      name: 'Mixing Area Banbury',
+      sequence: 1,
+    },
+    {
+      id: 'wc-extrusion',
+      tenantId: 'tenant-pilot-factory-01',
+      productionLineId: 'line-01',
+      code: 'WC-EXT',
+      name: 'Extruder Tread Area',
+      sequence: 2,
+    },
+    {
+      id: 'wc-building',
+      tenantId: 'tenant-pilot-factory-01',
+      productionLineId: 'line-01',
+      code: 'WC-TBM',
+      name: 'Tire Building Machine Bay',
+      sequence: 3,
+    },
+    {
+      id: 'wc-curing',
+      tenantId: 'tenant-pilot-factory-01',
+      productionLineId: 'line-01',
+      code: 'WC-CPR',
+      name: 'Curing Press Vulcanizing Area',
+      sequence: 4,
+    },
+    {
+      id: 'wc-inspection',
+      tenantId: 'tenant-pilot-factory-01',
+      productionLineId: 'line-01',
+      code: 'WC-INS',
+      name: 'Final Inspection Station',
+      sequence: 5,
+    },
+    {
+      id: 'wc-mixing-02',
+      tenantId: 'tenant-pilot-factory-01',
+      productionLineId: 'line-02',
+      code: 'WC-MIX-B',
+      name: 'Mixing Area Banbury Beta',
+      sequence: 1,
+    },
+    {
+      id: 'wc-calendering',
+      tenantId: 'tenant-pilot-factory-01',
+      productionLineId: 'line-02',
+      code: 'WC-CAL',
+      name: 'Calender Steel Area',
+      sequence: 2,
+    },
+    {
+      id: 'wc-building-02',
+      tenantId: 'tenant-pilot-factory-01',
+      productionLineId: 'line-03',
+      code: 'WC-TBM-G',
+      name: 'Tire Building Bay Gamma',
+      sequence: 1,
+    },
+    {
+      id: 'wc-curing-02',
+      tenantId: 'tenant-pilot-factory-01',
+      productionLineId: 'line-03',
+      code: 'WC-CPR-G',
+      name: 'Curing Press Area Gamma',
+      sequence: 2,
+    },
+  ]);
+
+  private processes: ProductionProcess[] = demoRows<ProductionProcess>(() => [
+    {
+      id: 'proc-mixing',
+      tenantId: 'tenant-pilot-factory-01',
+      code: 'MIX',
+      name: 'Mixing & Compounding',
+      description: 'Pencampuran karet alam, sintetis, dan bahan kimia Banbury',
+      sequenceDefault: 1,
+      status: 'ACTIVE',
+    },
+    {
+      id: 'proc-calendering',
+      tenantId: 'tenant-pilot-factory-01',
+      code: 'CAL',
+      name: 'Fabric & Steel Calendering',
+      description: 'Pelapisan kawat baja dan serat nilon dengan kompon karet',
+      sequenceDefault: 2,
+      status: 'ACTIVE',
+    },
+    {
+      id: 'proc-extrusion',
+      tenantId: 'tenant-pilot-factory-01',
+      code: 'EXT',
+      name: 'Extrusion (Tread & Sidewall)',
+      description: 'Ekstrusi profil tapak dan dinding samping ban',
+      sequenceDefault: 3,
+      status: 'ACTIVE',
+    },
+    {
+      id: 'proc-cutting',
+      tenantId: 'tenant-pilot-factory-01',
+      code: 'CUT',
+      name: 'Component Cutting',
+      description: 'Pemotongan ply cord dan steel belt sesuai spesifikasi',
+      sequenceDefault: 4,
+      status: 'ACTIVE',
+    },
+    {
+      id: 'proc-bead',
+      tenantId: 'tenant-pilot-factory-01',
+      code: 'BWD',
+      name: 'Bead Manufacturing',
+      description: 'Pembuatan kawat ring pengunci velg (bead core)',
+      sequenceDefault: 5,
+      status: 'ACTIVE',
+    },
+    {
+      id: 'proc-building',
+      tenantId: 'tenant-pilot-factory-01',
+      code: 'TBM',
+      name: 'Tire Building (TBM)',
+      description: 'Perakitan komponen menjadi ban mentah (Green Tire)',
+      sequenceDefault: 6,
+      status: 'ACTIVE',
+    },
+    {
+      id: 'proc-curing',
+      tenantId: 'tenant-pilot-factory-01',
+      code: 'CPR',
+      name: 'Curing / Vulcanizing',
+      description: 'Pemasakan ban dengan panas dan tekanan dalam cetakan (Curing Press)',
+      sequenceDefault: 7,
+      status: 'ACTIVE',
+    },
+    {
+      id: 'proc-finishing',
+      tenantId: 'tenant-pilot-factory-01',
+      code: 'FIN',
+      name: 'Finishing & Trimming',
+      description: 'Pembersihan flash dan sisa cetakan vulkanisasi',
+      sequenceDefault: 8,
+      status: 'ACTIVE',
+    },
+    {
+      id: 'proc-inspection',
+      tenantId: 'tenant-pilot-factory-01',
+      code: 'INS',
+      name: 'Quality & Uniformity Inspection',
+      description: 'Pemeriksaan visual, X-ray, dan balance test ban jadi',
+      sequenceDefault: 9,
+      status: 'ACTIVE',
+    },
+  ]);
+
+  private machines: Machine[] = demoRows<Machine>(() => [
+    {
+      id: 'mc-mix-01',
+      tenantId: 'tenant-pilot-factory-01',
+      workCenterId: 'wc-mixing',
+      code: 'MIX-001',
+      name: 'Banbury Internal Mixer 01',
+      status: 'ACTIVE',
+      idealCycleTimeSeconds: 90,
+      currentState: MachineState.RUNNING,
+      currentStateSince: new Date().toISOString(),
+    },
+    {
+      id: 'mc-mix-02',
+      tenantId: 'tenant-pilot-factory-01',
+      workCenterId: 'wc-mixing-02',
+      code: 'MIX-002',
+      name: 'Banbury Internal Mixer 02',
+      status: 'ACTIVE',
+      idealCycleTimeSeconds: 90,
+      currentState: MachineState.IDLE,
+      currentStateSince: new Date().toISOString(),
+    },
+    {
+      id: 'mc-ext-01',
+      tenantId: 'tenant-pilot-factory-01',
+      workCenterId: 'wc-extrusion',
+      code: 'EXT-001',
+      name: 'Triplex Tread Extruder 01',
+      status: 'ACTIVE',
+      idealCycleTimeSeconds: 45,
+      currentState: MachineState.RUNNING,
+      currentStateSince: new Date().toISOString(),
+    },
+    {
+      id: 'mc-cal-01',
+      tenantId: 'tenant-pilot-factory-01',
+      workCenterId: 'wc-calendering',
+      code: 'CAL-001',
+      name: '4-Roll Steel Cord Calender 01',
+      status: 'ACTIVE',
+      idealCycleTimeSeconds: 60,
+      currentState: MachineState.RUNNING,
+      currentStateSince: new Date().toISOString(),
+    },
+    {
+      id: 'mc-tbm-01',
+      tenantId: 'tenant-pilot-factory-01',
+      workCenterId: 'wc-building',
+      code: 'TBM-001',
+      name: 'Tire Building Machine Alpha 01',
+      status: 'ACTIVE',
+      idealCycleTimeSeconds: 150,
+      currentState: MachineState.RUNNING,
+      currentStateSince: new Date().toISOString(),
+    },
+    {
+      id: 'mc-tbm-02',
+      tenantId: 'tenant-pilot-factory-01',
+      workCenterId: 'wc-building-02',
+      code: 'TBM-002',
+      name: 'Tire Building Machine Alpha 02',
+      status: 'ACTIVE',
+      idealCycleTimeSeconds: 180,
+      currentState: MachineState.RUNNING,
+      currentStateSince: new Date().toISOString(),
+    },
+    {
+      id: 'mc-cpr-01',
+      tenantId: 'tenant-pilot-factory-01',
+      workCenterId: 'wc-curing',
+      code: 'CPR-001',
+      name: 'Dual Cavity Curing Press 01',
+      status: 'ACTIVE',
+      idealCycleTimeSeconds: 750,
+      currentState: MachineState.RUNNING,
+      currentStateSince: new Date().toISOString(),
+    },
+    {
+      id: 'mc-cpr-02',
+      tenantId: 'tenant-pilot-factory-01',
+      workCenterId: 'wc-curing-02',
+      code: 'CPR-002',
+      name: 'Dual Cavity Curing Press 02',
+      status: 'ACTIVE',
+      idealCycleTimeSeconds: 900,
+      currentState: MachineState.DOWNTIME,
+      currentStateSince: new Date().toISOString(),
+    },
+    {
+      id: 'mc-ins-01',
+      tenantId: 'tenant-pilot-factory-01',
+      workCenterId: 'wc-inspection',
+      code: 'INS-001',
+      name: 'X-Ray & Uniformity Tester 01',
+      status: 'ACTIVE',
+      idealCycleTimeSeconds: 30,
+      currentState: MachineState.RUNNING,
+      currentStateSince: new Date().toISOString(),
+    },
+  ]);
+
+  private products: Product[] = demoRows<Product>(() => [
+    {
+      id: 'prod-tire-a',
+      tenantId: 'tenant-pilot-factory-01',
+      sku: 'TIRE-PCR-185',
+      name: 'Tire A: Passenger Car Radial 185/65 R15',
+      unit: 'PCS',
+      idealCycleTimeSeconds: 150,
+      status: 'ACTIVE',
+    },
+    {
+      id: 'prod-tire-b',
+      tenantId: 'tenant-pilot-factory-01',
+      sku: 'TIRE-SUV-235',
+      name: 'Tire B: SUV All-Terrain 235/70 R16',
+      unit: 'PCS',
+      idealCycleTimeSeconds: 180,
+      status: 'ACTIVE',
+    },
+    {
+      id: 'prod-tire-c',
+      tenantId: 'tenant-pilot-factory-01',
+      sku: 'TIRE-LTR-195',
+      name: 'Tire C: Light Truck Commercial 195 R14C',
+      unit: 'PCS',
+      idealCycleTimeSeconds: 210,
+      status: 'ACTIVE',
+    },
+  ]);
+
+  private productMachineRates: ProductMachineRate[] = demoRows<ProductMachineRate>(() => [
+    {
+      id: 'pmr-a-tbm1',
+      tenantId: 'tenant-pilot-factory-01',
+      productId: 'prod-tire-a',
+      machineId: 'mc-tbm-01',
+      idealCycleTimeSeconds: 150,
+    },
+    {
+      id: 'pmr-a-cpr1',
+      tenantId: 'tenant-pilot-factory-01',
+      productId: 'prod-tire-a',
+      machineId: 'mc-cpr-01',
+      idealCycleTimeSeconds: 750,
+    },
+    {
+      id: 'pmr-b-tbm1',
+      tenantId: 'tenant-pilot-factory-01',
+      productId: 'prod-tire-b',
+      machineId: 'mc-tbm-01',
+      idealCycleTimeSeconds: 180,
+    },
+    {
+      id: 'pmr-b-cpr1',
+      tenantId: 'tenant-pilot-factory-01',
+      productId: 'prod-tire-b',
+      machineId: 'mc-cpr-01',
+      idealCycleTimeSeconds: 900,
+    },
+    {
+      id: 'pmr-c-tbm2',
+      tenantId: 'tenant-pilot-factory-01',
+      productId: 'prod-tire-c',
+      machineId: 'mc-tbm-02',
+      idealCycleTimeSeconds: 210,
+    },
+    {
+      id: 'pmr-c-cpr2',
+      tenantId: 'tenant-pilot-factory-01',
+      productId: 'prod-tire-c',
+      machineId: 'mc-cpr-02',
+      idealCycleTimeSeconds: 1050,
+    },
+    // Upstream rates, so every machine that carries a work order has a
+    // configured Product × Machine cycle time and OEE Performance is never
+    // computed against a fallback (, US-049).
+    {
+      id: 'pmr-a-mix1',
+      tenantId: 'tenant-pilot-factory-01',
+      productId: 'prod-tire-a',
+      machineId: 'mc-mix-01',
+      idealCycleTimeSeconds: 90,
+    },
+    {
+      id: 'pmr-a-ext1',
+      tenantId: 'tenant-pilot-factory-01',
+      productId: 'prod-tire-a',
+      machineId: 'mc-ext-01',
+      idealCycleTimeSeconds: 45,
+    },
+    {
+      id: 'pmr-a-ins1',
+      tenantId: 'tenant-pilot-factory-01',
+      productId: 'prod-tire-a',
+      machineId: 'mc-ins-01',
+      idealCycleTimeSeconds: 30,
+    },
+    {
+      id: 'pmr-b-mix2',
+      tenantId: 'tenant-pilot-factory-01',
+      productId: 'prod-tire-b',
+      machineId: 'mc-mix-02',
+      idealCycleTimeSeconds: 100,
+    },
+    {
+      id: 'pmr-b-cal1',
+      tenantId: 'tenant-pilot-factory-01',
+      productId: 'prod-tire-b',
+      machineId: 'mc-cal-01',
+      idealCycleTimeSeconds: 60,
+    },
+  ]);
+
+  private productRoutings: ProductRouting[] = demoRows<ProductRouting>(() => [
+    {
+      id: 'rt-a-1',
+      tenantId: 'tenant-pilot-factory-01',
+      productId: 'prod-tire-a',
+      processId: 'proc-mixing',
+      sequence: 1,
+      workCenterId: 'wc-mixing',
+      machineId: 'mc-mix-01',
+      standardCycleTimeSeconds: 90,
+      active: true,
+    },
+    {
+      id: 'rt-a-2',
+      tenantId: 'tenant-pilot-factory-01',
+      productId: 'prod-tire-a',
+      processId: 'proc-extrusion',
+      sequence: 2,
+      workCenterId: 'wc-extrusion',
+      machineId: 'mc-ext-01',
+      standardCycleTimeSeconds: 45,
+      active: true,
+    },
+    {
+      id: 'rt-a-3',
+      tenantId: 'tenant-pilot-factory-01',
+      productId: 'prod-tire-a',
+      processId: 'proc-building',
+      sequence: 3,
+      workCenterId: 'wc-building',
+      machineId: 'mc-tbm-01',
+      standardCycleTimeSeconds: 150,
+      active: true,
+    },
+    {
+      id: 'rt-a-4',
+      tenantId: 'tenant-pilot-factory-01',
+      productId: 'prod-tire-a',
+      processId: 'proc-curing',
+      sequence: 4,
+      workCenterId: 'wc-curing',
+      machineId: 'mc-cpr-01',
+      standardCycleTimeSeconds: 750,
+      active: true,
+    },
+    {
+      id: 'rt-a-5',
+      tenantId: 'tenant-pilot-factory-01',
+      productId: 'prod-tire-a',
+      processId: 'proc-inspection',
+      sequence: 5,
+      workCenterId: 'wc-inspection',
+      machineId: 'mc-ins-01',
+      standardCycleTimeSeconds: 30,
+      active: true,
+    },
+
+    {
+      id: 'rt-b-1',
+      tenantId: 'tenant-pilot-factory-01',
+      productId: 'prod-tire-b',
+      processId: 'proc-mixing',
+      sequence: 1,
+      workCenterId: 'wc-mixing',
+      machineId: 'mc-mix-01',
+      standardCycleTimeSeconds: 100,
+      active: true,
+    },
+    {
+      id: 'rt-b-2',
+      tenantId: 'tenant-pilot-factory-01',
+      productId: 'prod-tire-b',
+      processId: 'proc-calendering',
+      sequence: 2,
+      workCenterId: 'wc-calendering',
+      machineId: 'mc-cal-01',
+      standardCycleTimeSeconds: 60,
+      active: true,
+    },
+    {
+      id: 'rt-b-3',
+      tenantId: 'tenant-pilot-factory-01',
+      productId: 'prod-tire-b',
+      processId: 'proc-building',
+      sequence: 3,
+      workCenterId: 'wc-building',
+      machineId: 'mc-tbm-01',
+      standardCycleTimeSeconds: 180,
+      active: true,
+    },
+    {
+      id: 'rt-b-4',
+      tenantId: 'tenant-pilot-factory-01',
+      productId: 'prod-tire-b',
+      processId: 'proc-curing',
+      sequence: 4,
+      workCenterId: 'wc-curing',
+      machineId: 'mc-cpr-01',
+      standardCycleTimeSeconds: 900,
+      active: true,
+    },
+    {
+      id: 'rt-b-5',
+      tenantId: 'tenant-pilot-factory-01',
+      productId: 'prod-tire-b',
+      processId: 'proc-inspection',
+      sequence: 5,
+      workCenterId: 'wc-inspection',
+      machineId: 'mc-ins-01',
+      standardCycleTimeSeconds: 35,
+      active: true,
+    },
+
+    {
+      id: 'rt-c-1',
+      tenantId: 'tenant-pilot-factory-01',
+      productId: 'prod-tire-c',
+      processId: 'proc-mixing',
+      sequence: 1,
+      workCenterId: 'wc-mixing',
+      machineId: 'mc-mix-01',
+      standardCycleTimeSeconds: 110,
+      active: true,
+    },
+    {
+      id: 'rt-c-2',
+      tenantId: 'tenant-pilot-factory-01',
+      productId: 'prod-tire-c',
+      processId: 'proc-extrusion',
+      sequence: 2,
+      workCenterId: 'wc-extrusion',
+      machineId: 'mc-ext-01',
+      standardCycleTimeSeconds: 50,
+      active: true,
+    },
+    {
+      id: 'rt-c-3',
+      tenantId: 'tenant-pilot-factory-01',
+      productId: 'prod-tire-c',
+      processId: 'proc-building',
+      sequence: 3,
+      workCenterId: 'wc-building',
+      machineId: 'mc-tbm-02',
+      standardCycleTimeSeconds: 210,
+      active: true,
+    },
+    {
+      id: 'rt-c-4',
+      tenantId: 'tenant-pilot-factory-01',
+      productId: 'prod-tire-c',
+      processId: 'proc-curing',
+      sequence: 4,
+      workCenterId: 'wc-curing',
+      machineId: 'mc-cpr-02',
+      standardCycleTimeSeconds: 1050,
+      active: true,
+    },
+    {
+      id: 'rt-c-5',
+      tenantId: 'tenant-pilot-factory-01',
+      productId: 'prod-tire-c',
+      processId: 'proc-inspection',
+      sequence: 5,
+      workCenterId: 'wc-inspection',
+      machineId: 'mc-ins-01',
+      standardCycleTimeSeconds: 40,
+      active: true,
+    },
+  ]);
+
+  private batches: ProductionBatch[] = demoRows<ProductionBatch>(() => [
+    {
+      id: 'batch-260829-01',
+      tenantId: 'tenant-pilot-factory-01',
+      batchNumber: 'B260829-01',
+      productId: 'prod-tire-a',
+      productionOrderId: 'po-260829-001',
+      productionDate: new Date().toISOString().slice(0, 10),
+      status: ProductionBatchStatus.ACTIVE,
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: 'batch-260829-02',
+      tenantId: 'tenant-pilot-factory-01',
+      batchNumber: 'B260829-02',
+      productId: 'prod-tire-b',
+      productionOrderId: 'po-260829-002',
+      productionDate: new Date().toISOString().slice(0, 10),
+      status: ProductionBatchStatus.ACTIVE,
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: 'batch-260829-03',
+      tenantId: 'tenant-pilot-factory-01',
+      batchNumber: 'B260829-03',
+      productId: 'prod-tire-c',
+      productionOrderId: 'po-260829-003',
+      productionDate: new Date().toISOString().slice(0, 10),
+      status: ProductionBatchStatus.ACTIVE,
+      createdAt: new Date().toISOString(),
+    },
+    // A closed and a scrapped lot, so the attach-validation path in US-013 has
+    // something real to reject.
+    {
+      id: 'batch-260828-09',
+      tenantId: 'tenant-pilot-factory-01',
+      batchNumber: 'B260828-09',
+      productId: 'prod-tire-a',
+      productionOrderId: 'po-260829-001',
+      productionDate: '2026-08-28',
+      status: ProductionBatchStatus.COMPLETED,
+      createdAt: '2026-08-28T05:00:00.000Z',
+    },
+    {
+      id: 'batch-260828-10',
+      tenantId: 'tenant-pilot-factory-01',
+      batchNumber: 'B260828-10',
+      productId: 'prod-tire-c',
+      productionOrderId: 'po-260829-003',
+      productionDate: '2026-08-28',
+      status: ProductionBatchStatus.SCRAPPED,
+      createdAt: '2026-08-28T05:00:00.000Z',
+    },
+  ]);
+
+  private operators: Operator[] = demoRows<Operator>(() => [
+    {
+      id: 'op-001',
+      tenantId: 'tenant-pilot-factory-01',
+      employeeNumber: 'OP-1001',
+      name: 'Budi Santoso',
+      defaultLineId: 'line-01',
+      status: 'ACTIVE',
+    },
+    {
+      id: 'op-002',
+      tenantId: 'tenant-pilot-factory-01',
+      employeeNumber: 'OP-1002',
+      name: 'Siti Rahmawati',
+      defaultLineId: 'line-01',
+      status: 'ACTIVE',
+    },
+    {
+      id: 'op-003',
+      tenantId: 'tenant-pilot-factory-01',
+      employeeNumber: 'OP-1003',
+      name: 'Agus Prasetyo',
+      defaultLineId: 'line-02',
+      status: 'ACTIVE',
+    },
+    {
+      id: 'op-004',
+      tenantId: 'tenant-pilot-factory-01',
+      employeeNumber: 'OP-1004',
+      name: 'Dedi Kurniawan',
+      defaultLineId: 'line-03',
+      status: 'ACTIVE',
+    },
+    {
+      id: 'op-005',
+      tenantId: 'tenant-pilot-factory-01',
+      employeeNumber: 'OP-1005',
+      name: 'Rina Kartika',
+      defaultLineId: 'line-03',
+      status: 'INACTIVE',
+    },
+  ]);
+
+  private shifts: Shift[] = demoRows<Shift>(() => [
+    {
+      id: 'shift-1',
+      tenantId: 'tenant-pilot-factory-01',
+      plantId: 'plant-cikarang-01',
+      name: 'Shift 1 (Pagi)',
+      startTime: '06:00',
+      endTime: '14:00',
+      breakMinutes: 60,
+      crossesMidnight: false,
+      active: true,
+    },
+    {
+      id: 'shift-2',
+      tenantId: 'tenant-pilot-factory-01',
+      plantId: 'plant-cikarang-01',
+      name: 'Shift 2 (Sore)',
+      startTime: '14:00',
+      endTime: '22:00',
+      breakMinutes: 60,
+      crossesMidnight: false,
+      active: true,
+    },
+    {
+      id: 'shift-3',
+      tenantId: 'tenant-pilot-factory-01',
+      plantId: 'plant-cikarang-01',
+      name: 'Shift 3 (Malam)',
+      startTime: '22:00',
+      endTime: '06:00',
+      breakMinutes: 60,
+      crossesMidnight: true,
+      active: true,
+    },
+  ]);
+
+  private downtimeReasons: DowntimeReason[] = demoRows<DowntimeReason>(() => [
+    {
+      id: 'dt-breakdown',
+      tenantId: 'tenant-pilot-factory-01',
+      category: DowntimeCategory.MACHINE,
+      code: 'MC-BRK',
+      name: 'Kerusakan Mekanikal / Mesin Breakdown',
+      description: 'Kerusakan komponen mesin hidrolik/motor',
+      isPlanned: false,
+      active: true,
+      sortOrder: 1,
+    },
+    {
+      id: 'dt-material',
+      tenantId: 'tenant-pilot-factory-01',
+      category: DowntimeCategory.MATERIAL,
+      code: 'MAT-SHT',
+      name: 'Kekurangan / Keterlambatan Pasokan Material',
+      description: 'Karet kompon atau ply cord belum siap',
+      isPlanned: false,
+      active: true,
+      sortOrder: 2,
+    },
+    {
+      id: 'dt-setup',
+      tenantId: 'tenant-pilot-factory-01',
+      category: DowntimeCategory.PROCESS,
+      code: 'PRC-STP',
+      name: 'Setup & Changeover Mold / Cetakan',
+      description: 'Penggantian ukuran mold cetakan ban',
+      isPlanned: true,
+      active: true,
+      sortOrder: 3,
+    },
+    {
+      id: 'dt-cleaning',
+      tenantId: 'tenant-pilot-factory-01',
+      category: DowntimeCategory.PROCESS,
+      code: 'PRC-CLN',
+      name: 'Pembersihan & Perawatan Harian (Cleaning)',
+      description: 'Cleaning sisa karet dan pelumasan mold',
+      isPlanned: true,
+      active: true,
+      sortOrder: 4,
+    },
+    {
+      id: 'dt-qc-wait',
+      tenantId: 'tenant-pilot-factory-01',
+      category: DowntimeCategory.QUALITY,
+      code: 'QLT-WQC',
+      name: 'Menunggu Persetujuan / Inspeksi QC',
+      description: 'Menunggu first piece inspection approval',
+      isPlanned: false,
+      active: true,
+      sortOrder: 5,
+    },
+    {
+      id: 'dt-operator',
+      tenantId: 'tenant-pilot-factory-01',
+      category: DowntimeCategory.PEOPLE,
+      code: 'PPL-ABS',
+      name: 'Operator Tidak Tersedia / Istirahat Bergilir',
+      description: 'Kekurangan manpower di pos perakitan',
+      isPlanned: false,
+      active: true,
+      sortOrder: 6,
+    },
+  ]);
+
+  private rejectReasons: RejectReason[] = demoRows<RejectReason>(() => [
+    {
+      id: 'rej-dimension',
+      tenantId: 'tenant-pilot-factory-01',
+      category: RejectCategory.DIMENSION,
+      code: 'DIM-OOS',
+      name: 'Dimensi / Ketebalan Sidewall Di Luar Toleransi',
+      description: 'Toleransi ketebalan dinding samping melebihi limit',
+      active: true,
+      sortOrder: 1,
+    },
+    {
+      id: 'rej-blister',
+      tenantId: 'tenant-pilot-factory-01',
+      category: RejectCategory.APPEARANCE,
+      code: 'APP-BLS',
+      name: 'Blister / Gelembung Udara Terperangkap (Air Trap)',
+      description: 'Udara terperangkap di bawah lapisan tapak/sidewall',
+      active: true,
+      sortOrder: 2,
+    },
+    {
+      id: 'rej-scratch',
+      tenantId: 'tenant-pilot-factory-01',
+      category: RejectCategory.APPEARANCE,
+      code: 'APP-SCR',
+      name: 'Goresan / Cacat Permukaan Green Tire',
+      description: 'Cacat gores saat transfer atau penyimpanan',
+      active: true,
+      sortOrder: 3,
+    },
+    {
+      id: 'rej-flash',
+      tenantId: 'tenant-pilot-factory-01',
+      category: RejectCategory.MATERIAL,
+      code: 'MAT-FLS',
+      name: 'Excess Flash / Cacat Mold Overflow',
+      description: 'Karet meluap pada garis cetakan curing press',
+      active: true,
+      sortOrder: 4,
+    },
+    {
+      id: 'rej-distortion',
+      tenantId: 'tenant-pilot-factory-01',
+      category: RejectCategory.FUNCTION,
+      code: 'FNC-DST',
+      name: 'Tread Distortion / Keselarasan Tapak Miring',
+      description: 'Tapak ban tidak simetris terhadap centerline',
+      active: true,
+      sortOrder: 5,
+    },
+    {
+      id: 'rej-other',
+      tenantId: 'tenant-pilot-factory-01',
+      category: RejectCategory.OTHER,
+      code: 'OTH-GEN',
+      name: 'Cacat Kualitas Lainnya',
+      description: 'Kondisi reject non-standar lainnya',
+      active: true,
+      sortOrder: 6,
+    },
+  ]);
+
+  private kpiTargets: KpiTarget[] = demoRows<KpiTarget>(() => [
+    {
+      id: 'tgt-oee',
+      tenantId: 'tenant-pilot-factory-01',
+      metric: 'OEE',
+      targetValue: 85.0,
+      unit: '%',
+      direction: 'HIGHER_IS_BETTER',
+      watchThresholdPct: 95.0,
+      criticalThresholdPct: 90.0,
+    },
+    {
+      id: 'tgt-avail',
+      tenantId: 'tenant-pilot-factory-01',
+      metric: 'AVAILABILITY',
+      targetValue: 90.0,
+      unit: '%',
+      direction: 'HIGHER_IS_BETTER',
+      watchThresholdPct: 95.0,
+      criticalThresholdPct: 90.0,
+    },
+    {
+      id: 'tgt-perf',
+      tenantId: 'tenant-pilot-factory-01',
+      metric: 'PERFORMANCE',
+      targetValue: 95.0,
+      unit: '%',
+      direction: 'HIGHER_IS_BETTER',
+      watchThresholdPct: 95.0,
+      criticalThresholdPct: 90.0,
+    },
+    {
+      id: 'tgt-qual',
+      tenantId: 'tenant-pilot-factory-01',
+      metric: 'QUALITY',
+      targetValue: 99.0,
+      unit: '%',
+      direction: 'HIGHER_IS_BETTER',
+      watchThresholdPct: 98.0,
+      criticalThresholdPct: 95.0,
+    },
+    {
+      id: 'tgt-achv',
+      tenantId: 'tenant-pilot-factory-01',
+      metric: 'PRODUCTION_ACHIEVEMENT',
+      targetValue: 100.0,
+      unit: '%',
+      direction: 'HIGHER_IS_BETTER',
+      watchThresholdPct: 95.0,
+      criticalThresholdPct: 90.0,
+    },
+    // Attainment is normalised so 100 always means "on target", for both
+    // directions. The watch/critical thresholds are therefore read the same way
+    // on a lower-is-better metric as on a higher-is-better one, setting them
+    // above 100 here would have flagged a reject rate *under* target as
+    // CRITICAL.
+    {
+      id: 'tgt-rej',
+      tenantId: 'tenant-pilot-factory-01',
+      metric: 'REJECT_RATE',
+      targetValue: 1.5,
+      unit: '%',
+      direction: 'LOWER_IS_BETTER',
+      watchThresholdPct: 95.0,
+      criticalThresholdPct: 85.0,
+    },
+    // Plant-wide unplanned + planned stoppage minutes per production day,
+    // across every machine that ran.
+    {
+      id: 'tgt-dt',
+      tenantId: 'tenant-pilot-factory-01',
+      metric: 'DOWNTIME',
+      targetValue: 400.0,
+      unit: 'MIN',
+      direction: 'LOWER_IS_BETTER',
+      watchThresholdPct: 95.0,
+      criticalThresholdPct: 85.0,
+    },
+  ]);
+
+  private users: AppUser[] = demoRows<AppUser>(() => [
+    {
+      id: 'usr-001',
+      tenantId: 'tenant-pilot-factory-01',
+      email: 'agung.wicaksono@factoryvision.local',
+      name: 'Agung Wicaksono',
+      role: UserRole.SUPERVISOR,
+      accountType: 'APPLICATION_USER',
+      scopeLevel: 'PLANT',
+      scopeId: 'plant-cikarang-01',
+      status: 'ACTIVE',
+      lastLoginAt: new Date().toISOString(),
+      createdAt: '2026-01-10T08:00:00.000Z',
+    },
+    {
+      id: 'usr-002',
+      tenantId: 'tenant-pilot-factory-01',
+      email: 'bambang.ppic@factoryvision.local',
+      name: 'Bambang Sudarsono',
+      role: UserRole.PPIC,
+      accountType: 'APPLICATION_USER',
+      scopeLevel: 'TENANT',
+      status: 'ACTIVE',
+      lastLoginAt: new Date().toISOString(),
+      createdAt: '2026-01-10T08:00:00.000Z',
+    },
+    {
+      id: 'usr-003',
+      tenantId: 'tenant-pilot-factory-01',
+      email: 'hendra.manager@factoryvision.local',
+      name: 'Hendra Gunawan',
+      role: UserRole.PRODUCTION_MANAGER,
+      accountType: 'APPLICATION_USER',
+      scopeLevel: 'TENANT',
+      status: 'ACTIVE',
+      lastLoginAt: new Date().toISOString(),
+      createdAt: '2026-01-05T08:00:00.000Z',
+    },
+    // The remaining system roles, so every ACL row in can actually
+    // be demonstrated during the pilot rather than only described.
+    {
+      id: 'usr-004',
+      tenantId: 'tenant-pilot-factory-01',
+      email: 'rian.admin@factoryvision.local',
+      name: 'Rian Pratama',
+      role: UserRole.ADMIN,
+      accountType: 'APPLICATION_USER',
+      scopeLevel: 'TENANT',
+      status: 'ACTIVE',
+      createdAt: '2026-01-02T08:00:00.000Z',
+    },
+    {
+      id: 'usr-005',
+      tenantId: 'tenant-pilot-factory-01',
+      email: 'dharmawan.gm@factoryvision.local',
+      name: 'Dharmawan Wijaya',
+      role: UserRole.EXECUTIVE,
+      accountType: 'APPLICATION_USER',
+      scopeLevel: 'TENANT',
+      status: 'ACTIVE',
+      createdAt: '2026-01-02T08:00:00.000Z',
+    },
+    {
+      id: 'usr-006',
+      tenantId: 'tenant-pilot-factory-01',
+      email: 'maya.qc@factoryvision.local',
+      name: 'Maya Puspita',
+      role: UserRole.QUALITY,
+      accountType: 'APPLICATION_USER',
+      scopeLevel: 'PLANT',
+      scopeId: 'plant-cikarang-01',
+      status: 'ACTIVE',
+      createdAt: '2026-01-08T08:00:00.000Z',
+    },
+  ]);
+
+  private devices: DeviceTerminal[] = demoRows<DeviceTerminal>(() => [
+    {
+      id: 'dev-001',
+      tenantId: 'tenant-pilot-factory-01',
+      deviceCode: 'TAB-ALPHA-TBM',
+      name: 'Tablet Terminal TBM Alpha 01',
+      assignedLineId: 'line-01',
+      assignedWorkCenterId: 'wc-building',
+      status: 'ONLINE',
+      ipAddress: '192.168.10.21',
+      lastHeartbeatAt: new Date().toISOString(),
+      registeredAt: '2026-02-01T08:00:00.000Z',
+    },
+    {
+      id: 'dev-002',
+      tenantId: 'tenant-pilot-factory-01',
+      deviceCode: 'TAB-ALPHA-CPR',
+      name: 'Tablet Terminal Curing Press 01',
+      assignedLineId: 'line-01',
+      assignedWorkCenterId: 'wc-curing',
+      status: 'ONLINE',
+      ipAddress: '192.168.10.22',
+      lastHeartbeatAt: new Date().toISOString(),
+      registeredAt: '2026-02-01T08:00:00.000Z',
+    },
+  ]);
+
+  // Queries
+  getPlants(tenantId: string): Plant[] {
+    return this.plants.filter((p) => p.tenantId === tenantId);
+  }
+
+  getLines(tenantId: string): ProductionLine[] {
+    return this.lines.filter((l) => l.tenantId === tenantId);
+  }
+
+  getWorkCenters(tenantId: string): WorkCenter[] {
+    return this.workCenters.filter((wc) => wc.tenantId === tenantId);
+  }
+
+  getProcesses(tenantId: string): ProductionProcess[] {
+    return this.processes
+      .filter((p) => p.tenantId === tenantId)
+      .sort((a, b) => a.sequenceDefault - b.sequenceDefault);
+  }
+
+  getMachines(tenantId: string): Machine[] {
+    return this.machines.filter((m) => m.tenantId === tenantId);
+  }
+
+  getProducts(tenantId: string): Product[] {
+    return this.products.filter((p) => p.tenantId === tenantId);
+  }
+
+  getProductRoutings(tenantId: string, productId?: string): ProductRouting[] {
+    return this.productRoutings
+      .filter((r) => r.tenantId === tenantId && (!productId || r.productId === productId))
+      .sort((a, b) => a.sequence - b.sequence);
+  }
+
+  getProductMachineRates(tenantId: string, productId?: string, machineId?: string): ProductMachineRate[] {
+    return this.productMachineRates.filter(
+      (r) =>
+        r.tenantId === tenantId &&
+        (!productId || r.productId === productId) &&
+        (!machineId || r.machineId === machineId)
+    );
+  }
+
+  getBatches(tenantId: string, productId?: string, status?: string): ProductionBatch[] {
+    return this.batches.filter(
+      (b) =>
+        b.tenantId === tenantId && (!productId || b.productId === productId) && (!status || b.status === status)
+    );
+  }
+
+  getOperators(tenantId: string): Operator[] {
+    return this.operators.filter((o) => o.tenantId === tenantId);
+  }
+
+  getShifts(tenantId: string): Shift[] {
+    return this.shifts.filter((s) => s.tenantId === tenantId);
+  }
+
+  getDowntimeReasons(tenantId: string): DowntimeReason[] {
+    return this.downtimeReasons
+      .filter((d) => d.tenantId === tenantId)
+      .sort((a, b) => a.sortOrder - b.sortOrder);
+  }
+
+  getRejectReasons(tenantId: string): RejectReason[] {
+    return this.rejectReasons.filter((r) => r.tenantId === tenantId).sort((a, b) => a.sortOrder - b.sortOrder);
+  }
+
+  getUsers(tenantId: string): AppUser[] {
+    return this.users.filter((u) => u.tenantId === tenantId);
+  }
+
+  getDevices(tenantId: string): DeviceTerminal[] {
+    return this.devices.filter((d) => d.tenantId === tenantId);
+  }
+
+  getKpiTargets(tenantId: string): KpiTarget[] {
+    return this.kpiTargets.filter((t) => t.tenantId === tenantId);
+  }
+
+  getKpiTarget(tenantId: string, metric: KpiMetric | string): KpiTarget | undefined {
+    return this.kpiTargets.find((t) => t.tenantId === tenantId && t.metric === metric);
+  }
+
+  // --- CRUD Operations ---
+  // Processes
+  getProcessById(tenantId: string, id: string): ProductionProcess | undefined {
+    return this.processes.find((p) => p.id === id && p.tenantId === tenantId);
+  }
+
+  createProcess(
+    tenantId: string,
+    payload: Omit<ProductionProcess, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>
+  ): ProductionProcess {
+    const process: ProductionProcess = {
+      id: `proc-${Date.now()}`,
+      tenantId,
+      ...payload,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    this.processes.push(process);
+    return process;
+  }
+
+  updateProcess(
+    tenantId: string,
+    id: string,
+    payload: Partial<Omit<ProductionProcess, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>>
+  ): ProductionProcess {
+    const process = this.getProcessById(tenantId, id);
+    if (!process) throw new Error('Production process not found');
+    Object.assign(process, payload, { updatedAt: new Date().toISOString() });
+    return process;
+  }
+
+  deleteProcess(tenantId: string, id: string): boolean {
+    const index = this.processes.findIndex((p) => p.id === id && p.tenantId === tenantId);
+    if (index === -1) throw new Error('Production process not found');
+    this.processes.splice(index, 1);
+    return true;
+  }
+
+  // Routings
+  getRoutingById(tenantId: string, id: string): ProductRouting | undefined {
+    return this.productRoutings.find((r) => r.id === id && r.tenantId === tenantId);
+  }
+
+  createRouting(tenantId: string, payload: Omit<ProductRouting, 'id' | 'tenantId'>): ProductRouting {
+    const routing: ProductRouting = {
+      id: `rt-${Date.now()}`,
+      tenantId,
+      ...payload,
+    };
+    this.productRoutings.push(routing);
+    return routing;
+  }
+
+  updateRouting(
+    tenantId: string,
+    id: string,
+    payload: Partial<Omit<ProductRouting, 'id' | 'tenantId'>>
+  ): ProductRouting {
+    const routing = this.getRoutingById(tenantId, id);
+    if (!routing) throw new Error('Product routing not found');
+    Object.assign(routing, payload);
+    return routing;
+  }
+
+  deleteRouting(tenantId: string, id: string): boolean {
+    const index = this.productRoutings.findIndex((r) => r.id === id && r.tenantId === tenantId);
+    if (index === -1) throw new Error('Product routing not found');
+    this.productRoutings.splice(index, 1);
+    return true;
+  }
+
+  // Product Machine Rates
+  upsertProductMachineRate(
+    tenantId: string,
+    payload: Omit<ProductMachineRate, 'id' | 'tenantId'>
+  ): ProductMachineRate {
+    const existing = this.productMachineRates.find(
+      (r) => r.tenantId === tenantId && r.productId === payload.productId && r.machineId === payload.machineId
+    );
+    if (existing) {
+      existing.idealCycleTimeSeconds = payload.idealCycleTimeSeconds;
+      return existing;
+    }
+    const rate: ProductMachineRate = {
+      id: `pmr-${Date.now()}`,
+      tenantId,
+      ...payload,
+    };
+    this.productMachineRates.push(rate);
+    return rate;
+  }
+
+  deleteProductMachineRate(tenantId: string, id: string): boolean {
+    const index = this.productMachineRates.findIndex((r) => r.id === id && r.tenantId === tenantId);
+    if (index === -1) throw new Error('Product machine rate not found');
+    this.productMachineRates.splice(index, 1);
+    return true;
+  }
+
+  // Batches
+  getBatchById(tenantId: string, id: string): ProductionBatch | undefined {
+    return this.batches.find((b) => b.id === id && b.tenantId === tenantId);
+  }
+
+  createBatch(
+    tenantId: string,
+    payload: Omit<ProductionBatch, 'id' | 'tenantId' | 'createdAt'>
+  ): ProductionBatch {
+    const batch: ProductionBatch = {
+      id: `batch-${Date.now()}`,
+      tenantId,
+      ...payload,
+      createdAt: new Date().toISOString(),
+    };
+    this.batches.push(batch);
+    return batch;
+  }
+
+  updateBatch(
+    tenantId: string,
+    id: string,
+    payload: Partial<Omit<ProductionBatch, 'id' | 'tenantId' | 'createdAt'>>
+  ): ProductionBatch {
+    const batch = this.getBatchById(tenantId, id);
+    if (!batch) throw new Error('Production batch not found');
+    Object.assign(batch, payload);
+    return batch;
+  }
+
+  // Lines
+  getLineById(tenantId: string, id: string): ProductionLine | undefined {
+    return this.lines.find((l) => l.id === id && l.tenantId === tenantId);
+  }
+
+  createLine(tenantId: string, payload: Omit<ProductionLine, 'id' | 'tenantId'>): ProductionLine {
+    const line: ProductionLine = {
+      id: `line-${Date.now()}`,
+      tenantId,
+      ...payload,
+    };
+    this.lines.push(line);
+    return line;
+  }
+
+  updateLine(
+    tenantId: string,
+    id: string,
+    payload: Partial<Omit<ProductionLine, 'id' | 'tenantId'>>
+  ): ProductionLine {
+    const line = this.getLineById(tenantId, id);
+    if (!line) throw new Error('Line not found');
+    Object.assign(line, payload);
+    return line;
+  }
+
+  deleteLine(tenantId: string, id: string): boolean {
+    const index = this.lines.findIndex((l) => l.id === id && l.tenantId === tenantId);
+    if (index === -1) throw new Error('Line not found');
+    this.lines.splice(index, 1);
+    return true;
+  }
+
+  // Machines
+  getMachineById(tenantId: string, id: string): Machine | undefined {
+    return this.machines.find((m) => m.id === id && m.tenantId === tenantId);
+  }
+
+  createMachine(
+    tenantId: string,
+    payload: Omit<Machine, 'id' | 'tenantId' | 'currentState' | 'currentStateSince'>
+  ): Machine {
+    const machine: Machine = {
+      id: `mc-${Date.now()}`,
+      tenantId,
+      ...payload,
+      currentState: MachineState.IDLE,
+      currentStateSince: new Date().toISOString(),
+    };
+    this.machines.push(machine);
+    return machine;
+  }
+
+  updateMachine(tenantId: string, id: string, payload: Partial<Omit<Machine, 'id' | 'tenantId'>>): Machine {
+    const machine = this.getMachineById(tenantId, id);
+    if (!machine) throw new Error('Machine not found');
+    Object.assign(machine, payload);
+    return machine;
+  }
+
+  deleteMachine(tenantId: string, id: string): boolean {
+    const index = this.machines.findIndex((m) => m.id === id && m.tenantId === tenantId);
+    if (index === -1) throw new Error('Machine not found');
+    this.machines.splice(index, 1);
+    return true;
+  }
+
+  // Products
+  getProductById(tenantId: string, id: string): Product | undefined {
+    return this.products.find((p) => p.id === id && p.tenantId === tenantId);
+  }
+
+  createProduct(tenantId: string, payload: Omit<Product, 'id' | 'tenantId'>): Product {
+    const product: Product = {
+      id: `prod-${Date.now()}`,
+      tenantId,
+      ...payload,
+    };
+    this.products.push(product);
+    return product;
+  }
+
+  updateProduct(tenantId: string, id: string, payload: Partial<Omit<Product, 'id' | 'tenantId'>>): Product {
+    const product = this.getProductById(tenantId, id);
+    if (!product) throw new Error('Product not found');
+    Object.assign(product, payload);
+    return product;
+  }
+
+  deleteProduct(tenantId: string, id: string): boolean {
+    const index = this.products.findIndex((p) => p.id === id && p.tenantId === tenantId);
+    if (index === -1) throw new Error('Product not found');
+    this.products.splice(index, 1);
+    return true;
+  }
+
+  // Operators
+  getOperatorById(tenantId: string, id: string): Operator | undefined {
+    return this.operators.find((o) => o.id === id && o.tenantId === tenantId);
+  }
+
+  createOperator(tenantId: string, payload: Omit<Operator, 'id' | 'tenantId'>): Operator {
+    const operator: Operator = {
+      id: `op-${Date.now()}`,
+      tenantId,
+      ...payload,
+    };
+    this.operators.push(operator);
+    return operator;
+  }
+
+  updateOperator(tenantId: string, id: string, payload: Partial<Omit<Operator, 'id' | 'tenantId'>>): Operator {
+    const operator = this.getOperatorById(tenantId, id);
+    if (!operator) throw new Error('Operator not found');
+    Object.assign(operator, payload);
+    return operator;
+  }
+
+  deleteOperator(tenantId: string, id: string): boolean {
+    const index = this.operators.findIndex((o) => o.id === id && o.tenantId === tenantId);
+    if (index === -1) throw new Error('Operator not found');
+    this.operators.splice(index, 1);
+    return true;
+  }
+
+  // Downtime Reasons
+  getDowntimeReasonById(tenantId: string, id: string): DowntimeReason | undefined {
+    return this.downtimeReasons.find((r) => r.id === id && r.tenantId === tenantId);
+  }
+
+  createDowntimeReason(tenantId: string, payload: Omit<DowntimeReason, 'id' | 'tenantId'>): DowntimeReason {
+    const reason: DowntimeReason = {
+      id: `dt-${Date.now()}`,
+      tenantId,
+      ...payload,
+    };
+    this.downtimeReasons.push(reason);
+    return reason;
+  }
+
+  updateDowntimeReason(
+    tenantId: string,
+    id: string,
+    payload: Partial<Omit<DowntimeReason, 'id' | 'tenantId'>>
+  ): DowntimeReason {
+    const reason = this.getDowntimeReasonById(tenantId, id);
+    if (!reason) throw new Error('Downtime reason not found');
+    Object.assign(reason, payload);
+    return reason;
+  }
+
+  deleteDowntimeReason(tenantId: string, id: string): boolean {
+    const index = this.downtimeReasons.findIndex((r) => r.id === id && r.tenantId === tenantId);
+    if (index === -1) throw new Error('Downtime reason not found');
+    this.downtimeReasons.splice(index, 1);
+    return true;
+  }
+
+  // Reject Reasons
+  getRejectReasonById(tenantId: string, id: string): RejectReason | undefined {
+    return this.rejectReasons.find((r) => r.id === id && r.tenantId === tenantId);
+  }
+
+  createRejectReason(tenantId: string, payload: Omit<RejectReason, 'id' | 'tenantId'>): RejectReason {
+    const reason: RejectReason = {
+      id: `rej-${Date.now()}`,
+      tenantId,
+      ...payload,
+    };
+    this.rejectReasons.push(reason);
+    return reason;
+  }
+
+  updateRejectReason(
+    tenantId: string,
+    id: string,
+    payload: Partial<Omit<RejectReason, 'id' | 'tenantId'>>
+  ): RejectReason {
+    const reason = this.getRejectReasonById(tenantId, id);
+    if (!reason) throw new Error('Reject reason not found');
+    Object.assign(reason, payload);
+    return reason;
+  }
+
+  deleteRejectReason(tenantId: string, id: string): boolean {
+    const index = this.rejectReasons.findIndex((r) => r.id === id && r.tenantId === tenantId);
+    if (index === -1) throw new Error('Reject reason not found');
+    this.rejectReasons.splice(index, 1);
+    return true;
+  }
+
+  // Users
+  createUser(tenantId: string, payload: Omit<AppUser, 'id' | 'tenantId' | 'createdAt'>): AppUser {
+    const user: AppUser = {
+      id: `usr-${Date.now()}`,
+      tenantId,
+      ...payload,
+      createdAt: new Date().toISOString(),
+    };
+    this.users.push(user);
+    return user;
+  }
+
+  getUserById(tenantId: string, userId: string): AppUser | undefined {
+    return this.users.find((u) => u.id === userId && u.tenantId === tenantId);
+  }
+
+  updateUser(
+    tenantId: string,
+    userId: string,
+    payload: Partial<Omit<AppUser, 'id' | 'tenantId' | 'createdAt'>>
+  ): AppUser {
+    const user = this.getUserById(tenantId, userId);
+    if (!user) throw new Error('User not found');
+
+    if (payload.name !== undefined) user.name = payload.name;
+    if (payload.email !== undefined) user.email = payload.email;
+    if (payload.role !== undefined) user.role = payload.role;
+    if (payload.accountType !== undefined) user.accountType = payload.accountType;
+    if (payload.scopeLevel !== undefined) user.scopeLevel = payload.scopeLevel;
+    if (payload.scopeId !== undefined) user.scopeId = payload.scopeId;
+    if (payload.status !== undefined) user.status = payload.status;
+
+    return user;
+  }
+
+  deleteUser(tenantId: string, userId: string): boolean {
+    const index = this.users.findIndex((u) => u.id === userId && u.tenantId === tenantId);
+    if (index === -1) throw new Error('User not found');
+    this.users.splice(index, 1);
+    return true;
+  }
+
+  updateUserStatus(tenantId: string, userId: string, status: AppUser['status']): AppUser {
+    const user = this.users.find((u) => u.id === userId && u.tenantId === tenantId);
+    if (!user) throw new Error('User not found');
+    user.status = status;
+    return user;
+  }
+
+  // Devices
+  getDeviceById(tenantId: string, id: string): DeviceTerminal | undefined {
+    return this.devices.find((d) => d.id === id && d.tenantId === tenantId);
+  }
+
+  createDevice(
+    tenantId: string,
+    payload: Omit<DeviceTerminal, 'id' | 'tenantId' | 'registeredAt'>
+  ): DeviceTerminal {
+    const device: DeviceTerminal = {
+      id: `dev-${Date.now()}`,
+      tenantId,
+      ...payload,
+      registeredAt: new Date().toISOString(),
+    };
+    this.devices.push(device);
+    return device;
+  }
+
+  updateDevice(
+    tenantId: string,
+    id: string,
+    payload: Partial<Omit<DeviceTerminal, 'id' | 'tenantId'>>
+  ): DeviceTerminal {
+    const device = this.getDeviceById(tenantId, id);
+    if (!device) throw new Error('Device not found');
+    Object.assign(device, payload);
+    return device;
+  }
+
+  deleteDevice(tenantId: string, id: string): boolean {
+    const index = this.devices.findIndex((d) => d.id === id && d.tenantId === tenantId);
+    if (index === -1) throw new Error('Device not found');
+    this.devices.splice(index, 1);
+    return true;
+  }
+
+  // KPI Targets
+  upsertKpiTarget(
+    tenantId: string,
+    metric: KpiMetric,
+    payload: Partial<Omit<KpiTarget, 'id' | 'tenantId' | 'metric'>>
+  ): KpiTarget {
+    const target = this.kpiTargets.find((t) => t.tenantId === tenantId && t.metric === metric);
+    if (target) {
+      Object.assign(target, payload);
+      return target;
+    }
+    const newTarget: KpiTarget = {
+      id: `tgt-${Date.now()}`,
+      tenantId,
+      metric,
+      targetValue: payload.targetValue ?? 85,
+      unit: payload.unit ?? '%',
+      direction: payload.direction ?? 'HIGHER_IS_BETTER',
+      watchThresholdPct: payload.watchThresholdPct ?? 95,
+      criticalThresholdPct: payload.criticalThresholdPct ?? 90,
+    };
+    this.kpiTargets.push(newTarget);
+    return newTarget;
+  }
+
+  // --- Shifts (, US-021) ---
+
+  getShiftById(tenantId: string, id: string): Shift | undefined {
+    return this.shifts.find((s) => s.id === id && s.tenantId === tenantId);
+  }
+
+  /**
+   * A shift that ends at or before it starts runs through midnight. The flag is
+   * derived rather than trusted from the client, because `shift_date` accounting
+   * depends on it being right.
+   */
+  private static crossesMidnight(startTime: string, endTime: string): boolean {
+    return endTime <= startTime;
+  }
+
+  createShift(tenantId: string, payload: Omit<Shift, 'id' | 'tenantId' | 'crossesMidnight'>): Shift {
+    const shift: Shift = {
+      id: `shift-${Date.now()}`,
+      tenantId,
+      ...payload,
+      crossesMidnight: MasterDataService.crossesMidnight(payload.startTime, payload.endTime),
+    };
+    this.shifts.push(shift);
+    return shift;
+  }
+
+  updateShift(tenantId: string, id: string, payload: Partial<Omit<Shift, 'id' | 'tenantId'>>): Shift {
+    const shift = this.getShiftById(tenantId, id);
+    if (!shift) throw new Error('Shift not found');
+    Object.assign(shift, payload);
+    shift.crossesMidnight = MasterDataService.crossesMidnight(shift.startTime, shift.endTime);
+    return shift;
+  }
+
+  deleteShift(tenantId: string, id: string): boolean {
+    const index = this.shifts.findIndex((s) => s.id === id && s.tenantId === tenantId);
+    if (index === -1) throw new Error('Shift not found');
+    this.shifts.splice(index, 1);
+    return true;
+  }
+
+  // --- Work Centers (, US-007) ---
+
+  getWorkCenterById(tenantId: string, id: string): WorkCenter | undefined {
+    return this.workCenters.find((w) => w.id === id && w.tenantId === tenantId);
+  }
+
+  createWorkCenter(tenantId: string, payload: Omit<WorkCenter, 'id' | 'tenantId'>): WorkCenter {
+    const workCenter: WorkCenter = { id: `wc-${Date.now()}`, tenantId, ...payload };
+    this.workCenters.push(workCenter);
+    return workCenter;
+  }
+
+  updateWorkCenter(
+    tenantId: string,
+    id: string,
+    payload: Partial<Omit<WorkCenter, 'id' | 'tenantId'>>
+  ): WorkCenter {
+    const workCenter = this.getWorkCenterById(tenantId, id);
+    if (!workCenter) throw new Error('Work center not found');
+    Object.assign(workCenter, payload);
+    return workCenter;
+  }
+
+  deleteWorkCenter(tenantId: string, id: string): boolean {
+    const index = this.workCenters.findIndex((w) => w.id === id && w.tenantId === tenantId);
+    if (index === -1) throw new Error('Work center not found');
+    if (this.machines.some((m) => m.tenantId === tenantId && m.workCenterId === id)) {
+      throw new Error('Cannot delete a work center that still has machines assigned');
+    }
+    this.workCenters.splice(index, 1);
+    return true;
+  }
+
+  // --- Lookups shared by analytics, reporting and CSV import ---
+
+  /** The production line a machine sits on, resolved through its work center. */
+  getLineIdForMachine(tenantId: string, machineId: string): string | undefined {
+    const machine = this.getMachineById(tenantId, machineId);
+    if (!machine) return undefined;
+    return this.getWorkCenterById(tenantId, machine.workCenterId)?.productionLineId;
+  }
+
+  /**
+   * Ideal Cycle Time for a Product × Machine pair (, US-049).
+   *
+   * Returns `undefined` when no rate is configured. Callers must surface that
+   * rather than substituting a default, a guessed cycle time silently
+   * invents a Performance number the factory cannot reproduce.
+   */
+  resolveIdealCycleSeconds(
+    tenantId: string,
+    productId: string | undefined,
+    machineId: string | undefined,
+    source: 'PRODUCT_MACHINE' | 'ROUTING' | 'PRODUCT' = 'PRODUCT_MACHINE'
+  ): number | undefined {
+    if (source === 'PRODUCT_MACHINE' && productId && machineId) {
+      const rate = this.productMachineRates.find(
+        (r) => r.tenantId === tenantId && r.productId === productId && r.machineId === machineId
+      );
+      if (rate) return rate.idealCycleTimeSeconds;
+    }
+
+    if (source !== 'PRODUCT' && productId) {
+      const routing = this.productRoutings.find(
+        (r) =>
+          r.tenantId === tenantId &&
+          r.productId === productId &&
+          r.active &&
+          (!machineId || r.machineId === machineId)
+      );
+      if (routing?.standardCycleTimeSeconds) return routing.standardCycleTimeSeconds;
+    }
+
+    if (productId) {
+      const product = this.getProductById(tenantId, productId);
+      if (product?.idealCycleTimeSeconds) return product.idealCycleTimeSeconds;
+    }
+
+    return undefined;
+  }
+}

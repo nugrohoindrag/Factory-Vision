@@ -1,0 +1,236 @@
+/**
+ * Factory Vision, Product Palette
+ *
+ * THE single palette for every Factory Vision surface. It replaces the Morphic
+ * lime/green reference palette (`tokens/colors.css`) and supersedes all five
+ * accent presets in `tokens/themes.css`, Factory Vision ships one identity,
+ * not a colour picker.
+ *
+ * Why this file and not an edit to colors.css: `packages/ui/src/tokens` is a
+ * byte-for-byte mirror of `D:\Design System` and may not be modified, or
+ * upstream fixes stop applying. This file lives in the Factory Vision layer,
+ * loads *after* the mirror, and re-points the same `--md-sys-color-*` tokens.
+ * Nothing below invents a token name, so every `--color-*` contract alias in
+ * `tokens/contract.css` re-resolves onto these values for free, no component
+ * needs to change.
+ *
+ * Import ONCE at the app root, immediately after the token layer:
+ * import '@factory-vision/ui/tokens.css';
+ * import '@factory-vision/ui/fv/palette.css';
+ *
+ * ---------------------------------------------------------------------------
+ * BLUE IS AN ACCENT, NOT THE PAGE. Background and card surfaces are neutral
+ * grey/white (light) and neutral near-black (dark), the same surface split
+ * `tokens/colors.css` already used, just without the green tint. The seven
+ * source blues live only in primary / secondary / tertiary / chart / hero:
+ *
+ * #001D39 ink dark-mode page background
+ * #0A4174 deep primary (light) · dark-mode elevated surface
+ * #49769F slate secondary · mid chart series
+ * #4E8EA2 teal tertiary family
+ * #6EA2B3 mist muted tertiary · chart series
+ * #7BBDE8 sky primary (dark) · brightest chart series
+ * #BDD8E9 pale primary-container · light-mode tonal fills
+ *
+ * Values that are not one of the seven are tints/shades of the same hue,
+ * derived only where the ramp cannot reach, the darkest primary-container
+ * step, and every `on-*` foreground that has to clear WCAG AA against its
+ * own container ( Accessibility Contract). Those are marked `derived`.
+ *
+ * SEMANTIC STATES ARE NOT BLUE. success / warning / error carry meaning on a
+ * shop floor, a line that is running versus one that has stopped, and an
+ * accent-only palette cannot encode that from grey. They keep their own hues
+ * (: colour for meaning, never decoration).
+ *
+ * Selector specificity is deliberate: the dark block is `:root[data-theme=…]`
+ * (0,2,0) so it outranks the now-unused `[data-theme][data-accent]` preset
+ * blocks in themes.css even if a stray `data-accent` attribute reappears.
+ */
+
+/* ========================================================================= */
+/* LIGHT */
+/* ========================================================================= */:root {
+ color-scheme: light;
+
+ /* Primary, deep navy blue, the one accent colour */
+ --md-sys-color-primary: #0A4174;
+ --md-sys-color-primary-strong: #0A4174; /* already ≥3:1 on every surface */
+ --md-sys-color-on-primary: #FFFFFF;
+ --md-sys-color-primary-container: #BDD8E9;
+ --md-sys-color-on-primary-container: #001D39;
+ --md-sys-color-primary-soft: #D7E8F3; /* derived */
+
+ /* Secondary, slate blue, supporting emphasis */
+ --md-sys-color-secondary: #49769F;
+ --md-sys-color-on-secondary: #FFFFFF;
+ --md-sys-color-secondary-container: #D3E3EE; /* derived */
+ --md-sys-color-on-secondary-container: #123350; /* derived */
+
+ /* Tertiary, the teal end of the ramp, darkened to hold AA as a fill */
+ --md-sys-color-tertiary: #3C7284; /* derived from #4E8EA2 */
+ --md-sys-color-on-tertiary: #FFFFFF;
+ --md-sys-color-tertiary-container: #CFE4EC; /* derived */
+ --md-sys-color-on-tertiary-container: #0C2B35; /* derived */
+
+ /* Semantic data states, meaning, not brand (see header note) */
+ --md-sys-color-success: #2FA968;
+ --md-sys-color-on-success: #FFFFFF;
+ --md-sys-color-success-container: #C9E9D7;
+ --md-sys-color-on-success-container: #05301C;
+ --md-sys-color-warning: #9A5B12;
+ --md-sys-color-on-warning: #FFFFFF;
+ --md-sys-color-warning-container: #F6DDBD;
+ --md-sys-color-on-warning-container: #402203;
+ --md-sys-color-error: #B3261E;
+ --md-sys-color-on-error: #FFFFFF;
+ --md-sys-color-error-container: #F9D8D4;
+ --md-sys-color-on-error-container: #470E0A;
+ --md-sys-color-info: #2A6E96;
+ --md-sys-color-on-info: #FFFFFF;
+ --md-sys-color-info-container: #CBE6F4;
+ --md-sys-color-on-info-container: #062A3E;
+
+ /* Surfaces, neutral grey page, white cards. Blue stays out of the
+ background entirely; it only ever shows up as an accent on top. */
+ --md-sys-color-background: #F1F3F5;
+ --md-sys-color-on-background: #16191C;
+ --md-sys-color-surface: #FFFFFF;
+ --md-sys-color-on-surface: #16191C;
+ --md-sys-color-on-surface-variant: #565C62; /* derived, AA through -high */
+ --md-sys-color-surface-variant: #F3F5F7;
+
+ /* Tonal hierarchy. TEXT CONTRACT: `on-surface` / `on-surface-variant`
+ are AA-guaranteed through `surface-container-high`. `-highest` is a
+ NON-TEXT surface, tracks, sliders, state layers, skeletons. */
+ --md-sys-color-surface-container-lowest: #FFFFFF;
+ --md-sys-color-surface-container-low: #FAFBFC;
+ --md-sys-color-surface-container: #F3F5F7;
+ --md-sys-color-surface-container-high: #E8EBEE;
+ --md-sys-color-surface-container-highest: #DDE1E5;
+
+ /* Outline, neutral, subtle */
+ --md-sys-color-outline: #7A8087;
+ --md-sys-color-outline-variant: #DADDE0;
+ --md-sys-color-border: #DADDE0;
+
+ /* Data visualisation, the one place besides `primary` the ramp
+ reads as colour, not just as an accent dot */
+ --md-sys-color-chart-primary: #0A4174;
+ --md-sys-color-chart-secondary: #49769F;
+ --md-sys-color-chart-tertiary: #4E8EA2;
+ --md-sys-color-chart-quaternary: #7BBDE8;
+ --md-sys-color-chart-neutral: #6EA2B3;
+ --md-sys-color-chart-grid: rgba(22, 25, 28, 0.08);
+ --md-sys-color-chart-axis: #7A8087;
+ --md-sys-color-chart-area-from: rgba(10, 65, 116, 0.22);
+ --md-sys-color-chart-area-to: rgba(10, 65, 116, 0);
+
+ /* Hero card, a deliberate accent surface, not the page background;
+ this is the one card allowed to read as the ramp rather than a dot of it */
+ --hero-banner-bg: linear-gradient(135deg, #D7E8F3 0%, #BDD8E9 45%, #7BBDE8 100%);
+ --hero-banner-text: #001D39;
+ --hero-banner-subtext: #0A4174;
+ --hero-banner-pill-bg: #0A4174;
+ --hero-banner-pill-text: #EAF3FA;
+ --hero-banner-pill-icon: #BDD8E9;
+ --hero-banner-tag-bg: rgba(10, 65, 116, 0.12);
+ --hero-banner-tag-text: #001D39;
+ --hero-banner-blob-1: rgba(10, 65, 116, 0.07);
+ --hero-banner-blob-2: rgba(255, 255, 255, 0.38);
+ --hero-banner-arc: rgba(10, 65, 116, 0.16);
+
+ /* Inverse, neutral, matches the surface split above */
+ --md-sys-color-inverse-surface: #292D31; /* derived */
+ --md-sys-color-inverse-on-surface: #F1F3F5; /* derived */
+ --md-sys-color-inverse-primary: #7BBDE8;
+
+ /* Scrim, neutral black, not tinted */
+ --md-sys-color-scrim: rgba(0, 0, 0, 0.42);
+}
+
+/* ========================================================================= */
+/* DARK (,, semantic colour only; geometry is untouched) */
+/* ========================================================================= */:root[data-theme='dark'],:root.dark {
+ color-scheme: dark;
+
+ --md-sys-color-primary: #7BBDE8;
+ --md-sys-color-primary-strong: #7BBDE8;
+ --md-sys-color-on-primary: #001D39;
+ --md-sys-color-primary-container: #14568F; /* derived */
+ --md-sys-color-on-primary-container: #D6E9F7; /* derived */
+ --md-sys-color-primary-soft: #0A4174;
+
+ --md-sys-color-secondary: #93B7D6; /* derived from #49769F */
+ --md-sys-color-on-secondary: #002944; /* derived */
+ --md-sys-color-secondary-container: #2A5378; /* derived */
+ --md-sys-color-on-secondary-container: #D4E5F2; /* derived */
+
+ --md-sys-color-tertiary: #6EA2B3;
+ --md-sys-color-on-tertiary: #052730; /* derived */
+ --md-sys-color-tertiary-container: #2C5F70; /* derived */
+ --md-sys-color-on-tertiary-container: #CFE6EE; /* derived */
+
+ --md-sys-color-success: #6FD39B;
+ --md-sys-color-on-success: #003820;
+ --md-sys-color-success-container: #1C5238;
+ --md-sys-color-on-success-container: #C9F0DA;
+ --md-sys-color-warning: #E7A257;
+ --md-sys-color-on-warning: #3A1F02;
+ --md-sys-color-warning-container: #5C3A12;
+ --md-sys-color-on-warning-container: #F7DEC0;
+ --md-sys-color-error: #FF897D;
+ --md-sys-color-on-error: #4A0F09;
+ --md-sys-color-error-container: #7A2119;
+ --md-sys-color-on-error-container: #FFDAD4;
+ --md-sys-color-info: #7BBDE8;
+ --md-sys-color-on-info: #001D39;
+ --md-sys-color-info-container: #1B4C74;
+ --md-sys-color-on-info-container: #CFE6F7;
+
+ /* Neutral near-black page, matching the light side's neutral split,
+ blue stays confined to primary/secondary/tertiary/chart/hero. */
+ --md-sys-color-background: #101214;
+ --md-sys-color-on-background: #E7E9EA;
+ --md-sys-color-surface: #17191C;
+ --md-sys-color-on-surface: #E7E9EA;
+ --md-sys-color-on-surface-variant: #A8ADB3; /* derived, AA through -high */
+ --md-sys-color-surface-variant: #202327;
+
+ --md-sys-color-surface-container-lowest: #0B0C0E;
+ --md-sys-color-surface-container-low: #17191C;
+ --md-sys-color-surface-container: #202327;
+ --md-sys-color-surface-container-high: #2B2E33;
+ --md-sys-color-surface-container-highest: #383B41;
+
+ --md-sys-color-outline: #8B9098;
+ --md-sys-color-outline-variant: #2B2E33;
+ --md-sys-color-border: #2B2E33;
+
+ --md-sys-color-chart-primary: #7BBDE8;
+ --md-sys-color-chart-secondary: #4E8EA2;
+ --md-sys-color-chart-tertiary: #6EA2B3;
+ --md-sys-color-chart-quaternary: #BDD8E9;
+ --md-sys-color-chart-neutral: #49769F;
+ --md-sys-color-chart-grid: rgba(231, 233, 234, 0.08);
+ --md-sys-color-chart-axis: #8B9098;
+ --md-sys-color-chart-area-from: rgba(123, 189, 232, 0.22);
+ --md-sys-color-chart-area-to: rgba(123, 189, 232, 0);
+
+ --hero-banner-bg: linear-gradient(135deg, #0B3358 0%, #0A4174 55%, #185285 100%);
+ --hero-banner-text: #EAF3FB;
+ --hero-banner-subtext: #BDD8E9;
+ --hero-banner-pill-bg: #7BBDE8;
+ --hero-banner-pill-text: #001D39;
+ --hero-banner-pill-icon: #001D39;
+ --hero-banner-tag-bg: rgba(222, 234, 244, 0.14);
+ --hero-banner-tag-text: #E7E9EA;
+ --hero-banner-blob-1: rgba(123, 189, 232, 0.10);
+ --hero-banner-blob-2: rgba(231, 233, 234, 0.06);
+ --hero-banner-arc: rgba(189, 216, 233, 0.22);
+
+ --md-sys-color-inverse-surface: #E7E9EA;
+ --md-sys-color-inverse-on-surface: #16191C;
+ --md-sys-color-inverse-primary: #0A4174;
+
+ --md-sys-color-scrim: rgba(0, 0, 0, 0.72);
+}

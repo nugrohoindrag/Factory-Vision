@@ -1,0 +1,92 @@
+# Factory Vision, On-Premise deployment (US-053)
+#
+# Brings up the complete MES inside a factory's own network: PostgreSQL, the
+# API, the supervisor console and the operator terminal. Nothing here reaches a
+# public cloud service, which is the requirement states for factories
+# that will not accept cloud deployment.
+#
+# docker compose -f deploy/docker-compose.yml up -d --build
+#
+# For the Cloud SaaS deployment (US-052) the same images run with
+# DEPLOYMENT_MODE=CLOUD_MULTI_TENANT and a managed database; see
+# deploy/DEPLOYMENT.md.
+
+name: factory-vision
+
+services:
+ db:
+ image: postgres:16-alpine
+ restart: unless-stopped
+ environment:
+ POSTGRES_USER: ${POSTGRES_USER:-factory}
+ POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in deploy/.env}
+ POSTGRES_DB: ${POSTGRES_DB:-factory_vision}
+ # Indonesian factories run on WIB; keeping the database in the plant's
+ # timezone keeps shift_date arithmetic free of surprises.
+ TZ: ${TZ:-Asia/Jakarta}
+ volumes:
+ - db-data:/var/lib/postgresql/data
+ healthcheck:
+ test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-factory} -d ${POSTGRES_DB:-factory_vision}']
+ interval: 10s
+ timeout: 5s
+ retries: 10
+ # Not published by default: the database is reachable only from the compose
+ # network. Add a ports mapping deliberately if a DBA needs direct access.
+ expose:
+ - '5432'
+
+ api:
+ build:
+ context:..
+ dockerfile: deploy/Dockerfile.api
+ restart: unless-stopped
+ depends_on:
+ db:
+ condition: service_healthy
+ environment:
+ NODE_ENV: production
+ PORT: '4000'
+ TZ: ${TZ:-Asia/Jakarta}
+ DATABASE_URL: postgresql://${POSTGRES_USER:-factory}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-factory_vision}
+ # On-premise pins one tenant; the cloud deployment resolves it per request.
+ DEPLOYMENT_MODE: ${DEPLOYMENT_MODE:-ON_PREMISE_SINGLE_TENANT}
+ DEFAULT_TENANT_ID: ${DEFAULT_TENANT_ID:-tenant-pilot-factory-01}
+ # Authentication is on by default. Never set this to false outside a
+ # local demo, it disables the access control the API enforces.
+ AUTH_REQUIRED: ${AUTH_REQUIRED:-true}
+ # The only way in on a fresh install. Nothing else ships with a password.
+ BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:?set BOOTSTRAP_ADMIN_EMAIL in deploy/.env}
+ BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:?set BOOTSTRAP_ADMIN_PASSWORD in deploy/.env}
+ BOOTSTRAP_ADMIN_NAME: ${BOOTSTRAP_ADMIN_NAME:-Administrator}
+ BOOTSTRAP_OPERATOR_PIN: ${BOOTSTRAP_OPERATOR_PIN:-}
+ expose:
+ - '4000'
+
+ console:
+ build:
+ context:..
+ dockerfile: deploy/Dockerfile.web
+ args:
+ APP: console
+ restart: unless-stopped
+ depends_on:
+ - api
+ ports:
+ - '${CONSOLE_PORT:-3100}:80'
+
+ operator:
+ build:
+ context:..
+ dockerfile: deploy/Dockerfile.web
+ args:
+ APP: operator
+ restart: unless-stopped
+ depends_on:
+ - api
+ # The shop-floor tablets hit this directly over the plant LAN.
+ ports:
+ - '${OPERATOR_PORT:-3200}:80'
+
+volumes:
+ db-data:

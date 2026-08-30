@@ -1,0 +1,12 @@
+node_modules
+dist
+pnpm-lock.yaml
+# The design-system mirror is a byte-for-byte copy of upstream and must not be
+# reformatted, or `pnpm ds:check` stops matching.
+packages/ui/src/components
+packages/ui/src/tokens
+packages/ui/src/patterns
+packages/ui/src/templates
+packages/ui/src/examples
+packages/ui/src/motion
+packages/ui/src/showcase

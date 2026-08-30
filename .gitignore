@@ -1,0 +1,46 @@
+# Node & Dependencies
+node_modules/
+.pnpm-store/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs
+dist/
+build/
+.dist/
+*.tsbuildinfo
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE & OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Test coverage & logs
+coverage/
+*.log
+.temp/
+.cache/
+
+# Font vendoring keeps the full source font only while it subsets.
+packages/ui/src/fv/fonts/.material-symbols-full.woff2
+
+# Scratch space used while vendoring fonts.
+.tmp-fonts/
+
+# Product documentation and internal notes are kept out of the public
+# repository: the PRD, market analysis and roadmap are commercial material,
+# and Docs/Daftar-Akses-*.xlsx holds live credentials in plaintext.
+Docs/
+
+# Local agent configuration, machine-specific.
+.claude/

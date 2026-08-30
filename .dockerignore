@@ -1,0 +1,45 @@
+# Factory Vision, Docker build context
+#
+# The two Dockerfiles copy workspace manifests first and run `pnpm install`
+# before copying sources, so a dependency install is cached across source
+# edits. That only works if the host's own `node_modules` never enters the
+# context: pnpm links every dependency as an absolute symlink into the local
+# store (`/d/Master/Factory Vision/node_modules/.pnpm/…`), and a later
+# `COPY packages packages` would drop those dangling links on top of the clean
+# install the image just made. The build then fails on the first `tsc` with
+# `Cannot find module …/node_modules/typescript/bin/tsc`.
+
+node_modules
+**/node_modules
+
+# Build output is produced inside the image; copying the host's would either
+# ship a stale bundle or defeat the build cache.
+dist
+**/dist
+build
+**/build
+*.tsbuildinfo
+**/*.tsbuildinfo
+
+# Never reaches an image, and .git in particular is most of the context size.
+.git
+.github
+.gitignore
+.claude
+Docs
+deploy/.env
+.env
+.env.*
+!.env.example
+
+# Local tooling and editor state.
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+*.log
+coverage
+.cache
+.temp
+.tmp-fonts
+.pnpm-store

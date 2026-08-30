@@ -1,0 +1,65 @@
+# Factory Vision — MES API (US-052 Cloud SaaS, US-053 On-Premise)
+#
+# One image serves both deployment modes. The difference is configuration, not
+# code: PRD §31 requires the domain model and business behaviour to be
+# identical, so an on-premise install must not run a different build.
+
+# --- Build stage ---------------------------------------------------
+FROM node:22-alpine AS build
+
+RUN corepack enable
+
+# The prod prune below re-installs into a populated node_modules, which pnpm 11
+# treats as a purge and refuses to do without confirmation. There is no tty in
+# a build, so the build hangs and then fails; CI=true is pnpm's own answer.
+ENV CI=true
+
+WORKDIR /repo
+
+# Workspace manifests first, so a dependency install is cached across source
+# edits — the layer that dominates rebuild time on a factory's own runner.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
+COPY packages/domain-types/package.json packages/domain-types/
+COPY packages/api-client/package.json packages/api-client/
+COPY packages/i18n/package.json packages/i18n/
+COPY apps/api/package.json apps/api/
+
+RUN pnpm install --frozen-lockfile --filter @factory-vision/api... --filter @factory-vision/domain-types...
+
+COPY packages/domain-types packages/domain-types
+COPY packages/i18n packages/i18n
+COPY apps/api apps/api
+
+RUN pnpm --filter @factory-vision/domain-types build \
+ && pnpm --filter @factory-vision/i18n build \
+ && pnpm --filter @factory-vision/api build
+
+# Drop dev dependencies before they reach the runtime image.
+RUN pnpm install --frozen-lockfile --prod --filter @factory-vision/api...
+
+# --- Runtime stage -------------------------------------------------
+FROM node:22-alpine AS runtime
+
+ENV NODE_ENV=production
+ENV PORT=4000
+
+# Never run the API as root: an on-premise install often lands on shared
+# factory infrastructure where that matters more, not less.
+RUN addgroup -S factory && adduser -S factory -G factory
+
+WORKDIR /app
+
+COPY --from=build --chown=factory:factory /repo/node_modules ./node_modules
+COPY --from=build --chown=factory:factory /repo/packages ./packages
+COPY --from=build --chown=factory:factory /repo/apps/api/dist ./apps/api/dist
+COPY --from=build --chown=factory:factory /repo/apps/api/package.json ./apps/api/
+COPY --from=build --chown=factory:factory /repo/apps/api/node_modules ./apps/api/node_modules
+
+USER factory
+
+EXPOSE 4000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||4000)+'/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+
+CMD ["node", "apps/api/dist/main.js"]

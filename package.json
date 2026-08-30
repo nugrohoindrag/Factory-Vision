@@ -1,0 +1,28 @@
+{
+  "name": "factory-vision-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Factory Vision - Manufacturing Execution System (MES) for Mid-Market Manufacturing",
+  "packageManager": "pnpm@11.21.0",
+  "scripts": {
+    "dev": "pnpm --parallel -r run dev",
+    "dev:api": "pnpm --filter @factory-vision/api run dev",
+    "dev:console": "pnpm --filter @factory-vision/console run dev",
+    "dev:operator": "pnpm --filter @factory-vision/operator run dev",
+    "dev:ui": "pnpm --filter @factory-vision/ui run dev",
+    "build": "pnpm -r run build",
+    "typecheck": "pnpm -r run typecheck",
+    "test": "pnpm -r run test",
+    "lint": "pnpm -r run lint",
+    "ds:check": "pnpm --filter @factory-vision/ui run ds:check",
+    "ds:pull": "pnpm --filter @factory-vision/ui run ds:pull",
+    "db:migrate": "tsx db/migrate.ts migrate",
+    "db:seed": "tsx db/migrate.ts seed",
+    "offline:check": "node scripts/offline-check.mjs",
+    "verify:stories": "node scripts/verify-user-stories.mjs",
+    "dev:admin": "pnpm --filter @factory-vision/admin dev"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}

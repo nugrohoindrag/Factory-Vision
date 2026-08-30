@@ -1,0 +1,41 @@
+/**
+ * Factory Vision, Table Header Fill
+ *
+ * Every `AdvancedDataTable` header row fills solid with `--color-primary`
+ * and sets `--color-on-primary` text, the token pair, not a fixed hex, so
+ * the header follows dark mode the same way the hero and every other
+ * "identity" surface does (light: navy fill, white text; dark: sky-blue
+ * fill, navy text).
+ *
+ * `AdvancedDataTable` is a mirror component (`packages/ui/src/components`)
+ * with no prop for header colour, and every instance renders the same
+ * `.morphic-advanced-table` class, so this is a deliberate *global* override
+ * of a mirror component's own inline styles, the one case in the codebase
+ * where that is intentional (see Docs/DESIGN-SYSTEM-GUIDELINE.md).
+ * `!important` is required: the mirror sets these as inline `style`, which
+ * always wins over an external class otherwise.
+ *
+ * The header also hosts two child elements that set their OWN explicit
+ * colour, so they do not inherit the `th` override above and need their own
+ * rule:
+ * - The mirror's `Checkbox` ("select all"): its unchecked border reads
+ * `--md-sys-color-outline`, a neutral grey invisible against a solid
+ * `--color-primary` fill. It has no distinguishing class of its own, so
+ * it is targeted structurally, `.m3-checkbox`'s direct `div` child is
+ * always the checkbox box (see `Checkbox.tsx`).
+ * - The sort-direction arrow `Icon`: it hardcodes `color="var(--md-sys-
+ * color-primary)"`, which is now the exact colour of the header it sits
+ * on. Targeted via the `material-symbols-*` class every `Icon` renders.
+ *
+ * Import ONCE at the app root, alongside the palette:
+ * import '@factory-vision/ui/fv/palette.css';
+ * import '@factory-vision/ui/fv/table-header.css';
+ */.morphic-advanced-table thead tr {
+ background-color: var(--color-primary)!important;
+}.morphic-advanced-table thead th {
+ color: var(--color-on-primary)!important;
+}.morphic-advanced-table thead .m3-checkbox > div {
+ border-color: var(--color-on-primary)!important;
+}.morphic-advanced-table thead th [class*='material-symbols-'] {
+ color: var(--color-on-primary)!important;
+}

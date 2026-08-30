@@ -1,0 +1,91 @@
+{
+  "name": "@factory-vision/ui",
+  "version": "3.0.0",
+  "description": "Factory Vision UI \u2014 mirror of the Morphic/Nexus design system (D:\\Design System) plus the token-only Factory Vision extension layer in src/fv.",
+  "type": "module",
+  "main": "src/index.ts",
+  "module": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "ds:check": "node scripts/sync-design-system.mjs check",
+    "ds:pull": "node scripts/sync-design-system.mjs pull",
+    "fonts:vendor": "python scripts/vendor-fonts.py"
+  },
+  "keywords": [
+    "morphic",
+    "design-system",
+    "material-design-3",
+    "m3",
+    "react",
+    "gsap",
+    "dashboard",
+    "tokens",
+    "themes",
+    "accessibility"
+  ],
+  "author": "Morphic Design System Contributors",
+  "license": "MIT",
+  "dependencies": {
+    "motion": "^13.1.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "typescript": "^5.4.0",
+    "vite": "^5.2.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./fv": {
+      "types": "./src/fv/index.ts",
+      "import": "./src/fv/index.ts",
+      "default": "./src/fv/index.ts"
+    },
+    "./patterns": {
+      "types": "./src/patterns/index.ts",
+      "import": "./src/patterns/index.ts",
+      "default": "./src/patterns/index.ts"
+    },
+    "./templates": {
+      "types": "./src/templates/index.ts",
+      "import": "./src/templates/index.ts",
+      "default": "./src/templates/index.ts"
+    },
+    "./examples": {
+      "types": "./src/examples/index.ts",
+      "import": "./src/examples/index.ts",
+      "default": "./src/examples/index.ts"
+    },
+    "./tokens": {
+      "types": "./src/tokens/index.ts",
+      "import": "./src/tokens/index.ts",
+      "default": "./src/tokens/index.ts"
+    },
+    "./tokens.css": "./src/tokens/components.css",
+    "./fv/palette.css": "./src/fv/palette.css",
+    "./fv/table-header.css": "./src/fv/table-header.css",
+    "./fv/mirror-fixes.css": "./src/fv/mirror-fixes.css",
+    "./tokens/*": "./src/tokens/*",
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./fv/fonts.css": "./src/fv/fonts.css"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE",
+    "ATTRIBUTION.md"
+  ]
+}

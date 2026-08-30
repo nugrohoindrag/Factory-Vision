@@ -1,0 +1,118 @@
+{
+  "common": {
+    "appName": "Factory Vision",
+    "tagline": "Manufacturing Execution System",
+    "save": "Simpan",
+    "cancel": "Batal",
+    "confirm": "Konfirmasi",
+    "delete": "Hapus",
+    "edit": "Ubah",
+    "search": "Cari...",
+    "filter": "Filter",
+    "status": "Status",
+    "date": "Tanggal",
+    "shift": "Shift",
+    "line": "Lini Produksi",
+    "machine": "Mesin",
+    "workCenter": "Work Center",
+    "process": "Proses Produksi",
+    "routing": "Alur Routing",
+    "batch": "Batch / Lot",
+    "operator": "Operator",
+    "product": "Produk",
+    "target": "Target",
+    "actual": "Aktual",
+    "achievement": "Pencapaian",
+    "good": "Bagus (OK)",
+    "reject": "Cacat (NG)",
+    "downtime": "Henti Mesin (Downtime)",
+    "loading": "Memuat...",
+    "noData": "Tidak ada data tersedia",
+    "syncOffline": "Tersimpan Lokal",
+    "syncOnline": "Tersinkronisasi",
+    "syncFailed": "Gagal Sinkronisasi"
+  },
+  "workOrder": {
+    "title": "Perintah Kerja (Work Order)",
+    "number": "Nomor WO",
+    "plannedQuantity": "Jumlah Rencana",
+    "completedQuantity": "Jumlah Selesai",
+    "process": "Tahap Proses",
+    "sequence": "Urutan Routing",
+    "batch": "Nomor Batch / Lot",
+    "status": {
+      "DRAFT": "Draf",
+      "SCHEDULED": "Dijadwalkan",
+      "RELEASED": "Dirilis",
+      "IN_PROGRESS": "Sedang Berjalan",
+      "PAUSED": "Dijeda",
+      "COMPLETED": "Selesai",
+      "CANCELLED": "Dibatalkan"
+    },
+    "actions": {
+      "start": "Mulai Produksi",
+      "pause": "Jeda Produksi",
+      "resume": "Lanjutkan Produksi",
+      "complete": "Selesaikan WO",
+      "recordOutput": "Catat Output",
+      "recordDowntime": "Catat Downtime"
+    }
+  },
+  "productionOrder": {
+    "title": "Order Produksi (Production Order)",
+    "number": "Nomor PO",
+    "status": {
+      "DRAFT": "Draf",
+      "PLANNED": "Direncanakan",
+      "RELEASED": "Dirilis",
+      "IN_PRODUCTION": "Dalam Produksi",
+      "COMPLETED": "Selesai",
+      "CANCELLED": "Dibatalkan"
+    }
+  },
+  "machine": {
+    "status": {
+      "RUNNING": "Beroperasi",
+      "IDLE": "Siaga",
+      "DOWNTIME": "Henti Mesin",
+      "SETUP": "Persiapan (Setup)",
+      "MAINTENANCE": "Perawatan",
+      "OFFLINE": "Mati (Offline)"
+    }
+  },
+  "downtime": {
+    "title": "Pencatatan Henti Mesin",
+    "reason": "Alasan Henti",
+    "category": {
+      "MACHINE": "Mesin Rusak / Kendala Teknis",
+      "MATERIAL": "Material Kurang / Habis",
+      "PROCESS": "Proses / Setup / Changeover",
+      "QUALITY": "Kendala Kualitas / Menunggu QC",
+      "PEOPLE": "Operator / Manpower",
+      "PLANNING": "Perencanaan / Tanpa Order"
+    },
+    "duration": "Durasi",
+    "notes": "Catatan Tambahan"
+  },
+  "reject": {
+    "title": "Pencatatan Cacat & Reject",
+    "reason": "Alasan Reject",
+    "category": {
+      "DIMENSION": "Dimensi / Ukuran Tidak Sesuai",
+      "APPEARANCE": "Penampilan / Goresan / Cacat Permukaan",
+      "MATERIAL": "Material Cacat / Kontaminasi",
+      "ASSEMBLY": "Perakitan / Pemasangan Salah",
+      "FUNCTION": "Fungsi / Uji Kinerja Gagal",
+      "OTHER": "Lainnya"
+    }
+  },
+  "oee": {
+    "title": "Efektivitas Peralatan Keseluruhan (OEE)",
+    "availability": "Ketersediaan (Availability)",
+    "performance": "Performa (Performance)",
+    "quality": "Kualitas (Quality)",
+    "target": "Target OEE",
+    "worldClass": "Standar World-Class (85%)",
+    "byProcess": "OEE per Proses Produksi"
+  }
+}

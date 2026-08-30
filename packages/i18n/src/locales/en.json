@@ -1,0 +1,118 @@
+{
+  "common": {
+    "appName": "Factory Vision",
+    "tagline": "Manufacturing Execution System",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search...",
+    "filter": "Filter",
+    "status": "Status",
+    "date": "Date",
+    "shift": "Shift",
+    "line": "Production Line",
+    "machine": "Machine",
+    "workCenter": "Work Center",
+    "process": "Production Process",
+    "routing": "Product Routing",
+    "batch": "Batch / Lot",
+    "operator": "Operator",
+    "product": "Product",
+    "target": "Target",
+    "actual": "Actual",
+    "achievement": "Achievement",
+    "good": "Good (OK)",
+    "reject": "Reject (NG)",
+    "downtime": "Downtime",
+    "loading": "Loading...",
+    "noData": "No data available",
+    "syncOffline": "Locally Saved",
+    "syncOnline": "Synchronized",
+    "syncFailed": "Sync Failed"
+  },
+  "workOrder": {
+    "title": "Work Order",
+    "number": "WO Number",
+    "plannedQuantity": "Planned Qty",
+    "completedQuantity": "Completed Qty",
+    "process": "Process Step",
+    "sequence": "Routing Sequence",
+    "batch": "Batch / Lot Number",
+    "status": {
+      "DRAFT": "Draft",
+      "SCHEDULED": "Scheduled",
+      "RELEASED": "Released",
+      "IN_PROGRESS": "In Progress",
+      "PAUSED": "Paused",
+      "COMPLETED": "Completed",
+      "CANCELLED": "Cancelled"
+    },
+    "actions": {
+      "start": "Start Production",
+      "pause": "Pause Production",
+      "resume": "Resume Production",
+      "complete": "Complete WO",
+      "recordOutput": "Record Output",
+      "recordDowntime": "Record Downtime"
+    }
+  },
+  "productionOrder": {
+    "title": "Production Order",
+    "number": "PO Number",
+    "status": {
+      "DRAFT": "Draft",
+      "PLANNED": "Planned",
+      "RELEASED": "Released",
+      "IN_PRODUCTION": "In Production",
+      "COMPLETED": "Completed",
+      "CANCELLED": "Cancelled"
+    }
+  },
+  "machine": {
+    "status": {
+      "RUNNING": "Running",
+      "IDLE": "Idle",
+      "DOWNTIME": "Downtime",
+      "SETUP": "Setup",
+      "MAINTENANCE": "Maintenance",
+      "OFFLINE": "Offline"
+    }
+  },
+  "downtime": {
+    "title": "Downtime Recording",
+    "reason": "Downtime Reason",
+    "category": {
+      "MACHINE": "Machine Breakdown / Technical",
+      "MATERIAL": "Material Shortage",
+      "PROCESS": "Process / Setup / Changeover",
+      "QUALITY": "Quality Issue / QC Wait",
+      "PEOPLE": "Operator / Manpower",
+      "PLANNING": "Planning / No Order"
+    },
+    "duration": "Duration",
+    "notes": "Additional Notes"
+  },
+  "reject": {
+    "title": "Reject & Defect Recording",
+    "reason": "Reject Reason",
+    "category": {
+      "DIMENSION": "Dimension / Measurement",
+      "APPEARANCE": "Appearance / Surface Defect",
+      "MATERIAL": "Defective Material",
+      "ASSEMBLY": "Incorrect Assembly",
+      "FUNCTION": "Function / Performance Test Failed",
+      "OTHER": "Other"
+    }
+  },
+  "oee": {
+    "title": "Overall Equipment Effectiveness (OEE)",
+    "availability": "Availability",
+    "performance": "Performance",
+    "quality": "Quality",
+    "target": "Target OEE",
+    "worldClass": "World-Class Standard (85%)",
+    "byProcess": "OEE by Production Process"
+  }
+}
