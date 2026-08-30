@@ -102,34 +102,36 @@ export function oeeRoutes(oee: OeeService, audit: AuditService): Router {
   // --- US-027: Process to Machine drill-down ---
   router.get(
     '/oee/machine-performance',
-    route((req, res) => res.json(oee.getMachinePerformance(req.context!.tenantId, filterFrom(req))))
+    route(async (req, res) =>
+      res.json(await oee.getMachinePerformance(req.context!.tenantId, filterFrom(req)))
+    )
   );
 
   // --- US-037: bottleneck ranking ---
   router.get(
     '/oee/bottlenecks',
-    route((req, res) => {
+    route(async (req, res) => {
       const kind = req.query.kind === 'PROCESS' ? 'PROCESS' : 'MACHINE';
-      res.json(oee.getBottlenecks(req.context!.tenantId, { ...filterFrom(req), kind }));
+      res.json(await oee.getBottlenecks(req.context!.tenantId, { ...filterFrom(req), kind }));
     })
   );
 
   // --- US-025: Target vs Actual ---
   router.get(
     '/oee/target-vs-actual',
-    route((req, res) => {
+    route(async (req, res) => {
       const allowed: TargetVsActualDimension[] = ['LINE', 'PROCESS', 'PRODUCT', 'SHIFT', 'DATE'];
       const requested = String(req.query.dimension ?? 'LINE').toUpperCase() as TargetVsActualDimension;
       const dimension = allowed.includes(requested) ? requested : 'LINE';
-      res.json(oee.getTargetVsActual(req.context!.tenantId, dimension, filterFrom(req)));
+      res.json(await oee.getTargetVsActual(req.context!.tenantId, dimension, filterFrom(req)));
     })
   );
 
   // --- US-041: OEE report, JSON or CSV ---
   router.get(
     '/oee/report',
-    route((req, res) => {
-      const rows = oee.getOeeReport(req.context!.tenantId, filterFrom(req));
+    route(async (req, res) => {
+      const rows = await oee.getOeeReport(req.context!.tenantId, filterFrom(req));
       if (req.query.format === 'csv') {
         const header = [
           'shiftDate',

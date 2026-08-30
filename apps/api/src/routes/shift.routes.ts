@@ -24,7 +24,7 @@ export function shiftRoutes(
 
   router.get(
     '/shifts/handover/context',
-    route((req, res) => {
+    route(async (req, res) => {
       const tenantId = req.context!.tenantId;
       const lineId = String(req.query.lineId ?? '');
       if (!lineId) {
@@ -38,7 +38,7 @@ export function shiftRoutes(
         return;
       }
       res.json(
-        handovers.buildContext(tenantId, {
+        await handovers.buildContext(tenantId, {
           lineId,
           shiftId: typeof req.query.shiftId === 'string' ? req.query.shiftId : undefined,
           shiftDate: typeof req.query.shiftDate === 'string' ? req.query.shiftDate : undefined,

@@ -96,6 +96,31 @@ services:
       traefik.http.routers.fv-api.tls.certresolver: le
       traefik.http.services.fv-api.loadbalancer.server.port: '4000'
 
+  # Applies the schema. Deliberately a one-shot service rather than something
+  # the API does on boot: migrations are the part of a deployment that can
+  # destroy data, so they run under supervision (§18, §19).
+  #
+  #   docker compose -f deploy/docker-compose.yml run --rm migrate
+  #
+  # It connects as POSTGRES_USER, which owns the schema, and uses
+  # APP_DB_PASSWORD to give the RLS-bound application role its login.
+  migrate:
+    image: ${IMAGE_PREFIX:-ghcr.io/nugrohoindrag}/factory-vision-api:${IMAGE_TAG:-master}
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.api
+    profiles: ['migrate']
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      TZ: ${TZ:-Asia/Jakarta}
+      MIGRATE_DATABASE_URL: postgresql://${POSTGRES_USER:-factory}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-factory_vision}
+      APP_DB_USER: ${APP_DB_USER:-factory_app}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?set APP_DB_PASSWORD in deploy/.env}
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-}
+    command: ['node', 'apps/api/dist/migrate.js']
+
   # Scheduled aggregation and other asynchronous jobs (§5). Separate from the
   # API so a long-running rollup cannot make the shop floor's capture endpoint
   # slow to answer, and so the two can be restarted independently.

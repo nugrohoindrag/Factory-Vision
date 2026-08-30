@@ -98,12 +98,12 @@ export class PerformanceService {
     };
   }
 
-  getLiveProductionBoard(tenantId: string) {
-    const workOrders = this.productionService.getWorkOrders(tenantId);
-    const activeDowntimes = this.shopFloorService.getActiveDowntimes(tenantId);
+  async getLiveProductionBoard(tenantId: string) {
+    const workOrders = await this.productionService.getWorkOrders(tenantId);
+    const activeDowntimes = await this.shopFloorService.getActiveDowntimes(tenantId);
     const lines = this.masterDataService.getLines(tenantId);
     const products = this.masterDataService.getProducts(tenantId);
-    const downtimeRecords = this.shopFloorService.getDowntimeRecords(tenantId);
+    const downtimeRecords = await this.shopFloorService.getDowntimeRecords(tenantId);
 
     // The board reports the current shift, so scope downtime to the latest
     // shift date present in the data rather than the whole history.
@@ -161,8 +161,8 @@ export class PerformanceService {
     });
   }
 
-  getDowntimePareto(tenantId: string, lineId?: string): DowntimeParetoItem[] {
-    const records = this.shopFloorService.getDowntimeRecords(tenantId, lineId);
+  async getDowntimePareto(tenantId: string, lineId?: string): Promise<DowntimeParetoItem[]> {
+    const records = await this.shopFloorService.getDowntimeRecords(tenantId, lineId);
     const reasons = this.masterDataService.getDowntimeReasons(tenantId);
 
     const map = new Map<string, { duration: number; count: number; reason: any }>();
@@ -229,12 +229,12 @@ export class PerformanceService {
    * assigned to that line. In this model a work order is a one-shift job, so
    * its target is the line's target for the day.
    */
-  private getLineDayMetrics(tenantId: string, days: number = DEFAULT_WINDOW_DAYS): LineDayMetrics[] {
+  private async getLineDayMetrics(tenantId: string, days: number = DEFAULT_WINDOW_DAYS): Promise<LineDayMetrics[]> {
     const lines = this.masterDataService.getLines(tenantId);
     const products = this.masterDataService.getProducts(tenantId);
-    const workOrders = this.productionService.getWorkOrders(tenantId);
-    const productionRecords = this.shopFloorService.getProductionRecords(tenantId);
-    const downtimeRecords = this.shopFloorService.getDowntimeRecords(tenantId);
+    const workOrders = await this.productionService.getWorkOrders(tenantId);
+    const productionRecords = await this.shopFloorService.getProductionRecords(tenantId);
+    const downtimeRecords = await this.shopFloorService.getDowntimeRecords(tenantId);
 
     const lineById = new Map(lines.map((l) => [l.id, l]));
 
@@ -372,8 +372,8 @@ export class PerformanceService {
   /**
    * Daily performance series, the shared backbone for and
    */
-  getDailyPerformance(tenantId: string, days: number = DEFAULT_WINDOW_DAYS): DailyPerformancePoint[] {
-    const rows = this.getLineDayMetrics(tenantId, days);
+  async getDailyPerformance(tenantId: string, days: number = DEFAULT_WINDOW_DAYS): Promise<DailyPerformancePoint[]> {
+    const rows = await this.getLineDayMetrics(tenantId, days);
     const byDate = new Map<string, LineDayMetrics[]>();
     for (const row of rows) {
       const list = byDate.get(row.shiftDate) ?? [];
@@ -418,9 +418,9 @@ export class PerformanceService {
    * status, and the comparison against the immediately preceding window of the
    * same length.
    */
-  getExecutiveKpi(tenantId: string, days: number = 7): ExecutiveKpi[] {
+  async getExecutiveKpi(tenantId: string, days: number = 7): Promise<ExecutiveKpi[]> {
     // Pull two windows so "previous period" is a like-for-like comparison.
-    const series = this.getDailyPerformance(tenantId, days * 2);
+    const series = await this.getDailyPerformance(tenantId, days * 2);
     const current = series.slice(-days);
     const previous = series.slice(-days * 2, -days);
 
@@ -540,8 +540,8 @@ export class PerformanceService {
   }
 
   /** Target vs Actual over time, with the preceding window overlaid. */
-  getProductionTrend(tenantId: string, days: number = 7): ProductionTrendPoint[] {
-    const series = this.getDailyPerformance(tenantId, days * 2);
+  async getProductionTrend(tenantId: string, days: number = 7): Promise<ProductionTrendPoint[]> {
+    const series = await this.getDailyPerformance(tenantId, days * 2);
     const current = series.slice(-days);
     const previous = series.slice(-days * 2, -days);
 
@@ -555,8 +555,8 @@ export class PerformanceService {
   }
 
   /** OEE Actual vs Target vs Previous Period. */
-  getOeeTrend(tenantId: string, days: number = 7): OeeTrendPoint[] {
-    const series = this.getDailyPerformance(tenantId, days * 2);
+  async getOeeTrend(tenantId: string, days: number = 7): Promise<OeeTrendPoint[]> {
+    const series = await this.getDailyPerformance(tenantId, days * 2);
     const current = series.slice(-days);
     const previous = series.slice(-days * 2, -days);
     const target = this.masterDataService.getKpiTarget(tenantId, 'OEE');
@@ -591,11 +591,11 @@ export class PerformanceService {
   }
 
   /** Per-line comparison table. */
-  getLinePerformance(tenantId: string, days: number = 7): LinePerformanceRow[] {
-    const rows = this.getLineDayMetrics(tenantId, days);
+  async getLinePerformance(tenantId: string, days: number = 7): Promise<LinePerformanceRow[]> {
+    const rows = await this.getLineDayMetrics(tenantId, days);
     const lines = this.masterDataService.getLines(tenantId);
     const plants = this.masterDataService.getPlants(tenantId);
-    const activeDowntimes = this.shopFloorService.getActiveDowntimes(tenantId);
+    const activeDowntimes = await this.shopFloorService.getActiveDowntimes(tenantId);
 
     const byLine = new Map<string, LineDayMetrics[]>();
     for (const row of rows) {
@@ -641,8 +641,8 @@ export class PerformanceService {
   }
 
   /** Plant rollup of `getLinePerformance` ( "production by plant"). */
-  getPlantPerformance(tenantId: string, days: number = 7): PlantPerformanceRow[] {
-    const lineRows = this.getLinePerformance(tenantId, days);
+  async getPlantPerformance(tenantId: string, days: number = 7): Promise<PlantPerformanceRow[]> {
+    const lineRows = await this.getLinePerformance(tenantId, days);
     const byPlant = new Map<string, LinePerformanceRow[]>();
     for (const row of lineRows) {
       const list = byPlant.get(row.plantId) ?? [];
@@ -684,13 +684,13 @@ export class PerformanceService {
   }
 
   /** Multi-process performance breakdown. */
-  getProcessPerformance(tenantId: string, days: number = 7): ProcessPerformanceRow[] {
+  async getProcessPerformance(tenantId: string, days: number = 7): Promise<ProcessPerformanceRow[]> {
     const processes = this.masterDataService.getProcesses(tenantId);
-    const workOrders = this.productionService.getWorkOrders(tenantId);
+    const workOrders = await this.productionService.getWorkOrders(tenantId);
     const woProcessMap = new Map(workOrders.map((wo) => [wo.id, wo.processId]));
 
-    const allProd = this.shopFloorService.getProductionRecords(tenantId);
-    const allDt = this.shopFloorService.getDowntimeRecords(tenantId);
+    const allProd = await this.shopFloorService.getProductionRecords(tenantId);
+    const allDt = await this.shopFloorService.getDowntimeRecords(tenantId);
     const allDates = Array.from(
       new Set([...allProd.map((r) => r.shiftDate), ...allDt.map((r) => r.shiftDate)])
     ).sort();
@@ -766,13 +766,13 @@ export class PerformanceService {
   }
 
   /** Defect Pareto, the quality counterpart of `getDowntimePareto`. */
-  getRejectPareto(tenantId: string, lineId?: string): RejectParetoItem[] {
+  async getRejectPareto(tenantId: string, lineId?: string): Promise<RejectParetoItem[]> {
     const reasons = this.masterDataService.getRejectReasons(tenantId);
-    const workOrders = this.productionService.getWorkOrders(tenantId);
+    const workOrders = await this.productionService.getWorkOrders(tenantId);
     const workOrderLine = new Map(workOrders.map((wo) => [wo.id, wo.lineId]));
 
-    const records = this.shopFloorService
-      .getProductionRecords(tenantId)
+    const allRecords = await this.shopFloorService.getProductionRecords(tenantId);
+    const records = allRecords
       .filter((r) => r.rejectQuantity > 0)
       .filter((r) => !lineId || workOrderLine.get(r.workOrderId) === lineId);
 
@@ -813,13 +813,14 @@ export class PerformanceService {
   }
 
   /** Loss overview above the downtime Pareto. */
-  getDowntimeSummary(tenantId: string, days: number = 7): DowntimeSummary {
-    const rows = this.getLineDayMetrics(tenantId, days);
+  async getDowntimeSummary(tenantId: string, days: number = 7): Promise<DowntimeSummary> {
+    const rows = await this.getLineDayMetrics(tenantId, days);
     const dates = new Set(rows.map((r) => r.shiftDate));
     const lines = this.masterDataService.getLines(tenantId);
     const machines = this.masterDataService.getMachines(tenantId);
 
-    const records = this.shopFloorService.getDowntimeRecords(tenantId).filter((r) => dates.has(r.shiftDate));
+    const allDowntime = await this.shopFloorService.getDowntimeRecords(tenantId);
+    const records = allDowntime.filter((r) => dates.has(r.shiftDate));
 
     const totalSeconds = records.reduce((acc, r) => acc + (r.durationSeconds ?? 0), 0);
     const plannedSeconds = records
@@ -855,7 +856,7 @@ export class PerformanceService {
         plannedProductionSeconds > 0 ? Number(((totalSeconds / plannedProductionSeconds) * 100).toFixed(1)) : 0,
       occurrenceCount: records.length,
       averageDurationMinutes: records.length > 0 ? Math.round(totalSeconds / records.length / 60) : 0,
-      pareto: this.getDowntimePareto(tenantId),
+      pareto: await this.getDowntimePareto(tenantId),
       byLine: groupBy(
         (r) => r.lineId,
         (key) => lines.find((l) => l.id === key)?.name ?? key,
@@ -880,8 +881,8 @@ export class PerformanceService {
   }
 
   /** Quality overview above the defect Pareto. */
-  getQualitySummary(tenantId: string, days: number = 7): QualitySummary {
-    const rows = this.getLineDayMetrics(tenantId, days);
+  async getQualitySummary(tenantId: string, days: number = 7): Promise<QualitySummary> {
+    const rows = await this.getLineDayMetrics(tenantId, days);
     const lines = this.masterDataService.getLines(tenantId);
     const qualityTarget = this.masterDataService.getKpiTarget(tenantId, 'QUALITY');
 
@@ -906,7 +907,7 @@ export class PerformanceService {
       qualityPct,
       qualityTargetPct: qualityTarget?.targetValue ?? null,
       qualityVariancePct: qualityTarget ? Number((qualityPct - qualityTarget.targetValue).toFixed(2)) : null,
-      pareto: this.getRejectPareto(tenantId),
+      pareto: await this.getRejectPareto(tenantId),
       byLine: Array.from(byLineMap.entries())
         .map(([lineId, v]) => {
           const total = v.good + v.reject;
@@ -930,9 +931,9 @@ export class PerformanceService {
    * DELAYED, due today or tomorrow and materially behind
    * AT_RISK, due within three days and behind the pace needed to finish
    */
-  getOrderStatusSummary(tenantId: string, asOf: string = new Date().toISOString()): OrderStatusSummary {
-    const orders = this.productionService.getProductionOrders(tenantId);
-    const workOrders = this.productionService.getWorkOrders(tenantId);
+  async getOrderStatusSummary(tenantId: string, asOf: string = new Date().toISOString()): Promise<OrderStatusSummary> {
+    const orders = await this.productionService.getProductionOrders(tenantId);
+    const workOrders = await this.productionService.getWorkOrders(tenantId);
     const asOfMs = Date.parse(asOf);
 
     const summary: OrderStatusSummary = {
@@ -999,7 +1000,7 @@ export class PerformanceService {
    * aggregates the cards use, and each alert carries the console route that
    * answers it, per the drill-down principle.
    */
-  getOperationalAlerts(tenantId: string, days: number = 7): OperationalAlert[] {
+  async getOperationalAlerts(tenantId: string, days: number = 7): Promise<OperationalAlert[]> {
     const alerts: OperationalAlert[] = [];
     const raisedAt = new Date().toISOString();
 
@@ -1008,7 +1009,7 @@ export class PerformanceService {
     const downtimeTarget = this.masterDataService.getKpiTarget(tenantId, 'DOWNTIME');
 
     // --- Line-level rules ---
-    for (const line of this.getLinePerformance(tenantId, days)) {
+    for (const line of await this.getLinePerformance(tenantId, days)) {
       if (oeeTarget && line.oee < oeeTarget.targetValue) {
         const attainment = (line.oee / oeeTarget.targetValue) * 100;
         alerts.push({
@@ -1060,7 +1061,7 @@ export class PerformanceService {
     }
 
     // --- Machine rule: repeated breakdown ---
-    const downtimeSummary = this.getDowntimeSummary(tenantId, days);
+    const downtimeSummary = await this.getDowntimeSummary(tenantId, days);
     for (const machine of downtimeSummary.topMachines) {
       if (machine.occurrenceCount >= 8) {
         alerts.push({
@@ -1080,7 +1081,7 @@ export class PerformanceService {
     }
 
     // --- Plant rule: OEE dropped versus the previous period ---
-    const kpis = this.getExecutiveKpi(tenantId, days);
+    const kpis = await this.getExecutiveKpi(tenantId, days);
     const oeeKpi = kpis.find((k) => k.metric === 'OEE');
     if (oeeKpi && oeeKpi.trend === 'DOWN' && Math.abs(oeeKpi.deltaPct) >= 5) {
       alerts.push({
@@ -1117,7 +1118,7 @@ export class PerformanceService {
     }
 
     // --- Schedule rules ---
-    const orders = this.getOrderStatusSummary(tenantId);
+    const orders = await this.getOrderStatusSummary(tenantId);
     for (const order of orders.attentionOrders) {
       alerts.push({
         id: `alert-order-${order.id}`,

@@ -26,6 +26,19 @@ jobs:
     name: Build, typecheck, acceptance
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: factory
+          POSTGRES_PASSWORD: factory
+          POSTGRES_DB: factory_vision
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U factory -d factory_vision"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v7
 
@@ -69,9 +82,17 @@ jobs:
       # against the upstream design system at a local path (D:\Design System),
       # which no runner has. It stays a pre-commit check on a workstation.
 
+      - name: Migrate
+        env:
+          DATABASE_URL: postgresql://factory:factory@localhost:5432/factory_vision
+          APP_DB_PASSWORD: ci-app-role-password
+        run: pnpm db:migrate
+
       - name: Start API
         env:
           PORT: '4000'
+          # The RLS-bound role, never the schema owner.
+          DATABASE_URL: postgresql://factory_app:ci-app-role-password@localhost:5432/factory_vision
           SEED_DEMO_DATA: 'true'
           AUTH_REQUIRED: 'true'
           # Throwaway values for this job only. The acceptance script signs in
@@ -105,7 +126,7 @@ jobs:
         run: kill "$(cat api.pid)" 2>/dev/null || true
 
   persistence:
-    name: Migrations & tenant isolation
+    name: Migrations, isolation & persistence
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
@@ -136,6 +157,9 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      - name: Build
+        run: pnpm build
+
       # Migrations run as the schema owner. This is also the regression test
       # for the runner itself, which used to catch a failed migration, log it
       # and exit 0.
@@ -153,6 +177,15 @@ jobs:
           OWNER_DATABASE_URL: postgresql://factory:factory@localhost:5432/factory_vision
           DATABASE_URL: postgresql://factory_app:ci-app-role-password@localhost:5432/factory_vision
         run: pnpm verify:isolation
+
+      # P0 — production data persistence. This one starts the API, writes
+      # through it, kills it, starts it again and reads back, so it fails if
+      # anything the shop floor captures is ever held in process memory alone.
+      - name: Production data persistence
+        env:
+          OWNER_DATABASE_URL: postgresql://factory:factory@localhost:5432/factory_vision
+          DATABASE_URL: postgresql://factory_app:ci-app-role-password@localhost:5432/factory_vision
+        run: pnpm verify:persistence
 
   publish:
     name: Publish images

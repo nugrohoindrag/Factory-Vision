@@ -1,308 +1,42 @@
-import {
-  WorkOrder,
-  ProductionOrder,
-  WorkOrderStatus,
-  ProductionOrderStatus,
-} from '@factory-vision/domain-types';
+import { ProductionOrderStatus, WorkOrderStatus } from '@factory-vision/domain-types';
+import type { ProductionOrder, WorkOrder } from '@factory-vision/domain-types';
+import { ApiError } from '../../platform/http/api-error.js';
+import { withTenant } from '../../platform/db/pool.js';
+import type { Executor } from '../../platform/db/executor.js';
 import { WorkOrderStateMachine } from './work-order.state-machine.js';
-import { demoRows } from '../../platform/config/demo-seed.js';
+import { WorkOrderRepository } from './work-order.repository.js';
+import { ProductionOrderRepository } from './production-order.repository.js';
+import { demoProductionOrders, demoWorkOrders } from './production.demo.js';
 
+/**
+ * Production orders and work orders, backed by PostgreSQL (persistence fix §10).
+ *
+ * A work order's status and its running good/reject totals are operational
+ * state, not a cache: an order that comes back RELEASED after a restart tells
+ * an operator to begin work that is already half finished, and the totals it
+ * forgot are the ones the shift is measured on. Every method here therefore
+ * reads and writes the database inside `withTenant`, which supplies both the
+ * transaction and the `app.tenant_id` the row-level security policies read.
+ *
+ * The `…With` variants take an executor so a caller that already holds a
+ * transaction can compose: recording production output updates a work order's
+ * totals in the same transaction as the production_record that justifies them.
+ */
 export class ProductionService {
-  private productionOrders: ProductionOrder[] = demoRows<ProductionOrder>(() => [
-    {
-      id: 'po-260829-001',
-      tenantId: 'tenant-pilot-factory-01',
-      orderNumber: 'PO-260829-001',
-      productId: 'prod-tire-a',
-      quantity: 2000,
-      dueDate: new Date(Date.now() + 2 * 86400000).toISOString().slice(0, 10),
-      status: ProductionOrderStatus.RELEASED,
-      createdBy: 'PPIC Supervisor',
-      createdAt: '2026-08-28T00:00:00.000Z',
-    },
-    {
-      id: 'po-260829-002',
-      tenantId: 'tenant-pilot-factory-01',
-      orderNumber: 'PO-260829-002',
-      productId: 'prod-tire-b',
-      quantity: 1500,
-      dueDate: new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10),
-      status: ProductionOrderStatus.RELEASED,
-      createdBy: 'PPIC Supervisor',
-      createdAt: '2026-08-28T02:00:00.000Z',
-    },
-    {
-      id: 'po-260829-003',
-      tenantId: 'tenant-pilot-factory-01',
-      orderNumber: 'PO-260829-003',
-      productId: 'prod-tire-c',
-      quantity: 800,
-      dueDate: new Date(Date.now() + 4 * 86400000).toISOString().slice(0, 10),
-      status: ProductionOrderStatus.DRAFT,
-      createdBy: 'PPIC Supervisor',
-      createdAt: '2026-08-28T04:00:00.000Z',
-    },
-  ]);
+  private readonly workOrders = new WorkOrderRepository();
+  private readonly productionOrders = new ProductionOrderRepository();
 
-  /**
-   * Pilot tyre-factory work orders (, US-050).
-   *
-   * Targets are set from what each machine can physically make in one shift at
-   * its configured Ideal Cycle Time, not from a round number: a curing press at
-   * 12.5 min/tyre cannot make 2,000 tyres in 480 minutes, and a plan that says
-   * otherwise renders every achievement figure meaningless.
-   *
-   * asks the dataset to show a good, an average and an under-performer,
-   * so the targets deliberately differ in ambition:
-   * - TBM-001 / CPR-001 (Tire A) are planned just inside capacity → Good
-   * - MIX-001 / INS-001 sit comfortably inside capacity → Good/Watch
-   * - TBM-002 / CPR-002 (Tire C) are planned slightly above it → Critical
-   */
-  private workOrders: WorkOrder[] = demoRows<WorkOrder>(() => [
-    {
-      id: 'wo-101',
-      tenantId: 'tenant-pilot-factory-01',
-      productionOrderId: 'po-260829-001',
-      woNumber: 'WO-260829-01-MIX',
-      productId: 'prod-tire-a',
-      processId: 'proc-mixing',
-      sequence: 1,
-      batchId: 'batch-260829-01',
-      lineId: 'line-01',
-      workCenterId: 'wc-mixing',
-      machineId: 'mc-mix-01',
-      // 90 s/unit over 480 min ≈ 320 units; planned at 82% of capacity.
-      targetQuantity: 260,
-      unit: 'PCS',
-      plannedStart: '2026-08-28T06:00:00.000Z',
-      plannedEnd: '2026-08-28T14:00:00.000Z',
-      actualStart: '2026-08-28T06:10:00.000Z',
-      goodQuantity: 242,
-      rejectQuantity: 4,
-      status: WorkOrderStatus.IN_PROGRESS,
-      priority: 1,
-      version: 1,
-      createdAt: '2026-08-28T05:00:00.000Z',
-      updatedAt: '2026-08-28T10:30:00.000Z',
-    },
-    {
-      id: 'wo-102',
-      tenantId: 'tenant-pilot-factory-01',
-      productionOrderId: 'po-260829-001',
-      woNumber: 'WO-260829-01-TBM',
-      productId: 'prod-tire-a',
-      processId: 'proc-building',
-      sequence: 3,
-      batchId: 'batch-260829-01',
-      lineId: 'line-01',
-      workCenterId: 'wc-building',
-      machineId: 'mc-tbm-01',
-      // 150 s/unit ≈ 192 units per shift; planned at 81% of capacity.
-      targetQuantity: 155,
-      unit: 'PCS',
-      plannedStart: '2026-08-28T07:00:00.000Z',
-      plannedEnd: '2026-08-28T15:00:00.000Z',
-      actualStart: '2026-08-28T07:15:00.000Z',
-      goodQuantity: 141,
-      rejectQuantity: 3,
-      status: WorkOrderStatus.IN_PROGRESS,
-      priority: 1,
-      version: 1,
-      createdAt: '2026-08-28T05:00:00.000Z',
-      updatedAt: '2026-08-28T10:30:00.000Z',
-    },
-    {
-      id: 'wo-103',
-      tenantId: 'tenant-pilot-factory-01',
-      productionOrderId: 'po-260829-001',
-      woNumber: 'WO-260829-01-CPR',
-      productId: 'prod-tire-a',
-      processId: 'proc-curing',
-      sequence: 4,
-      batchId: 'batch-260829-01',
-      lineId: 'line-01',
-      workCenterId: 'wc-curing',
-      machineId: 'mc-cpr-01',
-      // 750 s/unit ≈ 38 units per shift; the pilot validation area.
-      targetQuantity: 32,
-      unit: 'PCS',
-      plannedStart: '2026-08-28T08:00:00.000Z',
-      plannedEnd: '2026-08-28T16:00:00.000Z',
-      actualStart: '2026-08-28T08:05:00.000Z',
-      goodQuantity: 28,
-      rejectQuantity: 1,
-      status: WorkOrderStatus.IN_PROGRESS,
-      priority: 1,
-      version: 1,
-      createdAt: '2026-08-28T05:00:00.000Z',
-      updatedAt: '2026-08-28T10:30:00.000Z',
-    },
-    {
-      id: 'wo-104',
-      tenantId: 'tenant-pilot-factory-01',
-      productionOrderId: 'po-260829-001',
-      woNumber: 'WO-260829-01-INS',
-      productId: 'prod-tire-a',
-      processId: 'proc-inspection',
-      sequence: 5,
-      batchId: 'batch-260829-01',
-      lineId: 'line-01',
-      workCenterId: 'wc-inspection',
-      machineId: 'mc-ins-01',
-      // 30 s/unit ≈ 960 units per shift; inspection is never the constraint.
-      targetQuantity: 850,
-      unit: 'PCS',
-      plannedStart: '2026-08-28T10:00:00.000Z',
-      plannedEnd: '2026-08-28T18:00:00.000Z',
-      goodQuantity: 0,
-      rejectQuantity: 0,
-      status: WorkOrderStatus.RELEASED,
-      priority: 2,
-      version: 1,
-      createdAt: '2026-08-28T05:00:00.000Z',
-      updatedAt: '2026-08-28T05:00:00.000Z',
-    },
-    {
-      id: 'wo-105',
-      tenantId: 'tenant-pilot-factory-01',
-      productionOrderId: 'po-260829-002',
-      woNumber: 'WO-260829-02-CAL',
-      productId: 'prod-tire-b',
-      processId: 'proc-calendering',
-      sequence: 2,
-      batchId: 'batch-260829-02',
-      lineId: 'line-02',
-      workCenterId: 'wc-calendering',
-      machineId: 'mc-cal-01',
-      // 60 s/unit ≈ 480 units per shift.
-      targetQuantity: 400,
-      unit: 'PCS',
-      plannedStart: '2026-08-28T06:00:00.000Z',
-      plannedEnd: '2026-08-28T14:00:00.000Z',
-      actualStart: '2026-08-28T06:20:00.000Z',
-      goodQuantity: 356,
-      rejectQuantity: 9,
-      status: WorkOrderStatus.IN_PROGRESS,
-      priority: 2,
-      version: 1,
-      createdAt: '2026-08-28T05:00:00.000Z',
-      updatedAt: '2026-08-28T10:30:00.000Z',
-    },
-    {
-      id: 'wo-106',
-      tenantId: 'tenant-pilot-factory-01',
-      productionOrderId: 'po-260829-001',
-      woNumber: 'WO-260829-01-EXT',
-      productId: 'prod-tire-a',
-      processId: 'proc-extrusion',
-      sequence: 2,
-      batchId: 'batch-260829-01',
-      lineId: 'line-01',
-      workCenterId: 'wc-extrusion',
-      machineId: 'mc-ext-01',
-      // 45 s/unit ≈ 640 units per shift.
-      targetQuantity: 520,
-      unit: 'PCS',
-      plannedStart: '2026-08-28T06:30:00.000Z',
-      plannedEnd: '2026-08-28T14:30:00.000Z',
-      actualStart: '2026-08-28T06:45:00.000Z',
-      goodQuantity: 468,
-      rejectQuantity: 11,
-      status: WorkOrderStatus.IN_PROGRESS,
-      priority: 2,
-      version: 1,
-      createdAt: '2026-08-28T05:00:00.000Z',
-      updatedAt: '2026-08-28T10:30:00.000Z',
-    },
-    {
-      id: 'wo-107',
-      tenantId: 'tenant-pilot-factory-01',
-      productionOrderId: 'po-260829-003',
-      woNumber: 'WO-260829-03-TBM',
-      productId: 'prod-tire-c',
-      processId: 'proc-building',
-      sequence: 3,
-      batchId: 'batch-260829-03',
-      lineId: 'line-03',
-      workCenterId: 'wc-building',
-      machineId: 'mc-tbm-02',
-      // 210 s/unit ≈ 137 units per shift, planned above what the machine can
-      // deliver once normal downtime is taken out, so this order runs late by
-      // design and drives the "at risk" and alert paths.
-      targetQuantity: 145,
-      unit: 'PCS',
-      plannedStart: '2026-08-28T06:00:00.000Z',
-      plannedEnd: '2026-08-28T14:00:00.000Z',
-      actualStart: '2026-08-28T06:30:00.000Z',
-      goodQuantity: 98,
-      rejectQuantity: 7,
-      status: WorkOrderStatus.IN_PROGRESS,
-      priority: 3,
-      version: 1,
-      createdAt: '2026-08-28T05:00:00.000Z',
-      updatedAt: '2026-08-28T10:30:00.000Z',
-    },
-    {
-      id: 'wo-108',
-      tenantId: 'tenant-pilot-factory-01',
-      productionOrderId: 'po-260829-003',
-      woNumber: 'WO-260829-03-CPR',
-      productId: 'prod-tire-c',
-      processId: 'proc-curing',
-      sequence: 4,
-      batchId: 'batch-260829-03',
-      lineId: 'line-03',
-      workCenterId: 'wc-curing',
-      machineId: 'mc-cpr-02',
-      // 1050 s/unit ≈ 27 units per shift; planned above capacity. CPR-002 is
-      // the dataset's under-performer and the bottleneck US-037 ranks.
-      targetQuantity: 30,
-      unit: 'PCS',
-      plannedStart: '2026-08-28T08:00:00.000Z',
-      plannedEnd: '2026-08-28T16:00:00.000Z',
-      actualStart: '2026-08-28T08:40:00.000Z',
-      goodQuantity: 17,
-      rejectQuantity: 2,
-      status: WorkOrderStatus.PAUSED,
-      priority: 3,
-      version: 1,
-      createdAt: '2026-08-28T05:00:00.000Z',
-      updatedAt: '2026-08-28T10:30:00.000Z',
-    },
-    {
-      id: 'wo-109',
-      tenantId: 'tenant-pilot-factory-01',
-      productionOrderId: 'po-260829-002',
-      woNumber: 'WO-260829-02-MIX',
-      productId: 'prod-tire-b',
-      processId: 'proc-mixing',
-      sequence: 1,
-      batchId: 'batch-260829-02',
-      lineId: 'line-02',
-      workCenterId: 'wc-mixing-02',
-      machineId: 'mc-mix-02',
-      // 100 s/unit ≈ 288 units per shift; Line Beta's average performer.
-      targetQuantity: 240,
-      unit: 'PCS',
-      plannedStart: '2026-08-28T06:00:00.000Z',
-      plannedEnd: '2026-08-28T14:00:00.000Z',
-      actualStart: '2026-08-28T06:15:00.000Z',
-      goodQuantity: 205,
-      rejectQuantity: 6,
-      status: WorkOrderStatus.IN_PROGRESS,
-      priority: 2,
-      version: 1,
-      createdAt: '2026-08-28T05:00:00.000Z',
-      updatedAt: '2026-08-28T10:30:00.000Z',
-    },
-  ]);
+  // --- Production orders ---------------------------------------------
 
-  // Production Orders
-  getProductionOrders(tenantId: string) {
-    return this.productionOrders.filter((po) => po.tenantId === tenantId);
+  async getProductionOrders(tenantId: string): Promise<ProductionOrder[]> {
+    return withTenant(tenantId, (client) => this.productionOrders.list(client, tenantId));
   }
 
-  createProductionOrder(
+  async getProductionOrderById(tenantId: string, id: string): Promise<ProductionOrder | undefined> {
+    return withTenant(tenantId, (client) => this.productionOrders.findById(client, tenantId, id));
+  }
+
+  async createProductionOrder(
     tenantId: string,
     payload: {
       orderNumber: string;
@@ -311,8 +45,8 @@ export class ProductionService {
       dueDate: string;
       createdBy: string;
     }
-  ): ProductionOrder {
-    const po: ProductionOrder = {
+  ): Promise<ProductionOrder> {
+    const order: ProductionOrder = {
       id: `po-${Date.now()}`,
       tenantId,
       orderNumber: payload.orderNumber,
@@ -323,102 +57,112 @@ export class ProductionService {
       createdBy: payload.createdBy,
       createdAt: new Date().toISOString(),
     };
-    this.productionOrders.push(po);
-    return po;
+    return withTenant(tenantId, (client) => this.productionOrders.create(client, order));
   }
 
-  getProductionOrderById(tenantId: string, id: string): ProductionOrder | undefined {
-    return this.productionOrders.find((po) => po.tenantId === tenantId && po.id === id);
-  }
-
-  updateProductionOrder(
+  async updateProductionOrder(
     tenantId: string,
     id: string,
     payload: Partial<Omit<ProductionOrder, 'id' | 'tenantId'>>
-  ): ProductionOrder {
-    const po = this.getProductionOrderById(tenantId, id);
-    if (!po) throw new Error('Production order not found');
-
-    if (payload.orderNumber !== undefined) po.orderNumber = payload.orderNumber;
-    if (payload.productId !== undefined) po.productId = payload.productId;
-    if (payload.quantity !== undefined) po.quantity = payload.quantity;
-    if (payload.dueDate !== undefined) po.dueDate = payload.dueDate;
-    if (payload.status !== undefined) po.status = payload.status;
-
-    return po;
+  ): Promise<ProductionOrder> {
+    const updated = await withTenant(tenantId, (client) =>
+      this.productionOrders.update(client, tenantId, id, payload)
+    );
+    if (!updated) throw ApiError.notFound('Production order tidak ditemukan.');
+    return updated;
   }
 
-  deleteProductionOrder(tenantId: string, id: string): boolean {
-    const index = this.productionOrders.findIndex((p) => p.tenantId === tenantId && p.id === id);
-    if (index === -1) throw new Error('Production order not found');
-    this.productionOrders.splice(index, 1);
+  async deleteProductionOrder(tenantId: string, id: string): Promise<boolean> {
+    const removed = await withTenant(tenantId, (client) =>
+      this.productionOrders.delete(client, tenantId, id)
+    );
+    if (!removed) throw ApiError.notFound('Production order tidak ditemukan.');
     return true;
   }
 
-  releaseProductionOrder(tenantId: string, id: string, routings?: any[]): ProductionOrder {
-    const po = this.getProductionOrderById(tenantId, id);
-    if (!po) throw new Error('Production order not found');
-    po.status = ProductionOrderStatus.RELEASED;
+  /**
+   * Releases an order and, the first time, expands its routing into work
+   * orders.
+   *
+   * The whole expansion is one transaction: an order marked RELEASED whose
+   * work orders were only half created would leave the shop floor with a
+   * partial routing and no indication that anything was missing.
+   */
+  async releaseProductionOrder(tenantId: string, id: string, routings?: any[]): Promise<ProductionOrder> {
+    return withTenant(tenantId, async (client) => {
+      const order = await this.productionOrders.findById(client, tenantId, id);
+      if (!order) throw ApiError.notFound('Production order tidak ditemukan.');
 
-    // If product routings are available and no work orders exist for this PO, auto-generate them
-    const existingWos = this.workOrders.filter((w) => w.tenantId === tenantId && w.productionOrderId === id);
-    if (existingWos.length === 0 && routings && routings.length > 0) {
-      const productRoutings = routings.filter((r) => r.productId === po.productId && r.active);
-      const batchNumber = `B${new Date().toISOString().substring(2, 10).replace(/-/g, '')}-01`;
-
-      productRoutings.forEach((route) => {
-        const woNumber = `${po.orderNumber}-SEQ${route.sequence}`;
-        const wo: WorkOrder = {
-          id: `wo-${Date.now()}-${route.sequence}`,
-          tenantId,
-          productionOrderId: po.id,
-          woNumber,
-          productId: po.productId,
-          processId: route.processId,
-          sequence: route.sequence,
-          batchId: `batch-${po.id}`,
-          lineId: 'line-01',
-          workCenterId: route.workCenterId,
-          machineId: route.machineId,
-          targetQuantity: po.quantity,
-          unit: 'PCS',
-          plannedStart: new Date().toISOString(),
-          plannedEnd: new Date(Date.now() + 8 * 3600 * 1000).toISOString(),
-          goodQuantity: 0,
-          rejectQuantity: 0,
-          status: route.sequence === 1 ? WorkOrderStatus.RELEASED : WorkOrderStatus.SCHEDULED,
-          priority: 1,
-          version: 1,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        this.workOrders.push(wo);
+      const released = await this.productionOrders.update(client, tenantId, id, {
+        status: ProductionOrderStatus.RELEASED,
       });
-    }
 
-    return po;
+      const existing = await this.workOrders.list(client, tenantId, {});
+      const alreadyExpanded = existing.some((wo) => wo.productionOrderId === id);
+
+      if (!alreadyExpanded && routings && routings.length > 0) {
+        const productRoutings = routings.filter((r) => r.productId === order.productId && r.active);
+        for (const route of productRoutings) {
+          const now = new Date().toISOString();
+          await this.workOrders.create(client, {
+            id: `wo-${Date.now()}-${route.sequence}`,
+            tenantId,
+            productionOrderId: order.id,
+            woNumber: `${order.orderNumber}-SEQ${route.sequence}`,
+            productId: order.productId,
+            processId: route.processId,
+            sequence: route.sequence,
+            batchId: undefined,
+            lineId: 'line-01',
+            workCenterId: route.workCenterId,
+            machineId: route.machineId,
+            targetQuantity: order.quantity,
+            unit: 'PCS',
+            plannedStart: now,
+            plannedEnd: new Date(Date.now() + 8 * 3600 * 1000).toISOString(),
+            goodQuantity: 0,
+            rejectQuantity: 0,
+            status: route.sequence === 1 ? WorkOrderStatus.RELEASED : WorkOrderStatus.SCHEDULED,
+            priority: 1,
+            version: 1,
+            createdAt: now,
+            updatedAt: now,
+          });
+        }
+      }
+
+      return released ?? order;
+    });
   }
 
-  // Work Orders
-  getWorkOrders(tenantId: string, filter?: { lineId?: string; status?: string; processId?: string }) {
-    let result = this.workOrders.filter((wo) => wo.tenantId === tenantId);
-    if (filter?.lineId && filter.lineId !== 'ALL') {
-      result = result.filter((wo) => wo.lineId === filter.lineId);
-    }
-    if (filter?.status && filter.status !== 'ALL') {
-      result = result.filter((wo) => wo.status === filter.status);
-    }
-    if (filter?.processId && filter.processId !== 'ALL') {
-      result = result.filter((wo) => wo.processId === filter.processId);
-    }
-    return result;
+  // --- Work orders ----------------------------------------------------
+
+  async getWorkOrders(
+    tenantId: string,
+    filter?: { lineId?: string; status?: string; processId?: string }
+  ): Promise<WorkOrder[]> {
+    const clean = {
+      lineId: filter?.lineId && filter.lineId !== 'ALL' ? filter.lineId : undefined,
+      status: filter?.status && filter.status !== 'ALL' ? filter.status : undefined,
+      processId: filter?.processId && filter.processId !== 'ALL' ? filter.processId : undefined,
+    };
+    return withTenant(tenantId, (client) => this.workOrders.list(client, tenantId, clean));
   }
 
-  getWorkOrderById(tenantId: string, id: string): WorkOrder | undefined {
-    return this.workOrders.find((wo) => wo.tenantId === tenantId && wo.id === id);
+  async getWorkOrderById(tenantId: string, id: string): Promise<WorkOrder | undefined> {
+    return withTenant(tenantId, (client) => this.workOrders.findById(client, tenantId, id));
   }
 
-  createWorkOrder(
+  /** For callers already inside a transaction. */
+  async getWorkOrderByIdWith(
+    exec: Executor,
+    tenantId: string,
+    id: string
+  ): Promise<WorkOrder | undefined> {
+    return this.workOrders.findById(exec, tenantId, id);
+  }
+
+  async createWorkOrder(
     tenantId: string,
     payload: {
       productionOrderId: string;
@@ -435,163 +179,194 @@ export class ProductionService {
       plannedStart: string;
       plannedEnd: string;
     }
-  ): WorkOrder {
-    const count = this.workOrders.length + 1;
-    const woNumber = `WO-${new Date().toISOString().substring(0, 10).replace(/-/g, '')}-${String(count).padStart(3, '0')}`;
-
-    const wo: WorkOrder = {
-      id: `wo-${Date.now()}`,
-      tenantId,
-      productionOrderId: payload.productionOrderId,
-      woNumber,
-      productId: payload.productId,
-      processId: payload.processId,
-      sequence: payload.sequence || 1,
-      batchId: payload.batchId,
-      lineId: payload.lineId,
-      workCenterId: payload.workCenterId,
-      machineId: payload.machineId,
-      targetQuantity: payload.targetQuantity,
-      unit: payload.unit || 'PCS',
-      plannedStart: payload.plannedStart,
-      plannedEnd: payload.plannedEnd,
-      goodQuantity: 0,
-      rejectQuantity: 0,
-      status: WorkOrderStatus.SCHEDULED,
-      priority: payload.priority || 1,
-      version: 1,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    this.workOrders.push(wo);
-    return wo;
+  ): Promise<WorkOrder> {
+    return withTenant(tenantId, async (client) => {
+      const count = (await this.workOrders.count(client, tenantId)) + 1;
+      const now = new Date().toISOString();
+      return this.workOrders.create(client, {
+        id: `wo-${Date.now()}`,
+        tenantId,
+        productionOrderId: payload.productionOrderId,
+        woNumber: `WO-${now.substring(0, 10).replace(/-/g, '')}-${String(count).padStart(3, '0')}`,
+        productId: payload.productId,
+        processId: payload.processId,
+        sequence: payload.sequence || 1,
+        batchId: payload.batchId,
+        lineId: payload.lineId,
+        workCenterId: payload.workCenterId,
+        machineId: payload.machineId,
+        targetQuantity: payload.targetQuantity,
+        unit: payload.unit || 'PCS',
+        plannedStart: payload.plannedStart,
+        plannedEnd: payload.plannedEnd,
+        goodQuantity: 0,
+        rejectQuantity: 0,
+        status: WorkOrderStatus.SCHEDULED,
+        priority: payload.priority || 1,
+        version: 1,
+        createdAt: now,
+        updatedAt: now,
+      });
+    });
   }
 
-  updateWorkOrder(
+  async updateWorkOrder(
     tenantId: string,
     id: string,
     payload: Partial<Omit<WorkOrder, 'id' | 'tenantId' | 'woNumber'>>
-  ): WorkOrder {
-    const wo = this.getWorkOrderById(tenantId, id);
-    if (!wo) throw new Error('Work order not found');
+  ): Promise<WorkOrder> {
+    return withTenant(tenantId, async (client) => {
+      const current = await this.workOrders.findById(client, tenantId, id);
+      if (!current) throw ApiError.notFound('Work order tidak ditemukan.');
 
-    if (payload.productId !== undefined) wo.productId = payload.productId;
-    if (payload.processId !== undefined) wo.processId = payload.processId;
-    if (payload.sequence !== undefined) wo.sequence = payload.sequence;
-    if (payload.batchId !== undefined) wo.batchId = payload.batchId;
-    if (payload.lineId !== undefined) wo.lineId = payload.lineId;
-    if (payload.workCenterId !== undefined) wo.workCenterId = payload.workCenterId;
-    if (payload.machineId !== undefined) wo.machineId = payload.machineId;
-    if (payload.targetQuantity !== undefined) wo.targetQuantity = payload.targetQuantity;
-    if (payload.unit !== undefined) wo.unit = payload.unit;
-    if (payload.plannedStart !== undefined) wo.plannedStart = payload.plannedStart;
-    if (payload.plannedEnd !== undefined) wo.plannedEnd = payload.plannedEnd;
-    if (payload.priority !== undefined) wo.priority = payload.priority;
-    if (payload.status !== undefined) wo.status = payload.status;
+      const updated = await this.workOrders.update(client, tenantId, id, {
+        targetQuantity: payload.targetQuantity,
+        plannedStart: payload.plannedStart,
+        plannedEnd: payload.plannedEnd,
+        priority: payload.priority,
+        machineId: payload.machineId,
+        batchId: payload.batchId,
+        processId: payload.processId,
+        lineId: payload.lineId,
+        workCenterId: payload.workCenterId,
+        productId: payload.productId,
+        sequence: payload.sequence,
+        unit: payload.unit,
+      });
 
-    wo.updatedAt = new Date().toISOString();
-    wo.version += 1;
-    return wo;
+      // A status supplied here bypasses no rule the state machine enforces
+      // elsewhere: the dedicated transitions below are the guarded path, and
+      // this exists only for the planner's edit form.
+      if (payload.status !== undefined && payload.status !== current.status) {
+        return (await this.workOrders.updateStatus(client, tenantId, id, payload.status)) ?? updated!;
+      }
+      return updated!;
+    });
   }
 
-  deleteWorkOrder(tenantId: string, id: string): boolean {
-    const index = this.workOrders.findIndex((w) => w.tenantId === tenantId && w.id === id);
-    if (index === -1) throw new Error('Work order not found');
-    this.workOrders.splice(index, 1);
+  async deleteWorkOrder(tenantId: string, id: string): Promise<boolean> {
+    const removed = await withTenant(tenantId, (client) => this.workOrders.delete(client, tenantId, id));
+    if (!removed) throw ApiError.notFound('Work order tidak ditemukan.');
     return true;
   }
 
-  releaseWorkOrder(tenantId: string, id: string): WorkOrder {
-    const wo = this.getWorkOrderById(tenantId, id);
-    if (!wo) throw new Error('Work order not found');
+  /**
+   * Applies a guarded state transition.
+   *
+   * Read and write happen in one transaction so the state machine judges the
+   * status that is actually stored. Reading outside it would let two requests
+   * both see RELEASED and both "start" the same work order.
+   */
+  private async transition(
+    tenantId: string,
+    id: string,
+    next: WorkOrderStatus,
+    stamps: (current: WorkOrder) => { actualStart?: string; actualEnd?: string } = () => ({})
+  ): Promise<WorkOrder> {
+    return withTenant(tenantId, async (client) => {
+      const current = await this.workOrders.findById(client, tenantId, id);
+      if (!current) throw ApiError.notFound('Work order tidak ditemukan.');
 
-    WorkOrderStateMachine.validateTransition(wo.status, WorkOrderStatus.RELEASED);
+      WorkOrderStateMachine.validateTransition(current.status, next);
 
-    wo.status = WorkOrderStatus.RELEASED;
-    wo.updatedAt = new Date().toISOString();
-    wo.version += 1;
-    return wo;
+      const updated = await this.workOrders.updateStatus(client, tenantId, id, next, stamps(current));
+      if (!updated) throw ApiError.notFound('Work order tidak ditemukan.');
+      return updated;
+    });
   }
 
-  startWorkOrder(
+  async releaseWorkOrder(tenantId: string, id: string): Promise<WorkOrder> {
+    return this.transition(tenantId, id, WorkOrderStatus.RELEASED);
+  }
+
+  async startWorkOrder(
     tenantId: string,
     id: string,
     payload: { operatorId: string; occurredAt?: string }
-  ): WorkOrder {
-    const wo = this.getWorkOrderById(tenantId, id);
-    if (!wo) throw new Error('Work order not found');
-
-    WorkOrderStateMachine.validateTransition(wo.status, WorkOrderStatus.IN_PROGRESS);
-
-    wo.status = WorkOrderStatus.IN_PROGRESS;
-    wo.actualStart = wo.actualStart || payload.occurredAt || new Date().toISOString();
-    wo.updatedAt = new Date().toISOString();
-    wo.version += 1;
-
-    return wo;
+  ): Promise<WorkOrder> {
+    return this.transition(tenantId, id, WorkOrderStatus.IN_PROGRESS, (current) => ({
+      // COALESCE in the repository keeps the first start, so a resumed order
+      // does not lose when it originally began.
+      actualStart: current.actualStart ?? payload.occurredAt ?? new Date().toISOString(),
+    }));
   }
 
-  pauseWorkOrder(tenantId: string, id: string): WorkOrder {
-    const wo = this.getWorkOrderById(tenantId, id);
-    if (!wo) throw new Error('Work order not found');
-
-    WorkOrderStateMachine.validateTransition(wo.status, WorkOrderStatus.PAUSED);
-
-    wo.status = WorkOrderStatus.PAUSED;
-    wo.updatedAt = new Date().toISOString();
-    wo.version += 1;
-
-    return wo;
+  async pauseWorkOrder(tenantId: string, id: string): Promise<WorkOrder> {
+    return this.transition(tenantId, id, WorkOrderStatus.PAUSED);
   }
 
-  resumeWorkOrder(tenantId: string, id: string): WorkOrder {
-    const wo = this.getWorkOrderById(tenantId, id);
-    if (!wo) throw new Error('Work order not found');
-
-    WorkOrderStateMachine.validateTransition(wo.status, WorkOrderStatus.IN_PROGRESS);
-
-    wo.status = WorkOrderStatus.IN_PROGRESS;
-    wo.updatedAt = new Date().toISOString();
-    wo.version += 1;
-
-    return wo;
+  async resumeWorkOrder(tenantId: string, id: string): Promise<WorkOrder> {
+    return this.transition(tenantId, id, WorkOrderStatus.IN_PROGRESS);
   }
 
-  completeWorkOrder(tenantId: string, id: string, payload?: { occurredAt?: string }): WorkOrder {
-    const wo = this.getWorkOrderById(tenantId, id);
-    if (!wo) throw new Error('Work order not found');
-
-    WorkOrderStateMachine.validateTransition(wo.status, WorkOrderStatus.COMPLETED);
-
-    wo.status = WorkOrderStatus.COMPLETED;
-    wo.actualEnd = payload?.occurredAt || new Date().toISOString();
-    wo.updatedAt = new Date().toISOString();
-    wo.version += 1;
-
-    return wo;
+  async completeWorkOrder(
+    tenantId: string,
+    id: string,
+    payload?: { occurredAt?: string }
+  ): Promise<WorkOrder> {
+    return this.transition(tenantId, id, WorkOrderStatus.COMPLETED, () => ({
+      actualEnd: payload?.occurredAt ?? new Date().toISOString(),
+    }));
   }
 
-  cancelWorkOrder(tenantId: string, id: string): WorkOrder {
-    const wo = this.getWorkOrderById(tenantId, id);
-    if (!wo) throw new Error('Work order not found');
-
-    WorkOrderStateMachine.validateTransition(wo.status, WorkOrderStatus.CANCELLED);
-
-    wo.status = WorkOrderStatus.CANCELLED;
-    wo.updatedAt = new Date().toISOString();
-    wo.version += 1;
-
-    return wo;
+  async cancelWorkOrder(tenantId: string, id: string): Promise<WorkOrder> {
+    return this.transition(tenantId, id, WorkOrderStatus.CANCELLED);
   }
 
-  incrementQuantities(tenantId: string, id: string, good: number, reject: number) {
-    const wo = this.getWorkOrderById(tenantId, id);
-    if (wo) {
-      wo.goodQuantity += good;
-      wo.rejectQuantity += reject;
-      wo.updatedAt = new Date().toISOString();
-      wo.version += 1;
+  async incrementQuantities(tenantId: string, id: string, good: number, reject: number): Promise<void> {
+    await withTenant(tenantId, (client) =>
+      this.workOrders.incrementQuantities(client, tenantId, id, good, reject)
+    );
+  }
+
+  /** For callers already inside a transaction, see the class comment. */
+  async incrementQuantitiesWith(
+    exec: Executor,
+    tenantId: string,
+    id: string,
+    good: number,
+    reject: number
+  ): Promise<void> {
+    await this.workOrders.incrementQuantities(exec, tenantId, id, good, reject);
+  }
+
+  async counts(tenantId: string): Promise<{ productionOrders: number; workOrders: number }> {
+    return withTenant(tenantId, async (client) => ({
+      productionOrders: await this.productionOrders.count(client, tenantId),
+      workOrders: await this.workOrders.count(client, tenantId),
+    }));
+  }
+
+  /**
+   * Writes the demo plant's planned work into PostgreSQL, once.
+   *
+   * Every insert is `ON CONFLICT (id) DO NOTHING`, so a second boot adds
+   * nothing and, more importantly, does not reset a work order the shop floor
+   * has since advanced. Nothing here runs unless SEED_DEMO_DATA is on.
+   */
+  async seedDemoProductionOrders(exec: Executor, tenantId: string): Promise<number> {
+    let created = 0;
+    for (const order of demoProductionOrders()) {
+      if (!(await this.productionOrders.findById(exec, tenantId, order.id))) {
+        await this.productionOrders.create(exec, order);
+        created += 1;
+      }
     }
+    return created;
+  }
+
+  /**
+   * Work orders are seeded after production orders and batches, which they
+   * reference by foreign key.
+   */
+  async seedDemoWorkOrders(exec: Executor, tenantId: string): Promise<number> {
+    let created = 0;
+    for (const workOrder of demoWorkOrders()) {
+      if (!(await this.workOrders.findById(exec, tenantId, workOrder.id))) {
+        await this.workOrders.create(exec, workOrder);
+        created += 1;
+      }
+    }
+    return created;
   }
 }

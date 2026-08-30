@@ -9,8 +9,8 @@ export class ReportingService {
     private masterDataService: MasterDataService
   ) {}
 
-  getProductionReport(tenantId: string, filter?: { lineId?: string; shiftDate?: string }) {
-    const workOrders = this.productionService.getWorkOrders(tenantId, filter);
+  async getProductionReport(tenantId: string, filter?: { lineId?: string; shiftDate?: string }) {
+    const workOrders = await this.productionService.getWorkOrders(tenantId, filter);
     const products = this.masterDataService.getProducts(tenantId);
     const lines = this.masterDataService.getLines(tenantId);
 
@@ -42,8 +42,8 @@ export class ReportingService {
     });
   }
 
-  getDowntimeReport(tenantId: string, filter?: { lineId?: string }) {
-    const records = this.shopFloorService.getDowntimeRecords(tenantId, filter?.lineId);
+  async getDowntimeReport(tenantId: string, filter?: { lineId?: string }) {
+    const records = await this.shopFloorService.getDowntimeRecords(tenantId, filter?.lineId);
     const reasons = this.masterDataService.getDowntimeReasons(tenantId);
     const machines = this.masterDataService.getMachines(tenantId);
     const lines = this.masterDataService.getLines(tenantId);
@@ -73,16 +73,15 @@ export class ReportingService {
     });
   }
 
-  getShiftReport(tenantId: string, shiftDate: string = '2026-08-28', shiftId?: string) {
+  async getShiftReport(tenantId: string, shiftDate: string = '2026-08-28', shiftId?: string) {
     const lines = this.masterDataService.getLines(tenantId);
     const shifts = this.masterDataService.getShifts(tenantId);
     const shift = shifts.find((s) => s.id === shiftId) ?? shifts.find((s) => s.active) ?? shifts[0];
-    const workOrders = this.productionService.getWorkOrders(tenantId);
+    const workOrders = await this.productionService.getWorkOrders(tenantId);
     // Scope downtime to the requested shift date. Without this the report sums
     // the entire downtime history into a single shift's total.
-    const downtimes = this.shopFloorService
-      .getDowntimeRecords(tenantId)
-      .filter((d) => d.shiftDate === shiftDate);
+    const allDowntimes = await this.shopFloorService.getDowntimeRecords(tenantId);
+    const downtimes = allDowntimes.filter((d) => d.shiftDate === shiftDate);
 
     return lines.map((line) => {
       const lineWos = workOrders.filter((w) => w.lineId === line.id);

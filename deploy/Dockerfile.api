@@ -30,6 +30,10 @@ COPY packages/domain-types packages/domain-types
 COPY packages/i18n packages/i18n
 COPY apps/api apps/api
 
+# The schema travels with the image: a VPS that pulls images has no checkout,
+# so `pnpm db:migrate` is not available to it (see apps/api/src/migrate.ts).
+COPY db db
+
 RUN pnpm --filter @factory-vision/domain-types build \
  && pnpm --filter @factory-vision/i18n build \
  && pnpm --filter @factory-vision/api build
@@ -54,6 +58,7 @@ COPY --from=build --chown=factory:factory /repo/packages ./packages
 COPY --from=build --chown=factory:factory /repo/apps/api/dist ./apps/api/dist
 COPY --from=build --chown=factory:factory /repo/apps/api/package.json ./apps/api/
 COPY --from=build --chown=factory:factory /repo/apps/api/node_modules ./apps/api/node_modules
+COPY --from=build --chown=factory:factory /repo/db ./db
 
 USER factory
 

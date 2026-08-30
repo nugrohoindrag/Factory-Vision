@@ -1,113 +1,37 @@
-import {
-  ProductionRecord,
-  DowntimeRecord,
-  DowntimeStatus,
-  RecordSource,
-  MachineStateLog,
-  MachineState,
-} from '@factory-vision/domain-types';
+import { DowntimeStatus, RecordSource } from '@factory-vision/domain-types';
+import type { DowntimeRecord, ProductionRecord } from '@factory-vision/domain-types';
 import type { SyncBatchResult, SyncCommandResult } from '@factory-vision/domain-types';
 import { ApiError } from '../../platform/http/api-error.js';
+import { getPool, withTenant } from '../../platform/db/pool.js';
+import type { Executor } from '../../platform/db/executor.js';
 import { MasterDataService } from '../master-data/master-data.service.js';
 import { ProductionService } from '../production/production.service.js';
 import { generateHistory, type HistorySeedInput } from './history.seed.js';
 import { resolveShiftContext } from './shift-date.js';
-import { demoRows } from '../../platform/config/demo-seed.js';
+import { ProductionRecordRepository } from './production-record.repository.js';
+import { DowntimeRepository } from './downtime.repository.js';
+import { SyncEventRepository } from './sync-event.repository.js';
 
+/**
+ * Shop-floor capture (US-014 … US-020, US-045, US-046).
+ *
+ * Every method here writes to PostgreSQL before it answers. These records are
+ * the MES system of record: good and reject quantity, downtime start and end,
+ * and the shift context each belongs to are what every OEE figure and every
+ * report is derived from. They previously lived in JavaScript arrays, so
+ * `docker compose restart api` erased the plant's production history and the
+ * dashboard came back showing different numbers.
+ *
+ * Each operation runs inside `withTenant`, which is both a transaction and the
+ * `app.tenant_id` declaration the row-level security policies read. That gives
+ * two things at once: a multi-row write cannot half-commit (persistence fix
+ * §7), and a query that forgot its tenant filter returns nothing rather than
+ * another factory's production.
+ */
 export class ShopFloorService {
-  private productionRecords: ProductionRecord[] = demoRows<ProductionRecord>(() => [
-    {
-      id: 'pr-init-01',
-      tenantId: 'tenant-pilot-factory-01',
-      workOrderId: 'wo-101',
-      machineId: 'mc-mix-01',
-      operatorId: 'op-001',
-      shiftId: 'shift-1',
-      shiftDate: '2026-08-28',
-      goodQuantity: 242,
-      rejectQuantity: 4,
-      rejectReasonId: 'rej-dimension',
-      recordedAt: '2026-08-28T09:15:00.000Z',
-      source: RecordSource.OPERATOR_MANUAL,
-      clientEventId: 'evt-init-01',
-      notes: 'Akumulasi batch kompon per jam',
-    },
-    {
-      id: 'pr-init-02',
-      tenantId: 'tenant-pilot-factory-01',
-      workOrderId: 'wo-102',
-      machineId: 'mc-tbm-01',
-      operatorId: 'op-002',
-      shiftId: 'shift-1',
-      shiftDate: '2026-08-28',
-      goodQuantity: 141,
-      rejectQuantity: 3,
-      rejectReasonId: 'rej-scratch',
-      recordedAt: '2026-08-28T09:15:00.000Z',
-      source: RecordSource.OPERATOR_MANUAL,
-      clientEventId: 'evt-init-02',
-      notes: 'Green tire build accumulation',
-    },
-  ]);
-
-  private downtimeRecords: DowntimeRecord[] = demoRows<DowntimeRecord>(() => [
-    {
-      id: 'dt-rec-001',
-      tenantId: 'tenant-pilot-factory-01',
-      workOrderId: 'wo-101',
-      machineId: 'mc-mix-01',
-      lineId: 'line-01',
-      shiftId: 'shift-1',
-      shiftDate: '2026-08-28',
-      reasonId: 'dt-setup',
-      startTime: '2026-08-28T07:15:00.000Z',
-      endTime: '2026-08-28T07:35:00.000Z',
-      durationSeconds: 1200,
-      isPlanned: true,
-      notes: 'Initial die setup for batch',
-      clientEventId: 'evt-dt-init-01',
-      status: DowntimeStatus.RESOLVED,
-    },
-    {
-      id: 'dt-rec-002',
-      tenantId: 'tenant-pilot-factory-01',
-      workOrderId: 'wo-101',
-      machineId: 'mc-mix-01',
-      lineId: 'line-01',
-      shiftId: 'shift-1',
-      shiftDate: '2026-08-28',
-      reasonId: 'dt-breakdown',
-      startTime: '2026-08-28T08:10:00.000Z',
-      endTime: '2026-08-28T08:25:00.000Z',
-      durationSeconds: 900,
-      isPlanned: false,
-      notes: 'Hydraulic sensor glitch',
-      clientEventId: 'evt-dt-init-02',
-      status: DowntimeStatus.RESOLVED,
-    },
-    {
-      id: 'dt-rec-003',
-      tenantId: 'tenant-pilot-factory-01',
-      workOrderId: 'wo-102',
-      machineId: 'mc-tbm-01',
-      lineId: 'line-01',
-      shiftId: 'shift-1',
-      shiftDate: '2026-08-28',
-      reasonId: 'dt-material',
-      startTime: '2026-08-28T08:40:00.000Z',
-      endTime: '2026-08-28T08:55:00.000Z',
-      durationSeconds: 900,
-      isPlanned: false,
-      notes: 'Menunggu kompon dari area mixing',
-      clientEventId: 'evt-dt-init-03',
-      status: DowntimeStatus.RESOLVED,
-    },
-  ]);
-
-  private machineStateLogs: MachineStateLog[] = [];
-
-  // Idempotency event store
-  private processedEvents = new Set<string>();
+  private readonly productionRecords = new ProductionRecordRepository();
+  private readonly downtimes = new DowntimeRepository();
+  private readonly syncEvents = new SyncEventRepository();
 
   constructor(
     private productionService: ProductionService,
@@ -122,8 +46,10 @@ export class ShopFloorService {
    * the button the operator pressed, so the server resolves them rather than
    * trusting a terminal that may have been offline when the plan changed.
    */
-  private contextFor(tenantId: string, workOrderId: string | undefined) {
-    const workOrder = workOrderId ? this.productionService.getWorkOrderById(tenantId, workOrderId) : undefined;
+  private async contextFor(exec: Executor, tenantId: string, workOrderId: string | undefined) {
+    const workOrder = workOrderId
+      ? await this.productionService.getWorkOrderByIdWith(exec, tenantId, workOrderId)
+      : undefined;
     return {
       workOrder,
       processId: workOrder?.processId,
@@ -140,11 +66,13 @@ export class ShopFloorService {
   }
 
   /** True when this client event has already been applied (US-046). */
-  hasProcessed(tenantId: string, clientEventId: string): boolean {
-    return this.processedEvents.has(`${tenantId}:${clientEventId}`);
+  async hasProcessed(tenantId: string, clientEventId: string): Promise<boolean> {
+    return withTenant(tenantId, (client) => this.syncEvents.has(client, tenantId, clientEventId));
   }
 
-  recordOutput(
+  // --- Production output (US-018, US-019) ----------------------------
+
+  async recordOutput(
     tenantId: string,
     cmd: {
       workOrderId: string;
@@ -158,16 +86,76 @@ export class ShopFloorService {
       occurredAt: string;
       notes?: string;
     }
-  ): ProductionRecord {
-    const eventKey = `${tenantId}:${cmd.clientEventId}`;
-    if (this.processedEvents.has(eventKey)) {
-      const existing = this.productionRecords.find((r) => r.clientEventId === cmd.clientEventId);
+  ): Promise<ProductionRecord> {
+    this.validateOutput(tenantId, cmd);
+
+    return withTenant(tenantId, async (client) => {
+      // A replay returns the record the first attempt produced rather than
+      // writing a second one. The unique constraint underneath makes this hold
+      // even when two replays arrive at the same instant.
+      const existing = await this.productionRecords.findByClientEventId(
+        client,
+        tenantId,
+        cmd.clientEventId
+      );
       if (existing) return existing;
-    }
 
-    const context = this.contextFor(tenantId, cmd.workOrderId);
-    if (!context.workOrder) throw ApiError.notFound('Work order tidak ditemukan.');
+      const context = await this.contextFor(client, tenantId, cmd.workOrderId);
+      if (!context.workOrder) throw ApiError.notFound('Work order tidak ditemukan.');
 
+      const shift = this.shiftContext(tenantId, cmd.occurredAt, cmd.shiftId);
+
+      const draft: ProductionRecord = {
+        id: `pr-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        tenantId,
+        workOrderId: cmd.workOrderId,
+        processId: context.processId,
+        batchId: context.batchId,
+        machineId: cmd.machineId ?? context.machineId ?? '',
+        operatorId: cmd.operatorId,
+        shiftId: shift.shiftId,
+        shiftDate: shift.shiftDate,
+        goodQuantity: cmd.goodQuantity,
+        rejectQuantity: cmd.rejectQuantity,
+        rejectReasonId: cmd.rejectReasonId,
+        recordedAt: cmd.occurredAt,
+        source: RecordSource.OPERATOR_MANUAL,
+        clientEventId: cmd.clientEventId,
+        notes: cmd.notes,
+      };
+
+      const { record, created } = await this.productionRecords.create(client, draft);
+
+      // The work order's running totals and the record that justifies them are
+      // one fact, so they commit together. Incrementing only when the insert
+      // actually created a row keeps a replay from counting twice.
+      if (created) {
+        await this.productionService.incrementQuantitiesWith(
+          client,
+          tenantId,
+          cmd.workOrderId,
+          cmd.goodQuantity,
+          cmd.rejectQuantity
+        );
+        await this.syncEvents.claim(
+          client,
+          tenantId,
+          cmd.clientEventId,
+          'RECORD_OUTPUT',
+          cmd.workOrderId,
+          record.id
+        );
+      }
+
+      return record;
+    });
+  }
+
+  /** Everything that can be judged without touching the database. */
+  private validateOutput(
+    tenantId: string,
+    cmd: { goodQuantity: number; rejectQuantity: number; rejectReasonId?: string }
+  ): void {
     if (cmd.goodQuantity < 0 || cmd.rejectQuantity < 0) {
       throw ApiError.validation('Quantity tidak boleh negatif.', [
         { field: 'goodQuantity', code: 'OUT_OF_RANGE', message: 'Quantity tidak boleh negatif.' },
@@ -191,38 +179,11 @@ export class ShopFloorService {
         ]);
       }
     }
-
-    const shift = this.shiftContext(tenantId, cmd.occurredAt, cmd.shiftId);
-    this.processedEvents.add(eventKey);
-
-    const record: ProductionRecord = {
-      id: `pr-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-      tenantId,
-      workOrderId: cmd.workOrderId,
-      processId: context.processId,
-      batchId: context.batchId,
-      machineId: cmd.machineId ?? context.machineId ?? '',
-      operatorId: cmd.operatorId,
-      shiftId: shift.shiftId,
-      shiftDate: shift.shiftDate,
-      goodQuantity: cmd.goodQuantity,
-      rejectQuantity: cmd.rejectQuantity,
-      rejectReasonId: cmd.rejectReasonId,
-      recordedAt: cmd.occurredAt,
-      source: RecordSource.OPERATOR_MANUAL,
-      clientEventId: cmd.clientEventId,
-      notes: cmd.notes,
-    };
-
-    this.productionRecords.push(record);
-
-    // Update running total in Work Order
-    this.productionService.incrementQuantities(tenantId, cmd.workOrderId, cmd.goodQuantity, cmd.rejectQuantity);
-
-    return record;
   }
 
-  startDowntime(
+  // --- Downtime (US-016, US-017, US-020) -----------------------------
+
+  async startDowntime(
     tenantId: string,
     cmd: {
       machineId: string;
@@ -236,13 +197,7 @@ export class ShopFloorService {
       occurredAt: string;
       isPlanned?: boolean;
     }
-  ): DowntimeRecord {
-    const eventKey = `${tenantId}:${cmd.clientEventId}`;
-    if (this.processedEvents.has(eventKey)) {
-      const existing = this.downtimeRecords.find((r) => r.clientEventId === cmd.clientEventId);
-      if (existing) return existing;
-    }
-
+  ): Promise<DowntimeRecord> {
     // US-016 makes the reason mandatory and scoped: an unknown or retired code
     // would produce a Pareto bar nobody can trace back to a cause.
     const reason = this.masterData.getDowntimeReasons(tenantId).find((r) => r.id === cmd.reasonId);
@@ -257,48 +212,62 @@ export class ShopFloorService {
       ]);
     }
 
-    const context = this.contextFor(tenantId, cmd.workOrderId);
-    const lineId = cmd.lineId ?? context.lineId ?? this.masterData.getLineIdForMachine(tenantId, cmd.machineId);
-    if (!lineId) {
-      throw ApiError.validation('Production line tidak dapat ditentukan untuk downtime ini.', [
-        {
-          field: 'lineId',
-          code: 'REQUIRED',
-          message: 'Line wajib diisi bila tidak dapat diturunkan dari mesin.',
-        },
-      ]);
-    }
+    return withTenant(tenantId, async (client) => {
+      const existing = await this.downtimes.findByClientEventId(client, tenantId, cmd.clientEventId);
+      if (existing) return existing;
 
-    // US-016 stores process_id on *every* downtime record. It comes from the
-    // work order when one is running, and from the machine's work centre
-    // routing otherwise, so a standalone machine stop is still attributable.
-    const processId = context.processId ?? this.processIdForMachine(tenantId, cmd.machineId);
+      const context = await this.contextFor(client, tenantId, cmd.workOrderId);
+      const lineId =
+        cmd.lineId ?? context.lineId ?? this.masterData.getLineIdForMachine(tenantId, cmd.machineId);
+      if (!lineId) {
+        throw ApiError.validation('Production line tidak dapat ditentukan untuk downtime ini.', [
+          {
+            field: 'lineId',
+            code: 'REQUIRED',
+            message: 'Line wajib diisi bila tidak dapat diturunkan dari mesin.',
+          },
+        ]);
+      }
 
-    const shift = this.shiftContext(tenantId, cmd.occurredAt, cmd.shiftId);
-    this.processedEvents.add(eventKey);
+      // US-016 stores process_id on *every* downtime record. It comes from the
+      // work order when one is running, and from the machine's work centre
+      // routing otherwise, so a standalone machine stop is still attributable.
+      const processId = context.processId ?? this.processIdForMachine(tenantId, cmd.machineId);
+      const shift = this.shiftContext(tenantId, cmd.occurredAt, cmd.shiftId);
 
-    const record: DowntimeRecord = {
-      id: `dt-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-      tenantId,
-      machineId: cmd.machineId,
-      processId,
-      lineId,
-      operatorId: cmd.operatorId,
-      workOrderId: cmd.workOrderId,
-      shiftId: shift.shiftId,
-      shiftDate: shift.shiftDate,
-      reasonId: cmd.reasonId,
-      startTime: cmd.occurredAt,
-      // `is_planned` follows the configured reason code, never the client
-      //: the same stoppage must classify identically every time.
-      isPlanned: reason.isPlanned,
-      notes: cmd.notes,
-      clientEventId: cmd.clientEventId,
-      status: DowntimeStatus.ACTIVE,
-    };
+      const draft: DowntimeRecord = {
+        id: `dt-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        tenantId,
+        machineId: cmd.machineId,
+        processId,
+        lineId,
+        operatorId: cmd.operatorId,
+        workOrderId: cmd.workOrderId,
+        shiftId: shift.shiftId,
+        shiftDate: shift.shiftDate,
+        reasonId: cmd.reasonId,
+        startTime: cmd.occurredAt,
+        // `is_planned` follows the configured reason code, never the client
+        //: the same stoppage must classify identically every time.
+        isPlanned: reason.isPlanned,
+        notes: cmd.notes,
+        clientEventId: cmd.clientEventId,
+        status: DowntimeStatus.ACTIVE,
+      };
 
-    this.downtimeRecords.push(record);
-    return record;
+      const { record, created } = await this.downtimes.create(client, draft);
+      if (created) {
+        await this.syncEvents.claim(
+          client,
+          tenantId,
+          cmd.clientEventId,
+          'RECORD_DOWNTIME',
+          cmd.workOrderId,
+          record.id
+        );
+      }
+      return record;
+    });
   }
 
   /** The process a machine normally runs, via its work centre routing. */
@@ -309,82 +278,102 @@ export class ShopFloorService {
     return routing?.processId;
   }
 
-  resolveDowntime(
+  async resolveDowntime(
     tenantId: string,
     downtimeId: string,
-    cmd: {
-      clientEventId: string;
-      occurredAt: string;
-    }
-  ): DowntimeRecord {
-    const record = this.downtimeRecords.find((d) => d.tenantId === tenantId && d.id === downtimeId);
-    if (!record) throw ApiError.notFound('Downtime record tidak ditemukan.');
+    cmd: { clientEventId: string; occurredAt: string }
+  ): Promise<DowntimeRecord> {
+    return withTenant(tenantId, async (client) => {
+      const record = await this.downtimes.findById(client, tenantId, downtimeId);
+      if (!record) throw ApiError.notFound('Downtime record tidak ditemukan.');
 
-    // Replaying a resolve after a flaky reconnect must not stretch the
-    // duration to the retry's clock (US-046).
-    if (record.status === DowntimeStatus.RESOLVED) return record;
+      // Replaying a resolve after a flaky reconnect must not stretch the
+      // duration to the retry's clock (US-046). The repository's UPDATE is
+      // guarded on status = ACTIVE for the same reason.
+      if (record.status === DowntimeStatus.RESOLVED) return record;
 
-    const eventKey = `${tenantId}:${cmd.clientEventId}`;
-    this.processedEvents.add(eventKey);
+      const startMs = new Date(record.startTime).getTime();
+      const endMs = new Date(cmd.occurredAt).getTime();
+      const durationSeconds = Math.max(0, Math.floor((endMs - startMs) / 1000));
 
-    record.endTime = cmd.occurredAt;
-    record.status = DowntimeStatus.RESOLVED;
-    const startMs = new Date(record.startTime).getTime();
-    const endMs = new Date(cmd.occurredAt).getTime();
-    record.durationSeconds = Math.max(0, Math.floor((endMs - startMs) / 1000));
+      const resolved = await this.downtimes.resolve(
+        client,
+        tenantId,
+        downtimeId,
+        cmd.occurredAt,
+        durationSeconds
+      );
+      if (!resolved) throw ApiError.notFound('Downtime record tidak ditemukan.');
 
-    return record;
+      await this.syncEvents.claim(
+        client,
+        tenantId,
+        cmd.clientEventId,
+        'RESOLVE_DOWNTIME',
+        resolved.workOrderId,
+        resolved.id
+      );
+      return resolved;
+    });
   }
 
   /** The still-open downtime on a machine, if any (US-017, US-020). */
-  getActiveDowntimeForMachine(tenantId: string, machineId: string): DowntimeRecord | undefined {
-    return this.downtimeRecords.find(
-      (d) => d.tenantId === tenantId && d.machineId === machineId && d.status === DowntimeStatus.ACTIVE
+  async getActiveDowntimeForMachine(
+    tenantId: string,
+    machineId: string
+  ): Promise<DowntimeRecord | undefined> {
+    return withTenant(tenantId, (client) =>
+      this.downtimes.findActiveForMachine(client, tenantId, machineId)
     );
   }
 
   /** The still-open downtime attached to a work order, if any. */
-  getActiveDowntimeForWorkOrder(tenantId: string, workOrderId: string): DowntimeRecord | undefined {
-    return this.downtimeRecords.find(
-      (d) => d.tenantId === tenantId && d.workOrderId === workOrderId && d.status === DowntimeStatus.ACTIVE
+  async getActiveDowntimeForWorkOrder(
+    tenantId: string,
+    workOrderId: string
+  ): Promise<DowntimeRecord | undefined> {
+    return withTenant(tenantId, (client) =>
+      this.downtimes.findActiveForWorkOrder(client, tenantId, workOrderId)
     );
   }
 
-  getActiveDowntimes(tenantId: string) {
-    return this.downtimeRecords.filter((d) => d.tenantId === tenantId && d.status === DowntimeStatus.ACTIVE);
+  async getActiveDowntimes(tenantId: string): Promise<DowntimeRecord[]> {
+    return withTenant(tenantId, (client) => this.downtimes.listActive(client, tenantId));
   }
 
-  getDowntimeRecords(tenantId: string, lineId?: string) {
-    return this.downtimeRecords.filter((d) => d.tenantId === tenantId && (!lineId || d.lineId === lineId));
+  async getDowntimeRecords(tenantId: string, lineId?: string): Promise<DowntimeRecord[]> {
+    return withTenant(tenantId, (client) => this.downtimes.list(client, tenantId, { lineId }));
   }
 
-  getProductionRecords(tenantId: string, workOrderId?: string) {
-    return this.productionRecords.filter(
-      (p) => p.tenantId === tenantId && (!workOrderId || p.workOrderId === workOrderId)
+  async getProductionRecords(tenantId: string, workOrderId?: string): Promise<ProductionRecord[]> {
+    return withTenant(tenantId, (client) =>
+      this.productionRecords.list(client, tenantId, { workOrderId })
     );
+  }
+
+  /** Row counts, for the boot log and the persistence acceptance checks. */
+  async counts(tenantId: string): Promise<{ production: number; downtime: number }> {
+    return withTenant(tenantId, async (client) => ({
+      production: await this.productionRecords.count(client, tenantId),
+      downtime: await this.downtimes.count(client, tenantId),
+    }));
   }
 
   /**
    * Load a deterministic back-catalogue of shift records so the Executive
-   * Dashboard's trend and previous-period requirements are
-   * answered from real aggregation rather than invented in the UI.
+   * Dashboard's trend and previous-period requirements are answered from real
+   * aggregation rather than invented in the UI.
    *
-   * Called once at boot from main.ts, after master data is available. Records
-   * are prepended so the hand-written "today" seed stays last in the array.
+   * Called once at boot from main.ts, after master data is available. Every
+   * row carries a stable `client_event_id`, so a second boot inserts nothing
+   * instead of doubling the demo history.
    */
-  seedHistory(input: HistorySeedInput): { productionCount: number; downtimeCount: number } {
+  async seedHistory(input: HistorySeedInput): Promise<{ productionCount: number; downtimeCount: number }> {
     const { production, downtime } = generateHistory(input);
-
-    const existingProduction = new Set(this.productionRecords.map((p) => p.id));
-    const existingDowntime = new Set(this.downtimeRecords.map((d) => d.id));
-
-    const newProduction = production.filter((p) => !existingProduction.has(p.id));
-    const newDowntime = downtime.filter((d) => !existingDowntime.has(d.id));
-
-    this.productionRecords.unshift(...newProduction);
-    this.downtimeRecords.unshift(...newDowntime);
-
-    return { productionCount: newProduction.length, downtimeCount: newDowntime.length };
+    return withTenant(input.tenantId, async (client) => ({
+      productionCount: await this.productionRecords.createMany(client, production),
+      downtimeCount: await this.downtimes.createMany(client, downtime),
+    }));
   }
 
   /**
@@ -396,7 +385,7 @@ export class ShopFloorService {
    * `FAILED` keeps it, with `retryable` deciding whether the terminal tries
    * again or surfaces it to the operator. Nothing is ever dropped silently.
    */
-  syncBatch(
+  async syncBatch(
     tenantId: string,
     commands: Array<{
       type: string;
@@ -405,7 +394,7 @@ export class ShopFloorService {
       occurredAt: string;
       workOrderId: string;
     }>
-  ): SyncBatchResult {
+  ): Promise<SyncBatchResult> {
     const results: SyncCommandResult[] = [];
 
     for (const cmd of commands) {
@@ -420,13 +409,13 @@ export class ShopFloorService {
         continue;
       }
 
-      if (this.hasProcessed(tenantId, cmd.clientEventId)) {
+      if (await this.hasProcessed(tenantId, cmd.clientEventId)) {
         results.push({ clientEventId: cmd.clientEventId, status: 'DUPLICATE', retryable: false });
         continue;
       }
 
       try {
-        const entityId = this.applyCommand(tenantId, cmd);
+        const entityId = await this.applyCommand(tenantId, cmd);
         results.push({ clientEventId: cmd.clientEventId, status: 'APPLIED', entityId, retryable: false });
       } catch (error) {
         const apiError = error instanceof ApiError ? error : undefined;
@@ -453,58 +442,72 @@ export class ShopFloorService {
     };
   }
 
-  private applyCommand(
+  private async applyCommand(
     tenantId: string,
     cmd: { type: string; clientEventId: string; payload: any; occurredAt: string; workOrderId: string }
-  ): string | undefined {
+  ): Promise<string | undefined> {
     const payload = cmd.payload ?? {};
 
     switch (cmd.type) {
-      case 'RECORD_OUTPUT':
-        return this.recordOutput(tenantId, {
+      case 'RECORD_OUTPUT': {
+        const record = await this.recordOutput(tenantId, {
           ...payload,
           workOrderId: cmd.workOrderId,
           clientEventId: cmd.clientEventId,
           occurredAt: cmd.occurredAt,
-        }).id;
-
-      case 'RECORD_DOWNTIME':
-        return this.startDowntime(tenantId, {
-          ...payload,
-          workOrderId: cmd.workOrderId,
-          clientEventId: cmd.clientEventId,
-          occurredAt: cmd.occurredAt,
-        }).id;
-
-      case 'RESOLVE_DOWNTIME': {
-        const target = payload.downtimeId ?? this.getActiveDowntimeForWorkOrder(tenantId, cmd.workOrderId)?.id;
-        if (!target) throw ApiError.notFound('Tidak ada downtime aktif untuk diselesaikan.');
-        return this.resolveDowntime(tenantId, target, {
-          clientEventId: cmd.clientEventId,
-          occurredAt: cmd.occurredAt,
-        }).id;
+        });
+        return record.id;
       }
 
-      case 'START_WO':
-        this.markProcessed(tenantId, cmd.clientEventId);
-        return this.productionService.startWorkOrder(tenantId, cmd.workOrderId, {
+      case 'RECORD_DOWNTIME': {
+        const record = await this.startDowntime(tenantId, {
+          ...payload,
+          workOrderId: cmd.workOrderId,
+          clientEventId: cmd.clientEventId,
+          occurredAt: cmd.occurredAt,
+        });
+        return record.id;
+      }
+
+      case 'RESOLVE_DOWNTIME': {
+        const active = await this.getActiveDowntimeForWorkOrder(tenantId, cmd.workOrderId);
+        const target = payload.downtimeId ?? active?.id;
+        if (!target) throw ApiError.notFound('Tidak ada downtime aktif untuk diselesaikan.');
+        const record = await this.resolveDowntime(tenantId, target, {
+          clientEventId: cmd.clientEventId,
+          occurredAt: cmd.occurredAt,
+        });
+        return record.id;
+      }
+
+      case 'START_WO': {
+        const wo = await this.productionService.startWorkOrder(tenantId, cmd.workOrderId, {
           operatorId: payload.operatorId,
           occurredAt: cmd.occurredAt,
-        }).id;
+        });
+        await this.markProcessed(tenantId, cmd.clientEventId, cmd.type, cmd.workOrderId, wo.id);
+        return wo.id;
+      }
 
-      case 'PAUSE_WO':
-        this.markProcessed(tenantId, cmd.clientEventId);
-        return this.productionService.pauseWorkOrder(tenantId, cmd.workOrderId).id;
+      case 'PAUSE_WO': {
+        const wo = await this.productionService.pauseWorkOrder(tenantId, cmd.workOrderId);
+        await this.markProcessed(tenantId, cmd.clientEventId, cmd.type, cmd.workOrderId, wo.id);
+        return wo.id;
+      }
 
-      case 'RESUME_WO':
-        this.markProcessed(tenantId, cmd.clientEventId);
-        return this.productionService.resumeWorkOrder(tenantId, cmd.workOrderId).id;
+      case 'RESUME_WO': {
+        const wo = await this.productionService.resumeWorkOrder(tenantId, cmd.workOrderId);
+        await this.markProcessed(tenantId, cmd.clientEventId, cmd.type, cmd.workOrderId, wo.id);
+        return wo.id;
+      }
 
-      case 'COMPLETE_WO':
-        this.markProcessed(tenantId, cmd.clientEventId);
-        return this.productionService.completeWorkOrder(tenantId, cmd.workOrderId, {
+      case 'COMPLETE_WO': {
+        const wo = await this.productionService.completeWorkOrder(tenantId, cmd.workOrderId, {
           occurredAt: cmd.occurredAt,
-        }).id;
+        });
+        await this.markProcessed(tenantId, cmd.clientEventId, cmd.type, cmd.workOrderId, wo.id);
+        return wo.id;
+      }
 
       default:
         throw ApiError.validation(`Tipe perintah offline tidak dikenal: ${cmd.type}.`);
@@ -512,11 +515,24 @@ export class ShopFloorService {
   }
 
   /**
-   * Marks a client event as applied for commands whose handler does not do it
-   * itself, the work-order state transitions live in ProductionService, which
-   * has no idempotency store of its own.
+   * Records a client event as applied for commands whose handler writes no row
+   * of its own: the work-order state transitions live in ProductionService,
+   * which has no idempotency key to conflict on.
    */
-  markProcessed(tenantId: string, clientEventId: string): void {
-    this.processedEvents.add(`${tenantId}:${clientEventId}`);
+  async markProcessed(
+    tenantId: string,
+    clientEventId: string,
+    commandType = 'UNKNOWN',
+    workOrderId?: string,
+    entityId?: string
+  ): Promise<void> {
+    await withTenant(tenantId, (client) =>
+      this.syncEvents.claim(client, tenantId, clientEventId, commandType, workOrderId, entityId)
+    );
+  }
+
+  /** Escape hatch for callers that already hold a transaction. */
+  poolExecutor(): Executor {
+    return getPool();
   }
 }

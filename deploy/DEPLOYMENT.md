@@ -37,6 +37,17 @@ should pull.
 
 Then apply the schema:
 
+Apply the schema **before** starting the API: production records live in
+PostgreSQL, so the API refuses to start against a database that has none.
+On a host that pulled images and has no checkout, the schema ships inside
+the API image:
+
+```bash
+docker compose -f deploy/docker-compose.yml run --rm migrate
+```
+
+From a source checkout instead:
+
 Migrations run as the schema owner (`POSTGRES_USER`), not as the application
 role, and `APP_DB_PASSWORD` is what lets the migration give `factory_app` its
 login:

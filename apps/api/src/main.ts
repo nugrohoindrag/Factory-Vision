@@ -16,7 +16,6 @@ import { AuthService } from './modules/auth/auth.service.js';
 import { OeeService } from './modules/oee/oee.service.js';
 import { CsvService } from './modules/csv/csv.service.js';
 import { ShiftHandoverService } from './modules/shift/shift.service.js';
-import type { HistoryLineSpec } from './modules/shopfloor/history.seed.js';
 import { errorMiddleware, requestIdMiddleware, route } from './platform/http/envelope.js';
 import { validate } from './platform/http/validate.js';
 import { ApiError } from './platform/http/api-error.js';
@@ -27,6 +26,9 @@ import { ClientManagementService } from './modules/client-management/client.serv
 import { ClientAdminService } from './modules/client-management/client.admin.service.js';
 import { InternalAuthService } from './modules/client-management/internal-auth.service.js';
 import { checkDatabase } from './platform/db/pool.js';
+import { assertDatabaseReady, seedDemoPlant, seedDemoHistory } from './platform/bootstrap.js';
+import { withTenant } from './platform/db/pool.js';
+import { MasterDataRepository } from './modules/master-data/master-data.repository.js';
 import { authRoutes } from './routes/auth.routes.js';
 import { rbacRoutes } from './routes/rbac.routes.js';
 import { shiftRoutes } from './routes/shift.routes.js';
@@ -54,6 +56,7 @@ app.use(tenantMiddleware);
 
 // Initialize Services
 const masterDataService = new MasterDataService();
+const masterDataRepository = new MasterDataRepository();
 const productionService = new ProductionService();
 const shopFloorService = new ShopFloorService(productionService, masterDataService);
 const performanceService = new PerformanceService(productionService, shopFloorService, masterDataService);
@@ -83,82 +86,55 @@ correctionService.attachDependencies({ shopFloor: shopFloorService, audit: audit
 app.use(attachPrincipal(authService));
 app.use(authorizeRoutes({ enabled: AUTH_REQUIRED }));
 
-// Seed a deterministic shop-floor back-catalogue so the Executive Dashboard's
-// trend and previous-period requirements aggregate from real
-// records instead of being fabricated in the browser. Demo/pilot data only,
-// see modules/shopfloor/history.seed.ts.
+// PostgreSQL must be reachable and migrated before anything is served: the
+// shop floor's records live there, not in this process (persistence fix §7).
 const PILOT_TENANT = 'tenant-pilot-factory-01';
+
+await assertDatabaseReady();
+
 if (SEED_DEMO_DATA) {
-  const workOrders = productionService.getWorkOrders(PILOT_TENANT);
-  const lines = masterDataService.getLines(PILOT_TENANT).filter((l) => l.status === 'ACTIVE');
-  const operators = masterDataService.getOperators(PILOT_TENANT);
-  const products = masterDataService.getProducts(PILOT_TENANT);
-
-  const historyLines: HistoryLineSpec[] = workOrders.map((wo) => {
-    const product = products.find((p) => p.id === wo.productId);
-    return {
-      lineId: wo.lineId,
-      processId: wo.processId,
-      batchId: wo.batchId,
-      machineId: wo.machineId,
-      workOrderId: wo.id,
-      operatorId: operators[0]?.id ?? 'op-001',
-      //, Alpha is the good performer, Beta the average one, and Gamma
-      // (the pilot validation line) the under-performer the drill-down finds.
-      profile: wo.lineId === 'line-01' ? 'GOOD' : wo.lineId === 'line-02' ? 'AVERAGE' : 'POOR',
-      dailyTarget: wo.targetQuantity,
-      // The generator must bound output with the very rate the OEE engine
-      // later divides by. Resolving both through
-      // `resolveIdealCycleSeconds` is what keeps Performance believable,
-      // a seed that produced at 750 s/unit while the engine measured against
-      // 30 s/unit reported a 21% Performance that no factory would recognise.
-      idealCycleSeconds:
-        masterDataService.resolveIdealCycleSeconds(PILOT_TENANT, wo.productId, wo.machineId) ??
-        product?.idealCycleTimeSeconds ??
-        120,
-    };
+  const plant = await seedDemoPlant(PILOT_TENANT, {
+    masterData: masterDataService,
+    production: productionService,
   });
-
-  const seeded = shopFloorService.seedHistory({
-    tenantId: PILOT_TENANT,
-    anchorDate: '2026-08-28',
-    days: 60,
-    shiftId: 'shift-1',
-    plannedProductionMinutes: lines[0]?.plannedProductionTimeMinutes ?? 480,
-    lines: historyLines,
-    // Pilot Tire Factory Downtime & Reject Reasons
-    downtimeReasonIds: ['dt-breakdown', 'dt-material', 'dt-setup', 'dt-cleaning', 'dt-qc-wait', 'dt-operator'],
-    rejectReasonIds: [
-      'rej-dimension',
-      'rej-blister',
-      'rej-scratch',
-      'rej-flash',
-      'rej-distortion',
-      'rej-other',
-    ],
-  });
-
   // eslint-disable-next-line no-console
   console.log(
-    `[seed] shop-floor history: ${seeded.productionCount} production, ${seeded.downtimeCount} downtime records across processes`
+    `[seed] demo plant: ${plant.lines} lines, ${plant.products} products, ` +
+      `${plant.productionOrders} production orders, ${plant.workOrders} work orders`
+  );
+
+  const history = await seedDemoHistory(PILOT_TENANT, {
+    masterData: masterDataService,
+    production: productionService,
+    shopFloor: shopFloorService,
+  });
+  // eslint-disable-next-line no-console
+  console.log(
+    `[seed] shop-floor history: ${history.productionCount} production, ${history.downtimeCount} downtime records across processes`
   );
 }
 
+const persisted = await shopFloorService.counts(PILOT_TENANT);
+// eslint-disable-next-line no-console
+console.log(
+  `[db] persisted for ${PILOT_TENANT}: ${persisted.production} production records, ${persisted.downtime} downtime records`
+);
+
 // Health check
-app.get('/health', (req, res) => {
+app.get('/health', async (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString(), tenant: req.context?.tenantId });
 });
 
 // Master Data Endpoints
-app.get('/api/v1/master/plants', (req, res) => {
+app.get('/api/v1/master/plants', async (req, res) => {
   res.json(masterDataService.getPlants(req.context!.tenantId));
 });
 
-app.get('/api/v1/master/lines', (req, res) => {
+app.get('/api/v1/master/lines', async (req, res) => {
   res.json(masterDataService.getLines(req.context!.tenantId));
 });
 
-app.post('/api/v1/master/lines', (req, res) => {
+app.post('/api/v1/master/lines', async (req, res) => {
   const line = masterDataService.createLine(req.context!.tenantId, req.body);
   auditService.record({
     tenantId: req.context!.tenantId,
@@ -172,7 +148,7 @@ app.post('/api/v1/master/lines', (req, res) => {
   res.status(201).json(line);
 });
 
-app.put('/api/v1/master/lines/:id', (req, res, next) => {
+app.put('/api/v1/master/lines/:id', async (req, res, next) => {
   try {
     const line = masterDataService.updateLine(req.context!.tenantId, req.params.id, req.body);
     auditService.record({
@@ -190,7 +166,7 @@ app.put('/api/v1/master/lines/:id', (req, res, next) => {
   }
 });
 
-app.delete('/api/v1/master/lines/:id', (req, res, next) => {
+app.delete('/api/v1/master/lines/:id', async (req, res, next) => {
   try {
     masterDataService.deleteLine(req.context!.tenantId, req.params.id);
     auditService.record({
@@ -207,11 +183,11 @@ app.delete('/api/v1/master/lines/:id', (req, res, next) => {
   }
 });
 
-app.get('/api/v1/master/machines', (req, res) => {
+app.get('/api/v1/master/machines', async (req, res) => {
   res.json(masterDataService.getMachines(req.context!.tenantId));
 });
 
-app.post('/api/v1/master/machines', (req, res) => {
+app.post('/api/v1/master/machines', async (req, res) => {
   const machine = masterDataService.createMachine(req.context!.tenantId, req.body);
   auditService.record({
     tenantId: req.context!.tenantId,
@@ -225,7 +201,7 @@ app.post('/api/v1/master/machines', (req, res) => {
   res.status(201).json(machine);
 });
 
-app.put('/api/v1/master/machines/:id', (req, res, next) => {
+app.put('/api/v1/master/machines/:id', async (req, res, next) => {
   try {
     const machine = masterDataService.updateMachine(req.context!.tenantId, req.params.id, req.body);
     auditService.record({
@@ -243,7 +219,7 @@ app.put('/api/v1/master/machines/:id', (req, res, next) => {
   }
 });
 
-app.delete('/api/v1/master/machines/:id', (req, res, next) => {
+app.delete('/api/v1/master/machines/:id', async (req, res, next) => {
   try {
     masterDataService.deleteMachine(req.context!.tenantId, req.params.id);
     auditService.record({
@@ -260,11 +236,11 @@ app.delete('/api/v1/master/machines/:id', (req, res, next) => {
   }
 });
 
-app.get('/api/v1/master/products', (req, res) => {
+app.get('/api/v1/master/products', async (req, res) => {
   res.json(masterDataService.getProducts(req.context!.tenantId));
 });
 
-app.post('/api/v1/master/products', (req, res) => {
+app.post('/api/v1/master/products', async (req, res) => {
   const product = masterDataService.createProduct(req.context!.tenantId, req.body);
   auditService.record({
     tenantId: req.context!.tenantId,
@@ -278,7 +254,7 @@ app.post('/api/v1/master/products', (req, res) => {
   res.status(201).json(product);
 });
 
-app.put('/api/v1/master/products/:id', (req, res, next) => {
+app.put('/api/v1/master/products/:id', async (req, res, next) => {
   try {
     const product = masterDataService.updateProduct(req.context!.tenantId, req.params.id, req.body);
     auditService.record({
@@ -296,7 +272,7 @@ app.put('/api/v1/master/products/:id', (req, res, next) => {
   }
 });
 
-app.delete('/api/v1/master/products/:id', (req, res, next) => {
+app.delete('/api/v1/master/products/:id', async (req, res, next) => {
   try {
     masterDataService.deleteProduct(req.context!.tenantId, req.params.id);
     auditService.record({
@@ -313,11 +289,11 @@ app.delete('/api/v1/master/products/:id', (req, res, next) => {
   }
 });
 
-app.get('/api/v1/master/operators', (req, res) => {
+app.get('/api/v1/master/operators', async (req, res) => {
   res.json(masterDataService.getOperators(req.context!.tenantId));
 });
 
-app.post('/api/v1/master/operators', (req, res) => {
+app.post('/api/v1/master/operators', async (req, res) => {
   const operator = masterDataService.createOperator(req.context!.tenantId, req.body);
   auditService.record({
     tenantId: req.context!.tenantId,
@@ -331,7 +307,7 @@ app.post('/api/v1/master/operators', (req, res) => {
   res.status(201).json(operator);
 });
 
-app.put('/api/v1/master/operators/:id', (req, res, next) => {
+app.put('/api/v1/master/operators/:id', async (req, res, next) => {
   try {
     const operator = masterDataService.updateOperator(req.context!.tenantId, req.params.id, req.body);
     auditService.record({
@@ -349,7 +325,7 @@ app.put('/api/v1/master/operators/:id', (req, res, next) => {
   }
 });
 
-app.delete('/api/v1/master/operators/:id', (req, res, next) => {
+app.delete('/api/v1/master/operators/:id', async (req, res, next) => {
   try {
     masterDataService.deleteOperator(req.context!.tenantId, req.params.id);
     auditService.record({
@@ -366,15 +342,15 @@ app.delete('/api/v1/master/operators/:id', (req, res, next) => {
   }
 });
 
-app.get('/api/v1/master/shifts', (req, res) => {
+app.get('/api/v1/master/shifts', async (req, res) => {
   res.json(masterDataService.getShifts(req.context!.tenantId));
 });
 
-app.get('/api/v1/master/downtime-reasons', (req, res) => {
+app.get('/api/v1/master/downtime-reasons', async (req, res) => {
   res.json(masterDataService.getDowntimeReasons(req.context!.tenantId));
 });
 
-app.post('/api/v1/master/downtime-reasons', (req, res) => {
+app.post('/api/v1/master/downtime-reasons', async (req, res) => {
   const reason = masterDataService.createDowntimeReason(req.context!.tenantId, req.body);
   auditService.record({
     tenantId: req.context!.tenantId,
@@ -388,7 +364,7 @@ app.post('/api/v1/master/downtime-reasons', (req, res) => {
   res.status(201).json(reason);
 });
 
-app.put('/api/v1/master/downtime-reasons/:id', (req, res, next) => {
+app.put('/api/v1/master/downtime-reasons/:id', async (req, res, next) => {
   try {
     const reason = masterDataService.updateDowntimeReason(req.context!.tenantId, req.params.id, req.body);
     auditService.record({
@@ -406,7 +382,7 @@ app.put('/api/v1/master/downtime-reasons/:id', (req, res, next) => {
   }
 });
 
-app.delete('/api/v1/master/downtime-reasons/:id', (req, res, next) => {
+app.delete('/api/v1/master/downtime-reasons/:id', async (req, res, next) => {
   try {
     masterDataService.deleteDowntimeReason(req.context!.tenantId, req.params.id);
     auditService.record({
@@ -423,11 +399,11 @@ app.delete('/api/v1/master/downtime-reasons/:id', (req, res, next) => {
   }
 });
 
-app.get('/api/v1/master/reject-reasons', (req, res) => {
+app.get('/api/v1/master/reject-reasons', async (req, res) => {
   res.json(masterDataService.getRejectReasons(req.context!.tenantId));
 });
 
-app.post('/api/v1/master/reject-reasons', (req, res) => {
+app.post('/api/v1/master/reject-reasons', async (req, res) => {
   const reason = masterDataService.createRejectReason(req.context!.tenantId, req.body);
   auditService.record({
     tenantId: req.context!.tenantId,
@@ -441,7 +417,7 @@ app.post('/api/v1/master/reject-reasons', (req, res) => {
   res.status(201).json(reason);
 });
 
-app.put('/api/v1/master/reject-reasons/:id', (req, res, next) => {
+app.put('/api/v1/master/reject-reasons/:id', async (req, res, next) => {
   try {
     const reason = masterDataService.updateRejectReason(req.context!.tenantId, req.params.id, req.body);
     auditService.record({
@@ -459,7 +435,7 @@ app.put('/api/v1/master/reject-reasons/:id', (req, res, next) => {
   }
 });
 
-app.delete('/api/v1/master/reject-reasons/:id', (req, res, next) => {
+app.delete('/api/v1/master/reject-reasons/:id', async (req, res, next) => {
   try {
     masterDataService.deleteRejectReason(req.context!.tenantId, req.params.id);
     auditService.record({
@@ -477,11 +453,11 @@ app.delete('/api/v1/master/reject-reasons/:id', (req, res, next) => {
 });
 
 // PRD v1.3: User Management & Access Control Endpoints
-app.get('/api/v1/master/users', (req, res) => {
+app.get('/api/v1/master/users', async (req, res) => {
   res.json(masterDataService.getUsers(req.context!.tenantId));
 });
 
-app.get('/api/v1/master/users/:id', (req, res) => {
+app.get('/api/v1/master/users/:id', async (req, res) => {
   const user = masterDataService.getUserById(req.context!.tenantId, req.params.id);
   if (!user) return res.status(404).json({ message: 'User not found' });
   res.json(user);
@@ -496,7 +472,7 @@ app.get('/api/v1/master/users/:id', (req, res) => {
  */
 app.post(
   '/api/v1/master/users',
-  route((req, res) => {
+  route(async (req, res) => {
     const tenantId = req.context!.tenantId;
     const v = validate(req.body);
     const email = v.email('email');
@@ -547,7 +523,7 @@ app.post(
 
 app.put(
   '/api/v1/master/users/:id',
-  route((req, res) => {
+  route(async (req, res) => {
     const tenantId = req.context!.tenantId;
     const before = masterDataService.getUserById(tenantId, req.params.id);
     if (!before) throw ApiError.notFound('Pengguna tidak ditemukan.');
@@ -585,7 +561,7 @@ app.put(
 
 app.delete(
   '/api/v1/master/users/:id',
-  route((req, res) => {
+  route(async (req, res) => {
     const tenantId = req.context!.tenantId;
     const before = masterDataService.getUserById(tenantId, req.params.id);
     if (!before) throw ApiError.notFound('Pengguna tidak ditemukan.');
@@ -607,7 +583,7 @@ app.delete(
 /** US-005, activate, suspend or deactivate, then drop live sessions. */
 app.patch(
   '/api/v1/master/users/:id/status',
-  route((req, res) => {
+  route(async (req, res) => {
     const tenantId = req.context!.tenantId;
     const v = validate(req.body);
     const status = v.oneOf('status', ['INVITED', 'ACTIVE', 'SUSPENDED', 'INACTIVE'] as const);
@@ -638,11 +614,11 @@ app.patch(
 );
 
 // PRD v1.3: Shop Floor Device / Terminal Management ( &)
-app.get('/api/v1/master/devices', (req, res) => {
+app.get('/api/v1/master/devices', async (req, res) => {
   res.json(masterDataService.getDevices(req.context!.tenantId));
 });
 
-app.post('/api/v1/master/devices', (req, res) => {
+app.post('/api/v1/master/devices', async (req, res) => {
   const device = masterDataService.createDevice(req.context!.tenantId, req.body);
   auditService.record({
     tenantId: req.context!.tenantId,
@@ -656,7 +632,7 @@ app.post('/api/v1/master/devices', (req, res) => {
   res.status(201).json(device);
 });
 
-app.put('/api/v1/master/devices/:id', (req, res, next) => {
+app.put('/api/v1/master/devices/:id', async (req, res, next) => {
   try {
     const device = masterDataService.updateDevice(req.context!.tenantId, req.params.id, req.body);
     auditService.record({
@@ -674,7 +650,7 @@ app.put('/api/v1/master/devices/:id', (req, res, next) => {
   }
 });
 
-app.delete('/api/v1/master/devices/:id', (req, res, next) => {
+app.delete('/api/v1/master/devices/:id', async (req, res, next) => {
   try {
     masterDataService.deleteDevice(req.context!.tenantId, req.params.id);
     auditService.record({
@@ -692,11 +668,11 @@ app.delete('/api/v1/master/devices/:id', (req, res, next) => {
 });
 
 // Production Processes
-app.get('/api/v1/master/processes', (req, res) => {
+app.get('/api/v1/master/processes', async (req, res) => {
   res.json(masterDataService.getProcesses(req.context!.tenantId));
 });
 
-app.post('/api/v1/master/processes', (req, res, next) => {
+app.post('/api/v1/master/processes', async (req, res, next) => {
   try {
     const process = masterDataService.createProcess(req.context!.tenantId, req.body);
     res.status(201).json(process);
@@ -705,7 +681,7 @@ app.post('/api/v1/master/processes', (req, res, next) => {
   }
 });
 
-app.put('/api/v1/master/processes/:id', (req, res, next) => {
+app.put('/api/v1/master/processes/:id', async (req, res, next) => {
   try {
     const process = masterDataService.updateProcess(req.context!.tenantId, req.params.id, req.body);
     res.json(process);
@@ -714,7 +690,7 @@ app.put('/api/v1/master/processes/:id', (req, res, next) => {
   }
 });
 
-app.delete('/api/v1/master/processes/:id', (req, res, next) => {
+app.delete('/api/v1/master/processes/:id', async (req, res, next) => {
   try {
     masterDataService.deleteProcess(req.context!.tenantId, req.params.id);
     res.json({ success: true, message: 'Production process deleted successfully' });
@@ -724,11 +700,11 @@ app.delete('/api/v1/master/processes/:id', (req, res, next) => {
 });
 
 // Product Routings
-app.get('/api/v1/master/routings', (req, res) => {
+app.get('/api/v1/master/routings', async (req, res) => {
   res.json(masterDataService.getProductRoutings(req.context!.tenantId, req.query.productId as string));
 });
 
-app.post('/api/v1/master/routings', (req, res, next) => {
+app.post('/api/v1/master/routings', async (req, res, next) => {
   try {
     const routing = masterDataService.createRouting(req.context!.tenantId, req.body);
     res.status(201).json(routing);
@@ -737,7 +713,7 @@ app.post('/api/v1/master/routings', (req, res, next) => {
   }
 });
 
-app.put('/api/v1/master/routings/:id', (req, res, next) => {
+app.put('/api/v1/master/routings/:id', async (req, res, next) => {
   try {
     const routing = masterDataService.updateRouting(req.context!.tenantId, req.params.id, req.body);
     res.json(routing);
@@ -746,7 +722,7 @@ app.put('/api/v1/master/routings/:id', (req, res, next) => {
   }
 });
 
-app.delete('/api/v1/master/routings/:id', (req, res, next) => {
+app.delete('/api/v1/master/routings/:id', async (req, res, next) => {
   try {
     masterDataService.deleteRouting(req.context!.tenantId, req.params.id);
     res.json({ success: true, message: 'Product routing deleted successfully' });
@@ -756,7 +732,7 @@ app.delete('/api/v1/master/routings/:id', (req, res, next) => {
 });
 
 // Product Machine Rates
-app.get('/api/v1/master/machine-rates', (req, res) => {
+app.get('/api/v1/master/machine-rates', async (req, res) => {
   res.json(
     masterDataService.getProductMachineRates(
       req.context!.tenantId,
@@ -766,7 +742,7 @@ app.get('/api/v1/master/machine-rates', (req, res) => {
   );
 });
 
-app.post('/api/v1/master/machine-rates', (req, res, next) => {
+app.post('/api/v1/master/machine-rates', async (req, res, next) => {
   try {
     const rate = masterDataService.upsertProductMachineRate(req.context!.tenantId, req.body);
     res.status(201).json(rate);
@@ -775,7 +751,7 @@ app.post('/api/v1/master/machine-rates', (req, res, next) => {
   }
 });
 
-app.delete('/api/v1/master/machine-rates/:id', (req, res, next) => {
+app.delete('/api/v1/master/machine-rates/:id', async (req, res, next) => {
   try {
     masterDataService.deleteProductMachineRate(req.context!.tenantId, req.params.id);
     res.json({ success: true, message: 'Product machine rate deleted successfully' });
@@ -785,7 +761,7 @@ app.delete('/api/v1/master/machine-rates/:id', (req, res, next) => {
 });
 
 // Batches & Lots
-app.get('/api/v1/master/batches', (req, res) => {
+app.get('/api/v1/master/batches', async (req, res) => {
   res.json(
     masterDataService.getBatches(
       req.context!.tenantId,
@@ -795,16 +771,20 @@ app.get('/api/v1/master/batches', (req, res) => {
   );
 });
 
-app.post('/api/v1/master/batches', (req, res, next) => {
+app.post('/api/v1/master/batches', async (req, res, next) => {
   try {
-    const batch = masterDataService.createBatch(req.context!.tenantId, req.body);
+    const tenantId = req.context!.tenantId;
+    const batch = masterDataService.createBatch(tenantId, req.body);
+    // work_order.batch_id is a foreign key, so a batch that exists only in
+    // memory cannot be attached to a work order (US-013).
+    await withTenant(tenantId, (client) => masterDataRepository.upsertBatch(client, tenantId, batch));
     res.status(201).json(batch);
   } catch (err) {
     next(err);
   }
 });
 
-app.put('/api/v1/master/batches/:id', (req, res, next) => {
+app.put('/api/v1/master/batches/:id', async (req, res, next) => {
   try {
     const batch = masterDataService.updateBatch(req.context!.tenantId, req.params.id, req.body);
     res.json(batch);
@@ -814,19 +794,19 @@ app.put('/api/v1/master/batches/:id', (req, res, next) => {
 });
 
 // Production Orders Endpoints
-app.get('/api/v1/production-orders', (req, res) => {
-  res.json(productionService.getProductionOrders(req.context!.tenantId));
+app.get('/api/v1/production-orders', async (req, res) => {
+  res.json(await productionService.getProductionOrders(req.context!.tenantId));
 });
 
-app.get('/api/v1/production-orders/:id', (req, res) => {
-  const po = productionService.getProductionOrderById(req.context!.tenantId, req.params.id);
+app.get('/api/v1/production-orders/:id', async (req, res) => {
+  const po = await productionService.getProductionOrderById(req.context!.tenantId, req.params.id);
   if (!po) return res.status(404).json({ message: 'Production order not found' });
   res.json(po);
 });
 
-app.post('/api/v1/production-orders', (req, res, next) => {
+app.post('/api/v1/production-orders', async (req, res, next) => {
   try {
-    const po = productionService.createProductionOrder(req.context!.tenantId, req.body);
+    const po = await productionService.createProductionOrder(req.context!.tenantId, req.body);
     realtimeGateway.emitTenantEvent(req.context!.tenantId, 'production-order:created', po);
     res.status(201).json(po);
   } catch (err) {
@@ -834,9 +814,9 @@ app.post('/api/v1/production-orders', (req, res, next) => {
   }
 });
 
-app.post('/api/v1/production-orders/:id/release', (req, res, next) => {
+app.post('/api/v1/production-orders/:id/release', async (req, res, next) => {
   try {
-    const po = productionService.releaseProductionOrder(
+    const po = await productionService.releaseProductionOrder(
       req.context!.tenantId,
       req.params.id,
       masterDataService.getProductRoutings(req.context!.tenantId)
@@ -848,9 +828,9 @@ app.post('/api/v1/production-orders/:id/release', (req, res, next) => {
   }
 });
 
-app.put('/api/v1/production-orders/:id', (req, res, next) => {
+app.put('/api/v1/production-orders/:id', async (req, res, next) => {
   try {
-    const po = productionService.updateProductionOrder(req.context!.tenantId, req.params.id, req.body);
+    const po = await productionService.updateProductionOrder(req.context!.tenantId, req.params.id, req.body);
     realtimeGateway.emitTenantEvent(req.context!.tenantId, 'production-order:updated', po);
     res.json(po);
   } catch (err) {
@@ -858,9 +838,9 @@ app.put('/api/v1/production-orders/:id', (req, res, next) => {
   }
 });
 
-app.delete('/api/v1/production-orders/:id', (req, res, next) => {
+app.delete('/api/v1/production-orders/:id', async (req, res, next) => {
   try {
-    productionService.deleteProductionOrder(req.context!.tenantId, req.params.id);
+    await productionService.deleteProductionOrder(req.context!.tenantId, req.params.id);
     realtimeGateway.emitTenantEvent(req.context!.tenantId, 'production-order:deleted', { id: req.params.id });
     res.json({ success: true, message: 'Production order deleted' });
   } catch (err) {
@@ -871,9 +851,9 @@ app.delete('/api/v1/production-orders/:id', (req, res, next) => {
 // Work Orders Endpoints
 app.get(
   '/api/v1/work-orders',
-  route((req, res) => {
+  route(async (req, res) => {
     const { lineId, status } = req.query as { lineId?: string; status?: string };
-    const all = productionService.getWorkOrders(req.context!.tenantId, { lineId, status });
+    const all = await productionService.getWorkOrders(req.context!.tenantId, { lineId, status });
     // US-014: an operator sees only the work assigned to their line, and
     // US-003 narrows every other role to its plant/line scope. Filtering here
     // rather than in the UI is what makes the rule real.
@@ -883,17 +863,17 @@ app.get(
 
 app.get(
   '/api/v1/work-orders/:id',
-  route((req, res) => {
-    const wo = productionService.getWorkOrderById(req.context!.tenantId, req.params.id);
+  route(async (req, res) => {
+    const wo = await productionService.getWorkOrderById(req.context!.tenantId, req.params.id);
     if (!wo) throw ApiError.notFound('Work order tidak ditemukan.');
     scope.assertLine(req.principal, wo.lineId);
     res.json(wo);
   })
 );
 
-app.post('/api/v1/work-orders', (req, res, next) => {
+app.post('/api/v1/work-orders', async (req, res, next) => {
   try {
-    const wo = productionService.createWorkOrder(req.context!.tenantId, req.body);
+    const wo = await productionService.createWorkOrder(req.context!.tenantId, req.body);
     auditService.record({
       tenantId: req.context!.tenantId,
       actorType: 'USER',
@@ -910,9 +890,9 @@ app.post('/api/v1/work-orders', (req, res, next) => {
   }
 });
 
-app.put('/api/v1/work-orders/:id', (req, res, next) => {
+app.put('/api/v1/work-orders/:id', async (req, res, next) => {
   try {
-    const wo = productionService.updateWorkOrder(req.context!.tenantId, req.params.id, req.body);
+    const wo = await productionService.updateWorkOrder(req.context!.tenantId, req.params.id, req.body);
     auditService.record({
       tenantId: req.context!.tenantId,
       actorType: 'USER',
@@ -929,9 +909,9 @@ app.put('/api/v1/work-orders/:id', (req, res, next) => {
   }
 });
 
-app.delete('/api/v1/work-orders/:id', (req, res, next) => {
+app.delete('/api/v1/work-orders/:id', async (req, res, next) => {
   try {
-    productionService.deleteWorkOrder(req.context!.tenantId, req.params.id);
+    await productionService.deleteWorkOrder(req.context!.tenantId, req.params.id);
     auditService.record({
       tenantId: req.context!.tenantId,
       actorType: 'USER',
@@ -949,13 +929,13 @@ app.delete('/api/v1/work-orders/:id', (req, res, next) => {
 
 app.post(
   '/api/v1/work-orders/:id/release',
-  route((req, res) => {
+  route(async (req, res) => {
     const tenantId = req.context!.tenantId;
-    const before = productionService.getWorkOrderById(tenantId, req.params.id);
+    const before = await productionService.getWorkOrderById(tenantId, req.params.id);
     if (!before) throw ApiError.notFound('Work order tidak ditemukan.');
     scope.assertLine(req.principal, before.lineId);
 
-    const wo = productionService.releaseWorkOrder(tenantId, req.params.id);
+    const wo = await productionService.releaseWorkOrder(tenantId, req.params.id);
     recordAudit(req, 'work_order', wo.id, 'RELEASE', { status: before.status }, { status: wo.status });
     realtimeGateway.emitTenantEvent(tenantId, 'work-order:updated', wo);
     res.json(wo);
@@ -972,9 +952,9 @@ app.post(
  */
 app.post(
   '/api/v1/work-orders/:id/start',
-  route((req, res) => {
+  route(async (req, res) => {
     const tenantId = req.context!.tenantId;
-    const wo = productionService.getWorkOrderById(tenantId, req.params.id);
+    const wo = await productionService.getWorkOrderById(tenantId, req.params.id);
     if (!wo) throw ApiError.notFound('Work order tidak ditemukan.');
 
     const operatorId = req.body?.operatorId ?? req.principal?.subjectId;
@@ -998,7 +978,7 @@ app.post(
       if (!machine || machine.status !== 'ACTIVE') {
         throw ApiError.invalidState('Mesin pada work order ini tidak aktif.');
       }
-      const openDowntime = shopFloorService.getActiveDowntimeForMachine(tenantId, wo.machineId);
+      const openDowntime = await shopFloorService.getActiveDowntimeForMachine(tenantId, wo.machineId);
       if (openDowntime) {
         throw ApiError.invalidState(
           'Mesin sedang dalam kondisi downtime. Selesaikan downtime terlebih dahulu.'
@@ -1010,7 +990,7 @@ app.post(
       throw ApiError.invalidState('Tidak ada shift aktif yang terkonfigurasi.');
     }
 
-    const started = productionService.startWorkOrder(tenantId, req.params.id, {
+    const started = await productionService.startWorkOrder(tenantId, req.params.id, {
       operatorId,
       occurredAt: req.body?.occurredAt,
     });
@@ -1027,9 +1007,9 @@ app.post(
   })
 );
 
-app.post('/api/v1/work-orders/:id/pause', (req, res, next) => {
+app.post('/api/v1/work-orders/:id/pause', async (req, res, next) => {
   try {
-    const wo = productionService.pauseWorkOrder(req.context!.tenantId, req.params.id);
+    const wo = await productionService.pauseWorkOrder(req.context!.tenantId, req.params.id);
     realtimeGateway.emitTenantEvent(req.context!.tenantId, 'work-order:updated', wo);
     res.json(wo);
   } catch (err) {
@@ -1037,9 +1017,9 @@ app.post('/api/v1/work-orders/:id/pause', (req, res, next) => {
   }
 });
 
-app.post('/api/v1/work-orders/:id/resume', (req, res, next) => {
+app.post('/api/v1/work-orders/:id/resume', async (req, res, next) => {
   try {
-    const wo = productionService.resumeWorkOrder(req.context!.tenantId, req.params.id);
+    const wo = await productionService.resumeWorkOrder(req.context!.tenantId, req.params.id);
     realtimeGateway.emitTenantEvent(req.context!.tenantId, 'work-order:updated', wo);
     res.json(wo);
   } catch (err) {
@@ -1056,20 +1036,20 @@ app.post('/api/v1/work-orders/:id/resume', (req, res, next) => {
  */
 app.post(
   '/api/v1/work-orders/:id/complete',
-  route((req, res) => {
+  route(async (req, res) => {
     const tenantId = req.context!.tenantId;
-    const wo = productionService.getWorkOrderById(tenantId, req.params.id);
+    const wo = await productionService.getWorkOrderById(tenantId, req.params.id);
     if (!wo) throw ApiError.notFound('Work order tidak ditemukan.');
     scope.assertLine(req.principal, wo.lineId);
 
-    const openDowntime = shopFloorService.getActiveDowntimeForWorkOrder(tenantId, wo.id);
+    const openDowntime = await shopFloorService.getActiveDowntimeForWorkOrder(tenantId, wo.id);
     if (openDowntime) {
       throw ApiError.invalidState(
         'Masih ada downtime aktif pada work order ini. Selesaikan downtime sebelum menutup work order.'
       );
     }
 
-    const completed = productionService.completeWorkOrder(tenantId, req.params.id, req.body ?? {});
+    const completed = await productionService.completeWorkOrder(tenantId, req.params.id, req.body ?? {});
     recordAudit(
       req,
       'work_order',
@@ -1090,13 +1070,13 @@ app.post(
 
 app.post(
   '/api/v1/work-orders/:id/cancel',
-  route((req, res) => {
+  route(async (req, res) => {
     const tenantId = req.context!.tenantId;
-    const before = productionService.getWorkOrderById(tenantId, req.params.id);
+    const before = await productionService.getWorkOrderById(tenantId, req.params.id);
     if (!before) throw ApiError.notFound('Work order tidak ditemukan.');
     scope.assertLine(req.principal, before.lineId);
 
-    const wo = productionService.cancelWorkOrder(tenantId, req.params.id);
+    const wo = await productionService.cancelWorkOrder(tenantId, req.params.id);
     recordAudit(req, 'work_order', wo.id, 'CANCEL', { status: before.status }, { status: wo.status });
     realtimeGateway.emitTenantEvent(tenantId, 'work-order:updated', wo);
     res.json(wo);
@@ -1104,9 +1084,9 @@ app.post(
 );
 
 // Shop Floor Execution Endpoints
-app.post('/api/v1/shop-floor/output', (req, res, next) => {
+app.post('/api/v1/shop-floor/output', async (req, res, next) => {
   try {
-    const record = shopFloorService.recordOutput(req.context!.tenantId, req.body);
+    const record = await shopFloorService.recordOutput(req.context!.tenantId, req.body);
     realtimeGateway.emitTenantEvent(req.context!.tenantId, 'production:output-recorded', record);
     res.status(201).json(record);
   } catch (err) {
@@ -1114,9 +1094,9 @@ app.post('/api/v1/shop-floor/output', (req, res, next) => {
   }
 });
 
-app.post('/api/v1/shop-floor/downtime/start', (req, res, next) => {
+app.post('/api/v1/shop-floor/downtime/start', async (req, res, next) => {
   try {
-    const record = shopFloorService.startDowntime(req.context!.tenantId, req.body);
+    const record = await shopFloorService.startDowntime(req.context!.tenantId, req.body);
     realtimeGateway.emitTenantEvent(req.context!.tenantId, 'downtime:started', record);
     res.status(201).json(record);
   } catch (err) {
@@ -1124,9 +1104,9 @@ app.post('/api/v1/shop-floor/downtime/start', (req, res, next) => {
   }
 });
 
-app.post('/api/v1/shop-floor/downtime/:id/resolve', (req, res, next) => {
+app.post('/api/v1/shop-floor/downtime/:id/resolve', async (req, res, next) => {
   try {
-    const record = shopFloorService.resolveDowntime(req.context!.tenantId, req.params.id, req.body);
+    const record = await shopFloorService.resolveDowntime(req.context!.tenantId, req.params.id, req.body);
     realtimeGateway.emitTenantEvent(req.context!.tenantId, 'downtime:resolved', record);
     res.json(record);
   } catch (err) {
@@ -1134,14 +1114,14 @@ app.post('/api/v1/shop-floor/downtime/:id/resolve', (req, res, next) => {
   }
 });
 
-app.get('/api/v1/shop-floor/downtime', (req, res) => {
+app.get('/api/v1/shop-floor/downtime', async (req, res) => {
   const { lineId } = req.query as { lineId?: string };
-  res.json(shopFloorService.getDowntimeRecords(req.context!.tenantId, lineId));
+  res.json(await shopFloorService.getDowntimeRecords(req.context!.tenantId, lineId));
 });
 
-app.post('/api/v1/shop-floor/sync-batch', (req, res, next) => {
+app.post('/api/v1/shop-floor/sync-batch', async (req, res, next) => {
   try {
-    const result = shopFloorService.syncBatch(req.context!.tenantId, req.body.commands || []);
+    const result = await shopFloorService.syncBatch(req.context!.tenantId, req.body.commands || []);
     realtimeGateway.emitTenantEvent(req.context!.tenantId, 'shop-floor:batch-synced', result);
     res.json(result);
   } catch (err) {
@@ -1150,13 +1130,13 @@ app.post('/api/v1/shop-floor/sync-batch', (req, res, next) => {
 });
 
 // Analytics & Dashboard Endpoints
-app.get('/api/v1/analytics/live-board', (req, res) => {
-  res.json(performanceService.getLiveProductionBoard(req.context!.tenantId));
+app.get('/api/v1/analytics/live-board', async (req, res) => {
+  res.json(await performanceService.getLiveProductionBoard(req.context!.tenantId));
 });
 
-app.get('/api/v1/analytics/downtime-pareto', (req, res) => {
+app.get('/api/v1/analytics/downtime-pareto', async (req, res) => {
   const { lineId } = req.query as { lineId?: string };
-  res.json(performanceService.getDowntimePareto(req.context!.tenantId, lineId));
+  res.json(await performanceService.getDowntimePareto(req.context!.tenantId, lineId));
 });
 
 // --- Executive Dashboard ---
@@ -1169,70 +1149,70 @@ const parseDays = (raw: unknown, fallback: number): number => {
 };
 
 // Executive KPI, value, target, variance, status, previous-period delta
-app.get('/api/v1/analytics/executive-kpi', (req, res) => {
-  res.json(performanceService.getExecutiveKpi(req.context!.tenantId, parseDays(req.query.days, 7)));
+app.get('/api/v1/analytics/executive-kpi', async (req, res) => {
+  res.json(await performanceService.getExecutiveKpi(req.context!.tenantId, parseDays(req.query.days, 7)));
 });
 
 // Production Performance, target vs actual over time
-app.get('/api/v1/analytics/production-trend', (req, res) => {
-  res.json(performanceService.getProductionTrend(req.context!.tenantId, parseDays(req.query.days, 7)));
+app.get('/api/v1/analytics/production-trend', async (req, res) => {
+  res.json(await performanceService.getProductionTrend(req.context!.tenantId, parseDays(req.query.days, 7)));
 });
 
 // OEE Performance, actual vs target vs previous period
-app.get('/api/v1/analytics/oee-trend', (req, res) => {
-  res.json(performanceService.getOeeTrend(req.context!.tenantId, parseDays(req.query.days, 7)));
+app.get('/api/v1/analytics/oee-trend', async (req, res) => {
+  res.json(await performanceService.getOeeTrend(req.context!.tenantId, parseDays(req.query.days, 7)));
 });
 
 // Plant / Line Performance
-app.get('/api/v1/analytics/line-performance', (req, res) => {
-  res.json(performanceService.getLinePerformance(req.context!.tenantId, parseDays(req.query.days, 7)));
+app.get('/api/v1/analytics/line-performance', async (req, res) => {
+  res.json(await performanceService.getLinePerformance(req.context!.tenantId, parseDays(req.query.days, 7)));
 });
 
-app.get('/api/v1/analytics/plant-performance', (req, res) => {
-  res.json(performanceService.getPlantPerformance(req.context!.tenantId, parseDays(req.query.days, 7)));
+app.get('/api/v1/analytics/plant-performance', async (req, res) => {
+  res.json(await performanceService.getPlantPerformance(req.context!.tenantId, parseDays(req.query.days, 7)));
 });
 
 //// Process Performance Breakdown
-app.get('/api/v1/analytics/process-performance', (req, res) => {
-  res.json(performanceService.getProcessPerformance(req.context!.tenantId, parseDays(req.query.days, 7)));
+app.get('/api/v1/analytics/process-performance', async (req, res) => {
+  res.json(await performanceService.getProcessPerformance(req.context!.tenantId, parseDays(req.query.days, 7)));
 });
 
 // Downtime Analysis, loss overview + Pareto + by line + top machines
-app.get('/api/v1/analytics/downtime-summary', (req, res) => {
-  res.json(performanceService.getDowntimeSummary(req.context!.tenantId, parseDays(req.query.days, 7)));
+app.get('/api/v1/analytics/downtime-summary', async (req, res) => {
+  res.json(await performanceService.getDowntimeSummary(req.context!.tenantId, parseDays(req.query.days, 7)));
 });
 
 // Quality Performance, reject rate, quality vs target, defect Pareto
-app.get('/api/v1/analytics/reject-pareto', (req, res) => {
+app.get('/api/v1/analytics/reject-pareto', async (req, res) => {
   const { lineId } = req.query as { lineId?: string };
-  res.json(performanceService.getRejectPareto(req.context!.tenantId, lineId));
+  res.json(await performanceService.getRejectPareto(req.context!.tenantId, lineId));
 });
 
-app.get('/api/v1/analytics/quality-summary', (req, res) => {
-  res.json(performanceService.getQualitySummary(req.context!.tenantId, parseDays(req.query.days, 7)));
+app.get('/api/v1/analytics/quality-summary', async (req, res) => {
+  res.json(await performanceService.getQualitySummary(req.context!.tenantId, parseDays(req.query.days, 7)));
 });
 
 // Production Order / Schedule Status
-app.get('/api/v1/analytics/order-status', (req, res) => {
-  res.json(performanceService.getOrderStatusSummary(req.context!.tenantId));
+app.get('/api/v1/analytics/order-status', async (req, res) => {
+  res.json(await performanceService.getOrderStatusSummary(req.context!.tenantId));
 });
 
 // Operational Alerts / Exceptions
-app.get('/api/v1/analytics/alerts', (req, res) => {
-  res.json(performanceService.getOperationalAlerts(req.context!.tenantId, parseDays(req.query.days, 7)));
+app.get('/api/v1/analytics/alerts', async (req, res) => {
+  res.json(await performanceService.getOperationalAlerts(req.context!.tenantId, parseDays(req.query.days, 7)));
 });
 
 // Daily aggregate backing every trend above; useful for export and debugging.
-app.get('/api/v1/analytics/daily-performance', (req, res) => {
-  res.json(performanceService.getDailyPerformance(req.context!.tenantId, parseDays(req.query.days, 30)));
+app.get('/api/v1/analytics/daily-performance', async (req, res) => {
+  res.json(await performanceService.getDailyPerformance(req.context!.tenantId, parseDays(req.query.days, 30)));
 });
 
 // KPI target configuration
-app.get('/api/v1/master/kpi-targets', (req, res) => {
+app.get('/api/v1/master/kpi-targets', async (req, res) => {
   res.json(masterDataService.getKpiTargets(req.context!.tenantId));
 });
 
-app.put('/api/v1/master/kpi-targets/:metric', (req, res, next) => {
+app.put('/api/v1/master/kpi-targets/:metric', async (req, res, next) => {
   try {
     const target = masterDataService.upsertKpiTarget(req.context!.tenantId, req.params.metric as any, req.body);
     res.json(target);
@@ -1256,12 +1236,12 @@ function scopeRows<T extends { lineId?: string }>(req: express.Request, rows: T[
 
 app.get(
   '/api/v1/reports/production',
-  route((req, res) => {
+  route(async (req, res) => {
     const { lineId, shiftDate, format } = req.query as { lineId?: string; shiftDate?: string; format?: string };
     scope.assertLine(req.principal, lineId);
     const data = scopeRows(
       req,
-      reportingService.getProductionReport(req.context!.tenantId, { lineId, shiftDate })
+      await reportingService.getProductionReport(req.context!.tenantId, { lineId, shiftDate })
     );
     if (format === 'csv') {
       res.setHeader('Content-Type', 'text/csv');
@@ -1275,10 +1255,10 @@ app.get(
 
 app.get(
   '/api/v1/reports/downtime',
-  route((req, res) => {
+  route(async (req, res) => {
     const { lineId, format } = req.query as { lineId?: string; format?: string };
     scope.assertLine(req.principal, lineId);
-    const data = scopeRows(req, reportingService.getDowntimeReport(req.context!.tenantId, { lineId }));
+    const data = scopeRows(req, await reportingService.getDowntimeReport(req.context!.tenantId, { lineId }));
     if (format === 'csv') {
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', 'attachment; filename="downtime-report.csv"');
@@ -1291,9 +1271,9 @@ app.get(
 
 app.get(
   '/api/v1/reports/shift',
-  route((req, res) => {
+  route(async (req, res) => {
     const { shiftDate, format } = req.query as { shiftDate?: string; format?: string };
-    const data = scopeRows(req, reportingService.getShiftReport(req.context!.tenantId, shiftDate));
+    const data = scopeRows(req, await reportingService.getShiftReport(req.context!.tenantId, shiftDate));
     if (format === 'csv') {
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', 'attachment; filename="shift-report.csv"');
@@ -1305,14 +1285,14 @@ app.get(
 );
 
 // Correction Workflow Endpoints
-app.get('/api/v1/corrections', (req, res) => {
+app.get('/api/v1/corrections', async (req, res) => {
   const { status } = req.query as { status?: any };
   res.json(correctionService.getCorrections(req.context!.tenantId, status));
 });
 
 app.post(
   '/api/v1/corrections',
-  route((req, res) => {
+  route(async (req, res) => {
     const corr = correctionService.createCorrectionRequest(req.context!.tenantId, {
       ...req.body,
       requestedBy: req.body.requestedBy ?? req.principal?.name ?? 'System',
@@ -1327,7 +1307,7 @@ app.post(
 
 app.post(
   '/api/v1/corrections/:id/approve',
-  route((req, res) => {
+  route(async (req, res) => {
     const corr = correctionService.approveCorrection(
       req.context!.tenantId,
       req.params.id,
@@ -1340,7 +1320,7 @@ app.post(
 
 app.post(
   '/api/v1/corrections/:id/reject',
-  route((req, res) => {
+  route(async (req, res) => {
     const corr = correctionService.rejectCorrection(
       req.context!.tenantId,
       req.params.id,
@@ -1354,7 +1334,7 @@ app.post(
 /** The window state and correctable field list the console needs. */
 app.get(
   '/api/v1/corrections/policy',
-  route((req, res) => {
+  route(async (req, res) => {
     const shiftDate =
       typeof req.query.shiftDate === 'string' ? req.query.shiftDate : new Date().toISOString().slice(0, 10);
     res.json({
@@ -1371,7 +1351,7 @@ app.get(
 );
 
 // Audit Log Endpoints
-app.get('/api/v1/audit-logs', (req, res) => {
+app.get('/api/v1/audit-logs', async (req, res) => {
   const { entityType, action } = req.query as { entityType?: string; action?: string };
   res.json(auditService.getAuditLogs(req.context!.tenantId, { entityType, action }));
 });
@@ -1383,12 +1363,12 @@ app.get('/api/v1/audit-logs', (req, res) => {
 // US-007, work centre master data completes the plant hierarchy.
 app.get(
   '/api/v1/master/work-centers',
-  route((req, res) => res.json(masterDataService.getWorkCenters(req.context!.tenantId)))
+  route(async (req, res) => res.json(masterDataService.getWorkCenters(req.context!.tenantId)))
 );
 
 app.post(
   '/api/v1/master/work-centers',
-  route((req, res) => {
+  route(async (req, res) => {
     const v = validate(req.body);
     const productionLineId = v.string('productionLineId');
     const code = v.string('code', { min: 2, max: 40 });
@@ -1410,7 +1390,7 @@ app.post(
 
 app.put(
   '/api/v1/master/work-centers/:id',
-  route((req, res) => {
+  route(async (req, res) => {
     const tenantId = req.context!.tenantId;
     const before = masterDataService.getWorkCenterById(tenantId, req.params.id);
     const updated = masterDataService.updateWorkCenter(tenantId, req.params.id, req.body);
@@ -1421,7 +1401,7 @@ app.put(
 
 app.delete(
   '/api/v1/master/work-centers/:id',
-  route((req, res) => {
+  route(async (req, res) => {
     const tenantId = req.context!.tenantId;
     const before = masterDataService.getWorkCenterById(tenantId, req.params.id);
     masterDataService.deleteWorkCenter(tenantId, req.params.id);
@@ -1439,13 +1419,13 @@ app.delete(
  */
 app.post(
   '/api/v1/work-orders/:id/batch',
-  route((req, res) => {
+  route(async (req, res) => {
     const tenantId = req.context!.tenantId;
     const v = validate(req.body);
     const batchId = v.string('batchId');
     v.done();
 
-    const workOrder = productionService.getWorkOrderById(tenantId, req.params.id);
+    const workOrder = await productionService.getWorkOrderById(tenantId, req.params.id);
     if (!workOrder) throw ApiError.notFound('Work order tidak ditemukan.');
     scope.assertLine(req.principal, workOrder.lineId);
 
@@ -1469,7 +1449,7 @@ app.post(
     }
 
     const previousBatchId = workOrder.batchId;
-    const updated = productionService.updateWorkOrder(tenantId, req.params.id, { batchId: batch.id });
+    const updated = await productionService.updateWorkOrder(tenantId, req.params.id, { batchId: batch.id });
     recordAudit(
       req,
       'work_order',
@@ -1486,7 +1466,7 @@ app.post(
 /** US-022, shift performance for one line and shift date. */
 app.get(
   '/api/v1/shifts/performance',
-  route((req, res) => {
+  route(async (req, res) => {
     const tenantId = req.context!.tenantId;
     const lineId = typeof req.query.lineId === 'string' ? req.query.lineId : undefined;
     const lines = lineId
@@ -1495,13 +1475,18 @@ app.get(
         ? req.principal.scope.lineIds
         : masterDataService.getLines(tenantId).map((l) => l.id);
 
+    // One context per line, gathered concurrently: each is an independent
+    // read, so awaiting them in sequence would make a ten-line plant ten times
+    // slower for no reason.
     res.json(
-      lines.map((id) =>
-        shiftHandoverService.buildContext(tenantId, {
-          lineId: id,
-          shiftId: typeof req.query.shiftId === 'string' ? req.query.shiftId : undefined,
-          shiftDate: typeof req.query.shiftDate === 'string' ? req.query.shiftDate : undefined,
-        })
+      await Promise.all(
+        lines.map((id) =>
+          shiftHandoverService.buildContext(tenantId, {
+            lineId: id,
+            shiftId: typeof req.query.shiftId === 'string' ? req.query.shiftId : undefined,
+            shiftDate: typeof req.query.shiftDate === 'string' ? req.query.shiftDate : undefined,
+          })
+        )
       )
     );
   })
@@ -1510,9 +1495,9 @@ app.get(
 /** US-041, OEE report is also reachable under the reports namespace. */
 app.get(
   '/api/v1/reports/oee',
-  route((req, res) => {
+  route(async (req, res) => {
     const tenantId = req.context!.tenantId;
-    const rows = oeeService.getOeeReport(tenantId, {
+    const rows = await oeeService.getOeeReport(tenantId, {
       days: req.query.days ? Number(req.query.days) : undefined,
       lineId: typeof req.query.lineId === 'string' ? req.query.lineId : undefined,
       machineId: typeof req.query.machineId === 'string' ? req.query.machineId : undefined,

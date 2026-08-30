@@ -29,6 +29,12 @@ pnpm workspace monorepo.
 Requires Node 22 and pnpm (the version is pinned by `packageManager`; run
 `corepack enable` and pnpm resolves itself).
 
+PostgreSQL 16 is required, not optional: production records, downtime and
+work orders are stored there, and the API refuses to start without it rather
+than accept shop-floor data it would lose on the next restart. Apply the
+schema with `pnpm db:migrate` first, then point `DATABASE_URL` at the
+`factory_app` role it creates.
+
 ```bash
 pnpm install
 
@@ -47,6 +53,7 @@ pnpm dev
 | `pnpm build` | build every app and package |
 | `pnpm verify:stories` | acceptance suite, 81 assertions over 54 user stories, against a running API |
 | `pnpm verify:isolation` | asserts PostgreSQL row-level security refuses cross-tenant access |
+| `pnpm verify:persistence` | writes through the API, kills it, restarts it and reads back |
 | `pnpm ds:check` | design-system mirror integrity (needs the upstream system on disk) |
 | `pnpm db:migrate` / `db:seed` | apply `db/migrations` and `db/seeds` |
 
@@ -72,7 +79,7 @@ pull request to those three branches:
 1. **verify** — install, build, typecheck, then start the API and run the
    acceptance suite against it.
 2. **persistence** — apply the migrations against a real PostgreSQL 16 and
-   assert tenant isolation actually refuses cross-tenant reads and writes.
+   assert tenant isolation actually refuses cross-tenant reads and writes, then write production data through the API, kill it, restart it and read it back.
 3. **publish** — only after both are green, and never for a pull request.
    Builds five images and pushes them to GHCR.
 

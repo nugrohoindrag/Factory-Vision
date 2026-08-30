@@ -21,6 +21,7 @@
     "offline:check": "node scripts/offline-check.mjs",
     "verify:stories": "node scripts/verify-user-stories.mjs",
     "verify:isolation": "pnpm --filter @factory-vision/api run verify:isolation",
+    "verify:persistence": "pnpm --filter @factory-vision/api run verify:persistence",
     "dev:admin": "pnpm --filter @factory-vision/admin dev"
   },
   "devDependencies": {

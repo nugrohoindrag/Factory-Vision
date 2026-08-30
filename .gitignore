@@ -44,3 +44,7 @@ Docs/
 
 # Local agent configuration, machine-specific.
 .claude/
+
+# Python bytecode from local helper scripts.
+__pycache__/
+*.pyc

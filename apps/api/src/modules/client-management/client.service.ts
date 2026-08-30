@@ -322,8 +322,9 @@ export class ClientManagementService {
 
     for (const client of accounts) {
       const tenantId = client.tenantId;
-      const productionRecords = this.shopFloor.getProductionRecords(tenantId);
-      const downtimeRecords = this.shopFloor.getDowntimeRecords(tenantId);
+      const productionRecords = await this.shopFloor.getProductionRecords(tenantId);
+      const downtimeRecords = await this.shopFloor.getDowntimeRecords(tenantId);
+      const workOrders = await this.production.getWorkOrders(tenantId);
       const users = this.masterData.getUsers(tenantId);
 
       const timestamps = [
@@ -345,7 +346,7 @@ export class ClientManagementService {
         users: users.length,
         operators: this.masterData.getOperators(tenantId).length,
         activeUsers7d: users.filter((u) => u.lastLoginAt && Date.parse(u.lastLoginAt) >= sevenDaysAgo).length,
-        workOrdersCreated: this.production.getWorkOrders(tenantId).length,
+        workOrdersCreated: workOrders.length,
         productionRecords: productionRecords.length,
         downtimeRecords: downtimeRecords.length,
         terminalsOnline: this.masterData.getDevices(tenantId).filter((d) => d.status === 'ONLINE').length,

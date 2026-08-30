@@ -240,12 +240,12 @@ export class OeeService {
     return 480 * 60;
   }
 
-  private machineDayRows(tenantId: string, filter: OeeFilter): MachineDayRow[] {
+  private async machineDayRows(tenantId: string, filter: OeeFilter): Promise<MachineDayRow[]> {
     const config = this.getConfig(tenantId);
-    const workOrders = this.production.getWorkOrders(tenantId);
+    const workOrders = await this.production.getWorkOrders(tenantId);
     const workOrderById = new Map(workOrders.map((wo) => [wo.id, wo]));
-    const productionRecords = this.shopFloor.getProductionRecords(tenantId);
-    const downtimeRecords = this.shopFloor.getDowntimeRecords(tenantId);
+    const productionRecords = await this.shopFloor.getProductionRecords(tenantId);
+    const downtimeRecords = await this.shopFloor.getDowntimeRecords(tenantId);
 
     // Daily target per machine: the seeded and hand-entered work orders carry a
     // per-shift target, so the machine's target for a day is the sum of the
@@ -422,8 +422,8 @@ export class OeeService {
   // US-027, Process to Machine drill-down
   // =========================================================
 
-  getMachinePerformance(tenantId: string, filter: OeeFilter): MachinePerformanceRow[] {
-    const rows = this.machineDayRows(tenantId, filter);
+  async getMachinePerformance(tenantId: string, filter: OeeFilter): Promise<MachinePerformanceRow[]> {
+    const rows = await this.machineDayRows(tenantId, filter);
     const machines = this.masterData.getMachines(tenantId);
     const workCenters = this.masterData.getWorkCenters(tenantId);
     const lines = this.masterData.getLines(tenantId);
@@ -494,9 +494,9 @@ export class OeeService {
    * against target is what a manager can act on, so that is the ranking key,
    * with the dominant OEE factor named so they know which lever to pull.
    */
-  getBottlenecks(tenantId: string, filter: OeeFilter & { kind?: 'PROCESS' | 'MACHINE' }): BottleneckRow[] {
+  async getBottlenecks(tenantId: string, filter: OeeFilter & { kind?: 'PROCESS' | 'MACHINE' }): Promise<BottleneckRow[]> {
     const kind = filter.kind ?? 'MACHINE';
-    const rows = this.machineDayRows(tenantId, filter);
+    const rows = await this.machineDayRows(tenantId, filter);
     const machines = this.masterData.getMachines(tenantId);
     const processes = this.masterData.getProcesses(tenantId);
     const lines = this.masterData.getLines(tenantId);
@@ -565,8 +565,8 @@ export class OeeService {
   // US-041, OEE report
   // =========================================================
 
-  getOeeReport(tenantId: string, filter: OeeFilter): OeeReportItem[] {
-    const rows = this.machineDayRows(tenantId, filter);
+  async getOeeReport(tenantId: string, filter: OeeFilter): Promise<OeeReportItem[]> {
+    const rows = await this.machineDayRows(tenantId, filter);
     const machines = this.masterData.getMachines(tenantId);
     const lines = this.masterData.getLines(tenantId);
     const processes = this.masterData.getProcesses(tenantId);
@@ -617,12 +617,12 @@ export class OeeService {
   // US-025, Target vs Actual
   // =========================================================
 
-  getTargetVsActual(
+  async getTargetVsActual(
     tenantId: string,
     dimension: TargetVsActualDimension,
     filter: OeeFilter
-  ): TargetVsActualSummary {
-    const rows = this.machineDayRows(tenantId, filter);
+  ): Promise<TargetVsActualSummary> {
+    const rows = await this.machineDayRows(tenantId, filter);
     const lines = this.masterData.getLines(tenantId);
     const processes = this.masterData.getProcesses(tenantId);
     const products = this.masterData.getProducts(tenantId);

@@ -23,36 +23,41 @@ export class ShiftHandoverService {
   ) {}
 
   /** The most recent shift date present in the transaction data. */
-  private latestShiftDate(tenantId: string): string {
+  private async latestShiftDate(tenantId: string): Promise<string> {
+    const production = await this.shopFloor.getProductionRecords(tenantId);
+    const downtime = await this.shopFloor.getDowntimeRecords(tenantId);
     const dates = [
-      ...this.shopFloor.getProductionRecords(tenantId).map((r) => r.shiftDate),
-      ...this.shopFloor.getDowntimeRecords(tenantId).map((r) => r.shiftDate),
+      ...production.map((r) => r.shiftDate),
+      ...downtime.map((r) => r.shiftDate),
     ].sort();
     return dates[dates.length - 1] ?? new Date().toISOString().slice(0, 10);
   }
 
-  buildContext(
+  async buildContext(
     tenantId: string,
     params: { lineId: string; shiftId?: string; shiftDate?: string }
-  ): ShiftHandoverContext {
+  ): Promise<ShiftHandoverContext> {
     const line = this.masterData.getLineById(tenantId, params.lineId);
     if (!line) throw ApiError.notFound('Production line tidak ditemukan.');
 
-    const shiftDate = params.shiftDate ?? this.latestShiftDate(tenantId);
+    const shiftDate = params.shiftDate ?? await this.latestShiftDate(tenantId);
     const shifts = this.masterData.getShifts(tenantId);
     const shiftId = params.shiftId ?? shifts.find((s) => s.active)?.id ?? 'shift-1';
     const shift = shifts.find((s) => s.id === shiftId);
 
-    const workOrders = this.production.getWorkOrders(tenantId).filter((wo) => wo.lineId === params.lineId);
+    const allWorkOrders = await this.production.getWorkOrders(tenantId);
+    const workOrders = allWorkOrders.filter((wo) => wo.lineId === params.lineId);
     const workOrderIds = new Set(workOrders.map((wo) => wo.id));
 
-    const productionRecords = this.shopFloor
-      .getProductionRecords(tenantId)
-      .filter((r) => r.shiftDate === shiftDate && r.shiftId === shiftId && workOrderIds.has(r.workOrderId));
+    const allProduction = await this.shopFloor.getProductionRecords(tenantId);
+    const productionRecords = allProduction.filter(
+      (r) => r.shiftDate === shiftDate && r.shiftId === shiftId && workOrderIds.has(r.workOrderId)
+    );
 
-    const downtimeRecords = this.shopFloor
-      .getDowntimeRecords(tenantId, params.lineId)
-      .filter((r) => r.shiftDate === shiftDate && r.shiftId === shiftId);
+    const allDowntime = await this.shopFloor.getDowntimeRecords(tenantId, params.lineId);
+    const downtimeRecords = allDowntime.filter(
+      (r) => r.shiftDate === shiftDate && r.shiftId === shiftId
+    );
 
     const goodQuantity = productionRecords.reduce((acc, r) => acc + r.goodQuantity, 0);
     const rejectQuantity = productionRecords.reduce((acc, r) => acc + r.rejectQuantity, 0);
