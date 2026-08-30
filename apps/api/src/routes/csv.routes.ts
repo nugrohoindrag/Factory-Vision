@@ -19,12 +19,12 @@ export function csvRoutes(csv: CsvService, audit: AuditService): Router {
 
   router.get(
     '/csv/entities',
-    route((_req, res) => res.json(csv.listEntities))
+    route(async (_req, res) => res.json(csv.listEntities))
   );
 
   router.get(
     '/csv/:entity/template',
-    route((req, res) => {
+    route(async (req, res) => {
       const template = csv.getTemplate(req.params.entity);
       if (req.query.format === 'csv') {
         res.setHeader('Content-Type', 'text/csv; charset=utf-8');
@@ -38,14 +38,14 @@ export function csvRoutes(csv: CsvService, audit: AuditService): Router {
 
   router.get(
     '/csv/:entity/export',
-    route((req, res) => {
+    route(async (req, res) => {
       const tenantId = req.context!.tenantId;
       // US-008: "Export respects user's access scope."
       const allowedLineIds =
         req.principal && req.principal.scope.level !== 'TENANT' ? req.principal.scope.lineIds : undefined;
       const body = csv.export(req.params.entity, tenantId, allowedLineIds);
 
-      audit.record({
+      await audit.record({
         tenantId,
         actorType: 'USER',
         actorId: req.principal?.subjectId ?? 'system',
@@ -64,19 +64,19 @@ export function csvRoutes(csv: CsvService, audit: AuditService): Router {
 
   router.post(
     '/csv/:entity/import',
-    route((req, res) => {
+    route(async (req, res) => {
       const v = validate(req.body);
       const content = v.string('content', { min: 1, max: MAX_CSV_BYTES });
       const dryRun = v.boolean('dryRun', { optional: true });
       v.done('Isi file CSV wajib dikirim.');
 
       const tenantId = req.context!.tenantId;
-      const result = csv.import(req.params.entity, tenantId, content!, { dryRun: dryRun ?? false });
+      const result = await csv.import(req.params.entity, tenantId, content!, { dryRun: dryRun ?? false });
 
       // A dry run changes nothing, so it is not an auditable event; a real
       // import is ( / US-008 "Record import activity in audit log").
       if (!dryRun) {
-        audit.record({
+        await audit.record({
           tenantId,
           actorType: 'USER',
           actorId: req.principal?.subjectId ?? 'system',

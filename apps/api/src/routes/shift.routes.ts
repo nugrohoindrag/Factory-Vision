@@ -49,7 +49,7 @@ export function shiftRoutes(
 
   router.get(
     '/shifts/handover',
-    route((req, res) => {
+    route(async (req, res) => {
       res.json(
         handovers.list(req.context!.tenantId, {
           lineId: typeof req.query.lineId === 'string' ? req.query.lineId : undefined,
@@ -61,7 +61,7 @@ export function shiftRoutes(
 
   router.post(
     '/shifts/handover',
-    route((req, res) => {
+    route(async (req, res) => {
       const v = validate(req.body);
       const lineId = v.string('lineId');
       const shiftId = v.string('shiftId');
@@ -85,7 +85,7 @@ export function shiftRoutes(
         openIssues,
       });
 
-      audit.record({
+      await audit.record({
         tenantId,
         actorType: 'USER',
         actorId: req.principal?.subjectId ?? 'system',
@@ -103,7 +103,7 @@ export function shiftRoutes(
 
   router.post(
     '/shifts/handover/:id/acknowledge',
-    route((req, res) => {
+    route(async (req, res) => {
       const record = handovers.acknowledge(req.context!.tenantId, req.params.id, {
         id: req.principal?.subjectId ?? 'system',
         name: req.principal?.name ?? 'System',
@@ -116,12 +116,12 @@ export function shiftRoutes(
 
   router.get(
     '/shifts',
-    route((req, res) => res.json(masterData.getShifts(req.context!.tenantId)))
+    route(async (req, res) => res.json(masterData.getShifts(req.context!.tenantId)))
   );
 
   router.post(
     '/shifts',
-    route((req, res) => {
+    route(async (req, res) => {
       const v = validate(req.body);
       const plantId = v.string('plantId');
       const name = v.string('name', { min: 2, max: 60 });
@@ -133,7 +133,7 @@ export function shiftRoutes(
       v.done();
 
       const tenantId = req.context!.tenantId;
-      const shift = masterData.createShift(tenantId, {
+      const shift = await masterData.createShift(tenantId, {
         plantId: plantId!,
         name: name!,
         startTime: startTime!,
@@ -142,7 +142,7 @@ export function shiftRoutes(
         active: active ?? true,
       });
 
-      audit.record({
+      await audit.record({
         tenantId,
         actorType: 'USER',
         actorId: req.principal?.subjectId ?? 'system',
@@ -159,7 +159,7 @@ export function shiftRoutes(
 
   router.put(
     '/shifts/:id',
-    route((req, res) => {
+    route(async (req, res) => {
       const tenantId = req.context!.tenantId;
       const before = masterData.getShiftById(tenantId, req.params.id);
 
@@ -171,7 +171,7 @@ export function shiftRoutes(
       const active = v.boolean('active', { optional: true });
       v.done();
 
-      const shift = masterData.updateShift(tenantId, req.params.id, {
+      const shift = await masterData.updateShift(tenantId, req.params.id, {
         name,
         startTime,
         endTime,
@@ -179,7 +179,7 @@ export function shiftRoutes(
         active,
       });
 
-      audit.record({
+      await audit.record({
         tenantId,
         actorType: 'USER',
         actorId: req.principal?.subjectId ?? 'system',
@@ -197,12 +197,12 @@ export function shiftRoutes(
 
   router.delete(
     '/shifts/:id',
-    route((req, res) => {
+    route(async (req, res) => {
       const tenantId = req.context!.tenantId;
       const before = masterData.getShiftById(tenantId, req.params.id);
-      masterData.deleteShift(tenantId, req.params.id);
+      await masterData.deleteShift(tenantId, req.params.id);
 
-      audit.record({
+      await audit.record({
         tenantId,
         actorType: 'USER',
         actorId: req.principal?.subjectId ?? 'system',

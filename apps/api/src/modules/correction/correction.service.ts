@@ -109,7 +109,7 @@ export class CorrectionService {
     return { closed, withinWindow: hoursElapsed <= CORRECTION_WINDOW_HOURS, hoursElapsed };
   }
 
-  createCorrectionRequest(
+  async createCorrectionRequest(
     tenantId: string,
     payload: {
       entityType: CorrectionEntityType;
@@ -122,7 +122,7 @@ export class CorrectionService {
       /** Permissions of the requester, used to decide auto-approval. */
       permissions?: string[];
     }
-  ): CorrectionRequest {
+  ): Promise<CorrectionRequest> {
     const allowed = CORRECTABLE_FIELDS[payload.entityType] ?? [];
     const illegal = Object.keys(payload.fieldChanges).filter((field) => !allowed.includes(field));
     if (illegal.length > 0) {
@@ -167,7 +167,7 @@ export class CorrectionService {
 
     this.corrections.push(correction);
 
-    this.deps?.audit.record({
+    await this.deps?.audit.record({
       tenantId,
       actorType: 'USER',
       actorId: payload.requestedById ?? payload.requestedBy,
@@ -188,18 +188,18 @@ export class CorrectionService {
     });
 
     if (!requiresApproval) {
-      return this.applyCorrection(tenantId, correction, payload.requestedBy, payload.requestedById);
+      return await this.applyCorrection(tenantId, correction, payload.requestedBy, payload.requestedById);
     }
 
     return correction;
   }
 
-  approveCorrection(
+  async approveCorrection(
     tenantId: string,
     id: string,
     approvedBy: string,
     approvedById?: string
-  ): CorrectionRequest {
+  ): Promise<CorrectionRequest> {
     const corr = this.corrections.find((c) => c.tenantId === tenantId && c.id === id);
     if (!corr) throw ApiError.notFound('Permintaan koreksi tidak ditemukan.');
 
@@ -211,7 +211,7 @@ export class CorrectionService {
     corr.approvedBy = approvedBy;
     corr.approvedAt = new Date().toISOString();
 
-    return this.applyCorrection(tenantId, corr, approvedBy, approvedById);
+    return await this.applyCorrection(tenantId, corr, approvedBy, approvedById);
   }
 
   /**
@@ -220,12 +220,12 @@ export class CorrectionService {
    * The original value already lives on `fieldChanges[...].from`, so history is
    * intact; what changes is the aggregate the reports read from.
    */
-  private applyCorrection(
+  private async applyCorrection(
     tenantId: string,
     corr: CorrectionRequest,
     actor: string,
     actorId?: string
-  ): CorrectionRequest {
+  ): Promise<CorrectionRequest> {
     if (corr.entityType === CorrectionEntityType.PRODUCTION_RECORD) {
       const goodDiff = corr.fieldChanges.goodQuantity
         ? Number(corr.fieldChanges.goodQuantity.to) - Number(corr.fieldChanges.goodQuantity.from)
@@ -234,7 +234,7 @@ export class CorrectionService {
         ? Number(corr.fieldChanges.rejectQuantity.to) - Number(corr.fieldChanges.rejectQuantity.from)
         : 0;
       if (goodDiff !== 0 || rejectDiff !== 0) {
-        this.productionService.incrementQuantities(tenantId, corr.entityId, goodDiff, rejectDiff);
+        await this.productionService.incrementQuantities(tenantId, corr.entityId, goodDiff, rejectDiff);
       }
     }
 
@@ -246,7 +246,7 @@ export class CorrectionService {
     // report can be traced to the correction that moved it (US-035, US-043).
     const calcVersion = this.deps?.oee.getConfig(tenantId).calcVersion;
 
-    this.deps?.audit.record({
+    await this.deps?.audit.record({
       tenantId,
       actorType: 'USER',
       actorId: actorId ?? actor,
@@ -269,7 +269,12 @@ export class CorrectionService {
     return corr;
   }
 
-  rejectCorrection(tenantId: string, id: string, rejectedBy: string, rejectedById?: string): CorrectionRequest {
+  async rejectCorrection(
+    tenantId: string,
+    id: string,
+    rejectedBy: string,
+    rejectedById?: string
+  ): Promise<CorrectionRequest> {
     const corr = this.corrections.find((c) => c.tenantId === tenantId && c.id === id);
     if (!corr) throw ApiError.notFound('Permintaan koreksi tidak ditemukan.');
     if (corr.status === CorrectionStatus.APPLIED) {
@@ -280,7 +285,7 @@ export class CorrectionService {
     corr.rejectedBy = rejectedBy;
     corr.rejectedAt = new Date().toISOString();
 
-    this.deps?.audit.record({
+    await this.deps?.audit.record({
       tenantId,
       actorType: 'USER',
       actorId: rejectedById ?? rejectedBy,

@@ -20,28 +20,28 @@ export function authRoutes(auth: AuthService, masterData: MasterDataService): Ro
   // US-001, application login
   router.post(
     '/auth/login',
-    route((req, res) => {
+    route(async (req, res) => {
       const v = validate(req.body);
       const email = v.email('email');
       const password = v.string('password', { min: 1 });
       v.done('Email dan kata sandi wajib diisi.');
 
       const tenantId = req.context?.tenantId ?? 'tenant-pilot-factory-01';
-      res.json(auth.login(tenantId, email!, password!, clientContext(req)));
+      res.json(await auth.login(tenantId, email!, password!, clientContext(req)));
     })
   );
 
   // US-002, operator login
   router.post(
     '/auth/operator-login',
-    route((req, res) => {
+    route(async (req, res) => {
       const v = validate(req.body);
       const employeeNumber = v.string('employeeNumber', { min: 1 });
       const pin = v.string('pin', { min: 4, max: 8 });
       v.done('Nomor karyawan dan PIN wajib diisi.');
 
       const tenantId = req.context?.tenantId ?? 'tenant-pilot-factory-01';
-      res.json(auth.operatorLogin(tenantId, employeeNumber!, pin!, clientContext(req)));
+      res.json(await auth.operatorLogin(tenantId, employeeNumber!, pin!, clientContext(req)));
     })
   );
 
@@ -52,7 +52,7 @@ export function authRoutes(auth: AuthService, masterData: MasterDataService): Ro
    */
   router.get(
     '/auth/session',
-    route((req, res) => {
+    route(async (req, res) => {
       if (!req.principal) throw ApiError.unauthenticated('Sesi tidak aktif.');
       const principal = req.principal;
       res.json({
@@ -69,8 +69,8 @@ export function authRoutes(auth: AuthService, masterData: MasterDataService): Ro
 
   router.post(
     '/auth/logout',
-    route((req, res) => {
-      if (req.principal) auth.logout(req.principal.sessionId);
+    route(async (req, res) => {
+      if (req.principal) await auth.logout(req.principal.sessionId);
       res.json({ success: true });
     })
   );
@@ -78,7 +78,7 @@ export function authRoutes(auth: AuthService, masterData: MasterDataService): Ro
   // US-005, live sessions and revocation
   router.get(
     '/sessions',
-    route((req, res) => {
+    route(async (req, res) => {
       const tenantId = req.context!.tenantId;
       const subjectId = typeof req.query.subjectId === 'string' ? req.query.subjectId : undefined;
       res.json(auth.listSessions(tenantId, subjectId));
@@ -87,9 +87,9 @@ export function authRoutes(auth: AuthService, masterData: MasterDataService): Ro
 
   router.delete(
     '/sessions/:sessionId',
-    route((req, res) => {
+    route(async (req, res) => {
       const tenantId = req.context!.tenantId;
-      const revoked = auth.revokeSessions(
+      const revoked = await auth.revokeSessions(
         tenantId,
         { sessionId: req.params.sessionId },
         req.principal?.subjectId ?? 'system'
@@ -100,11 +100,11 @@ export function authRoutes(auth: AuthService, masterData: MasterDataService): Ro
 
   router.delete(
     '/sessions',
-    route((req, res) => {
+    route(async (req, res) => {
       const tenantId = req.context!.tenantId;
       const subjectId = typeof req.query.subjectId === 'string' ? req.query.subjectId : undefined;
       if (!subjectId) throw ApiError.validation('subjectId wajib diisi untuk mencabut sesi pengguna.');
-      const revoked = auth.revokeSessions(tenantId, { subjectId }, req.principal?.subjectId ?? 'system');
+      const revoked = await auth.revokeSessions(tenantId, { subjectId }, req.principal?.subjectId ?? 'system');
       res.json({ success: true, revoked });
     })
   );
@@ -112,11 +112,11 @@ export function authRoutes(auth: AuthService, masterData: MasterDataService): Ro
   // Credential administration ( audits both of these)
   router.post(
     '/users/:id/password',
-    route((req, res) => {
+    route(async (req, res) => {
       const v = validate(req.body);
       const password = v.string('password', { min: 8 });
       v.done();
-      auth.setUserPassword(
+      await auth.setUserPassword(
         req.context!.tenantId,
         req.params.id,
         password!,
@@ -128,11 +128,11 @@ export function authRoutes(auth: AuthService, masterData: MasterDataService): Ro
 
   router.post(
     '/operators/:id/pin',
-    route((req, res) => {
+    route(async (req, res) => {
       const v = validate(req.body);
       const pin = v.string('pin', { min: 4, max: 8 });
       v.done();
-      auth.setOperatorPin(req.context!.tenantId, req.params.id, pin!, req.principal?.subjectId ?? 'system');
+      await auth.setOperatorPin(req.context!.tenantId, req.params.id, pin!, req.principal?.subjectId ?? 'system');
       res.json({ success: true, message: 'PIN operator diperbarui dan sesi aktif dicabut.' });
     })
   );

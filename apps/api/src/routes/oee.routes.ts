@@ -38,12 +38,12 @@ export function oeeRoutes(oee: OeeService, audit: AuditService): Router {
 
   router.get(
     '/oee/config',
-    route((req, res) => res.json(oee.getConfig(req.context!.tenantId)))
+    route(async (req, res) => res.json(oee.getConfig(req.context!.tenantId)))
   );
 
   router.put(
     '/oee/config',
-    route((req, res) => {
+    route(async (req, res) => {
       const tenantId = req.context!.tenantId;
       const before = { ...oee.getConfig(tenantId) };
 
@@ -61,7 +61,7 @@ export function oeeRoutes(oee: OeeService, audit: AuditService): Router {
         req.principal?.subjectId ?? 'system'
       );
 
-      audit.record({
+      await audit.record({
         tenantId,
         actorType: 'USER',
         actorId: req.principal?.subjectId ?? 'system',
@@ -83,7 +83,7 @@ export function oeeRoutes(oee: OeeService, audit: AuditService): Router {
    */
   router.get(
     '/oee/calculate',
-    route((req, res) => {
+    route(async (req, res) => {
       const tenantId = req.context!.tenantId;
       const num = (key: string, fallback = 0) => (req.query[key] ? Number(req.query[key]) : fallback);
       res.json(
@@ -167,7 +167,7 @@ export function oeeRoutes(oee: OeeService, audit: AuditService): Router {
   // --- US-036: pilot validation log ---
   router.get(
     '/oee/validation',
-    route((req, res) =>
+    route(async (req, res) =>
       res.json({
         entries: oee.getValidationEntries(req.context!.tenantId),
         gate: oee.getValidationGateStatus(req.context!.tenantId),
@@ -178,7 +178,7 @@ export function oeeRoutes(oee: OeeService, audit: AuditService): Router {
 
   router.put(
     '/oee/validation/:item',
-    route((req, res) => {
+    route(async (req, res) => {
       const tenantId = req.context!.tenantId;
       const item = req.params.item.toUpperCase() as OeeValidationItem;
 
@@ -213,7 +213,7 @@ export function oeeRoutes(oee: OeeService, audit: AuditService): Router {
         req.principal?.subjectId ?? 'system'
       );
 
-      audit.record({
+      await audit.record({
         tenantId,
         actorType: 'USER',
         actorId: req.principal?.subjectId ?? 'system',

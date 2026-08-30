@@ -59,9 +59,7 @@ export class AuthService {
     private masterData: MasterDataService,
     private rbac: RbacService,
     private audit: AuditService
-  ) {
-    this.bootstrapAdminCredential();
-  }
+  ) {}
 
   /**
    * Establishes the single bootstrap administrator from the environment.
@@ -80,7 +78,7 @@ export class AuthService {
    * (`POST /api/v1/users/:id/password`), and operators get their PIN the same
    * way (`POST /api/v1/operators/:id/pin`).
    */
-  private bootstrapAdminCredential(): void {
+  async bootstrapAdminCredential(): Promise<void> {
     const email = process.env.BOOTSTRAP_ADMIN_EMAIL?.trim();
     const password = process.env.BOOTSTRAP_ADMIN_PASSWORD;
 
@@ -104,7 +102,7 @@ export class AuthService {
       .find((u) => u.email.toLowerCase() === email.toLowerCase());
 
     if (!user) {
-      user = this.masterData.createUser(PILOT_TENANT, {
+      user = await this.masterData.createUser(PILOT_TENANT, {
         email,
         name: process.env.BOOTSTRAP_ADMIN_NAME?.trim() || 'Administrator',
         role: UserRole.ADMIN,
@@ -114,7 +112,9 @@ export class AuthService {
       });
     }
 
-    this.userSecrets.set(user.id, hashSecret(password));
+    const passwordHash = hashSecret(password);
+    this.userSecrets.set(user.id, passwordHash);
+    await this.masterData.saveUserPassword(PILOT_TENANT, user.id, passwordHash);
 
     // eslint-disable-next-line no-console
     console.log(`[auth] Bootstrap administrator ready: ${user.email}`);
@@ -124,19 +124,56 @@ export class AuthService {
     // administrator issues each of them a PIN.
     const operatorPin = process.env.BOOTSTRAP_OPERATOR_PIN;
     if (operatorPin && /^\d{4,8}$/.test(operatorPin)) {
+      // A *starting* PIN, which is only a starting point. Applying it to every
+      // operator on every boot would silently reset a PIN an administrator had
+      // issued, so an operator whose credential was rotated last week would be
+      // back on the shared one after the next deployment.
+      let seeded = 0;
       for (const operator of this.masterData.getOperators(PILOT_TENANT)) {
-        this.operatorSecrets.set(operator.id, hashSecret(operatorPin));
+        if (operator.pinHash) continue;
+        const pinHash = hashSecret(operatorPin);
+        this.operatorSecrets.set(operator.id, pinHash);
+        await this.masterData.saveOperatorPin(PILOT_TENANT, operator.id, pinHash, 'bootstrap');
+        seeded += 1;
       }
-      // eslint-disable-next-line no-console
-      console.log('[auth] Shop-floor terminals seeded with the configured starting PIN.');
+      if (seeded > 0) {
+        // eslint-disable-next-line no-console
+        console.log(`[auth] ${seeded} shop-floor terminal(s) seeded with the configured starting PIN.`);
+      }
     }
+  }
+
+  /**
+   * Loads stored credentials into the in-process maps.
+   *
+   * Password and PIN hashes used to exist only here, so every restart left
+   * every account created through Settings unable to sign in. They now live in
+   * `app_user.password_hash` and `operator.pin_hash`; this reads them back.
+   */
+  hydrateCredentials(tenantId: string): { users: number; operators: number } {
+    let users = 0;
+    for (const user of this.masterData.getUsers(tenantId)) {
+      const hash = this.masterData.getUserPasswordHash(user.id);
+      if (hash) {
+        this.userSecrets.set(user.id, hash);
+        users += 1;
+      }
+    }
+    let operators = 0;
+    for (const operator of this.masterData.getOperators(tenantId)) {
+      if (operator.pinHash) {
+        this.operatorSecrets.set(operator.id, operator.pinHash);
+        operators += 1;
+      }
+    }
+    return { users, operators };
   }
 
   // ---------------------------------------------------------
   // US-001, Application login
   // ---------------------------------------------------------
 
-  login(tenantId: string, email: string, password: string, ctx: AuthContext = {}): LoginResponse {
+  async login(tenantId: string, email: string, password: string, ctx: AuthContext = {}): Promise<LoginResponse> {
     const user = this.masterData
       .getUsers(tenantId)
       .find((u) => u.email.toLowerCase() === email.toLowerCase() && u.accountType === 'APPLICATION_USER');
@@ -144,7 +181,7 @@ export class AuthService {
     // A missing account and a wrong password are reported identically so the
     // login form cannot be used to enumerate who works here.
     if (!user || !verifySecret(password, this.userSecrets.get(user.id))) {
-      this.audit.record({
+      await this.audit.record({
         tenantId,
         actorType: 'SYSTEM',
         actorId: email,
@@ -159,7 +196,7 @@ export class AuthService {
     }
 
     if (user.status !== 'ACTIVE') {
-      this.audit.record({
+      await this.audit.record({
         tenantId,
         actorType: 'SYSTEM',
         actorId: user.id,
@@ -192,7 +229,7 @@ export class AuthService {
 
     user.lastLoginAt = new Date().toISOString();
 
-    this.audit.record({
+    await this.audit.record({
       tenantId,
       actorType: 'USER',
       actorId: user.id,
@@ -216,13 +253,13 @@ export class AuthService {
   // US-002, Operator login
   // ---------------------------------------------------------
 
-  operatorLogin(tenantId: string, employeeNumber: string, pin: string, ctx: AuthContext = {}): LoginResponse {
+  async operatorLogin(tenantId: string, employeeNumber: string, pin: string, ctx: AuthContext = {}): Promise<LoginResponse> {
     const operator = this.masterData
       .getOperators(tenantId)
       .find((o) => o.employeeNumber.toLowerCase() === employeeNumber.toLowerCase());
 
     if (!operator || !verifySecret(pin, this.operatorSecrets.get(operator.id))) {
-      this.audit.record({
+      await this.audit.record({
         tenantId,
         actorType: 'SYSTEM',
         actorId: employeeNumber,
@@ -256,7 +293,7 @@ export class AuthService {
     stored.ip = ctx.ip;
     stored.userAgent = ctx.userAgent;
 
-    this.audit.record({
+    await this.audit.record({
       tenantId,
       actorType: 'OPERATOR',
       actorId: operator.id,
@@ -368,11 +405,11 @@ export class AuthService {
     return entry.principal;
   }
 
-  logout(sessionId: string): void {
+  async logout(sessionId: string): Promise<void> {
     const entry = this.sessions.get(sessionId);
     if (!entry) return;
     this.sessions.delete(sessionId);
-    this.audit.record({
+    await this.audit.record({
       tenantId: entry.principal.tenantId,
       actorType: entry.principal.kind === 'OPERATOR' ? 'OPERATOR' : 'USER',
       actorId: entry.principal.subjectId,
@@ -407,7 +444,7 @@ export class AuthService {
   }
 
   /** US-005, revoke one session, or every session belonging to one account. */
-  revokeSessions(tenantId: string, opts: { sessionId?: string; subjectId?: string }, actorId: string): number {
+  async revokeSessions(tenantId: string, opts: { sessionId?: string; subjectId?: string }, actorId: string): Promise<number> {
     const victims = Array.from(this.sessions.values()).filter(
       (s) =>
         s.principal.tenantId === tenantId &&
@@ -417,7 +454,7 @@ export class AuthService {
 
     for (const victim of victims) {
       this.sessions.delete(victim.principal.sessionId);
-      this.audit.record({
+      await this.audit.record({
         tenantId,
         actorType: 'USER',
         actorId,
@@ -435,7 +472,7 @@ export class AuthService {
   // Credential administration
   // ---------------------------------------------------------
 
-  setUserPassword(tenantId: string, userId: string, password: string, actorId: string): void {
+  async setUserPassword(tenantId: string, userId: string, password: string, actorId: string): Promise<void> {
     const user = this.masterData.getUserById(tenantId, userId);
     if (!user) throw ApiError.notFound('Pengguna tidak ditemukan.');
     if (password.length < 8) {
@@ -443,9 +480,11 @@ export class AuthService {
         { field: 'password', code: 'TOO_SHORT', message: 'Kata sandi minimal 8 karakter.' },
       ]);
     }
-    this.userSecrets.set(userId, hashSecret(password));
-    this.revokeSessions(tenantId, { subjectId: userId }, actorId);
-    this.audit.record({
+    const hash = hashSecret(password);
+    this.userSecrets.set(userId, hash);
+    await this.masterData.saveUserPassword(tenantId, userId, hash);
+    await this.revokeSessions(tenantId, { subjectId: userId }, actorId);
+    await this.audit.record({
       tenantId,
       actorType: 'USER',
       actorId,
@@ -456,7 +495,7 @@ export class AuthService {
     });
   }
 
-  setOperatorPin(tenantId: string, operatorId: string, pin: string, actorId: string): void {
+  async setOperatorPin(tenantId: string, operatorId: string, pin: string, actorId: string): Promise<void> {
     const operator = this.masterData.getOperators(tenantId).find((o) => o.id === operatorId);
     if (!operator) throw ApiError.notFound('Operator tidak ditemukan.');
     if (!/^\d{4,8}$/.test(pin)) {
@@ -464,9 +503,11 @@ export class AuthService {
         { field: 'pin', code: 'INVALID_FORMAT', message: 'PIN harus 4-8 digit angka.' },
       ]);
     }
-    this.operatorSecrets.set(operatorId, hashSecret(pin));
-    this.revokeSessions(tenantId, { subjectId: operatorId }, actorId);
-    this.audit.record({
+    const hash = hashSecret(pin);
+    this.operatorSecrets.set(operatorId, hash);
+    await this.masterData.saveOperatorPin(tenantId, operatorId, hash, actorId);
+    await this.revokeSessions(tenantId, { subjectId: operatorId }, actorId);
+    await this.audit.record({
       tenantId,
       actorType: 'USER',
       actorId,
@@ -478,7 +519,14 @@ export class AuthService {
   }
 
   /** Called when an account is created so it can log in straight away. */
-  registerUserPassword(userId: string, password: string): void {
+  /** For a user created through Settings; the hash is written down as well. */
+  async registerUserPassword(tenantId: string, userId: string, password: string): Promise<void> {
+    const hash = hashSecret(password);
+    this.userSecrets.set(userId, hash);
+    await this.masterData.saveUserPassword(tenantId, userId, hash);
+  }
+
+  registerUserPasswordInMemory(userId: string, password: string): void {
     this.userSecrets.set(userId, hashSecret(password));
   }
 

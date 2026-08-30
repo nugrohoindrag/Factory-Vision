@@ -1,80 +1,55 @@
-import { AuditLog } from '@factory-vision/domain-types';
-import { demoRows } from '../../platform/config/demo-seed.js';
+import type { AuditLog } from '@factory-vision/domain-types';
+import { withTenant } from '../../platform/db/pool.js';
+import { AuditRepository } from './audit.repository.js';
 
+/**
+ * The audit trail (US-054).
+ *
+ * Every entry is written to PostgreSQL before `record` resolves. It used to be
+ * an array on the process, which meant the evidence an ISO or BPOM auditor
+ * asks for, and the record of who approved a data correction, lasted exactly
+ * as long as the container did.
+ *
+ * Append-only by construction: there is no update and no delete here. A
+ * correction is a new entry, never an edit to an old one, which is the whole
+ * point of keeping the trail.
+ */
 export class AuditService {
-  private auditLogs: AuditLog[] = demoRows<AuditLog>(() => [
-    {
-      id: 'audit-001',
-      tenantId: 'tenant-pilot-factory-01',
-      actorType: 'USER',
-      actorId: 'Agung Wicaksono (Supervisor)',
-      entityType: 'work_order',
-      entityId: 'wo-101',
-      action: 'RELEASE',
-      previousValue: { status: 'SCHEDULED' },
-      newValue: { status: 'RELEASED' },
-      ip: '192.168.1.102',
-      userAgent: 'FactoryVision-Console/1.0',
-      occurredAt: '2026-08-28T06:30:00.000Z',
-    },
-    {
-      id: 'audit-002',
-      tenantId: 'tenant-pilot-factory-01',
-      actorType: 'OPERATOR',
-      actorId: 'Budi Santoso (OP-2024-089)',
-      entityType: 'work_order',
-      entityId: 'wo-101',
-      action: 'START',
-      previousValue: { status: 'RELEASED' },
-      newValue: { status: 'IN_PROGRESS' },
-      ip: '192.168.1.205',
-      userAgent: 'FactoryVision-OperatorPWA/1.0',
-      occurredAt: '2026-08-28T07:15:00.000Z',
-    },
-    {
-      id: 'audit-003',
-      tenantId: 'tenant-pilot-factory-01',
-      actorType: 'OPERATOR',
-      actorId: 'Budi Santoso (OP-2024-089)',
-      entityType: 'downtime_record',
-      entityId: 'dt-rec-002',
-      action: 'DOWNTIME_START',
-      previousValue: undefined,
-      newValue: { reason: 'dt-breakdown', startTime: '2026-08-28T08:10:00.000Z' },
-      ip: '192.168.1.205',
-      userAgent: 'FactoryVision-OperatorPWA/1.0',
-      occurredAt: '2026-08-28T08:10:00.000Z',
-    },
-    {
-      id: 'audit-004',
-      tenantId: 'tenant-pilot-factory-01',
-      actorType: 'USER',
-      actorId: 'Agung Wicaksono (Supervisor)',
-      entityType: 'correction_request',
-      entityId: 'corr-001',
-      action: 'APPROVE_CORRECTION',
-      previousValue: { status: 'PENDING' },
-      newValue: { status: 'APPLIED', changes: { goodQuantity: { from: 1800, to: 1840 } } },
-      ip: '192.168.1.102',
-      userAgent: 'FactoryVision-Console/1.0',
-      occurredAt: '2026-08-28T09:35:00.000Z',
-    },
-  ]);
+  private readonly repo = new AuditRepository();
 
-  record(log: Omit<AuditLog, 'id' | 'occurredAt'>) {
-    const entry: AuditLog = { ...log, id: `audit-${Date.now()}`, occurredAt: new Date().toISOString() };
-    this.auditLogs.unshift(entry);
-    return entry;
+  async record(log: Omit<AuditLog, 'id' | 'occurredAt'>): Promise<AuditLog> {
+    const entry: AuditLog = {
+      ...log,
+      id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      occurredAt: new Date().toISOString(),
+    };
+    return withTenant(entry.tenantId, (client) => this.repo.insert(client, entry));
   }
 
-  getAuditLogs(tenantId: string, filter?: { entityType?: string; action?: string }) {
-    let result = this.auditLogs.filter((l) => l.tenantId === tenantId);
-    if (filter?.entityType) {
-      result = result.filter((l) => l.entityType === filter.entityType);
-    }
-    if (filter?.action) {
-      result = result.filter((l) => l.action === filter.action);
-    }
-    return result;
+  /**
+   * Records without making the caller wait, and without letting a failure take
+   * the request down with it.
+   *
+   * Used only where the audited action has already been committed and the
+   * caller has nothing left to decide — the entry is still written, but a
+   * database hiccup surfaces as a logged error rather than a 500 on an
+   * operation that actually succeeded.
+   */
+  recordDetached(log: Omit<AuditLog, 'id' | 'occurredAt'>): void {
+    this.record(log).catch((error) => {
+      // eslint-disable-next-line no-console
+      console.error('[audit] failed to record entry:', error instanceof Error ? error.message : error);
+    });
+  }
+
+  async getAuditLogs(
+    tenantId: string,
+    filter?: { entityType?: string; action?: string; limit?: number; offset?: number }
+  ): Promise<AuditLog[]> {
+    return withTenant(tenantId, (client) => this.repo.list(client, tenantId, filter));
+  }
+
+  async count(tenantId: string): Promise<number> {
+    return withTenant(tenantId, (client) => this.repo.count(client, tenantId));
   }
 }

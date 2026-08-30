@@ -268,6 +268,89 @@ async function main() {
     `${dtInDb.rows[0]?.status}, ${dtInDb.rows[0]?.duration_seconds}s`
   );
 
+  // ---- The five reference domains -----------------------------------
+  // Operational and security context: a shift the plant configured, an
+  // operator who signs in on a terminal, the roles the API authorises from,
+  // and the audit trail an auditor asks for. None of these may be lost.
+
+  const plants = await api('/api/v1/master/plants');
+  const plantId = plants.body?.[0]?.id ?? 'plant-01';
+
+  const shiftCreated = await api('/api/v1/shifts', {
+    method: 'POST',
+    body: JSON.stringify({
+      plantId,
+      name: `Shift Persist ${stamp}`,
+      startTime: '22:00',
+      endTime: '06:00',
+      breakMinutes: 45,
+      active: true,
+    }),
+  });
+  ids.shiftId = shiftCreated.body?.id;
+  check('shift created through the API', shiftCreated.status === 201, `HTTP ${shiftCreated.status}`);
+
+  const opCreated = await api('/api/v1/master/operators', {
+    method: 'POST',
+    body: JSON.stringify({
+      employeeNumber: `OP-P-${stamp}`,
+      name: 'Operator Persistence',
+      status: 'ACTIVE',
+    }),
+  });
+  ids.operatorId = opCreated.body?.id;
+  const pinSet = await api(`/api/v1/operators/${ids.operatorId}/pin`, {
+    method: 'POST',
+    body: JSON.stringify({ pin: '4321' }),
+  });
+  check(
+    'operator created and given a PIN',
+    opCreated.status === 201 && pinSet.status < 300,
+    `create ${opCreated.status}, pin ${pinSet.status}`
+  );
+
+  const userCreated = await api('/api/v1/master/users', {
+    method: 'POST',
+    body: JSON.stringify({
+      email: `persist-${stamp}@pabrik.co.id`,
+      name: 'User Persistence',
+      role: 'SUPERVISOR',
+      scopeLevel: 'TENANT',
+      status: 'ACTIVE',
+    }),
+  });
+  ids.userId = userCreated.body?.id;
+  check('user created through the API', userCreated.status === 201, `HTTP ${userCreated.status}`);
+
+  const roleCreated = await api('/api/v1/roles', {
+    method: 'POST',
+    body: JSON.stringify({
+      key: `PERSIST_${stamp}`,
+      name: 'Peran Persistence',
+      description: 'created by the persistence check',
+      permissions: ['dashboard:view', 'analytics:view'],
+      landingPath: '/',
+    }),
+  });
+  ids.roleId = roleCreated.body?.id;
+  check('custom role created through the API', roleCreated.status === 201, `HTTP ${roleCreated.status}`);
+
+  // Each of the writes above is audited, and the downtime above moved a
+  // machine into a state; both are checked directly against their tables.
+  const auditRows = await owner.query(
+    'SELECT count(*)::int AS n FROM audit_log WHERE tenant_id = $1', [TENANT]);
+  check('audit entries are in PostgreSQL', auditRows.rows[0].n > 0, `${auditRows.rows[0].n} entries`);
+
+  const stateRows = await owner.query(
+    `SELECT state, ended_at FROM machine_state_log
+      WHERE tenant_id = $1 AND machine_id = $2 ORDER BY started_at DESC`,
+    [TENANT, workOrder.machineId ?? 'mc-mix-01']);
+  check(
+    'machine state was recorded from the downtime event',
+    stateRows.rows.length > 0,
+    stateRows.rows.length ? `${stateRows.rows.length} entries, latest ${stateRows.rows[0].state}` : 'none'
+  );
+
   // ================= 3. Kill the API ================================
   await stopApi();
 
@@ -336,6 +419,66 @@ async function main() {
     `${dbCount.rows[0].n} production records in PostgreSQL`
   );
 
+  // ---- The five reference domains, after the restart -----------------
+  const shiftAfter = await api('/api/v1/shifts');
+  const shiftList = Array.isArray(shiftAfter.body) ? shiftAfter.body : shiftAfter.body?.data;
+  check(
+    'the shift survives the restart',
+    Boolean(shiftList?.some((x) => x.id === ids.shiftId)),
+    `${shiftList?.length ?? 0} shifts served`
+  );
+
+  const opAfter = await api('/api/v1/master/operators');
+  const opList = Array.isArray(opAfter.body) ? opAfter.body : opAfter.body?.data;
+  check(
+    'the operator survives the restart',
+    Boolean(opList?.some((x) => x.id === ids.operatorId)),
+    `${opList?.length ?? 0} operators served`
+  );
+
+  // The PIN is the shop floor's only credential; losing it locks an operator
+  // out of the terminal until an administrator reissues one.
+  const pinRow = await owner.query(
+    'SELECT pin_hash FROM operator WHERE tenant_id = $1 AND id = $2', [TENANT, ids.operatorId]);
+  check(
+    "the operator's PIN hash survives the restart",
+    Boolean(pinRow.rows[0]?.pin_hash),
+    pinRow.rows[0]?.pin_hash ? 'stored' : 'gone'
+  );
+
+  const userAfter = await api('/api/v1/master/users');
+  const userList = Array.isArray(userAfter.body) ? userAfter.body : userAfter.body?.data;
+  check(
+    'the user survives the restart',
+    Boolean(userList?.some((x) => x.id === ids.userId)),
+    `${userList?.length ?? 0} users served`
+  );
+
+  const roleAfter = await api('/api/v1/roles');
+  const roleList = Array.isArray(roleAfter.body) ? roleAfter.body : roleAfter.body?.data;
+  const survivingRole = roleList?.find((x) => x.id === ids.roleId);
+  check(
+    'the custom role and its permissions survive the restart',
+    Boolean(survivingRole) && (survivingRole.permissions || []).includes('analytics:view'),
+    survivingRole ? `${survivingRole.permissions?.length ?? 0} permissions` : 'role is gone'
+  );
+
+  const auditAfter = await api('/api/v1/audit-logs');
+  const auditList = Array.isArray(auditAfter.body) ? auditAfter.body : auditAfter.body?.data;
+  check(
+    'the audit trail survives the restart',
+    Array.isArray(auditList) && auditList.length > 0,
+    `${auditList?.length ?? 0} entries served`
+  );
+
+  const stateAfter = await owner.query(
+    'SELECT count(*)::int AS n FROM machine_state_log WHERE tenant_id = $1', [TENANT]);
+  check(
+    'machine state survives the restart',
+    stateAfter.rows[0].n > 0,
+    `${stateAfter.rows[0].n} entries`
+  );
+
   // ================= 6-8. Full stack restart ========================
   // Killing the API twice with the database untouched is the same guarantee a
   // compose restart gives for the API container; the database's own durability
@@ -369,7 +512,8 @@ async function main() {
     { name: 'Shift', table: 'shift', path: '/api/v1/shifts' },
     { name: 'Operator', table: 'operator', path: '/api/v1/master/operators' },
     { name: 'Machine State', table: 'machine_state_log', path: null },
-    { name: 'User / Role', table: 'app_user', path: '/api/v1/users' },
+    { name: 'User', table: 'app_user', path: '/api/v1/master/users' },
+    { name: 'Role', table: 'role_definition', path: '/api/v1/roles' },
     { name: 'Audit Log', table: 'audit_log', path: '/api/v1/audit-logs' },
   ];
 

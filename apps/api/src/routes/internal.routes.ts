@@ -63,7 +63,7 @@ export function internalRoutes(
 
   router.get(
     '/auth/session',
-    route((req, res) => {
+    route(async (req, res) => {
       if (!req.internal) throw ApiError.unauthenticated('Sesi internal tidak aktif.');
       res.json({ principal: req.internal });
     })
@@ -71,7 +71,7 @@ export function internalRoutes(
 
   router.post(
     '/auth/logout',
-    route((req, res) => {
+    route(async (req, res) => {
       if (req.internal) auth.logout(req.internal.sessionId);
       res.json({ success: true });
     })

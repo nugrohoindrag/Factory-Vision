@@ -26,7 +26,13 @@ import { ClientManagementService } from './modules/client-management/client.serv
 import { ClientAdminService } from './modules/client-management/client.admin.service.js';
 import { InternalAuthService } from './modules/client-management/internal-auth.service.js';
 import { checkDatabase } from './platform/db/pool.js';
-import { assertDatabaseReady, seedDemoPlant, seedDemoHistory } from './platform/bootstrap.js';
+import {
+  assertDatabaseReady,
+  ensureTenant,
+  hydrateReferenceData,
+  seedDemoPlant,
+  seedDemoHistory,
+} from './platform/bootstrap.js';
 import { withTenant } from './platform/db/pool.js';
 import { MasterDataRepository } from './modules/master-data/master-data.repository.js';
 import { authRoutes } from './routes/auth.routes.js';
@@ -91,6 +97,7 @@ app.use(authorizeRoutes({ enabled: AUTH_REQUIRED }));
 const PILOT_TENANT = 'tenant-pilot-factory-01';
 
 await assertDatabaseReady();
+await ensureTenant(PILOT_TENANT);
 
 if (SEED_DEMO_DATA) {
   const plant = await seedDemoPlant(PILOT_TENANT, {
@@ -114,10 +121,31 @@ if (SEED_DEMO_DATA) {
   );
 }
 
+// Shifts, operators, users and roles are read synchronously all over the API,
+// so they are served from memory — but the memory is rebuilt from PostgreSQL
+// here, and every mutation writes there first. The bootstrap administrator is
+// established afterwards so its account and password hash land in the database
+// alongside them.
+const reference = await hydrateReferenceData(PILOT_TENANT, {
+  masterData: masterDataService,
+  rbac: rbacService,
+  auth: authService,
+});
+await authService.bootstrapAdminCredential();
+const credentials = authService.hydrateCredentials(PILOT_TENANT);
+
+// eslint-disable-next-line no-console
+console.log(
+  `[db] reference data: ${reference.shifts} shifts, ${reference.operators} operators, ` +
+    `${reference.users} users, ${reference.roles} roles, ` +
+    `${credentials.users + credentials.operators} stored credentials`
+);
+
 const persisted = await shopFloorService.counts(PILOT_TENANT);
 // eslint-disable-next-line no-console
 console.log(
-  `[db] persisted for ${PILOT_TENANT}: ${persisted.production} production records, ${persisted.downtime} downtime records`
+  `[db] persisted for ${PILOT_TENANT}: ${persisted.production} production records, ` +
+    `${persisted.downtime} downtime records, ${persisted.machineStates} machine state entries`
 );
 
 // Health check
@@ -136,7 +164,7 @@ app.get('/api/v1/master/lines', async (req, res) => {
 
 app.post('/api/v1/master/lines', async (req, res) => {
   const line = masterDataService.createLine(req.context!.tenantId, req.body);
-  auditService.record({
+  await auditService.record({
     tenantId: req.context!.tenantId,
     actorType: 'USER',
     actorId: 'Admin',
@@ -151,7 +179,7 @@ app.post('/api/v1/master/lines', async (req, res) => {
 app.put('/api/v1/master/lines/:id', async (req, res, next) => {
   try {
     const line = masterDataService.updateLine(req.context!.tenantId, req.params.id, req.body);
-    auditService.record({
+    await auditService.record({
       tenantId: req.context!.tenantId,
       actorType: 'USER',
       actorId: 'Admin',
@@ -169,7 +197,7 @@ app.put('/api/v1/master/lines/:id', async (req, res, next) => {
 app.delete('/api/v1/master/lines/:id', async (req, res, next) => {
   try {
     masterDataService.deleteLine(req.context!.tenantId, req.params.id);
-    auditService.record({
+    await auditService.record({
       tenantId: req.context!.tenantId,
       actorType: 'USER',
       actorId: 'Admin',
@@ -189,7 +217,7 @@ app.get('/api/v1/master/machines', async (req, res) => {
 
 app.post('/api/v1/master/machines', async (req, res) => {
   const machine = masterDataService.createMachine(req.context!.tenantId, req.body);
-  auditService.record({
+  await auditService.record({
     tenantId: req.context!.tenantId,
     actorType: 'USER',
     actorId: 'Admin',
@@ -204,7 +232,7 @@ app.post('/api/v1/master/machines', async (req, res) => {
 app.put('/api/v1/master/machines/:id', async (req, res, next) => {
   try {
     const machine = masterDataService.updateMachine(req.context!.tenantId, req.params.id, req.body);
-    auditService.record({
+    await auditService.record({
       tenantId: req.context!.tenantId,
       actorType: 'USER',
       actorId: 'Admin',
@@ -222,7 +250,7 @@ app.put('/api/v1/master/machines/:id', async (req, res, next) => {
 app.delete('/api/v1/master/machines/:id', async (req, res, next) => {
   try {
     masterDataService.deleteMachine(req.context!.tenantId, req.params.id);
-    auditService.record({
+    await auditService.record({
       tenantId: req.context!.tenantId,
       actorType: 'USER',
       actorId: 'Admin',
@@ -242,7 +270,7 @@ app.get('/api/v1/master/products', async (req, res) => {
 
 app.post('/api/v1/master/products', async (req, res) => {
   const product = masterDataService.createProduct(req.context!.tenantId, req.body);
-  auditService.record({
+  await auditService.record({
     tenantId: req.context!.tenantId,
     actorType: 'USER',
     actorId: 'Admin',
@@ -257,7 +285,7 @@ app.post('/api/v1/master/products', async (req, res) => {
 app.put('/api/v1/master/products/:id', async (req, res, next) => {
   try {
     const product = masterDataService.updateProduct(req.context!.tenantId, req.params.id, req.body);
-    auditService.record({
+    await auditService.record({
       tenantId: req.context!.tenantId,
       actorType: 'USER',
       actorId: 'Admin',
@@ -275,7 +303,7 @@ app.put('/api/v1/master/products/:id', async (req, res, next) => {
 app.delete('/api/v1/master/products/:id', async (req, res, next) => {
   try {
     masterDataService.deleteProduct(req.context!.tenantId, req.params.id);
-    auditService.record({
+    await auditService.record({
       tenantId: req.context!.tenantId,
       actorType: 'USER',
       actorId: 'Admin',
@@ -294,8 +322,8 @@ app.get('/api/v1/master/operators', async (req, res) => {
 });
 
 app.post('/api/v1/master/operators', async (req, res) => {
-  const operator = masterDataService.createOperator(req.context!.tenantId, req.body);
-  auditService.record({
+  const operator = await masterDataService.createOperator(req.context!.tenantId, req.body);
+  await auditService.record({
     tenantId: req.context!.tenantId,
     actorType: 'USER',
     actorId: 'Admin',
@@ -309,8 +337,8 @@ app.post('/api/v1/master/operators', async (req, res) => {
 
 app.put('/api/v1/master/operators/:id', async (req, res, next) => {
   try {
-    const operator = masterDataService.updateOperator(req.context!.tenantId, req.params.id, req.body);
-    auditService.record({
+    const operator = await masterDataService.updateOperator(req.context!.tenantId, req.params.id, req.body);
+    await auditService.record({
       tenantId: req.context!.tenantId,
       actorType: 'USER',
       actorId: 'Admin',
@@ -327,8 +355,8 @@ app.put('/api/v1/master/operators/:id', async (req, res, next) => {
 
 app.delete('/api/v1/master/operators/:id', async (req, res, next) => {
   try {
-    masterDataService.deleteOperator(req.context!.tenantId, req.params.id);
-    auditService.record({
+    await masterDataService.deleteOperator(req.context!.tenantId, req.params.id);
+    await auditService.record({
       tenantId: req.context!.tenantId,
       actorType: 'USER',
       actorId: 'Admin',
@@ -352,7 +380,7 @@ app.get('/api/v1/master/downtime-reasons', async (req, res) => {
 
 app.post('/api/v1/master/downtime-reasons', async (req, res) => {
   const reason = masterDataService.createDowntimeReason(req.context!.tenantId, req.body);
-  auditService.record({
+  await auditService.record({
     tenantId: req.context!.tenantId,
     actorType: 'USER',
     actorId: 'Admin',
@@ -367,7 +395,7 @@ app.post('/api/v1/master/downtime-reasons', async (req, res) => {
 app.put('/api/v1/master/downtime-reasons/:id', async (req, res, next) => {
   try {
     const reason = masterDataService.updateDowntimeReason(req.context!.tenantId, req.params.id, req.body);
-    auditService.record({
+    await auditService.record({
       tenantId: req.context!.tenantId,
       actorType: 'USER',
       actorId: 'Admin',
@@ -385,7 +413,7 @@ app.put('/api/v1/master/downtime-reasons/:id', async (req, res, next) => {
 app.delete('/api/v1/master/downtime-reasons/:id', async (req, res, next) => {
   try {
     masterDataService.deleteDowntimeReason(req.context!.tenantId, req.params.id);
-    auditService.record({
+    await auditService.record({
       tenantId: req.context!.tenantId,
       actorType: 'USER',
       actorId: 'Admin',
@@ -405,7 +433,7 @@ app.get('/api/v1/master/reject-reasons', async (req, res) => {
 
 app.post('/api/v1/master/reject-reasons', async (req, res) => {
   const reason = masterDataService.createRejectReason(req.context!.tenantId, req.body);
-  auditService.record({
+  await auditService.record({
     tenantId: req.context!.tenantId,
     actorType: 'USER',
     actorId: 'Admin',
@@ -420,7 +448,7 @@ app.post('/api/v1/master/reject-reasons', async (req, res) => {
 app.put('/api/v1/master/reject-reasons/:id', async (req, res, next) => {
   try {
     const reason = masterDataService.updateRejectReason(req.context!.tenantId, req.params.id, req.body);
-    auditService.record({
+    await auditService.record({
       tenantId: req.context!.tenantId,
       actorType: 'USER',
       actorId: 'Admin',
@@ -438,7 +466,7 @@ app.put('/api/v1/master/reject-reasons/:id', async (req, res, next) => {
 app.delete('/api/v1/master/reject-reasons/:id', async (req, res, next) => {
   try {
     masterDataService.deleteRejectReason(req.context!.tenantId, req.params.id);
-    auditService.record({
+    await auditService.record({
       tenantId: req.context!.tenantId,
       actorType: 'USER',
       actorId: 'Admin',
@@ -497,7 +525,7 @@ app.post(
     // Built field by field rather than spreading the request: spreading would
     // carry `password` onto the stored record and straight back out in the
     // response, since AppUser is the shape the console reads freely.
-    const user = masterDataService.createUser(tenantId, {
+    const user = await masterDataService.createUser(tenantId, {
       email: email!,
       name: name!,
       role: role!,
@@ -508,7 +536,7 @@ app.post(
       status: req.body.status === 'ACTIVE' ? 'ACTIVE' : 'INVITED',
     });
 
-    if (password) authService.registerUserPassword(user.id, password);
+    if (password) await authService.registerUserPassword(tenantId, user.id, password);
 
     recordAudit(req, 'app_user', user.id, 'CREATE_USER', undefined, {
       email: user.email,
@@ -534,7 +562,7 @@ app.put(
       status: before.status,
     };
 
-    const user = masterDataService.updateUser(tenantId, req.params.id, req.body);
+    const user = await masterDataService.updateUser(tenantId, req.params.id, req.body);
 
     // distinguishes a role change from a scope change; recording the
     // specific action is what makes the audit trail answerable later.
@@ -552,7 +580,7 @@ app.put(
     // A narrowed scope or a different role must take effect now, not at the
     // user's next login.
     if (roleChanged || scopeChanged) {
-      authService.revokeSessions(tenantId, { subjectId: user.id }, req.principal?.subjectId ?? 'system');
+      await authService.revokeSessions(tenantId, { subjectId: user.id }, req.principal?.subjectId ?? 'system');
     }
 
     res.json(user);
@@ -566,8 +594,8 @@ app.delete(
     const before = masterDataService.getUserById(tenantId, req.params.id);
     if (!before) throw ApiError.notFound('Pengguna tidak ditemukan.');
 
-    masterDataService.deleteUser(tenantId, req.params.id);
-    authService.revokeSessions(tenantId, { subjectId: req.params.id }, req.principal?.subjectId ?? 'system');
+    await masterDataService.deleteUser(tenantId, req.params.id);
+    await authService.revokeSessions(tenantId, { subjectId: req.params.id }, req.principal?.subjectId ?? 'system');
     recordAudit(
       req,
       'app_user',
@@ -592,7 +620,7 @@ app.patch(
     const before = masterDataService.getUserById(tenantId, req.params.id);
     if (!before) throw ApiError.notFound('Pengguna tidak ditemukan.');
 
-    const user = masterDataService.updateUserStatus(tenantId, req.params.id, status!);
+    const user = await masterDataService.updateUserStatus(tenantId, req.params.id, status!);
 
     const action =
       status === 'ACTIVE' ? 'USER_ACTIVATED' : status === 'SUSPENDED' ? 'USER_SUSPENDED' : 'USER_DEACTIVATED';
@@ -602,7 +630,7 @@ app.patch(
     // has to be revoked for access to actually end (US-005).
     let revoked = 0;
     if (status !== 'ACTIVE') {
-      revoked = authService.revokeSessions(
+      revoked = await authService.revokeSessions(
         tenantId,
         { subjectId: user.id },
         req.principal?.subjectId ?? 'system'
@@ -620,7 +648,7 @@ app.get('/api/v1/master/devices', async (req, res) => {
 
 app.post('/api/v1/master/devices', async (req, res) => {
   const device = masterDataService.createDevice(req.context!.tenantId, req.body);
-  auditService.record({
+  await auditService.record({
     tenantId: req.context!.tenantId,
     actorType: 'USER',
     actorId: 'Admin',
@@ -635,7 +663,7 @@ app.post('/api/v1/master/devices', async (req, res) => {
 app.put('/api/v1/master/devices/:id', async (req, res, next) => {
   try {
     const device = masterDataService.updateDevice(req.context!.tenantId, req.params.id, req.body);
-    auditService.record({
+    await auditService.record({
       tenantId: req.context!.tenantId,
       actorType: 'USER',
       actorId: 'Admin',
@@ -653,7 +681,7 @@ app.put('/api/v1/master/devices/:id', async (req, res, next) => {
 app.delete('/api/v1/master/devices/:id', async (req, res, next) => {
   try {
     masterDataService.deleteDevice(req.context!.tenantId, req.params.id);
-    auditService.record({
+    await auditService.record({
       tenantId: req.context!.tenantId,
       actorType: 'USER',
       actorId: 'Admin',
@@ -874,7 +902,7 @@ app.get(
 app.post('/api/v1/work-orders', async (req, res, next) => {
   try {
     const wo = await productionService.createWorkOrder(req.context!.tenantId, req.body);
-    auditService.record({
+    await auditService.record({
       tenantId: req.context!.tenantId,
       actorType: 'USER',
       actorId: 'PPIC',
@@ -893,7 +921,7 @@ app.post('/api/v1/work-orders', async (req, res, next) => {
 app.put('/api/v1/work-orders/:id', async (req, res, next) => {
   try {
     const wo = await productionService.updateWorkOrder(req.context!.tenantId, req.params.id, req.body);
-    auditService.record({
+    await auditService.record({
       tenantId: req.context!.tenantId,
       actorType: 'USER',
       actorId: 'PPIC',
@@ -912,7 +940,7 @@ app.put('/api/v1/work-orders/:id', async (req, res, next) => {
 app.delete('/api/v1/work-orders/:id', async (req, res, next) => {
   try {
     await productionService.deleteWorkOrder(req.context!.tenantId, req.params.id);
-    auditService.record({
+    await auditService.record({
       tenantId: req.context!.tenantId,
       actorType: 'USER',
       actorId: 'Supervisor',
@@ -1293,7 +1321,7 @@ app.get('/api/v1/corrections', async (req, res) => {
 app.post(
   '/api/v1/corrections',
   route(async (req, res) => {
-    const corr = correctionService.createCorrectionRequest(req.context!.tenantId, {
+    const corr = await correctionService.createCorrectionRequest(req.context!.tenantId, {
       ...req.body,
       requestedBy: req.body.requestedBy ?? req.principal?.name ?? 'System',
       requestedById: req.principal?.subjectId,
@@ -1308,7 +1336,7 @@ app.post(
 app.post(
   '/api/v1/corrections/:id/approve',
   route(async (req, res) => {
-    const corr = correctionService.approveCorrection(
+    const corr = await correctionService.approveCorrection(
       req.context!.tenantId,
       req.params.id,
       req.body?.approvedBy || req.principal?.name || 'Supervisor',
@@ -1321,7 +1349,7 @@ app.post(
 app.post(
   '/api/v1/corrections/:id/reject',
   route(async (req, res) => {
-    const corr = correctionService.rejectCorrection(
+    const corr = await correctionService.rejectCorrection(
       req.context!.tenantId,
       req.params.id,
       req.body?.rejectedBy || req.principal?.name || 'Supervisor',
@@ -1353,7 +1381,7 @@ app.get(
 // Audit Log Endpoints
 app.get('/api/v1/audit-logs', async (req, res) => {
   const { entityType, action } = req.query as { entityType?: string; action?: string };
-  res.json(auditService.getAuditLogs(req.context!.tenantId, { entityType, action }));
+  res.json(await auditService.getAuditLogs(req.context!.tenantId, { entityType, action }));
 });
 
 // ============================================================
@@ -1527,7 +1555,9 @@ function recordAudit(
   previousValue?: unknown,
   newValue?: unknown
 ): void {
-  auditService.record({
+  // Detached on purpose: the action being audited has already committed, and
+  // a database hiccup here must not turn a successful request into a 500.
+  auditService.recordDetached({
     tenantId: req.context!.tenantId,
     actorType: req.principal?.kind === 'OPERATOR' ? 'OPERATOR' : 'USER',
     actorId: req.principal?.subjectId ?? req.context?.userId ?? 'system',

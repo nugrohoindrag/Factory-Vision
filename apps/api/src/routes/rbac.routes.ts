@@ -16,22 +16,22 @@ export function rbacRoutes(rbac: RbacService, audit: AuditService): Router {
 
   router.get(
     '/permissions',
-    route((_req, res) => res.json(rbac.getPermissionCatalog()))
+    route(async (_req, res) => res.json(rbac.getPermissionCatalog()))
   );
 
   router.get(
     '/roles',
-    route((req, res) => res.json(rbac.getRoles(req.context!.tenantId)))
+    route(async (req, res) => res.json(rbac.getRoles(req.context!.tenantId)))
   );
 
   router.get(
     '/roles/:id',
-    route((req, res) => res.json(rbac.getRole(req.context!.tenantId, req.params.id)))
+    route(async (req, res) => res.json(rbac.getRole(req.context!.tenantId, req.params.id)))
   );
 
   router.post(
     '/roles',
-    route((req, res) => {
+    route(async (req, res) => {
       const v = validate(req.body);
       const key = v.string('key', { min: 2, max: 40 });
       const name = v.string('name', { min: 2, max: 60 });
@@ -41,13 +41,13 @@ export function rbacRoutes(rbac: RbacService, audit: AuditService): Router {
       v.done();
 
       const tenantId = req.context!.tenantId;
-      const role = rbac.createRole(
+      const role = await rbac.createRole(
         tenantId,
         { key: key!, name: name!, description, permissions: permissions!, landingPath },
         req.principal?.permissions ?? rbac.getPermissionCatalog().map((p) => p.id)
       );
 
-      audit.record({
+      await audit.record({
         tenantId,
         actorType: 'USER',
         actorId: req.principal?.subjectId ?? 'system',
@@ -65,7 +65,7 @@ export function rbacRoutes(rbac: RbacService, audit: AuditService): Router {
 
   router.put(
     '/roles/:id',
-    route((req, res) => {
+    route(async (req, res) => {
       const tenantId = req.context!.tenantId;
       const before = rbac.getRole(tenantId, req.params.id);
       const previous = { name: before.name, permissions: [...before.permissions] };
@@ -77,14 +77,14 @@ export function rbacRoutes(rbac: RbacService, audit: AuditService): Router {
       const landingPath = v.string('landingPath', { optional: true });
       v.done();
 
-      const role = rbac.updateRole(
+      const role = await rbac.updateRole(
         tenantId,
         req.params.id,
         { name, description, permissions, landingPath },
         req.principal?.permissions ?? rbac.getPermissionCatalog().map((p) => p.id)
       );
 
-      audit.record({
+      await audit.record({
         tenantId,
         actorType: 'USER',
         actorId: req.principal?.subjectId ?? 'system',
@@ -103,12 +103,12 @@ export function rbacRoutes(rbac: RbacService, audit: AuditService): Router {
 
   router.delete(
     '/roles/:id',
-    route((req, res) => {
+    route(async (req, res) => {
       const tenantId = req.context!.tenantId;
       const role = rbac.getRole(tenantId, req.params.id);
-      const result = rbac.deleteRole(tenantId, req.params.id);
+      const result = await rbac.deleteRole(tenantId, req.params.id);
 
-      audit.record({
+      await audit.record({
         tenantId,
         actorType: 'USER',
         actorId: req.principal?.subjectId ?? 'system',

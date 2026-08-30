@@ -95,7 +95,7 @@ export function metaRoutes(): Router {
 
   router.get(
     '/meta/deployment',
-    route((req, res) => {
+    route(async (req, res) => {
       const mode =
         process.env.DEPLOYMENT_MODE === 'ON_PREMISE_SINGLE_TENANT'
           ? 'ON_PREMISE_SINGLE_TENANT'
@@ -121,7 +121,7 @@ export function metaRoutes(): Router {
   /** Machine-readable contract: endpoints, their guard, and the error shape. */
   router.get(
     '/meta/openapi.json',
-    route((_req, res) => {
+    route(async (_req, res) => {
       res.json({
         openapi: '3.0.3',
         info: {
@@ -208,7 +208,7 @@ export function metaRoutes(): Router {
   /** A readable index for people, kept in step with the JSON contract. */
   router.get(
     '/docs',
-    route((_req, res) => {
+    route(async (_req, res) => {
       const rows = ENDPOINTS.map((endpoint) => {
         const permission = permissionForRoute(endpoint.method, endpoint.path.replace(/:[^/]+/g, 'x')) ?? '-';
         return `<tr><td>${endpoint.method}</td><td><code>${endpoint.path}</code></td><td>${endpoint.summary}</td><td><code>${permission}</code></td></tr>`;

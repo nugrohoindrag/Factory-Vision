@@ -1,5 +1,5 @@
-import { DowntimeStatus, RecordSource } from '@factory-vision/domain-types';
-import type { DowntimeRecord, ProductionRecord } from '@factory-vision/domain-types';
+import { DowntimeStatus, MachineState, RecordSource } from '@factory-vision/domain-types';
+import type { DowntimeRecord, MachineStateLog, ProductionRecord } from '@factory-vision/domain-types';
 import type { SyncBatchResult, SyncCommandResult } from '@factory-vision/domain-types';
 import { ApiError } from '../../platform/http/api-error.js';
 import { getPool, withTenant } from '../../platform/db/pool.js';
@@ -11,6 +11,7 @@ import { resolveShiftContext } from './shift-date.js';
 import { ProductionRecordRepository } from './production-record.repository.js';
 import { DowntimeRepository } from './downtime.repository.js';
 import { SyncEventRepository } from './sync-event.repository.js';
+import { MachineStateRepository } from './machine-state.repository.js';
 
 /**
  * Shop-floor capture (US-014 … US-020, US-045, US-046).
@@ -32,6 +33,7 @@ export class ShopFloorService {
   private readonly productionRecords = new ProductionRecordRepository();
   private readonly downtimes = new DowntimeRepository();
   private readonly syncEvents = new SyncEventRepository();
+  private readonly machineStates = new MachineStateRepository();
 
   constructor(
     private productionService: ProductionService,
@@ -145,6 +147,20 @@ export class ShopFloorService {
           cmd.workOrderId,
           record.id
         );
+        // Output means the machine was running when it happened (§11). The
+        // repository ignores a repeat of the state already open, so a shift of
+        // steady production is one row, not one per tap.
+        if (record.machineId) {
+          await this.machineStates.transition(client, {
+            tenantId,
+            machineId: record.machineId,
+            processId: record.processId,
+            state: MachineState.RUNNING,
+            startedAt: record.recordedAt,
+            workOrderId: record.workOrderId,
+            shiftDate: record.shiftDate,
+          });
+        }
       }
 
       return record;
@@ -265,6 +281,16 @@ export class ShopFloorService {
           cmd.workOrderId,
           record.id
         );
+        await this.machineStates.transition(client, {
+          tenantId,
+          machineId: record.machineId,
+          processId: record.processId,
+          state: MachineState.DOWNTIME,
+          reasonId: record.reasonId,
+          startedAt: record.startTime,
+          workOrderId: record.workOrderId,
+          shiftDate: record.shiftDate,
+        });
       }
       return record;
     });
@@ -313,6 +339,18 @@ export class ShopFloorService {
         resolved.workOrderId,
         resolved.id
       );
+      // The stop is over, so the machine is idle until output proves it is
+      // running again. Claiming RUNNING here would inflate Availability with
+      // time nobody has evidence for.
+      await this.machineStates.transition(client, {
+        tenantId,
+        machineId: resolved.machineId,
+        processId: resolved.processId,
+        state: MachineState.IDLE,
+        startedAt: cmd.occurredAt,
+        workOrderId: resolved.workOrderId,
+        shiftDate: resolved.shiftDate,
+      });
       return resolved;
     });
   }
@@ -351,11 +389,26 @@ export class ShopFloorService {
     );
   }
 
+  /** What each machine is doing right now, read from the log (§11). */
+  async getMachineStates(tenantId: string): Promise<MachineStateLog[]> {
+    return withTenant(tenantId, (client) => this.machineStates.listOpen(client, tenantId));
+  }
+
+  async getMachineStateHistory(
+    tenantId: string,
+    machineId?: string
+  ): Promise<MachineStateLog[]> {
+    return withTenant(tenantId, (client) => this.machineStates.list(client, tenantId, { machineId }));
+  }
+
   /** Row counts, for the boot log and the persistence acceptance checks. */
-  async counts(tenantId: string): Promise<{ production: number; downtime: number }> {
+  async counts(
+    tenantId: string
+  ): Promise<{ production: number; downtime: number; machineStates: number }> {
     return withTenant(tenantId, async (client) => ({
       production: await this.productionRecords.count(client, tenantId),
       downtime: await this.downtimes.count(client, tenantId),
+      machineStates: await this.machineStates.count(client, tenantId),
     }));
   }
 

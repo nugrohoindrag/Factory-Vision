@@ -24,7 +24,24 @@ import {
 } from '@factory-vision/domain-types';
 import { demoRows } from '../../platform/config/demo-seed.js';
 
+import { withTenant } from '../../platform/db/pool.js';
+import { AppUserRepository, OperatorRepository, ShiftRepository } from './reference.repository.js';
+
 export class MasterDataService {
+  /**
+   * Shifts, operators and users are read synchronously all over the service
+   * and on the shop floor's hot path, so they stay in these arrays — but the
+   * arrays are a cache, not the record. `hydrate()` rebuilds them from
+   * PostgreSQL at boot and every mutation below writes there first, so a
+   * restart changes nothing about what the plant sees.
+   */
+  private readonly shiftRepo = new ShiftRepository();
+  private readonly operatorRepo = new OperatorRepository();
+  private readonly userRepo = new AppUserRepository();
+
+  /** Password hashes, keyed by user id, as loaded from `app_user`. */
+  private readonly userPasswordHashes = new Map<string, string>();
+
   private plants: Plant[] = demoRows<Plant>(() => [
     {
       id: 'plant-cikarang-01',
@@ -1378,28 +1395,47 @@ export class MasterDataService {
     return this.operators.find((o) => o.id === id && o.tenantId === tenantId);
   }
 
-  createOperator(tenantId: string, payload: Omit<Operator, 'id' | 'tenantId'>): Operator {
-    const operator: Operator = {
-      id: `op-${Date.now()}`,
-      tenantId,
-      ...payload,
-    };
-    this.operators.push(operator);
-    return operator;
+  async createOperator(tenantId: string, payload: Omit<Operator, 'id' | 'tenantId'>): Promise<Operator> {
+    const operator: Operator = { id: `op-${Date.now()}`, tenantId, ...payload };
+    const stored = await withTenant(tenantId, (c) => this.operatorRepo.upsert(c, operator));
+    this.operators.push(stored);
+    return stored;
   }
 
-  updateOperator(tenantId: string, id: string, payload: Partial<Omit<Operator, 'id' | 'tenantId'>>): Operator {
+  async updateOperator(
+    tenantId: string,
+    id: string,
+    payload: Partial<Omit<Operator, 'id' | 'tenantId'>>
+  ): Promise<Operator> {
     const operator = this.getOperatorById(tenantId, id);
     if (!operator) throw new Error('Operator not found');
-    Object.assign(operator, payload);
+    const stored = await withTenant(tenantId, (c) =>
+      this.operatorRepo.upsert(c, { ...operator, ...payload })
+    );
+    Object.assign(operator, stored);
     return operator;
   }
 
-  deleteOperator(tenantId: string, id: string): boolean {
+  async deleteOperator(tenantId: string, id: string): Promise<boolean> {
     const index = this.operators.findIndex((o) => o.id === id && o.tenantId === tenantId);
     if (index === -1) throw new Error('Operator not found');
+    await withTenant(tenantId, (c) => this.operatorRepo.delete(c, tenantId, id));
     this.operators.splice(index, 1);
     return true;
+  }
+
+  /** Stores an operator's PIN hash, which is the shop floor's only credential. */
+  async saveOperatorPin(
+    tenantId: string,
+    operatorId: string,
+    pinHash: string,
+    updatedBy?: string
+  ): Promise<void> {
+    await withTenant(tenantId, (c) =>
+      this.operatorRepo.setPin(c, tenantId, operatorId, pinHash, updatedBy)
+    );
+    const operator = this.getOperatorById(tenantId, operatorId);
+    if (operator) operator.pinHash = pinHash;
   }
 
   // Downtime Reasons
@@ -1469,52 +1505,137 @@ export class MasterDataService {
   }
 
   // Users
-  createUser(tenantId: string, payload: Omit<AppUser, 'id' | 'tenantId' | 'createdAt'>): AppUser {
+  async createUser(
+    tenantId: string,
+    payload: Omit<AppUser, 'id' | 'tenantId' | 'createdAt'>
+  ): Promise<AppUser> {
     const user: AppUser = {
       id: `usr-${Date.now()}`,
       tenantId,
       ...payload,
       createdAt: new Date().toISOString(),
     };
-    this.users.push(user);
-    return user;
+    const stored = await withTenant(tenantId, (c) => this.userRepo.upsert(c, user));
+    this.users.push(stored.user);
+    return stored.user;
   }
 
   getUserById(tenantId: string, userId: string): AppUser | undefined {
     return this.users.find((u) => u.id === userId && u.tenantId === tenantId);
   }
 
-  updateUser(
+  async updateUser(
     tenantId: string,
     userId: string,
     payload: Partial<Omit<AppUser, 'id' | 'tenantId' | 'createdAt'>>
-  ): AppUser {
+  ): Promise<AppUser> {
     const user = this.getUserById(tenantId, userId);
     if (!user) throw new Error('User not found');
 
-    if (payload.name !== undefined) user.name = payload.name;
-    if (payload.email !== undefined) user.email = payload.email;
-    if (payload.role !== undefined) user.role = payload.role;
-    if (payload.accountType !== undefined) user.accountType = payload.accountType;
-    if (payload.scopeLevel !== undefined) user.scopeLevel = payload.scopeLevel;
-    if (payload.scopeId !== undefined) user.scopeId = payload.scopeId;
-    if (payload.status !== undefined) user.status = payload.status;
+    const next: AppUser = { ...user };
+    if (payload.name !== undefined) next.name = payload.name;
+    if (payload.email !== undefined) next.email = payload.email;
+    if (payload.role !== undefined) next.role = payload.role;
+    if (payload.accountType !== undefined) next.accountType = payload.accountType;
+    if (payload.scopeLevel !== undefined) next.scopeLevel = payload.scopeLevel;
+    if (payload.scopeId !== undefined) next.scopeId = payload.scopeId;
+    if (payload.status !== undefined) next.status = payload.status;
 
+    const stored = await withTenant(tenantId, (c) => this.userRepo.upsert(c, next));
+    Object.assign(user, stored.user);
     return user;
   }
 
-  deleteUser(tenantId: string, userId: string): boolean {
+  async deleteUser(tenantId: string, userId: string): Promise<boolean> {
     const index = this.users.findIndex((u) => u.id === userId && u.tenantId === tenantId);
     if (index === -1) throw new Error('User not found');
+    await withTenant(tenantId, (c) => this.userRepo.delete(c, tenantId, userId));
     this.users.splice(index, 1);
+    this.userPasswordHashes.delete(userId);
     return true;
   }
 
-  updateUserStatus(tenantId: string, userId: string, status: AppUser['status']): AppUser {
-    const user = this.users.find((u) => u.id === userId && u.tenantId === tenantId);
-    if (!user) throw new Error('User not found');
-    user.status = status;
-    return user;
+  async updateUserStatus(
+    tenantId: string,
+    userId: string,
+    status: AppUser['status']
+  ): Promise<AppUser> {
+    return this.updateUser(tenantId, userId, { status });
+  }
+
+  // --- credentials and hydration ---------------------------------------------
+
+  /** The stored password hash for a user, as loaded from `app_user`. */
+  getUserPasswordHash(userId: string): string | undefined {
+    return this.userPasswordHashes.get(userId);
+  }
+
+  async saveUserPassword(tenantId: string, userId: string, hash: string): Promise<void> {
+    await withTenant(tenantId, (c) => this.userRepo.setPassword(c, tenantId, userId, hash));
+    this.userPasswordHashes.set(userId, hash);
+  }
+
+  async touchUserLogin(tenantId: string, userId: string, at: string): Promise<void> {
+    await withTenant(tenantId, (c) => this.userRepo.touchLogin(c, tenantId, userId, at));
+    const user = this.getUserById(tenantId, userId);
+    if (user) user.lastLoginAt = at;
+  }
+
+  /**
+   * Rebuilds the shift, operator and user caches from PostgreSQL.
+   *
+   * On a first run the tables are empty and whatever the demo seed put in
+   * memory is pushed down instead, so a demo install converges to the same
+   * place a real one starts from: the database holding the record.
+   */
+  async hydrate(tenantId: string): Promise<{ shifts: number; operators: number; users: number }> {
+    return withTenant(tenantId, async (client) => {
+      const storedShifts = await this.shiftRepo.list(client, tenantId);
+      if (storedShifts.length === 0) {
+        for (const shift of this.shifts.filter((s) => s.tenantId === tenantId)) {
+          await this.shiftRepo.upsert(client, shift);
+        }
+      } else {
+        this.shifts = this.shifts.filter((s) => s.tenantId !== tenantId).concat(storedShifts);
+      }
+
+      const storedOperators = await this.operatorRepo.list(client, tenantId);
+      if (storedOperators.length === 0) {
+        for (const operator of this.operators.filter((o) => o.tenantId === tenantId)) {
+          await this.operatorRepo.upsert(client, operator);
+        }
+      } else {
+        this.operators = this.operators
+          .filter((o) => o.tenantId !== tenantId)
+          .concat(storedOperators);
+      }
+
+      const storedUsers = await this.userRepo.list(client, tenantId);
+      if (storedUsers.length === 0) {
+        for (const user of this.users.filter((u) => u.tenantId === tenantId)) {
+          await this.userRepo.upsert(client, user, this.userPasswordHashes.get(user.id));
+        }
+      } else {
+        this.users = this.users
+          .filter((u) => u.tenantId !== tenantId)
+          .concat(storedUsers.map((s) => s.user));
+        for (const stored of storedUsers) {
+          if (stored.passwordHash) this.userPasswordHashes.set(stored.user.id, stored.passwordHash);
+        }
+      }
+
+      return {
+        shifts: this.shifts.filter((s) => s.tenantId === tenantId).length,
+        operators: this.operators.filter((o) => o.tenantId === tenantId).length,
+        users: this.users.filter((u) => u.tenantId === tenantId).length,
+      };
+    });
+  }
+
+  /** Writes a user straight through, for the bootstrap administrator. */
+  async persistUser(tenantId: string, user: AppUser, passwordHash?: string): Promise<void> {
+    await withTenant(tenantId, (c) => this.userRepo.upsert(c, user, passwordHash));
+    if (passwordHash) this.userPasswordHashes.set(user.id, passwordHash);
   }
 
   // Devices
@@ -1594,28 +1715,41 @@ export class MasterDataService {
     return endTime <= startTime;
   }
 
-  createShift(tenantId: string, payload: Omit<Shift, 'id' | 'tenantId' | 'crossesMidnight'>): Shift {
+  async createShift(
+    tenantId: string,
+    payload: Omit<Shift, 'id' | 'tenantId' | 'crossesMidnight'>
+  ): Promise<Shift> {
     const shift: Shift = {
       id: `shift-${Date.now()}`,
       tenantId,
       ...payload,
       crossesMidnight: MasterDataService.crossesMidnight(payload.startTime, payload.endTime),
     };
-    this.shifts.push(shift);
-    return shift;
+    // The database first: if the write fails the caller gets an error rather
+    // than a shift that exists until the next restart.
+    const stored = await withTenant(tenantId, (c) => this.shiftRepo.upsert(c, shift));
+    this.shifts.push(stored);
+    return stored;
   }
 
-  updateShift(tenantId: string, id: string, payload: Partial<Omit<Shift, 'id' | 'tenantId'>>): Shift {
+  async updateShift(
+    tenantId: string,
+    id: string,
+    payload: Partial<Omit<Shift, 'id' | 'tenantId'>>
+  ): Promise<Shift> {
     const shift = this.getShiftById(tenantId, id);
     if (!shift) throw new Error('Shift not found');
-    Object.assign(shift, payload);
-    shift.crossesMidnight = MasterDataService.crossesMidnight(shift.startTime, shift.endTime);
+    const next: Shift = { ...shift, ...payload };
+    next.crossesMidnight = MasterDataService.crossesMidnight(next.startTime, next.endTime);
+    const stored = await withTenant(tenantId, (c) => this.shiftRepo.upsert(c, next));
+    Object.assign(shift, stored);
     return shift;
   }
 
-  deleteShift(tenantId: string, id: string): boolean {
+  async deleteShift(tenantId: string, id: string): Promise<boolean> {
     const index = this.shifts.findIndex((s) => s.id === id && s.tenantId === tenantId);
     if (index === -1) throw new Error('Shift not found');
+    await withTenant(tenantId, (c) => this.shiftRepo.delete(c, tenantId, id));
     this.shifts.splice(index, 1);
     return true;
   }

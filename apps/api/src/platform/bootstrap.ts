@@ -35,6 +35,52 @@ export async function assertDatabaseReady(): Promise<void> {
 }
 
 /**
+ * Makes sure the tenant row exists.
+ *
+ * Every table in the schema has a foreign key to `tenant`, so nothing — not a
+ * shift, not a user, not a production record — can be written before this row
+ * does. It runs on every boot, demo data or not: a real install starts empty
+ * but still needs somewhere to put its first shift.
+ */
+export async function ensureTenant(tenantId: string): Promise<void> {
+  await withTenant(tenantId, (client) =>
+    client.query(
+      `INSERT INTO tenant (id, name, timezone, plan, status)
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (id) DO NOTHING`,
+      [tenantId, 'Factory Vision Tenant', process.env.TZ || 'Asia/Jakarta', 'MID_MARKET', 'ACTIVE']
+    )
+  );
+}
+
+/**
+ * Rebuilds the caches the API reads synchronously from what PostgreSQL holds.
+ *
+ * Shifts, operators, users and roles are read on the hot path — a shift
+ * decides a production record's `shift_date`, a role decides whether a request
+ * is allowed — so they are served from memory. This is what makes that memory
+ * a projection of the database rather than the record itself, and it is why a
+ * restart no longer resets them.
+ */
+export async function hydrateReferenceData(
+  tenantId: string,
+  services: {
+    masterData: MasterDataService;
+    rbac: { hydrate(tenantId: string): Promise<number> };
+    auth: { hydrateCredentials(tenantId: string): { users: number; operators: number } };
+  }
+): Promise<{ shifts: number; operators: number; users: number; roles: number; credentials: number }> {
+  const counts = await services.masterData.hydrate(tenantId);
+  const roles = await services.rbac.hydrate(tenantId);
+  const credentials = services.auth.hydrateCredentials(tenantId);
+  return {
+    ...counts,
+    roles,
+    credentials: credentials.users + credentials.operators,
+  };
+}
+
+/**
  * Writes the demo tyre plant into PostgreSQL, in foreign-key order.
  *
  * Order matters and is not incidental: `production_batch` references

@@ -7,6 +7,8 @@ import type {
   RoleDefinition,
 } from '@factory-vision/domain-types';
 import { ApiError } from '../../platform/http/api-error.js';
+import { withTenant } from '../../platform/db/pool.js';
+import { RoleRepository } from './role.repository.js';
 import { MasterDataService } from '../master-data/master-data.service.js';
 import {
   PERMISSION_CATALOG,
@@ -30,9 +32,32 @@ const PILOT_TENANT = 'tenant-pilot-factory-01';
  */
 export class RbacService {
   private roles: RoleDefinition[] = [];
+  private readonly repo = new RoleRepository();
 
-  constructor(private masterData: MasterDataService) {
-    this.ensureSystemRoles(PILOT_TENANT);
+  constructor(private masterData: MasterDataService) {}
+
+  /**
+   * Rebuilds the role cache from PostgreSQL.
+   *
+   * Roles are the security context the API authorises from, and they are read
+   * synchronously on every request, so they stay in `this.roles` — but that
+   * array is now a projection of `role_definition` rather than the record. On
+   * an empty database the seven system roles are materialised and written
+   * down, so the next boot reads them back rather than inventing them again.
+   */
+  async hydrate(tenantId: string): Promise<number> {
+    return withTenant(tenantId, async (client) => {
+      const stored = await this.repo.list(client, tenantId);
+      if (stored.length === 0) {
+        this.ensureSystemRoles(tenantId);
+        for (const role of this.roles.filter((r) => r.tenantId === tenantId)) {
+          await this.repo.upsert(client, role);
+        }
+      } else {
+        this.roles = this.roles.filter((r) => r.tenantId !== tenantId).concat(stored);
+      }
+      return this.roles.filter((r) => r.tenantId === tenantId).length;
+    });
   }
 
   getPermissionCatalog(): PermissionDefinition[] {
@@ -76,7 +101,7 @@ export class RbacService {
    * Creates a tenant role. `grantedBy` is the acting principal's permission set:
    * forbids handing out a privileged permission you do not hold yourself.
    */
-  createRole(
+  async createRole(
     tenantId: string,
     payload: {
       key: string;
@@ -86,7 +111,7 @@ export class RbacService {
       landingPath?: string;
     },
     grantedBy: PermissionId[]
-  ): RoleDefinition {
+  ): Promise<RoleDefinition> {
     this.ensureSystemRoles(tenantId);
 
     const key = payload.key
@@ -115,6 +140,7 @@ export class RbacService {
       updatedAt: now,
     };
     this.roles.push(role);
+    await withTenant(tenantId, (c) => this.repo.upsert(c, role));
     return role;
   }
 
@@ -130,12 +156,12 @@ export class RbacService {
    * holding `role:edit`, so an admin who unticked it would lock every user of
    * the tenant out of their own permission model with no way back.
    */
-  updateRole(
+  async updateRole(
     tenantId: string,
     id: string,
     payload: { name?: string; description?: string; permissions?: PermissionId[]; landingPath?: string },
     grantedBy: PermissionId[]
-  ): RoleDefinition {
+  ): Promise<RoleDefinition> {
     const role = this.getRole(tenantId, id);
     if (role.system && role.key === UserRole.ADMIN) {
       throw ApiError.forbidden('Peran Admin tidak dapat diubah agar akses administratif tidak terkunci.');
@@ -155,16 +181,18 @@ export class RbacService {
     if (payload.description !== undefined) role.description = payload.description.trim();
     if (payload.landingPath !== undefined) role.landingPath = payload.landingPath;
     role.updatedAt = new Date().toISOString();
+    await withTenant(tenantId, (c) => this.repo.upsert(c, role));
     return role;
   }
 
-  deleteRole(tenantId: string, id: string): { success: boolean; message: string } {
+  async deleteRole(tenantId: string, id: string): Promise<{ success: boolean; message: string }> {
     const role = this.getRole(tenantId, id);
     if (role.system) throw ApiError.forbidden('System role tidak dapat dihapus.');
 
     const inUse = this.masterData.getUsers(tenantId).some((u) => String(u.role) === role.key);
     if (inUse) throw ApiError.conflict('Peran masih dipakai oleh pengguna aktif.');
 
+    await withTenant(tenantId, (c) => this.repo.delete(c, tenantId, role.id));
     this.roles = this.roles.filter((r) => r.id !== role.id);
     return { success: true, message: `Peran ${role.name} dihapus.` };
   }

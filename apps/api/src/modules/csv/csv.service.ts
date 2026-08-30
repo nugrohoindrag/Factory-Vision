@@ -29,7 +29,11 @@ interface EntitySpec {
   /** Validates one row against master data; returns errors for that row. */
   validate: (tenantId: string, row: Row, master: MasterDataService) => Omit<CsvRowError, 'row'>[];
   /** Applies one validated row. Returns whether it created or updated. */
-  apply: (tenantId: string, row: Row, master: MasterDataService) => 'created' | 'updated';
+  apply: (
+    tenantId: string,
+    row: Row,
+    master: MasterDataService
+  ) => ('created' | 'updated') | Promise<'created' | 'updated'>;
   /** Serialises the current collection for export. */
   export: (tenantId: string, master: MasterDataService, allowedLineIds?: string[]) => Row[];
 }
@@ -238,7 +242,7 @@ export class CsvService {
         }
         return errors;
       },
-      apply: (tenantId, row, master) => {
+      apply: async (tenantId, row, master) => {
         const line = row.defaultLineCode
           ? master
               .getLines(tenantId)
@@ -252,10 +256,10 @@ export class CsvService {
           status: (row.status || 'ACTIVE') as 'ACTIVE' | 'INACTIVE',
         };
         if (existing) {
-          master.updateOperator(tenantId, existing.id, payload);
+          await master.updateOperator(tenantId, existing.id, payload);
           return 'updated';
         }
-        master.createOperator(tenantId, payload);
+        await master.createOperator(tenantId, payload);
         return 'created';
       },
       export: (tenantId, master) => {
@@ -463,7 +467,7 @@ export class CsvService {
         }
         return errors;
       },
-      apply: (tenantId, row, master) => {
+      apply: async (tenantId, row, master) => {
         const plant = master
           .getPlants(tenantId)
           .find((p) => p.id === row.plantCode || p.name === row.plantCode)!;
@@ -477,10 +481,10 @@ export class CsvService {
           active: row.active ? row.active === 'true' : true,
         };
         if (existing) {
-          master.updateShift(tenantId, existing.id, payload);
+          await master.updateShift(tenantId, existing.id, payload);
           return 'updated';
         }
-        master.createShift(tenantId, payload);
+        await master.createShift(tenantId, payload);
         return 'created';
       },
       export: (tenantId, master) =>
@@ -643,7 +647,12 @@ export class CsvService {
    * `dryRun` runs every check and reports the outcome without writing, which is
    * what the console's "Validasi" button calls before an admin commits.
    */
-  import(entity: string, tenantId: string, csv: string, opts: { dryRun?: boolean } = {}): CsvImportResult {
+  async import(
+    entity: string,
+    tenantId: string,
+    csv: string,
+    opts: { dryRun?: boolean } = {}
+  ): Promise<CsvImportResult> {
     const spec = this.spec(entity);
     const parsed = parseCsv(csv);
 
@@ -728,7 +737,7 @@ export class CsvService {
       }
 
       try {
-        const outcome = spec.apply(tenantId, row, this.masterData);
+        const outcome = await spec.apply(tenantId, row, this.masterData);
         if (outcome === 'created') result.created += 1;
         else result.updated += 1;
       } catch (error) {
