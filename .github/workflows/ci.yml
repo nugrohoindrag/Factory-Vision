@@ -23,7 +23,7 @@ env:
 
 jobs:
   verify:
-    name: Typecheck, build, acceptance
+    name: Build, typecheck, acceptance
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -54,11 +54,16 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Typecheck
-        run: pnpm typecheck
-
+      # Build first, not second. Every package resolves its workspace
+      # dependencies through `exports.types` -> `dist/index.d.ts`, so on a
+      # clean checkout `pnpm typecheck` cannot see @factory-vision/domain-types
+      # until something has emitted it. It only passed on a developer's machine
+      # because a previous build had left dist/ behind.
       - name: Build
         run: pnpm build
+
+      - name: Typecheck
+        run: pnpm typecheck
 
       # `pnpm ds:check` is deliberately absent: it diffs packages/ui/src
       # against the upstream design system at a local path (D:\Design System),
