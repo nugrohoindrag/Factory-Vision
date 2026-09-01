@@ -2,7 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { motion } from 'motion/react';
 import { Icon } from '@factory-vision/ui';
 export const CtaSection = ({ onOpenDemo }) => {
-    return (_jsx("section", { className: "fv-section-py", style: { backgroundColor: 'var(--color-primary)' }, children: _jsx("div", { className: "fv-landing-container", children: _jsxs(motion.div, { initial: { opacity: 0, scale: 0.98 }, whileInView: { opacity: 1, scale: 1 }, viewport: { once: true }, style: {
+    return (_jsx("section", { className: "fv-section-py", style: { backgroundColor: 'var(--color-surface)' }, children: _jsx("div", { className: "fv-landing-container", children: _jsxs(motion.div, { initial: { opacity: 0, scale: 0.98 }, whileInView: { opacity: 1, scale: 1 }, viewport: { once: true }, style: {
                     background: 'var(--color-primary)',
                     color: 'var(--color-on-primary)',
                     borderRadius: '28px',

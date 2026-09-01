@@ -8,7 +8,7 @@ interface CtaSectionProps {
 
 export const CtaSection: React.FC<CtaSectionProps> = ({ onOpenDemo }) => {
   return (
-    <section className="fv-section-py" style={{ backgroundColor: 'var(--color-primary)' }}>
+    <section className="fv-section-py" style={{ backgroundColor: 'var(--color-surface)' }}>
       <div className="fv-landing-container">
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
