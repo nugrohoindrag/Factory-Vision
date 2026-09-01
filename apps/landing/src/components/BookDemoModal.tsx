@@ -194,8 +194,8 @@ export const BookDemoModal: React.FC<BookDemoModalProps> = ({ isOpen, onClose })
                       outline: 'none',
                     }}
                   >
-                    <option value="1-3 Lines">1 – 3 Production Lines</option>
-                    <option value="4-10 Lines">4 – 10 Production Lines</option>
+                    <option value="1-3 Lines">1 to 3 Production Lines</option>
+                    <option value="4-10 Lines">4 to 10 Production Lines</option>
                     <option value="10+ Lines">10+ Lines (Multi-Plant Enterprise)</option>
                   </select>
                 </div>

@@ -16,7 +16,7 @@ export const BusinessImpactSection = () => {
             title: 'Productivity & Utilization',
             tagline: 'Minimize idle time and speed losses',
             desc: 'Expose micro-stoppages, shorten changeover durations with standardized setup workflows, and maximize machine availability.',
-            metric: '+15–25%',
+            metric: '+15-25%',
             metricLabel: 'Capacity utilization unlock',
         },
         {
