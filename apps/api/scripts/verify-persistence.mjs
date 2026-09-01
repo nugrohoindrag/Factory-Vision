@@ -211,6 +211,11 @@ async function main() {
     body: JSON.stringify({
       woNumber: `WO-PERSIST-${stamp}`,
       productionOrderId: poForWo,
+      // A Work Order hangs off a Production Plan Line (ADR-16) and the API
+      // refuses one without it. Without this the create returned 422, the
+      // script silently fell back to a seeded Work Order that was already
+      // IN_PRODUCTION, and the confirm below failed on a backwards transition.
+      productionPlanLineId: 'planline-seed-001',
       productId: 'prod-tire-a',
       lineId: 'line-01',
       targetQuantity: 100,
@@ -236,7 +241,7 @@ async function main() {
   await api(`/api/v1/work-orders/${woToTransitionId}`, {
     method: 'PUT',
     body: JSON.stringify({
-      machineId: 'mc-mixer-01',
+      machineId: 'mc-cal-01',
       moldId: molds.rows[0]?.id,
       shiftId: Array.isArray(shifts.body) ? shifts.body[0]?.id : undefined,
     }),

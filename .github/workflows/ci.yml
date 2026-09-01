@@ -178,6 +178,14 @@ jobs:
           APP_DB_PASSWORD: ci-app-role-password
         run: pnpm db:migrate
 
+      # Same reason as in the acceptance job: the deployed stack migrates and
+      # seeds together, and the persistence check writes production against a
+      # Work Order that only the seed creates.
+      - name: Seed
+        env:
+          DATABASE_URL: postgresql://factory:factory@localhost:5432/factory_vision
+        run: pnpm db:seed
+
       # The application role, not the owner: connecting as the superuser is
       # exactly the defect this job exists to catch, and the first check in the
       # script asserts the role is one the policies bind.
