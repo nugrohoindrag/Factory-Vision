@@ -75,8 +75,8 @@ export const SyncStatusBar: React.FC = () => {
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '6px',
-          padding: '6px 12px',
+          gap: 'var(--space-2)',
+          padding: `var(--space-2) var(--space-3)`,
           minHeight: '34px',
           borderRadius: 'var(--radius-full, 999px)',
           border: 'none',
@@ -111,7 +111,7 @@ export const SyncStatusBar: React.FC = () => {
               right: 0,
               zIndex: 50,
               width: '320px',
-              padding: '14px',
+              padding: 'var(--space-4)',
               borderRadius: 'var(--radius-md, 12px)',
               backgroundColor: 'var(--color-surface-container-high)',
               border: '1px solid var(--color-outline-variant)',
@@ -124,7 +124,7 @@ export const SyncStatusBar: React.FC = () => {
                 fontSize: '13px',
                 fontWeight: 800,
                 color: 'var(--color-on-surface)',
-                marginBottom: '8px',
+                marginBottom: 'var(--space-2)',
               }}
             >
               Status Sinkronisasi
@@ -141,8 +141,8 @@ export const SyncStatusBar: React.FC = () => {
             {status.lastError && (
               <div
                 style={{
-                  marginTop: '8px',
-                  padding: '8px 10px',
+                  marginTop: 'var(--space-2)',
+                  padding: `var(--space-2) var(--space-3)`,
                   borderRadius: 'var(--radius-sm, 8px)',
                   backgroundColor: 'var(--color-error-container)',
                   color: 'var(--color-on-error-container)',
@@ -155,13 +155,13 @@ export const SyncStatusBar: React.FC = () => {
             )}
 
             {failed.length > 0 && (
-              <div style={{ marginTop: '10px' }}>
+              <div style={{ marginTop: 'var(--space-3)' }}>
                 <div
                   style={{
                     fontSize: '11px',
                     fontWeight: 800,
                     color: 'var(--color-on-surface)',
-                    marginBottom: '4px',
+                    marginBottom: 'var(--space-1)',
                   }}
                 >
                   Perintah yang ditolak
@@ -172,14 +172,14 @@ export const SyncStatusBar: React.FC = () => {
                     overflowY: 'auto',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '4px',
+                    gap: 'var(--space-1)',
                   }}
                 >
                   {failed.map((cmd) => (
                     <div
                       key={cmd.clientEventId}
                       style={{
-                        padding: '6px 8px',
+                        padding: `var(--space-2) var(--space-2)`,
                         borderRadius: 'var(--radius-xs, 6px)',
                         backgroundColor: 'var(--color-surface-container)',
                         fontSize: '10.5px',
@@ -195,7 +195,7 @@ export const SyncStatusBar: React.FC = () => {
               </div>
             )}
 
-            <div style={{ display: 'flex', gap: '6px', marginTop: '12px' }}>
+            <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
               <ActionButton onClick={() => void syncQueue()} label="Sinkron Sekarang" />
               {status.failed > 0 && (
                 <ActionButton onClick={() => void retryFailedCommands()} label="Coba Lagi" tone="error" />
@@ -204,7 +204,7 @@ export const SyncStatusBar: React.FC = () => {
 
             <p
               style={{
-                margin: '10px 0 0',
+                margin: 'var(--space-3) 0 0',
                 fontSize: '10.5px',
                 color: 'var(--color-on-surface-variant)',
                 lineHeight: 1.5,
@@ -221,7 +221,7 @@ export const SyncStatusBar: React.FC = () => {
 };
 
 const Row: React.FC<{ label: string; value: string; tone?: 'error' }> = ({ label, value, tone }) => (
-  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', padding: '3px 0' }}>
+  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', padding: 'var(--space-1) 0' }}>
     <span style={{ color: 'var(--color-on-surface-variant)' }}>{label}</span>
     <strong style={{ color: tone === 'error' ? 'var(--color-error)' : 'var(--color-on-surface)' }}>
       {value}

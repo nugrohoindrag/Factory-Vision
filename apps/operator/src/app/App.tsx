@@ -12,6 +12,7 @@ import { OperatorAuth } from '../features/auth/OperatorAuth.js';
 import { OperatorTerminal } from '../features/terminal/OperatorTerminal.js';
 import { startSyncEngine, syncQueue, syncServerClock } from '../offline/queue.js';
 import { bootstrapOffline } from '../offline/bootstrap.js';
+import { useOperatorTheme } from './theme.js';
 
 const api = new FactoryVisionApiClient({ baseUrl: '' });
 
@@ -24,6 +25,10 @@ export const App: React.FC = () => {
   const [idleSeconds, setIdleSeconds] = useState<number>(15 * 60);
   const [restoring, setRestoring] = useState<boolean>(Boolean(getAuthToken()));
   const [storageNotice, setStorageNotice] = useState<string | null>(null);
+
+  // Above the session on purpose: the terminal is themed before anyone signs
+  // in, and the choice belongs to the tablet rather than to the operator.
+  const { mode: themeMode, toggle: toggleTheme } = useOperatorTheme();
 
   const lastActivity = useRef<number>(Date.now());
 
@@ -167,7 +172,12 @@ export const App: React.FC = () => {
     return (
       <>
         {notice}
-        <OperatorAuth operators={operators || []} onAuthenticate={handleAuthenticate} />
+        <OperatorAuth
+          operators={operators || []}
+          onAuthenticate={handleAuthenticate}
+          themeMode={themeMode}
+          onToggleTheme={toggleTheme}
+        />
       </>
     );
   }
@@ -175,7 +185,12 @@ export const App: React.FC = () => {
   return (
     <>
       {notice}
-      <OperatorTerminal operator={operator} onLogout={handleLogout} />
+      <OperatorTerminal
+        operator={operator}
+        onLogout={handleLogout}
+        themeMode={themeMode}
+        onToggleTheme={toggleTheme}
+      />
     </>
   );
 };
@@ -191,7 +206,7 @@ const StorageNotice: React.FC<{ message: string }> = ({ message }) => (
   <div
     role="status"
     style={{
-      padding: '10px 16px',
+      padding: `var(--space-3) var(--space-4)`,
       backgroundColor: 'var(--color-warning-container)',
       color: 'var(--color-on-warning-container)',
       fontFamily: 'var(--font-family)',

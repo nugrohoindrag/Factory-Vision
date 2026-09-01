@@ -4,11 +4,15 @@ import { Operator } from '@factory-vision/domain-types';
 import { ApiRequestError } from '@factory-vision/api-client';
 import { Button, M3_TRANSITIONS } from '@factory-vision/ui';
 import { FactoryVisionLogo } from '@factory-vision/ui/fv';
+import { ThemeToggle } from '../../app/ThemeToggle.js';
+import type { ThemeMode } from '../../app/theme.js';
 
 interface OperatorAuthProps {
   operators: Operator[];
   /** Resolves the employee number + PIN against the API (US-002). */
   onAuthenticate: (employeeNumber: string, pin: string) => Promise<void>;
+  themeMode: ThemeMode;
+  onToggleTheme: () => void;
 }
 
 /**
@@ -19,7 +23,12 @@ interface OperatorAuthProps {
  * server call: an inactive operator is refused by the API, which is the only
  * place that can know it.
  */
-export const OperatorAuth: React.FC<OperatorAuthProps> = ({ operators, onAuthenticate }) => {
+export const OperatorAuth: React.FC<OperatorAuthProps> = ({
+  operators,
+  onAuthenticate,
+  themeMode,
+  onToggleTheme,
+}) => {
   const [pin, setPin] = useState<string>('');
   const [selectedOperator, setSelectedOperator] = useState<Operator | null>(operators[0] || null);
   // Used when the roster is not readable, which is the normal case before a
@@ -74,10 +83,18 @@ export const OperatorAuth: React.FC<OperatorAuthProps> = ({ operators, onAuthent
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '16px',
+        padding: 'var(--space-4)',
         fontFamily: 'var(--font-family)',
+        position: 'relative',
       }}
     >
+      {/* Outside the card on purpose: the theme belongs to the tablet, not to
+          the sign-in form, and it has to be reachable before anyone has a
+          session. */}
+      <div style={{ position: 'absolute', top: 'var(--space-4)', right: 'var(--space-4)' }}>
+        <ThemeToggle mode={themeMode} onToggle={onToggleTheme} />
+      </div>
+
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -88,10 +105,10 @@ export const OperatorAuth: React.FC<OperatorAuthProps> = ({ operators, onAuthent
           border: '1px solid var(--color-outline-variant)',
           width: '100%',
           maxWidth: '400px',
-          padding: '24px',
+          padding: 'var(--space-6)',
           display: 'flex',
           flexDirection: 'column',
-          gap: '16px',
+          gap: 'var(--space-4)',
           boxShadow: 'var(--elevation-3)',
         }}
       >
@@ -102,11 +119,11 @@ export const OperatorAuth: React.FC<OperatorAuthProps> = ({ operators, onAuthent
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '6px',
+            gap: 'var(--space-2)',
           }}
         >
           <FactoryVisionLogo size="lg" variant="full" />
-          <div style={{ marginTop: '8px' }}>
+          <div style={{ marginTop: 'var(--space-2)' }}>
             <h1
               style={{
                 fontSize: '18px',
@@ -118,14 +135,14 @@ export const OperatorAuth: React.FC<OperatorAuthProps> = ({ operators, onAuthent
             >
               TERMINAL OPERATOR
             </h1>
-            <p style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', margin: '3px 0 0' }}>
+            <p style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', margin: 'var(--space-1) 0 0' }}>
               Pilih nomor karyawan lalu masukkan PIN 4 digit
             </p>
           </div>
         </div>
 
         {/* Operator Selector */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
           <label
             style={{
               fontSize: '11px',
@@ -148,7 +165,7 @@ export const OperatorAuth: React.FC<OperatorAuthProps> = ({ operators, onAuthent
               autoComplete="off"
               style={{
                 width: '100%',
-                padding: '12px 14px',
+                padding: `var(--space-3) var(--space-4)`,
                 fontSize: '16px',
                 fontWeight: 700,
                 letterSpacing: '0.04em',
@@ -162,7 +179,7 @@ export const OperatorAuth: React.FC<OperatorAuthProps> = ({ operators, onAuthent
               }}
             />
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
               {operators.map((op) => {
                 const isSelected = selectedOperator?.id === op.id;
                 return (
@@ -173,7 +190,7 @@ export const OperatorAuth: React.FC<OperatorAuthProps> = ({ operators, onAuthent
                     onClick={() => setSelectedOperator(op)}
                     style={{
                       minHeight: '48px',
-                      padding: '6px 10px',
+                      padding: `var(--space-2) var(--space-3)`,
                       borderRadius: 'var(--radius-md, 8px)',
                       backgroundColor: isSelected
                         ? 'var(--color-primary)'
@@ -213,8 +230,8 @@ export const OperatorAuth: React.FC<OperatorAuthProps> = ({ operators, onAuthent
           style={{
             display: 'flex',
             justifyContent: 'center',
-            gap: '14px',
-            padding: '6px 0',
+            gap: 'var(--space-4)',
+            padding: 'var(--space-2) 0',
           }}
         >
           {[0, 1, 2, 3].map((idx) => (
@@ -251,7 +268,7 @@ export const OperatorAuth: React.FC<OperatorAuthProps> = ({ operators, onAuthent
         </AnimatePresence>
 
         {/* Touch Numpad */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-2)' }}>
           {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', '⌫'].map((btn) => (
             <motion.button
               key={btn}

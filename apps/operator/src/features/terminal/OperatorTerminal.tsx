@@ -6,6 +6,8 @@ import { WorkOrderStatus, Operator, statusLabel } from '@factory-vision/domain-t
 import { Icon, Button, M3_EASE, M3_TRANSITIONS } from '@factory-vision/ui';
 import { enqueueCommand, syncQueue } from '../../offline/queue.js';
 import { SyncStatusBar } from './SyncStatusBar.js';
+import { ThemeToggle } from '../../app/ThemeToggle.js';
+import type { ThemeMode } from '../../app/theme.js';
 import {
   acknowledgeRejections,
   getSyncStatus,
@@ -26,6 +28,8 @@ const api = new FactoryVisionApiClient({ baseUrl: '' });
 interface OperatorTerminalProps {
   operator: Operator;
   onLogout: () => void;
+  themeMode: ThemeMode;
+  onToggleTheme: () => void;
 }
 
 /**
@@ -48,11 +52,11 @@ const RejectionBanner: React.FC = () => {
       style={{
         backgroundColor: 'var(--color-error)',
         color: 'var(--color-on-error)',
-        padding: '12px 20px',
+        padding: `var(--space-3) var(--space-5)`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        gap: '12px',
+        gap: 'var(--space-3)',
         fontFamily: 'var(--font-family)',
       }}
     >
@@ -87,7 +91,12 @@ const RejectionBanner: React.FC = () => {
   );
 };
 
-export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, onLogout }) => {
+export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
+  operator,
+  onLogout,
+  themeMode,
+  onToggleTheme,
+}) => {
   const queryClient = useQueryClient();
 
   const [selectedWoId, setSelectedWoId] = useState<string>('wo-101');
@@ -387,14 +396,14 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
               zIndex: 9999,
               backgroundColor: toneContainer[lastTapBadge.tone],
               color: toneOnContainer[lastTapBadge.tone],
-              padding: '6px 20px',
+              padding: `var(--space-2) var(--space-5)`,
               borderRadius: 'var(--radius-pill)',
               fontWeight: 800,
               fontSize: '13px',
               boxShadow: 'var(--elevation-3)',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: 'var(--space-2)',
               pointerEvents: 'none',
             }}
           >
@@ -417,7 +426,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
           flexShrink: 0,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
           <FactoryVisionIcon size={32} />
           <div>
             <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--color-on-surface)' }}>
@@ -430,15 +439,17 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
         </div>
 
         {/* Sync & Logout Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
           <SyncStatusBar />
+
+          <ThemeToggle mode={themeMode} onToggle={onToggleTheme} />
 
           <motion.button
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.96 }}
             onClick={onLogout}
             style={{
-              padding: '6px 14px',
+              padding: `var(--space-2) var(--space-4)`,
               borderRadius: 'var(--radius-sm, 6px)',
               backgroundColor: 'var(--color-surface-container-high)',
               border: '1px solid var(--color-outline-variant)',
@@ -472,7 +483,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
             style={{
               backgroundColor: 'var(--color-error)',
               color: 'var(--color-on-error)',
-              padding: '10px 20px',
+              padding: `var(--space-3) var(--space-5)`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -482,7 +493,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
               overflow: 'hidden',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
               <motion.div
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ duration: 1, repeat: Infinity, ease: 'easeInOut' }}
@@ -496,7 +507,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                   fontFamily: 'monospace',
                   backgroundColor: 'var(--color-scrim)',
                   color: 'var(--color-on-error)',
-                  padding: '2px 8px',
+                  padding: `var(--space-1) var(--space-2)`,
                   borderRadius: 'var(--radius-xs, 4px)',
                   fontWeight: 900,
                 }}
@@ -535,8 +546,8 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
           flex: 1,
           display: 'grid',
           gridTemplateColumns: '270px 1fr',
-          padding: '14px',
-          gap: '14px',
+          padding: 'var(--space-4)',
+          gap: 'var(--space-4)',
           overflow: 'hidden',
         }}
       >
@@ -546,10 +557,10 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
             backgroundColor: 'var(--color-surface)',
             borderRadius: 'var(--radius-lg, 16px)',
             border: '1px solid var(--color-outline-variant)',
-            padding: '14px',
+            padding: 'var(--space-4)',
             display: 'flex',
             flexDirection: 'column',
-            gap: '8px',
+            gap: 'var(--space-2)',
             overflowY: 'auto',
             boxShadow: 'var(--elevation-1)',
           }}
@@ -576,7 +587,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                 onClick={() => setSelectedWoId(wo.id)}
                 style={{
                   minHeight: '60px',
-                  padding: '10px 12px',
+                  padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md, 10px)',
                   border: isSelected ? 'none' : '1px solid var(--color-outline-variant)',
                   backgroundColor: isSelected ? 'var(--color-primary)' : 'var(--color-surface-container-low)',
@@ -584,7 +595,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                   textAlign: 'left',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '3px',
+                  gap: 'var(--space-1)',
                   cursor: 'pointer',
                   transition: 'background-color 0.15s ease',
                 }}
@@ -595,7 +606,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                     style={{
                       fontSize: '10px',
                       fontWeight: 800,
-                      padding: '2px 6px',
+                      padding: `var(--space-1) var(--space-2)`,
                       borderRadius: 'var(--radius-pill)',
                       backgroundColor: isSelected
                         ? 'var(--color-on-primary)'
@@ -628,7 +639,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
 
         {/* Right Column: Execution Workspace */}
         {activeWo ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', overflow: 'hidden' }}>
             {/* Header Telemetry Card with Multi-Process and Lot Badge */}
             <motion.div
               initial={{ opacity: 0, y: 8 }}
@@ -638,10 +649,10 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                 backgroundColor: 'var(--color-surface)',
                 borderRadius: 'var(--radius-lg, 16px)',
                 border: '1px solid var(--color-outline-variant)',
-                padding: '14px 18px',
+                padding: `var(--space-4) var(--space-5)`,
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '10px',
+                gap: 'var(--space-3)',
                 boxShadow: 'var(--elevation-1)',
               }}
             >
@@ -652,10 +663,10 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   flexWrap: 'wrap',
-                  gap: '8px',
+                  gap: 'var(--space-2)',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                   <span style={{ fontWeight: 800, fontSize: '14px', color: 'var(--color-on-surface)' }}>
                     {activeWo.woNumber}
                   </span>
@@ -664,7 +675,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                     return (
                       <span
                         style={{
-                          padding: '2px 8px',
+                          padding: `var(--space-1) var(--space-2)`,
                           borderRadius: 'var(--radius-pill)',
                           fontSize: '11px',
                           fontWeight: 800,
@@ -687,7 +698,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                     return (
                       <span
                         style={{
-                          padding: '2px 8px',
+                          padding: `var(--space-1) var(--space-2)`,
                           borderRadius: 'var(--radius-pill)',
                           fontSize: '11px',
                           fontWeight: 800,
@@ -712,9 +723,9 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                 style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(4, 1fr)',
-                  gap: '12px',
+                  gap: 'var(--space-3)',
                   borderTop: '1px solid var(--color-outline-variant)',
-                  paddingTop: '8px',
+                  paddingTop: 'var(--space-2)',
                 }}
               >
                 <div>
@@ -791,7 +802,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                 backgroundColor: 'var(--color-surface)',
                 borderRadius: 'var(--radius-lg, 16px)',
                 border: '1px solid var(--color-outline-variant)',
-                padding: '16px 20px',
+                padding: `var(--space-4) var(--space-5)`,
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
@@ -802,8 +813,8 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
               <div
                 style={{
                   display: 'flex',
-                  gap: '10px',
-                  paddingBottom: '10px',
+                  gap: 'var(--space-3)',
+                  paddingBottom: 'var(--space-3)',
                   borderBottom: '1px solid var(--color-outline-variant)',
                 }}
               >
@@ -852,13 +863,13 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
               </div>
 
               {/* 1-Touch Quick Good Entry Buttons */}
-              <div style={{ margin: '8px 0' }}>
+              <div style={{ margin: 'var(--space-2) 0' }}>
                 <div
                   style={{
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    marginBottom: '8px',
+                    marginBottom: 'var(--space-2)',
                   }}
                 >
                   <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-on-surface-variant)' }}>
@@ -872,7 +883,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                       setShowCustomQtyModal(true);
                     }}
                     style={{
-                      padding: '4px 10px',
+                      padding: `var(--space-1) var(--space-3)`,
                       borderRadius: 'var(--radius-sm, 6px)',
                       backgroundColor: 'var(--color-surface-container)',
                       border: '1px solid var(--color-outline-variant)',
@@ -886,7 +897,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                   </motion.button>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--space-3)' }}>
                   {[1, 5, 10, 50].map((qty) => (
                     <motion.button
                       key={qty}
@@ -925,13 +936,13 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
               </div>
 
               {/* 1-Touch Quick Reject Defect Buttons ( &) */}
-              <div style={{ margin: '8px 0' }}>
+              <div style={{ margin: 'var(--space-2) 0' }}>
                 <div
                   style={{
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    marginBottom: '8px',
+                    marginBottom: 'var(--space-2)',
                   }}
                 >
                   <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-error)' }}>
@@ -943,7 +954,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                     onClick={() => setShowRejectModal(true)}
                     disabled={activeWo.status !== WorkOrderStatus.IN_PRODUCTION}
                     style={{
-                      padding: '4px 10px',
+                      padding: `var(--space-1) var(--space-3)`,
                       borderRadius: 'var(--radius-sm, 6px)',
                       backgroundColor: 'var(--color-error-container)',
                       border: '1px solid var(--color-error)',
@@ -957,7 +968,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                   </motion.button>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--space-2)' }}>
                   {(
                     rejectReasons?.slice(0, 4) || [
                       { id: 'rej-tire-blister', code: 'REJ-BLISTER', name: 'Blister / Gelembung' },
@@ -986,7 +997,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                         flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        padding: '4px',
+                        padding: 'var(--space-1)',
                         textAlign: 'center',
                       }}
                     >
@@ -1008,7 +1019,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
               </div>
 
               {/* Bottom Downtime Trigger */}
-              <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+              <div style={{ display: 'flex', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
                 <motion.button
                   whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
@@ -1047,7 +1058,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '16px',
+              padding: 'var(--space-4)',
               zIndex: 1000,
               backdropFilter: 'blur(4px)',
             }}
@@ -1063,10 +1074,10 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                 border: '1px solid var(--color-outline-variant)',
                 width: '100%',
                 maxWidth: '460px',
-                padding: '22px',
+                padding: 'var(--space-6)',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '14px',
+                gap: 'var(--space-4)',
                 boxShadow: 'var(--elevation-3)',
               }}
             >
@@ -1074,7 +1085,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                 PILIH ALASAN REJECT
               </h2>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '6px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--space-2)' }}>
                 {rejectReasons?.map((r) => (
                   <motion.button
                     key={r.id}
@@ -1083,7 +1094,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                     onClick={() => handleRecordReject(r.id)}
                     style={{
                       minHeight: '44px',
-                      padding: '8px 14px',
+                      padding: `var(--space-2) var(--space-4)`,
                       borderRadius: 'var(--radius-md, 8px)',
                       backgroundColor: 'var(--color-surface-container-high)',
                       border: '1px solid var(--color-outline-variant)',
@@ -1135,7 +1146,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '16px',
+              padding: 'var(--space-4)',
               zIndex: 1000,
               backdropFilter: 'blur(4px)',
             }}
@@ -1151,10 +1162,10 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                 border: '1px solid var(--color-outline-variant)',
                 width: '100%',
                 maxWidth: '480px',
-                padding: '22px',
+                padding: 'var(--space-6)',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '14px',
+                gap: 'var(--space-4)',
                 boxShadow: 'var(--elevation-3)',
               }}
             >
@@ -1162,7 +1173,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                 RECORD MACHINE DOWNTIME
               </h2>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '6px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--space-2)' }}>
                 {downtimeReasons?.map((dr) => {
                   const isSelected = selectedDowntimeReasonId === dr.id;
                   return (
@@ -1173,7 +1184,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                       onClick={() => setSelectedDowntimeReasonId(dr.id)}
                       style={{
                         minHeight: '44px',
-                        padding: '8px 14px',
+                        padding: `var(--space-2) var(--space-4)`,
                         borderRadius: 'var(--radius-md, 8px)',
                         backgroundColor: isSelected
                           ? 'var(--color-primary)'
@@ -1192,7 +1203,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                 })}
               </div>
 
-              <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
+              <div style={{ display: 'flex', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -1249,7 +1260,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '16px',
+              padding: 'var(--space-4)',
               zIndex: 1000,
               backdropFilter: 'blur(4px)',
             }}
@@ -1265,10 +1276,10 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                 border: '1px solid var(--color-outline-variant)',
                 width: '100%',
                 maxWidth: '380px',
-                padding: '22px',
+                padding: 'var(--space-6)',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '12px',
+                gap: 'var(--space-3)',
                 boxShadow: 'var(--elevation-3)',
               }}
             >
@@ -1295,7 +1306,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                 }}
               />
 
-              <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
+              <div style={{ display: 'flex', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
