@@ -28,14 +28,25 @@ WORKDIR /repo
 # edits rather than repeated on every commit.
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
 COPY packages/domain-types/package.json packages/domain-types/
+COPY packages/i18n/package.json packages/i18n/
+COPY packages/job-queue/package.json packages/job-queue/
+COPY apps/api/package.json apps/api/
 COPY apps/worker/package.json apps/worker/
 
 RUN pnpm install --frozen-lockfile --filter @factory-vision/worker...
 
 COPY packages/domain-types packages/domain-types
+COPY packages/i18n packages/i18n
+COPY packages/job-queue packages/job-queue
+COPY apps/api apps/api
 COPY apps/worker apps/worker
 
+# Built in dependency order: the worker imports the API's `./jobs` entry
+# point, which resolves to `apps/api/dist`, which needs the packages below it.
 RUN pnpm --filter @factory-vision/domain-types build \
+ && pnpm --filter @factory-vision/i18n build \
+ && pnpm --filter @factory-vision/job-queue build \
+ && pnpm --filter @factory-vision/api build \
  && pnpm --filter @factory-vision/worker build
 
 # Drop dev dependencies before they reach the runtime image.

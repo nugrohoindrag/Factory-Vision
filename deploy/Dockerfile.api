@@ -22,12 +22,14 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
 COPY packages/domain-types/package.json packages/domain-types/
 COPY packages/api-client/package.json packages/api-client/
 COPY packages/i18n/package.json packages/i18n/
+COPY packages/job-queue/package.json packages/job-queue/
 COPY apps/api/package.json apps/api/
 
 RUN pnpm install --frozen-lockfile --filter @factory-vision/api... --filter @factory-vision/domain-types...
 
 COPY packages/domain-types packages/domain-types
 COPY packages/i18n packages/i18n
+COPY packages/job-queue packages/job-queue
 COPY apps/api apps/api
 
 # The schema travels with the image: a VPS that pulls images has no checkout,
@@ -36,6 +38,7 @@ COPY db db
 
 RUN pnpm --filter @factory-vision/domain-types build \
  && pnpm --filter @factory-vision/i18n build \
+ && pnpm --filter @factory-vision/job-queue build \
  && pnpm --filter @factory-vision/api build
 
 # Drop dev dependencies before they reach the runtime image.
