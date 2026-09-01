@@ -235,6 +235,37 @@ services:
       traefik.http.routers.fv-operator.tls.certresolver: le
       traefik.http.services.fv-operator.loadbalancer.server.port: '80'
 
+  # The public marketing site, served at the apex. Purely static: it talks to no
+  # API, so it has no depends_on and stays up even while the stack behind it is
+  # being migrated.
+  landing:
+    image: ${IMAGE_PREFIX:-ghcr.io/nugrohoindrag}/factory-vision-landing:${IMAGE_TAG:-master}
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.web
+      args:
+        APP: landing
+    restart: unless-stopped
+    ports:
+      - '${WEB_BIND:-0.0.0.0}:${LANDING_PORT:-3000}:80'
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.fv-landing.rule: Host(`${LANDING_DOMAIN:-localhost}`)
+      traefik.http.routers.fv-landing.entrypoints: websecure
+      traefik.http.routers.fv-landing.tls.certresolver: le
+      traefik.http.services.fv-landing.loadbalancer.server.port: '80'
+      # www exists only to hand visitors to the apex, so the site answers on one
+      # canonical address instead of serving the same page twice.
+      traefik.http.routers.fv-landing-www.rule: Host(`${LANDING_WWW_DOMAIN:-www.localhost}`)
+      traefik.http.routers.fv-landing-www.entrypoints: websecure
+      traefik.http.routers.fv-landing-www.tls.certresolver: le
+      traefik.http.routers.fv-landing-www.middlewares: fv-www-to-apex
+      # $$ escapes compose's own interpolation: the capture group belongs to
+      # Traefik, and a single $ would be substituted away before it ever sees it.
+      traefik.http.middlewares.fv-www-to-apex.redirectregex.regex: ^https://www\.(.*)
+      traefik.http.middlewares.fv-www-to-apex.redirectregex.replacement: https://$${1}
+      traefik.http.middlewares.fv-www-to-apex.redirectregex.permanent: 'true'
+
   # Internal admin console: the vendor's own client management, not a customer
   # surface. Keep it off the public internet unless you mean to publish it.
   admin:
@@ -287,6 +318,7 @@ services:
       - api
       - console
       - operator
+      - landing
 
 volumes:
   db-data:

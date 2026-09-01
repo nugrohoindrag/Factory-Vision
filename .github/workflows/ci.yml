@@ -228,6 +228,9 @@ jobs:
           - image: factory-vision-operator
             dockerfile: deploy/Dockerfile.web
             app: operator
+          - image: factory-vision-landing
+            dockerfile: deploy/Dockerfile.web
+            app: landing
           - image: factory-vision-admin
             dockerfile: deploy/Dockerfile.web
             app: admin
