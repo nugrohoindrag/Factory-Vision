@@ -157,7 +157,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenDemo }) => {
                 height: '44px',
                 borderRadius: '12px',
                 backgroundColor: 'var(--color-success-container)',
-                color: 'var(--color-success)',
+                color: 'var(--color-on-success-container)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',

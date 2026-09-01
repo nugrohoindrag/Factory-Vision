@@ -50,12 +50,12 @@ export const Footer: React.FC = () => {
                 <li key={m}>
                   <a
                     href="#modules"
-                    style={{ fontSize: '13px', color: 'var(--color-on-surface-variant)', textDecoration: 'none', transition: 'color 0.15s ease' }}
+                    style={{ fontSize: '13px', color: 'var(--color-primary-soft)', textDecoration: 'none', transition: 'color 0.15s ease' }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.color = 'var(--color-on-primary)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.color = 'var(--color-on-surface-variant)';
+                      e.currentTarget.style.color = 'var(--color-primary-soft)';
                     }}
                   >
                     {m}
@@ -75,12 +75,12 @@ export const Footer: React.FC = () => {
                 <li key={s}>
                   <a
                     href="#deployment"
-                    style={{ fontSize: '13px', color: 'var(--color-on-surface-variant)', textDecoration: 'none', transition: 'color 0.15s ease' }}
+                    style={{ fontSize: '13px', color: 'var(--color-primary-soft)', textDecoration: 'none', transition: 'color 0.15s ease' }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.color = 'var(--color-on-primary)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.color = 'var(--color-on-surface-variant)';
+                      e.currentTarget.style.color = 'var(--color-primary-soft)';
                     }}
                   >
                     {s}
@@ -100,12 +100,12 @@ export const Footer: React.FC = () => {
                 <li key={item}>
                   <a
                     href="#"
-                    style={{ fontSize: '13px', color: 'var(--color-on-surface-variant)', textDecoration: 'none', transition: 'color 0.15s ease' }}
+                    style={{ fontSize: '13px', color: 'var(--color-primary-soft)', textDecoration: 'none', transition: 'color 0.15s ease' }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.color = 'var(--color-on-primary)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.color = 'var(--color-on-surface-variant)';
+                      e.currentTarget.style.color = 'var(--color-primary-soft)';
                     }}
                   >
                     {item}
@@ -125,7 +125,7 @@ export const Footer: React.FC = () => {
             alignItems: 'center',
             justifyContent: 'space-between',
             fontSize: '12px',
-            color: 'var(--color-on-surface-variant)',
+            color: 'var(--color-primary-soft)',
             flexWrap: 'wrap',
             gap: 'var(--space-3)',
           }}

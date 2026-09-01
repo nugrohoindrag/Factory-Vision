@@ -76,7 +76,7 @@ export const QualityTraceabilitySection: React.FC = () => {
                 <span
                   style={{
                     backgroundColor: 'var(--color-success-container)',
-                    color: 'var(--color-success)',
+                    color: 'var(--color-on-success-container)',
                     border: '1px solid var(--color-success-container)',
                     padding: `var(--space-1) var(--space-3)`,
                     borderRadius: '9999px',

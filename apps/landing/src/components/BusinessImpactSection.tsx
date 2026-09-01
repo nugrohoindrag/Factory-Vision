@@ -43,14 +43,14 @@ export const BusinessImpactSection: React.FC = () => {
       <div className="fv-landing-container">
         {/* Header */}
         <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }}>
-          <div className="fv-eyebrow">
+          <div className="fv-eyebrow-on-blue">
             <Icon name="verified" size={16} />
             Measurable Value
           </div>
-          <h2 className="fv-section-title">
+          <h2 className="fv-section-title-on-blue">
             Built to Improve Factory Performance
           </h2>
-          <p className="fv-section-desc" style={{ margin: '0 auto' }}>
+          <p className="fv-section-desc-on-blue" style={{ margin: '0 auto' }}>
             Transforming shopfloor execution delivers immediate operational dividends across production velocity,
             quality compliance, and machine availability.
           </p>
@@ -65,11 +65,9 @@ export const BusinessImpactSection: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.08 }}
-              className="fv-card"
+              className="fv-card-on-blue"
               style={{
                 padding: 'var(--space-10)',
-                backgroundColor: 'var(--color-primary)',
-                border: '1px solid color-mix(in srgb, var(--color-on-primary) 18%, transparent)',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
@@ -105,13 +103,13 @@ export const BusinessImpactSection: React.FC = () => {
                   </div>
                 </div>
 
-                <h3 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--color-on-primary)', marginBottom: 'var(--space-1)' }}>
+                <h3 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--color-on-surface)', marginBottom: 'var(--space-1)' }}>
                   {imp.title}
                 </h3>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-primary-soft)', marginBottom: 'var(--space-3)' }}>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-primary)', marginBottom: 'var(--space-3)' }}>
                   {imp.tagline}
                 </div>
-                <p style={{ fontSize: '15px', color: 'var(--color-on-primary)', lineHeight: 1.55 }}>
+                <p style={{ fontSize: '15px', color: 'var(--color-on-surface)', lineHeight: 1.55 }}>
                   {imp.desc}
                 </p>
               </div>

@@ -108,7 +108,7 @@ export const BookDemoModal = ({ isOpen, onClose }) => {
                                 height: '64px',
                                 borderRadius: '50%',
                                 backgroundColor: 'var(--color-success-container)',
-                                color: 'var(--color-success)',
+                                color: 'var(--color-on-success-container)',
                                 border: '1px solid var(--color-success-container)',
                                 display: 'flex',
                                 alignItems: 'center',

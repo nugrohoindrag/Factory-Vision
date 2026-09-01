@@ -25,7 +25,7 @@ export const QualityTraceabilitySection = () => {
                                             gap: 'var(--space-4)',
                                         }, children: [_jsxs("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' }, children: [_jsxs("div", { children: [_jsx("span", { style: { fontSize: '11px', color: 'var(--color-on-surface-variant)', fontWeight: 700, textTransform: 'uppercase' }, children: "INSPECTED BATCH" }), _jsx("div", { style: { fontSize: '18px', fontWeight: 800, color: 'var(--color-on-surface)' }, children: "#LOT-2026-0881 (Aluminium 6061-T6)" })] }), _jsx("span", { style: {
                                                             backgroundColor: 'var(--color-success-container)',
-                                                            color: 'var(--color-success)',
+                                                            color: 'var(--color-on-success-container)',
                                                             border: '1px solid var(--color-success-container)',
                                                             padding: `var(--space-1) var(--space-3)`,
                                                             borderRadius: '9999px',

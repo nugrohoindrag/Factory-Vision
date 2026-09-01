@@ -108,7 +108,7 @@ export const DeploymentSection: React.FC = () => {
                   height: '52px',
                   borderRadius: '14px',
                   backgroundColor: 'var(--color-success-container)',
-                  color: 'var(--color-success)',
+                  color: 'var(--color-on-success-container)',
                   border: '1px solid var(--color-success-container)',
                   display: 'flex',
                   alignItems: 'center',
