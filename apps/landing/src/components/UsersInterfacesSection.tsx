@@ -147,10 +147,10 @@ export const UsersInterfacesSection: React.FC = () => {
               >
                 {current.shortTitle} Experience
               </span>
-              <h3 style={{ fontSize: '26px', fontWeight: 800, margin: `var(--space-3) 0 var(--space-2)`, color: 'var(--color-on-surface)' }}>
+              <h3 style={{ fontSize: '26px', fontWeight: 800, margin: `var(--space-3) 0 var(--space-2)`, color: 'var(--color-primary)' }}>
                 {current.title}
               </h3>
-              <p style={{ fontSize: '15px', color: 'var(--color-on-surface-variant)', lineHeight: 1.55, marginBottom: 'var(--space-6)' }}>
+              <p style={{ fontSize: '15px', color: 'var(--color-on-surface)', lineHeight: 1.55, marginBottom: 'var(--space-6)' }}>
                 {current.tagline}
               </p>
 

@@ -121,7 +121,7 @@ export const MonitoringSection = () => {
                                                                     padding: `var(--space-1) var(--space-2)`,
                                                                     borderRadius: '9999px',
                                                                     textTransform: 'uppercase',
-                                                                }, children: [m.status, " \u00B7 ", m.uptime] })] }), _jsxs("h4", { style: { fontSize: '20px', fontWeight: 800, color: 'var(--color-on-surface)' }, children: [m.id, " \u00B7 ", m.name] }), _jsx("span", { style: { fontSize: '13px', color: 'var(--color-on-surface-variant)', fontWeight: 500 }, children: m.line })] }), _jsx("span", { style: {
+                                                                }, children: [m.status, " \u00B7 ", m.uptime] })] }), _jsxs("h4", { style: { fontSize: '20px', fontWeight: 800, color: 'var(--color-primary)' }, children: [m.id, " \u00B7 ", m.name] }), _jsx("span", { style: { fontSize: '13px', color: 'var(--color-on-surface-variant)', fontWeight: 500 }, children: m.line })] }), _jsx("span", { style: {
                                                     fontSize: '12px',
                                                     fontWeight: 700,
                                                     backgroundColor: 'var(--color-info-container)',

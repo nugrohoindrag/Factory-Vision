@@ -137,10 +137,10 @@ export const LiveProductionSection: React.FC = () => {
               >
                 Touch-Optimized Operator Terminal
               </span>
-              <h3 style={{ fontSize: '26px', fontWeight: 800, margin: `var(--space-3) 0 var(--space-2)`, color: 'var(--color-on-surface)' }}>
+              <h3 style={{ fontSize: '26px', fontWeight: 800, margin: `var(--space-3) 0 var(--space-2)`, color: 'var(--color-primary)' }}>
                 Built for High-Speed Shopfloor Entry
               </h3>
-              <p style={{ fontSize: '15px', color: 'var(--color-on-surface-variant)', lineHeight: 1.55 }}>
+              <p style={{ fontSize: '15px', color: 'var(--color-on-surface)', lineHeight: 1.55 }}>
                 Large touch targets, zero complicated forms, and immediate visual feedback.
                 Operators can log production output in under 3 seconds without leaving their workstation.
               </p>

@@ -180,10 +180,10 @@ export const ShowcaseSection: React.FC = () => {
                 >
                   Screen {current.id} of 09
                 </span>
-                <h3 style={{ fontSize: '26px', fontWeight: 800, margin: `var(--space-2) 0 var(--space-1)`, color: 'var(--color-on-surface)' }}>
+                <h3 style={{ fontSize: '26px', fontWeight: 800, margin: `var(--space-2) 0 var(--space-1)`, color: 'var(--color-primary)' }}>
                   {current.title}
                 </h3>
-                <p style={{ fontSize: '15px', color: 'var(--color-on-surface-variant)', maxWidth: '640px' }}>
+                <p style={{ fontSize: '15px', color: 'var(--color-on-surface)', maxWidth: '640px' }}>
                   {current.description}
                 </p>
               </div>

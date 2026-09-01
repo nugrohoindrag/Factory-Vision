@@ -45,7 +45,7 @@ export const LiveProductionSection = () => {
                                                     padding: `var(--space-1) var(--space-3)`,
                                                     borderRadius: '9999px',
                                                     textTransform: 'uppercase',
-                                                }, children: "Touch-Optimized Operator Terminal" }), _jsx("h3", { style: { fontSize: '26px', fontWeight: 800, margin: `var(--space-3) 0 var(--space-2)`, color: 'var(--color-on-surface)' }, children: "Built for High-Speed Shopfloor Entry" }), _jsx("p", { style: { fontSize: '15px', color: 'var(--color-on-surface-variant)', lineHeight: 1.55 }, children: "Large touch targets, zero complicated forms, and immediate visual feedback. Operators can log production output in under 3 seconds without leaving their workstation." })] }), _jsxs("div", { style: {
+                                                }, children: "Touch-Optimized Operator Terminal" }), _jsx("h3", { style: { fontSize: '26px', fontWeight: 800, margin: `var(--space-3) 0 var(--space-2)`, color: 'var(--color-primary)' }, children: "Built for High-Speed Shopfloor Entry" }), _jsx("p", { style: { fontSize: '15px', color: 'var(--color-on-surface)', lineHeight: 1.55 }, children: "Large touch targets, zero complicated forms, and immediate visual feedback. Operators can log production output in under 3 seconds without leaving their workstation." })] }), _jsxs("div", { style: {
                                             backgroundColor: 'var(--color-surface-container-low)',
                                             border: '1px solid var(--color-outline-variant)',
                                             borderRadius: '16px',

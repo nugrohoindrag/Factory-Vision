@@ -109,10 +109,10 @@ export const OeePerformanceSection: React.FC = () => {
                 Six Big Losses Breakdown
               </span>
             </div>
-            <h3 style={{ fontSize: '26px', fontWeight: 800, margin: `var(--space-2) 0`, color: 'var(--color-on-surface)' }}>
+            <h3 style={{ fontSize: '26px', fontWeight: 800, margin: `var(--space-2) 0`, color: 'var(--color-primary)' }}>
               Why Are We Losing Production?
             </h3>
-            <p style={{ fontSize: '15px', color: 'var(--color-on-surface-variant)', marginBottom: 'var(--space-6)', lineHeight: 1.55 }}>
+            <p style={{ fontSize: '15px', color: 'var(--color-on-surface)', marginBottom: 'var(--space-6)', lineHeight: 1.55 }}>
               Identify exactly where productive capacity leaks during the shift with automated loss categorization.
             </p>
 

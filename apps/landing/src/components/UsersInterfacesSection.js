@@ -92,7 +92,7 @@ export const UsersInterfacesSection = () => {
                                                 padding: `var(--space-1) var(--space-3)`,
                                                 borderRadius: '9999px',
                                                 textTransform: 'uppercase',
-                                            }, children: [current.shortTitle, " Experience"] }), _jsx("h3", { style: { fontSize: '26px', fontWeight: 800, margin: `var(--space-3) 0 var(--space-2)`, color: 'var(--color-on-surface)' }, children: current.title }), _jsx("p", { style: { fontSize: '15px', color: 'var(--color-on-surface-variant)', lineHeight: 1.55, marginBottom: 'var(--space-6)' }, children: current.tagline }), _jsx("div", { style: { display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }, children: current.benefits.map((b) => (_jsxs("div", { style: {
+                                            }, children: [current.shortTitle, " Experience"] }), _jsx("h3", { style: { fontSize: '26px', fontWeight: 800, margin: `var(--space-3) 0 var(--space-2)`, color: 'var(--color-primary)' }, children: current.title }), _jsx("p", { style: { fontSize: '15px', color: 'var(--color-on-surface)', lineHeight: 1.55, marginBottom: 'var(--space-6)' }, children: current.tagline }), _jsx("div", { style: { display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }, children: current.benefits.map((b) => (_jsxs("div", { style: {
                                                     padding: `var(--space-4) var(--space-5)`,
                                                     backgroundColor: 'var(--color-surface-container-low)',
                                                     border: '1px solid var(--color-outline-variant)',

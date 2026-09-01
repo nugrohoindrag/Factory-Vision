@@ -103,10 +103,10 @@ export const BusinessImpactSection: React.FC = () => {
                   </div>
                 </div>
 
-                <h3 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--color-on-surface)', marginBottom: 'var(--space-1)' }}>
+                <h3 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--color-primary)', marginBottom: 'var(--space-1)' }}>
                   {imp.title}
                 </h3>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-primary)', marginBottom: 'var(--space-3)' }}>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-on-surface-variant)', marginBottom: 'var(--space-3)' }}>
                   {imp.tagline}
                 </div>
                 <p style={{ fontSize: '15px', color: 'var(--color-on-surface)', lineHeight: 1.55 }}>

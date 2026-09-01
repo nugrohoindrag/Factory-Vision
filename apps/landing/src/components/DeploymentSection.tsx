@@ -52,10 +52,10 @@ export const DeploymentSection: React.FC = () => {
               >
                 <Icon name="cloud" size={28} />
               </div>
-              <h3 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-on-surface)', marginBottom: 'var(--space-2)' }}>
+              <h3 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-primary)', marginBottom: 'var(--space-2)' }}>
                 Cloud / Hybrid Deployment
               </h3>
-              <p style={{ fontSize: '15px', color: 'var(--color-on-surface-variant)', lineHeight: 1.55, marginBottom: 'var(--space-6)' }}>
+              <p style={{ fontSize: '15px', color: 'var(--color-on-surface)', lineHeight: 1.55, marginBottom: 'var(--space-6)' }}>
                 Access plant dashboards from any device or corporate headquarters with zero server maintenance and automatic updates.
               </p>
 
@@ -118,10 +118,10 @@ export const DeploymentSection: React.FC = () => {
               >
                 <Icon name="dns" size={28} />
               </div>
-              <h3 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-on-surface)', marginBottom: 'var(--space-2)' }}>
+              <h3 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-primary)', marginBottom: 'var(--space-2)' }}>
                 On-Premise / Air-Gapped
               </h3>
-              <p style={{ fontSize: '15px', color: 'var(--color-on-surface-variant)', lineHeight: 1.55, marginBottom: 'var(--space-6)' }}>
+              <p style={{ fontSize: '15px', color: 'var(--color-on-surface)', lineHeight: 1.55, marginBottom: 'var(--space-6)' }}>
                 Keep 100% of your manufacturing telemetry and recipe data strictly inside your local plant network and firewalls.
               </p>
 

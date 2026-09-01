@@ -156,7 +156,7 @@ export const VisibilitySection: React.FC = () => {
               <div style={{ padding: 'var(--space-8)', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-3)', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-                    <h3 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
+                    <h3 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--color-primary)' }}>
                       {pillar.title}
                     </h3>
                     <span
@@ -173,7 +173,7 @@ export const VisibilitySection: React.FC = () => {
                       {pillar.highlight}
                     </span>
                   </div>
-                  <p style={{ fontSize: '15px', color: 'var(--color-on-surface-variant)', lineHeight: 1.55 }}>
+                  <p style={{ fontSize: '15px', color: 'var(--color-on-surface)', lineHeight: 1.55 }}>
                     {pillar.tagline}
                   </p>
                 </div>

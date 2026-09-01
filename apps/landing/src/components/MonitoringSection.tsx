@@ -223,7 +223,7 @@ export const MonitoringSection: React.FC = () => {
                         {m.status} · {m.uptime}
                       </span>
                     </div>
-                    <h4 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
+                    <h4 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--color-primary)' }}>
                       {m.id} · {m.name}
                     </h4>
                     <span style={{ fontSize: '13px', color: 'var(--color-on-surface-variant)', fontWeight: 500 }}>

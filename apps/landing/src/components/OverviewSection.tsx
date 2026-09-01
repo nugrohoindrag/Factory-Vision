@@ -86,7 +86,7 @@ export const OverviewSection: React.FC = () => {
                   <Icon name="assignment" size={22} />
                 </div>
                 <div>
-                  <h4 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-on-surface)' }}>Production</h4>
+                  <h4 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-primary)' }}>Production</h4>
                   <span style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', fontWeight: 600 }}>Orders & Planning</span>
                 </div>
               </div>
@@ -136,7 +136,7 @@ export const OverviewSection: React.FC = () => {
                   <Icon name="precision_manufacturing" size={22} />
                 </div>
                 <div>
-                  <h4 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-on-surface)' }}>Machines</h4>
+                  <h4 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-primary)' }}>Machines</h4>
                   <span style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', fontWeight: 600 }}>Edge Telemetry</span>
                 </div>
               </div>
@@ -186,7 +186,7 @@ export const OverviewSection: React.FC = () => {
                   <Icon name="group" size={22} />
                 </div>
                 <div>
-                  <h4 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-on-surface)' }}>People</h4>
+                  <h4 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-primary)' }}>People</h4>
                   <span style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', fontWeight: 600 }}>Shopfloor Workforce</span>
                 </div>
               </div>

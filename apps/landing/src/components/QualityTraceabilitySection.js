@@ -15,7 +15,7 @@ export const QualityTraceabilitySection = () => {
                             gridTemplateColumns: '1fr 1.1fr',
                             gap: 'var(--space-10)',
                             alignItems: 'center',
-                        }, children: [_jsxs("div", { style: { display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }, children: [_jsxs("div", { children: [_jsx("h3", { style: { fontSize: '26px', fontWeight: 800, color: 'var(--color-on-surface)', marginBottom: 'var(--space-2)' }, children: "Complete Batch Genealogy Trace" }), _jsx("p", { style: { fontSize: '15px', color: 'var(--color-on-surface-variant)', lineHeight: 1.55 }, children: "Track exactly which operator, machine, tool, and raw batch went into every serial number." })] }), _jsxs("div", { style: {
+                        }, children: [_jsxs("div", { style: { display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }, children: [_jsxs("div", { children: [_jsx("h3", { style: { fontSize: '26px', fontWeight: 800, color: 'var(--color-primary)', marginBottom: 'var(--space-2)' }, children: "Complete Batch Genealogy Trace" }), _jsx("p", { style: { fontSize: '15px', color: 'var(--color-on-surface)', lineHeight: 1.55 }, children: "Track exactly which operator, machine, tool, and raw batch went into every serial number." })] }), _jsxs("div", { style: {
                                             backgroundColor: 'var(--color-surface-container-low)',
                                             border: '1px solid var(--color-outline-variant)',
                                             borderRadius: '16px',

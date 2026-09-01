@@ -179,10 +179,10 @@ export const ModulesSection: React.FC = () => {
                   {current.title} Module
                 </span>
               </div>
-              <h3 style={{ fontSize: '26px', fontWeight: 800, marginBottom: 'var(--space-3)', color: 'var(--color-on-surface)' }}>
+              <h3 style={{ fontSize: '26px', fontWeight: 800, marginBottom: 'var(--space-3)', color: 'var(--color-primary)' }}>
                 {current.tagline}
               </h3>
-              <p style={{ fontSize: '15px', color: 'var(--color-on-surface-variant)', marginBottom: 'var(--space-8)', lineHeight: 1.55 }}>
+              <p style={{ fontSize: '15px', color: 'var(--color-on-surface)', marginBottom: 'var(--space-8)', lineHeight: 1.55 }}>
                 Equipped with industrial capabilities designed to streamline daily shopfloor operations and eliminate manual paperwork.
               </p>
 
