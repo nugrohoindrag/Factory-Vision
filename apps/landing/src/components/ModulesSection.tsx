@@ -86,7 +86,7 @@ export const ModulesSection: React.FC = () => {
   const current = modules[activeModule];
 
   return (
-    <section id="modules" className="fv-section-py" style={{ backgroundColor: '#001D39', color: '#FFFFFF' }}>
+    <section id="modules" className="fv-section-py" style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)' }}>
       <div className="fv-landing-container">
         {/* Section Header */}
         <div style={{ textAlign: 'center', maxWidth: '780px', margin: '0 auto 48px' }}>
@@ -108,9 +108,9 @@ export const ModulesSection: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '12px',
+            gap: 'var(--space-3)',
             flexWrap: 'wrap',
-            marginBottom: '36px',
+            marginBottom: 'var(--space-10)',
           }}
         >
           {modules.map((mod, index) => {
@@ -122,18 +122,18 @@ export const ModulesSection: React.FC = () => {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
-                  padding: '12px 24px',
+                  gap: 'var(--space-2)',
+                  padding: `var(--space-3) var(--space-6)`,
                   borderRadius: '9999px',
-                  border: isSelected ? '1px solid #FFFFFF' : '1px solid rgba(255, 255, 255, 0.25)',
-                  backgroundColor: isSelected ? '#FFFFFF' : 'rgba(255, 255, 255, 0.1)',
-                  color: isSelected ? '#001D39' : '#FFFFFF',
+                  border: isSelected ? '1px solid var(--color-on-primary)' : '1px solid color-mix(in srgb, var(--color-on-primary) 25%, transparent)',
+                  backgroundColor: isSelected ? 'var(--color-on-primary)' : 'color-mix(in srgb, var(--color-on-primary) 10%, transparent)',
+                  color: isSelected ? 'var(--color-primary)' : 'var(--color-on-primary)',
                   fontWeight: 700,
                   fontSize: '14px',
                   whiteSpace: 'nowrap',
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',
-                  boxShadow: isSelected ? '0 4px 16px rgba(0, 0, 0, 0.3)' : 'none',
+                  boxShadow: isSelected ? 'var(--elevation-2)' : 'none',
                 }}
               >
                 <Icon name={mod.icon} size={18} />
@@ -153,23 +153,23 @@ export const ModulesSection: React.FC = () => {
             transition={{ duration: 0.25 }}
             className="fv-card-on-blue"
             style={{
-              padding: '36px',
-              backgroundColor: '#FFFFFF',
+              padding: 'var(--space-10)',
+              backgroundColor: 'var(--color-surface)',
               display: 'grid',
               gridTemplateColumns: '1.2fr 1fr',
-              gap: '36px',
+              gap: 'var(--space-10)',
               alignItems: 'center',
             }}
           >
             {/* Left: Features Matrix */}
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' }}>
                 <span
                   style={{
-                    backgroundColor: '#F0F9FF',
-                    color: '#0A4174',
-                    border: '1px solid #BAE6FD',
-                    padding: '4px 12px',
+                    backgroundColor: 'var(--color-info-container)',
+                    color: 'var(--color-primary)',
+                    border: '1px solid var(--color-info-container)',
+                    padding: `var(--space-1) var(--space-3)`,
                     borderRadius: '9999px',
                     fontSize: '12px',
                     fontWeight: 700,
@@ -179,29 +179,29 @@ export const ModulesSection: React.FC = () => {
                   {current.title} Module
                 </span>
               </div>
-              <h3 style={{ fontSize: '26px', fontWeight: 800, marginBottom: '10px', color: '#001D39' }}>
+              <h3 style={{ fontSize: '26px', fontWeight: 800, marginBottom: 'var(--space-3)', color: 'var(--color-on-surface)' }}>
                 {current.tagline}
               </h3>
-              <p style={{ fontSize: '15px', color: '#334155', marginBottom: '28px', lineHeight: 1.55 }}>
+              <p style={{ fontSize: '15px', color: 'var(--color-on-surface-variant)', marginBottom: 'var(--space-8)', lineHeight: 1.55 }}>
                 Equipped with industrial capabilities designed to streamline daily shopfloor operations and eliminate manual paperwork.
               </p>
 
               {/* 6 Capabilities in 2 Columns */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'var(--space-4)' }}>
                 {current.features.map((f) => (
                   <div
                     key={f.name}
                     style={{
-                      padding: '16px',
+                      padding: 'var(--space-4)',
                       borderRadius: '14px',
-                      backgroundColor: '#F8FAFC',
-                      border: '1px solid #E2E8F0',
+                      backgroundColor: 'var(--color-surface-container-low)',
+                      border: '1px solid var(--color-outline-variant)',
                     }}
                   >
-                    <div style={{ fontWeight: 800, fontSize: '14px', color: '#0A4174', marginBottom: '4px' }}>
+                    <div style={{ fontWeight: 800, fontSize: '14px', color: 'var(--color-primary)', marginBottom: 'var(--space-1)' }}>
                       {f.name}
                     </div>
-                    <div style={{ fontSize: '12px', color: '#334155', lineHeight: 1.45 }}>
+                    <div style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', lineHeight: 1.45 }}>
                       {f.desc}
                     </div>
                   </div>

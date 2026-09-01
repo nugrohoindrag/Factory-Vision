@@ -4,11 +4,11 @@ import { Icon } from '@factory-vision/ui';
 
 export const DataDecisionSection: React.FC = () => {
   const shopfloorEvents = [
-    { name: 'PLC Sensor Strokes', icon: 'memory', color: '#0A4174' },
-    { name: 'Operator Output Tally', icon: 'devices', color: '#059669' },
-    { name: 'Downtime & Stoppage Codes', icon: 'report_problem', color: '#DC2626' },
-    { name: 'Quality Inspection Results', icon: 'verified', color: '#0284C7' },
-    { name: 'Shift Handover Notes', icon: 'assignment', color: '#D97706' },
+    { name: 'PLC Sensor Strokes', icon: 'memory', color: 'var(--color-primary)' },
+    { name: 'Operator Output Tally', icon: 'devices', color: 'var(--color-success)' },
+    { name: 'Downtime & Stoppage Codes', icon: 'report_problem', color: 'var(--color-error)' },
+    { name: 'Quality Inspection Results', icon: 'verified', color: 'var(--color-info)' },
+    { name: 'Shift Handover Notes', icon: 'assignment', color: 'var(--color-warning)' },
   ];
 
   const outcomes = [
@@ -19,7 +19,7 @@ export const DataDecisionSection: React.FC = () => {
   ];
 
   return (
-    <section className="fv-section-py" style={{ backgroundColor: '#FFFFFF' }}>
+    <section className="fv-section-py" style={{ backgroundColor: 'var(--color-surface)' }}>
       <div className="fv-landing-container">
         {/* Header */}
         <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }}>
@@ -30,7 +30,7 @@ export const DataDecisionSection: React.FC = () => {
           <h2 className="fv-section-title">
             Every Production Event Becomes Actionable Data
           </h2>
-          <p className="fv-section-desc" style={{ margin: '0 auto', color: '#334155' }}>
+          <p className="fv-section-desc" style={{ margin: '0 auto', color: 'var(--color-on-surface-variant)' }}>
             Transform scattered shopfloor noise into high-fidelity operational decisions.
             Continuous event streams power real-time dashboards and instant countermeasures.
           </p>
@@ -40,8 +40,8 @@ export const DataDecisionSection: React.FC = () => {
         <div
           className="fv-card"
           style={{
-            padding: '36px',
-            backgroundColor: '#FFFFFF',
+            padding: 'var(--space-10)',
+            backgroundColor: 'var(--color-surface)',
             position: 'relative',
           }}
         >
@@ -49,30 +49,30 @@ export const DataDecisionSection: React.FC = () => {
             style={{
               display: 'grid',
               gridTemplateColumns: '1fr auto 1.2fr auto 1fr',
-              gap: '20px',
+              gap: 'var(--space-5)',
               alignItems: 'center',
             }}
             className="fv-pipeline-grid"
           >
             {/* Step 1: Shopfloor Signals */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div style={{ fontSize: '12px', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', marginBottom: '4px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+              <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', marginBottom: 'var(--space-1)' }}>
                 01 Shopfloor Events
               </div>
               {shopfloorEvents.map((ev) => (
                 <div
                   key={ev.name}
                   style={{
-                    backgroundColor: '#F8FAFC',
-                    border: '1px solid #E2E8F0',
+                    backgroundColor: 'var(--color-surface-container-low)',
+                    border: '1px solid var(--color-outline-variant)',
                     borderRadius: '12px',
-                    padding: '12px 14px',
+                    padding: `var(--space-3) var(--space-4)`,
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '12px',
+                    gap: 'var(--space-3)',
                     fontSize: '13px',
                     fontWeight: 600,
-                    color: '#001D39',
+                    color: 'var(--color-on-surface)',
                   }}
                 >
                   <Icon name={ev.icon} size={18} color={ev.color} />
@@ -82,7 +82,7 @@ export const DataDecisionSection: React.FC = () => {
             </div>
 
             {/* Arrow 1 */}
-            <div style={{ textAlign: 'center', color: '#0A4174' }} className="fv-pipeline-arrow">
+            <div style={{ textAlign: 'center', color: 'var(--color-primary)' }} className="fv-pipeline-arrow">
               <Icon name="arrow_forward" size={32} />
             </div>
 
@@ -92,32 +92,32 @@ export const DataDecisionSection: React.FC = () => {
               whileInView={{ scale: 1 }}
               viewport={{ once: true }}
               style={{
-                background: 'linear-gradient(135deg, #001D39 0%, #0A4174 100%)',
-                color: '#FFFFFF',
+                background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary) 100%)',
+                color: 'var(--color-on-primary)',
                 borderRadius: '24px',
-                padding: '36px 24px',
+                padding: `var(--space-10) var(--space-6)`,
                 textAlign: 'center',
-                boxShadow: '0 16px 36px rgba(10, 65, 116, 0.3)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
+                boxShadow: 'var(--elevation-4)',
+                border: '1px solid color-mix(in srgb, var(--color-on-primary) 20%, transparent)',
               }}
             >
-              <Icon name="insights" size={42} style={{ marginBottom: '12px', color: '#FFFFFF' }} />
-              <h4 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '6px' }}>
+              <Icon name="insights" size={42} style={{ marginBottom: 'var(--space-3)', color: 'var(--color-on-primary)' }} />
+              <h4 style={{ fontSize: '22px', fontWeight: 800, marginBottom: 'var(--space-2)' }}>
                 FACTORY VISION
               </h4>
-              <div style={{ fontSize: '13px', opacity: 0.95, lineHeight: 1.4, marginBottom: '16px', color: '#FFFFFF' }}>
+              <div style={{ fontSize: '13px', opacity: 0.95, lineHeight: 1.4, marginBottom: 'var(--space-4)', color: 'var(--color-on-primary)' }}>
                 Real-Time Event Processing & Calculation Engine
               </div>
               <div
                 style={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                  padding: '8px 16px',
+                  backgroundColor: 'color-mix(in srgb, var(--color-on-primary) 15%, transparent)',
+                  padding: `var(--space-2) var(--space-4)`,
                   borderRadius: '9999px',
                   fontSize: '12px',
                   fontWeight: 700,
                   letterSpacing: '0.04em',
                   display: 'inline-block',
-                  color: '#FFFFFF',
+                  color: 'var(--color-on-primary)',
                 }}
               >
                 &lt; 100ms Ingestion Latency
@@ -125,29 +125,29 @@ export const DataDecisionSection: React.FC = () => {
             </motion.div>
 
             {/* Arrow 2 */}
-            <div style={{ textAlign: 'center', color: '#0A4174' }} className="fv-pipeline-arrow">
+            <div style={{ textAlign: 'center', color: 'var(--color-primary)' }} className="fv-pipeline-arrow">
               <Icon name="arrow_forward" size={32} />
             </div>
 
             {/* Step 3: Actionable Decisions */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div style={{ fontSize: '12px', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', marginBottom: '4px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+              <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', marginBottom: 'var(--space-1)' }}>
                 02 Better Decisions
               </div>
               {outcomes.map((out) => (
                 <div
                   key={out.title}
                   style={{
-                    backgroundColor: '#F8FAFC',
-                    border: '1px solid #E2E8F0',
+                    backgroundColor: 'var(--color-surface-container-low)',
+                    border: '1px solid var(--color-outline-variant)',
                     borderRadius: '12px',
-                    padding: '12px 14px',
+                    padding: `var(--space-3) var(--space-4)`,
                   }}
                 >
-                  <div style={{ fontWeight: 800, fontSize: '13px', color: '#0A4174', marginBottom: '2px' }}>
+                  <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--color-primary)', marginBottom: 'var(--space-1)' }}>
                     {out.title}
                   </div>
-                  <div style={{ fontSize: '11px', color: '#334155', lineHeight: 1.35 }}>
+                  <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', lineHeight: 1.35 }}>
                     {out.desc}
                   </div>
                 </div>

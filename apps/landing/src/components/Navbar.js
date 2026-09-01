@@ -31,11 +31,11 @@ export const Navbar = ({ onOpenDemo }) => {
             top: 0,
             zIndex: 100,
             width: '100%',
-            backgroundColor: '#FFFFFF',
-            borderBottom: '1px solid #E2E8F0',
+            backgroundColor: 'var(--color-surface)',
+            borderBottom: '1px solid var(--color-outline-variant)',
             boxShadow: scrolled
-                ? '0 4px 20px rgba(0, 29, 57, 0.08)'
-                : '0 2px 8px rgba(0, 29, 57, 0.03)',
+                ? 'var(--elevation-2)'
+                : 'var(--elevation-1)',
             backdropFilter: 'blur(12px)',
             transition: 'all 0.25s ease',
         }, children: [_jsxs("div", { className: "fv-landing-container", style: {
@@ -46,38 +46,38 @@ export const Navbar = ({ onOpenDemo }) => {
                 }, children: [_jsx("a", { href: "#", style: {
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '12px',
+                            gap: 'var(--space-3)',
                             textDecoration: 'none',
-                            color: '#001D39',
+                            color: 'var(--color-on-surface)',
                         }, children: _jsx(FactoryVisionLogo, { size: "md", variant: "full", tagline: "Manufacturing Execution System" }) }), _jsx("nav", { style: {
                             display: 'none',
                             alignItems: 'center',
-                            gap: '28px',
+                            gap: 'var(--space-8)',
                         }, className: "fv-desktop-nav", children: navLinks.map((link) => (_jsx("a", { href: link.href, style: {
                                 fontSize: '14px',
                                 fontWeight: 600,
-                                color: '#334155',
+                                color: 'var(--color-on-surface-variant)',
                                 textDecoration: 'none',
                                 transition: 'color 0.15s ease',
                             }, onMouseEnter: (e) => {
-                                e.currentTarget.style.color = '#0A4174';
+                                e.currentTarget.style.color = 'var(--color-primary)';
                             }, onMouseLeave: (e) => {
-                                e.currentTarget.style.color = '#334155';
-                            }, children: link.label }, link.label))) }), _jsxs("div", { style: { display: 'flex', alignItems: 'center', gap: '14px' }, children: [_jsx("button", { onClick: toggleTheme, "aria-label": "Toggle Theme", style: {
+                                e.currentTarget.style.color = 'var(--color-on-surface-variant)';
+                            }, children: link.label }, link.label))) }), _jsxs("div", { style: { display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }, children: [_jsx("button", { onClick: toggleTheme, "aria-label": "Toggle Theme", style: {
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     width: '40px',
                                     height: '40px',
                                     borderRadius: '9999px',
-                                    border: '1px solid #CBD5E1',
-                                    backgroundColor: '#FFFFFF',
-                                    color: '#0A4174',
+                                    border: '1px solid var(--color-outline-variant)',
+                                    backgroundColor: 'var(--color-surface)',
+                                    color: 'var(--color-primary)',
                                     cursor: 'pointer',
-                                    boxShadow: '0 2px 6px rgba(0, 29, 57, 0.04)',
+                                    boxShadow: 'var(--elevation-1)',
                                     transition: 'all 0.15s ease',
                                 }, children: _jsx(Icon, { name: theme === 'light' ? 'dark_mode' : 'light_mode', size: 18 }) }), _jsxs("button", { onClick: onOpenDemo, className: "fv-btn-primary", style: {
-                                    padding: '10px 22px',
+                                    padding: `var(--space-3) var(--space-6)`,
                                     fontSize: '14px',
                                 }, children: ["Book a Demo", _jsx(Icon, { name: "arrow_forward", size: 16 })] }), _jsx("button", { onClick: () => setMobileMenuOpen(!mobileMenuOpen), className: "fv-mobile-toggle", "aria-label": "Toggle Menu", style: {
                                     display: 'none',
@@ -86,24 +86,24 @@ export const Navbar = ({ onOpenDemo }) => {
                                     width: '40px',
                                     height: '40px',
                                     borderRadius: '10px',
-                                    border: '1px solid #CBD5E1',
-                                    backgroundColor: '#FFFFFF',
-                                    color: '#001D39',
+                                    border: '1px solid var(--color-outline-variant)',
+                                    backgroundColor: 'var(--color-surface)',
+                                    color: 'var(--color-on-surface)',
                                     cursor: 'pointer',
                                 }, children: _jsx(Icon, { name: mobileMenuOpen ? 'close' : 'menu', size: 20 }) })] })] }), mobileMenuOpen && (_jsx("div", { style: {
-                    backgroundColor: '#FFFFFF',
-                    borderBottom: '1px solid #E2E8F0',
-                    padding: '16px 24px',
+                    backgroundColor: 'var(--color-surface)',
+                    borderBottom: '1px solid var(--color-outline-variant)',
+                    padding: `var(--space-4) var(--space-6)`,
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '12px',
-                    boxShadow: '0 8px 24px rgba(0, 29, 57, 0.08)',
+                    gap: 'var(--space-3)',
+                    boxShadow: 'var(--elevation-2)',
                 }, children: navLinks.map((link) => (_jsx("a", { href: link.href, onClick: () => setMobileMenuOpen(false), style: {
                         fontSize: '15px',
                         fontWeight: 600,
-                        color: '#001D39',
+                        color: 'var(--color-on-surface)',
                         textDecoration: 'none',
-                        padding: '8px 0',
+                        padding: `var(--space-2) 0`,
                     }, children: link.label }, link.label))) })), _jsx("style", { children: `
         @media (min-width: 860px) {
           .fv-desktop-nav {

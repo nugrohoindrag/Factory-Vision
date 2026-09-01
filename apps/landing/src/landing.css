@@ -1,83 +1,72 @@
 /* Factory Vision Landing Page Styling - Clean White & Primary Blue Architecture */
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
 
+/* The landing page's names, defined onto the product contract.
+ *
+ * These used to be a parallel design system: 36 --fv-* names with their own
+ * light values and their own [data-theme="dark"] block, sitting on top of
+ * tokens.css and fv/palette.css and ignoring both. Two consequences followed.
+ * The palette could drift from the product without anyone noticing, and every
+ * colour written straight into a component as a hex — which is most of them —
+ * stayed frozen in light mode however the theme was set.
+ *
+ * They are aliases now, so the dark block is gone: --color-* already flips, and
+ * a second dark definition could only disagree with it.
+ */
 :root {
-  /* Brand Constants */
-  --fv-ink: #001D39;
-  --fv-primary: #0A4174;
-  --fv-deep: #0A4174;
-  --fv-slate: #334155;
+  /* Brand */
+  --fv-ink: var(--color-primary);
+  --fv-primary: var(--color-primary);
+  --fv-deep: var(--color-primary);
+  --fv-slate: var(--color-on-surface);
 
-  /* Theme Tokens - Default Light Mode */
-  --fv-page-bg: #FFFFFF;
-  --fv-header-bg: #FFFFFF;
-  --fv-surface: #FFFFFF;
-  --fv-surface-card: #FFFFFF;
-  --fv-surface-soft: #F8FAFC;
-  --fv-border: #E2E8F0;
-  --fv-border-subtle: #EDF2F7;
-  
-  /* Text Tokens (No light blue font colors) */
-  --fv-text-main: #001D39;
-  --fv-text-body: #334155;
-  --fv-text-muted: #64748B;
-  
-  /* Blue Alternating Section Tokens */
-  --fv-blue-bg: #001D39;
-  --fv-blue-title: #FFFFFF;
-  --fv-blue-body: #FFFFFF;
-  --fv-blue-muted: #E2E8F0;
-  --fv-blue-card: #FFFFFF;
-  --fv-blue-card-border: #E2E8F0;
-  --fv-blue-card-title: #001D39;
-  --fv-blue-card-body: #334155;
+  /* Surfaces */
+  --fv-page-bg: var(--color-background);
+  --fv-header-bg: var(--color-surface);
+  --fv-surface: var(--color-surface);
+  --fv-surface-card: var(--color-surface);
+  --fv-surface-soft: var(--color-surface-container-low);
+  --fv-border: var(--color-outline-variant);
+  --fv-border-subtle: var(--color-outline-variant);
 
-  /* Status Colors */
-  --fv-emerald: #059669;
-  --fv-emerald-bg: #ECFDF5;
-  --fv-emerald-border: #A7F3D0;
+  /* Text */
+  --fv-text-main: var(--color-on-surface);
+  --fv-text-body: var(--color-on-surface);
+  --fv-text-muted: var(--color-on-surface-variant);
 
-  --fv-amber: #D97706;
-  --fv-amber-bg: #FFFBEB;
-  --fv-amber-border: #FDE68A;
+  /* The alternating solid-blue sections. The band fills --color-primary, so
+     everything sitting directly on it takes the paired --color-on-primary;
+     cards that sit *over* the band return to the neutral surface ladder. */
+  --fv-blue-bg: var(--color-primary);
+  --fv-blue-title: var(--color-on-primary);
+  --fv-blue-body: var(--color-on-primary);
+  --fv-blue-muted: var(--color-on-primary);
+  --fv-blue-card: var(--color-surface);
+  --fv-blue-card-border: var(--color-outline-variant);
+  --fv-blue-card-title: var(--color-on-surface);
+  --fv-blue-card-body: var(--color-on-surface);
 
-  --fv-crimson: #DC2626;
-  --fv-crimson-bg: #FEF2F2;
-  --fv-crimson-border: #FECACA;
+  /* Machine state keeps its own hues (guideline 2.8): colour for meaning. */
+  --fv-emerald: var(--color-success);
+  --fv-emerald-bg: var(--color-success-container);
+  --fv-emerald-border: var(--color-success-container);
 
-  --fv-cyan: #0284C7;
-  --fv-cyan-bg: #F0F9FF;
-  --fv-cyan-border: #BAE6FD;
+  --fv-amber: var(--color-warning);
+  --fv-amber-bg: var(--color-warning-container);
+  --fv-amber-border: var(--color-warning-container);
 
-  /* Card Shadows */
-  --fv-card-shadow: 0 10px 30px -4px rgba(0, 29, 57, 0.08), 0 2px 8px -2px rgba(0, 29, 57, 0.04);
-  --fv-card-shadow-hover: 0 16px 40px -4px rgba(0, 29, 57, 0.14), 0 4px 12px -2px rgba(0, 29, 57, 0.06);
-}
+  --fv-crimson: var(--color-error);
+  --fv-crimson-bg: var(--color-error-container);
+  --fv-crimson-border: var(--color-error-container);
 
-[data-theme="dark"] {
-  --fv-page-bg: #0B0B0D;
-  --fv-header-bg: #0B0B0D;
-  --fv-surface: #15171C;
-  --fv-surface-card: #15171C;
-  --fv-surface-soft: #121418;
-  --fv-border: #232730;
-  --fv-border-subtle: #1C2028;
-  
-  --fv-text-main: #FFFFFF;
-  --fv-text-body: #CBD5E1;
-  --fv-text-muted: #94A3B8;
+  --fv-cyan: var(--color-info);
+  --fv-cyan-bg: var(--color-info-container);
+  --fv-cyan-border: var(--color-info-container);
 
-  --fv-blue-bg: #0B0B0D;
-  --fv-blue-title: #FFFFFF;
-  --fv-blue-body: #CBD5E1;
-  --fv-blue-muted: #94A3B8;
-  --fv-blue-card: #15171C;
-  --fv-blue-card-border: #282C37;
-  --fv-blue-card-title: #FFFFFF;
-  --fv-blue-card-body: #CBD5E1;
-
-  --fv-card-shadow: 0 12px 36px -4px rgba(0, 0, 0, 0.6);
-  --fv-card-shadow-hover: 0 18px 48px -4px rgba(0, 0, 0, 0.8);
+  /* Elevation comes from the scale, not from hand-mixed shadows: the old pair
+     baked their own translucent brand colour and could not follow a theme. */
+  --fv-card-shadow: var(--elevation-1);
+  --fv-card-shadow-hover: var(--elevation-3);
 }
 
 *, *::before, *::after {
@@ -167,14 +156,14 @@ body {
   gap: 6px;
   padding: 6px 14px;
   border-radius: 9999px;
-  background-color: #EBF3FA;
-  color: #0A4174;
+  background-color: var(--color-primary-container);
+  color: var(--color-on-primary-container);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   margin-bottom: 16px;
-  border: 1px solid #BAE6FD;
+  border: 1px solid var(--color-primary-container);
 }
 
 .fv-eyebrow-on-blue {
@@ -183,14 +172,14 @@ body {
   gap: 6px;
   padding: 6px 14px;
   border-radius: 9999px;
-  background-color: rgba(255, 255, 255, 0.15);
-  color: #FFFFFF;
+  background-color: var(--color-on-primary);
+  color: var(--color-on-primary);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   margin-bottom: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid var(--color-on-primary);
 }
 
 /* Section Headings */
@@ -199,7 +188,7 @@ body {
   font-weight: 800;
   line-height: 1.15;
   letter-spacing: -0.025em;
-  color: #001D39;
+  color: var(--color-on-surface);
   margin-bottom: 16px;
 }
 
@@ -208,59 +197,59 @@ body {
   font-weight: 800;
   line-height: 1.15;
   letter-spacing: -0.025em;
-  color: #FFFFFF;
+  color: var(--color-on-primary);
   margin-bottom: 16px;
 }
 
 .fv-section-desc {
   font-size: clamp(16px, 1.8vw, 19px);
   line-height: 1.6;
-  color: #334155;
+  color: var(--color-on-surface-variant);
   max-width: 760px;
 }
 
 .fv-section-desc-on-blue {
   font-size: clamp(16px, 1.8vw, 19px);
   line-height: 1.6;
-  color: #FFFFFF;
+  color: var(--color-on-primary);
   opacity: 0.95;
   max-width: 760px;
 }
 
 /* Cards */
 .fv-card {
-  background-color: #FFFFFF;
-  border: 1px solid #E2E8F0;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-outline-variant);
   border-radius: 20px;
   box-shadow: var(--fv-card-shadow);
   transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1), border-color 0.2s;
 }
 
 .fv-card:hover {
-  border-color: #93C5FD;
+  border-color: var(--color-primary);
   box-shadow: var(--fv-card-shadow-hover);
   transform: translateY(-2px);
 }
 
 .fv-card-on-blue {
-  background-color: #FFFFFF;
-  border: 1px solid #E2E8F0;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-outline-variant);
   border-radius: 20px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--elevation-3);
   transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1);
 }
 
 .fv-card-on-blue:hover {
   transform: translateY(-2px);
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--elevation-4);
 }
 
 /* Browser Frame */
 .fv-browser-frame {
-  background-color: #FFFFFF;
-  border: 1px solid #E2E8F0;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-outline-variant);
   border-radius: 20px;
-  box-shadow: 0 16px 40px -4px rgba(0, 29, 57, 0.15);
+  box-shadow: var(--elevation-3);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -271,10 +260,10 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 12px 20px;
-  background-color: #F8FAFC;
-  border-bottom: 1px solid #E2E8F0;
+  background-color: var(--color-surface-container-low);
+  border-bottom: 1px solid var(--color-outline-variant);
   font-size: 12px;
-  color: #64748B;
+  color: var(--color-on-surface-variant);
 }
 
 .fv-browser-dots {
@@ -287,27 +276,27 @@ body {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background-color: #CBD5E1;
+  background-color: var(--color-outline-variant);
 }
 
 .fv-browser-address-bar {
   display: flex;
   align-items: center;
   gap: 8px;
-  background-color: #FFFFFF;
-  border: 1px solid #E2E8F0;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-outline-variant);
   border-radius: 9999px;
   padding: 4px 16px;
   font-size: 11px;
   font-weight: 500;
-  color: #334155;
+  color: var(--color-on-surface-variant);
   min-width: 260px;
   justify-content: center;
 }
 
 .fv-browser-body {
   position: relative;
-  background-color: #FFFFFF;
+  background-color: var(--color-surface);
   overflow: hidden;
 }
 
@@ -360,18 +349,18 @@ body {
 }
 
 .fv-status-dot.running {
-  background-color: #059669;
-  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.25);
+  background-color: var(--color-success);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-success) 25%, transparent);
 }
 
 .fv-status-dot.idle {
-  background-color: #D97706;
-  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.25);
+  background-color: var(--color-warning);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-warning) 25%, transparent);
 }
 
 .fv-status-dot.downtime {
-  background-color: #DC2626;
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.25);
+  background-color: var(--color-error);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-error) 25%, transparent);
 }
 
 /* Buttons */
@@ -380,23 +369,23 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: linear-gradient(135deg, #0A4174 0%, #001D39 100%);
-  color: #FFFFFF;
+  background: var(--color-primary);
+  color: var(--color-primary);
   padding: 12px 26px;
   border-radius: 9999px;
   font-weight: 700;
   font-size: 15px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid var(--color-primary);
   cursor: pointer;
   text-decoration: none;
-  box-shadow: 0 4px 14px rgba(10, 65, 116, 0.35);
+  box-shadow: var(--elevation-2);
   transition: all 0.2s ease;
 }
 
 .fv-btn-primary:hover {
-  background: linear-gradient(135deg, #115392 0%, #0A4174 100%);
+  background: var(--color-primary-strong);
   transform: translateY(-2px);
-  box-shadow: 0 8px 22px rgba(10, 65, 116, 0.45);
+  box-shadow: var(--elevation-3);
 }
 
 .fv-btn-secondary {
@@ -404,22 +393,22 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background-color: #FFFFFF;
-  color: #0A4174;
-  border: 1px solid #CBD5E1;
+  background-color: var(--color-surface);
+  color: var(--color-primary);
+  border: 1px solid var(--color-outline-variant);
   padding: 12px 24px;
   border-radius: 9999px;
   font-weight: 700;
   font-size: 15px;
   cursor: pointer;
   text-decoration: none;
-  box-shadow: 0 2px 6px rgba(0, 29, 57, 0.04);
+  box-shadow: var(--elevation-1);
   transition: all 0.2s ease;
 }
 
 .fv-btn-secondary:hover {
-  background-color: #F8FAFC;
-  border-color: #0A4174;
+  background-color: var(--color-surface-container-low);
+  border-color: var(--color-primary);
   transform: translateY(-1px);
 }
 
@@ -427,7 +416,7 @@ body {
 .fv-modal-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 29, 57, 0.75);
+  background-color: var(--color-scrim);
   backdrop-filter: blur(8px);
   z-index: 1000;
   display: flex;
@@ -437,15 +426,15 @@ body {
 }
 
 .fv-modal-content {
-  background-color: #FFFFFF;
-  border: 1px solid #E2E8F0;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-outline-variant);
   border-radius: 24px;
   max-width: 580px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 24px 60px rgba(0, 29, 57, 0.35);
+  box-shadow: var(--elevation-5);
   padding: 36px;
   position: relative;
-  color: #001D39;
+  color: var(--color-on-surface);
 }

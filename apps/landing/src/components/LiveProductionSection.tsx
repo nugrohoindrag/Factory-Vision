@@ -13,7 +13,7 @@ export const LiveProductionSection: React.FC = () => {
   ];
 
   return (
-    <section id="shopfloor" className="fv-section-py" style={{ backgroundColor: '#FFFFFF' }}>
+    <section id="shopfloor" className="fv-section-py" style={{ backgroundColor: 'var(--color-surface)' }}>
       <div className="fv-landing-container">
         {/* Header */}
         <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }}>
@@ -24,7 +24,7 @@ export const LiveProductionSection: React.FC = () => {
           <h2 className="fv-section-title">
             From Production Order to Actual Production
           </h2>
-          <p className="fv-section-desc" style={{ margin: '0 auto', color: '#334155' }}>
+          <p className="fv-section-desc" style={{ margin: '0 auto', color: 'var(--color-on-surface-variant)' }}>
             Give operators a simple, distraction-free interface to execute production, record output,
             report downtime, and capture shopfloor events in real time.
           </p>
@@ -35,8 +35,8 @@ export const LiveProductionSection: React.FC = () => {
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(6, 1fr)',
-            gap: '14px',
-            marginBottom: '48px',
+            gap: 'var(--space-4)',
+            marginBottom: 'var(--space-12)',
           }}
           className="fv-workflow-steps"
         >
@@ -49,8 +49,8 @@ export const LiveProductionSection: React.FC = () => {
               transition={{ delay: idx * 0.08 }}
               className="fv-card"
               style={{
-                backgroundColor: '#FFFFFF',
-                padding: '18px 14px',
+                backgroundColor: 'var(--color-surface)',
+                padding: `var(--space-5) var(--space-4)`,
                 position: 'relative',
               }}
             >
@@ -58,21 +58,21 @@ export const LiveProductionSection: React.FC = () => {
                 style={{
                   fontSize: '12px',
                   fontWeight: 800,
-                  color: '#0A4174',
-                  backgroundColor: '#F0F9FF',
-                  border: '1px solid #BAE6FD',
-                  padding: '2px 8px',
+                  color: 'var(--color-primary)',
+                  backgroundColor: 'var(--color-info-container)',
+                  border: '1px solid var(--color-info-container)',
+                  padding: `var(--space-1) var(--space-2)`,
                   borderRadius: '9999px',
                   display: 'inline-block',
-                  marginBottom: '8px',
+                  marginBottom: 'var(--space-2)',
                 }}
               >
                 STEP {s.num}
               </div>
-              <div style={{ fontSize: '14px', fontWeight: 800, color: '#001D39', marginBottom: '4px' }}>
+              <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-on-surface)', marginBottom: 'var(--space-1)' }}>
                 {s.title}
               </div>
-              <div style={{ fontSize: '12px', color: '#334155', lineHeight: 1.35 }}>
+              <div style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', lineHeight: 1.35 }}>
                 {s.desc}
               </div>
             </motion.div>
@@ -83,11 +83,11 @@ export const LiveProductionSection: React.FC = () => {
         <div
           className="fv-card fv-live-production-grid"
           style={{
-            padding: '36px',
-            backgroundColor: '#FFFFFF',
+            padding: 'var(--space-10)',
+            backgroundColor: 'var(--color-surface)',
             display: 'grid',
             gridTemplateColumns: '1.15fr 0.85fr',
-            gap: '36px',
+            gap: 'var(--space-10)',
             alignItems: 'center',
           }}
         >
@@ -104,9 +104,9 @@ export const LiveProductionSection: React.FC = () => {
                   <Icon name="devices" size={14} />
                   <span>terminal.factoryvision.io/station-cnc-02</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                   <span className="fv-status-dot running" />
-                  <span style={{ fontSize: '11px', fontWeight: 800, color: '#059669' }}>RUNNING</span>
+                  <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-success)' }}>RUNNING</span>
                 </div>
               </div>
               <div className="fv-browser-body">
@@ -121,26 +121,26 @@ export const LiveProductionSection: React.FC = () => {
           </div>
 
           {/* Right: Operational Details & Live Counters */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
             <div>
               <span
                 style={{
                   fontSize: '12px',
                   fontWeight: 700,
-                  color: '#0A4174',
-                  backgroundColor: '#F0F9FF',
-                  border: '1px solid #BAE6FD',
-                  padding: '4px 12px',
+                  color: 'var(--color-primary)',
+                  backgroundColor: 'var(--color-info-container)',
+                  border: '1px solid var(--color-info-container)',
+                  padding: `var(--space-1) var(--space-3)`,
                   borderRadius: '9999px',
                   textTransform: 'uppercase',
                 }}
               >
                 Touch-Optimized Operator Terminal
               </span>
-              <h3 style={{ fontSize: '26px', fontWeight: 800, margin: '12px 0 8px', color: '#001D39' }}>
+              <h3 style={{ fontSize: '26px', fontWeight: 800, margin: `var(--space-3) 0 var(--space-2)`, color: 'var(--color-on-surface)' }}>
                 Built for High-Speed Shopfloor Entry
               </h3>
-              <p style={{ fontSize: '15px', color: '#334155', lineHeight: 1.55 }}>
+              <p style={{ fontSize: '15px', color: 'var(--color-on-surface-variant)', lineHeight: 1.55 }}>
                 Large touch targets, zero complicated forms, and immediate visual feedback.
                 Operators can log production output in under 3 seconds without leaving their workstation.
               </p>
@@ -149,54 +149,54 @@ export const LiveProductionSection: React.FC = () => {
             {/* Live Telemetry Tally Box */}
             <div
               style={{
-                backgroundColor: '#F8FAFC',
-                border: '1px solid #E2E8F0',
+                backgroundColor: 'var(--color-surface-container-low)',
+                border: '1px solid var(--color-outline-variant)',
                 borderRadius: '16px',
-                padding: '20px',
+                padding: 'var(--space-5)',
                 display: 'grid',
                 gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: '14px',
+                gap: 'var(--space-4)',
                 textAlign: 'center',
               }}
             >
               <div>
-                <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 700 }}>
+                <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', fontWeight: 700 }}>
                   GOOD OUTPUT
                 </div>
-                <div style={{ fontSize: '24px', fontWeight: 800, color: '#059669' }} className="fv-num">
-                  3,820 <span style={{ fontSize: '12px', color: '#64748B' }}>pcs</span>
+                <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-success)' }} className="fv-num">
+                  3,820 <span style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>pcs</span>
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 700 }}>
+                <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', fontWeight: 700 }}>
                   SCRAP / DEFECT
                 </div>
-                <div style={{ fontSize: '24px', fontWeight: 800, color: '#DC2626' }} className="fv-num">
-                  14 <span style={{ fontSize: '12px', color: '#64748B' }}>pcs</span>
+                <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-error)' }} className="fv-num">
+                  14 <span style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>pcs</span>
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 700 }}>
+                <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', fontWeight: 700 }}>
                   PROGRESS
                 </div>
-                <div style={{ fontSize: '24px', fontWeight: 800, color: '#0A4174' }} className="fv-num">
+                <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-primary)' }} className="fv-num">
                   85.2%
                 </div>
               </div>
             </div>
 
             {/* Feature Highlights */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', color: '#001D39' }}>
-                <Icon name="check_circle" size={18} color="#0A4174" />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', fontSize: '14px', color: 'var(--color-on-surface)' }}>
+                <Icon name="check_circle" size={18} color="var(--color-primary)" />
                 <span>Single-tap output and scrap increments with audio confirmation</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', color: '#001D39' }}>
-                <Icon name="report_problem" size={18} color="#D97706" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', fontSize: '14px', color: 'var(--color-on-surface)' }}>
+                <Icon name="report_problem" size={18} color="var(--color-warning)" />
                 <span>Instant downtime tagging (No Material, Tool Change, Breakdown, Setup)</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', color: '#001D39' }}>
-                <Icon name="verified" size={18} color="#059669" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', fontSize: '14px', color: 'var(--color-on-surface)' }}>
+                <Icon name="verified" size={18} color="var(--color-success)" />
                 <span>Offline-resilient caching with automatic background sync upon reconnection</span>
               </div>
             </div>

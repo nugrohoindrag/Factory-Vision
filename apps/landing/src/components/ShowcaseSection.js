@@ -79,61 +79,61 @@ export const ShowcaseSection = () => {
         },
     ];
     const current = items[activeTab];
-    return (_jsx("section", { id: "showcase", className: "fv-section-py", style: { backgroundColor: '#001D39', color: '#FFFFFF' }, children: _jsxs("div", { className: "fv-landing-container", children: [_jsxs("div", { style: { textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }, children: [_jsxs("div", { className: "fv-eyebrow-on-blue", children: [_jsx(Icon, { name: "visibility", size: 16 }), "Live Product Showcase"] }), _jsx("h2", { className: "fv-section-title-on-blue", children: "The Complete Manufacturing Execution Platform" }), _jsx("p", { className: "fv-section-desc-on-blue", style: { margin: '0 auto' }, children: "Explore the actual screens and workflows powering daily operations on the factory floor." })] }), _jsx("div", { style: {
+    return (_jsx("section", { id: "showcase", className: "fv-section-py", style: { backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)' }, children: _jsxs("div", { className: "fv-landing-container", children: [_jsxs("div", { style: { textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }, children: [_jsxs("div", { className: "fv-eyebrow-on-blue", children: [_jsx(Icon, { name: "visibility", size: 16 }), "Live Product Showcase"] }), _jsx("h2", { className: "fv-section-title-on-blue", children: "The Complete Manufacturing Execution Platform" }), _jsx("p", { className: "fv-section-desc-on-blue", style: { margin: '0 auto' }, children: "Explore the actual screens and workflows powering daily operations on the factory floor." })] }), _jsx("div", { style: {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        gap: '10px',
+                        gap: 'var(--space-3)',
                         flexWrap: 'wrap',
-                        marginBottom: '36px',
+                        marginBottom: 'var(--space-10)',
                     }, children: items.map((it, idx) => {
                         const isSelected = activeTab === idx;
                         return (_jsxs("button", { onClick: () => setActiveTab(idx), style: {
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '8px',
-                                padding: '10px 20px',
+                                gap: 'var(--space-2)',
+                                padding: `var(--space-3) var(--space-5)`,
                                 borderRadius: '9999px',
-                                border: isSelected ? '1px solid #FFFFFF' : '1px solid rgba(255, 255, 255, 0.25)',
-                                backgroundColor: isSelected ? '#FFFFFF' : 'rgba(255, 255, 255, 0.1)',
-                                color: isSelected ? '#001D39' : '#FFFFFF',
+                                border: isSelected ? '1px solid var(--color-on-primary)' : '1px solid color-mix(in srgb, var(--color-on-primary) 25%, transparent)',
+                                backgroundColor: isSelected ? 'var(--color-on-primary)' : 'color-mix(in srgb, var(--color-on-primary) 10%, transparent)',
+                                color: isSelected ? 'var(--color-primary)' : 'var(--color-on-primary)',
                                 fontSize: '13px',
                                 fontWeight: 700,
                                 whiteSpace: 'nowrap',
                                 cursor: 'pointer',
                                 transition: 'all 0.15s ease',
-                                boxShadow: isSelected ? '0 4px 16px rgba(0, 0, 0, 0.3)' : 'none',
+                                boxShadow: isSelected ? 'var(--elevation-2)' : 'none',
                             }, children: [_jsx(Icon, { name: it.icon, size: 16 }), _jsx("span", { children: it.title })] }, it.id));
                     }) }), _jsx(AnimatePresence, { mode: "wait", children: _jsxs(motion.div, { initial: { opacity: 0, scale: 0.98 }, animate: { opacity: 1, scale: 1 }, exit: { opacity: 0, scale: 0.98 }, transition: { duration: 0.25 }, className: "fv-card-on-blue", style: {
-                            padding: '36px',
-                            backgroundColor: '#FFFFFF',
+                            padding: 'var(--space-10)',
+                            backgroundColor: 'var(--color-surface)',
                         }, children: [_jsxs("div", { style: {
                                     display: 'flex',
                                     justifyContent: 'space-between',
                                     alignItems: 'center',
                                     flexWrap: 'wrap',
-                                    gap: '16px',
-                                    marginBottom: '24px',
+                                    gap: 'var(--space-4)',
+                                    marginBottom: 'var(--space-6)',
                                 }, children: [_jsxs("div", { children: [_jsxs("span", { style: {
                                                     fontSize: '12px',
                                                     fontWeight: 700,
-                                                    color: '#0A4174',
-                                                    backgroundColor: '#F0F9FF',
-                                                    border: '1px solid #BAE6FD',
-                                                    padding: '4px 12px',
+                                                    color: 'var(--color-primary)',
+                                                    backgroundColor: 'var(--color-info-container)',
+                                                    border: '1px solid var(--color-info-container)',
+                                                    padding: `var(--space-1) var(--space-3)`,
                                                     borderRadius: '9999px',
                                                     textTransform: 'uppercase',
-                                                }, children: ["Screen ", current.id, " of 09"] }), _jsx("h3", { style: { fontSize: '26px', fontWeight: 800, margin: '8px 0 4px', color: '#001D39' }, children: current.title }), _jsx("p", { style: { fontSize: '15px', color: '#334155', maxWidth: '640px' }, children: current.description })] }), _jsx("div", { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' }, children: current.highlights.map((hl) => (_jsxs("span", { style: {
-                                                backgroundColor: '#F8FAFC',
-                                                border: '1px solid #E2E8F0',
-                                                color: '#001D39',
-                                                padding: '8px 14px',
+                                                }, children: ["Screen ", current.id, " of 09"] }), _jsx("h3", { style: { fontSize: '26px', fontWeight: 800, margin: `var(--space-2) 0 var(--space-1)`, color: 'var(--color-on-surface)' }, children: current.title }), _jsx("p", { style: { fontSize: '15px', color: 'var(--color-on-surface-variant)', maxWidth: '640px' }, children: current.description })] }), _jsx("div", { style: { display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }, children: current.highlights.map((hl) => (_jsxs("span", { style: {
+                                                backgroundColor: 'var(--color-surface-container-low)',
+                                                border: '1px solid var(--color-outline-variant)',
+                                                color: 'var(--color-on-surface)',
+                                                padding: `var(--space-2) var(--space-4)`,
                                                 borderRadius: '10px',
                                                 fontSize: '13px',
                                                 fontWeight: 600,
                                                 display: 'flex',
                                                 alignItems: 'center',
-                                                gap: '6px',
-                                            }, children: [_jsx(Icon, { name: "check_circle", size: 16, color: "#0A4174" }), hl] }, hl))) })] }), _jsxs("div", { className: "fv-browser-frame", children: [_jsxs("div", { className: "fv-browser-header", children: [_jsxs("div", { className: "fv-browser-dots", children: [_jsx("span", { className: "fv-browser-dot" }), _jsx("span", { className: "fv-browser-dot" }), _jsx("span", { className: "fv-browser-dot" })] }), _jsxs("div", { className: "fv-browser-address-bar", children: [_jsx(Icon, { name: "verified", size: 12 }), _jsxs("span", { children: ["app.factoryvision.io/modules/", current.id] })] })] }), _jsx("div", { className: "fv-browser-body", children: _jsx("img", { src: current.screenshot, alt: `${current.title} Screenshot Preview`, className: "fv-browser-img", loading: "lazy" }) })] })] }, current.id) })] }) }));
+                                                gap: 'var(--space-2)',
+                                            }, children: [_jsx(Icon, { name: "check_circle", size: 16, color: "var(--color-primary)" }), hl] }, hl))) })] }), _jsxs("div", { className: "fv-browser-frame", children: [_jsxs("div", { className: "fv-browser-header", children: [_jsxs("div", { className: "fv-browser-dots", children: [_jsx("span", { className: "fv-browser-dot" }), _jsx("span", { className: "fv-browser-dot" }), _jsx("span", { className: "fv-browser-dot" })] }), _jsxs("div", { className: "fv-browser-address-bar", children: [_jsx(Icon, { name: "verified", size: 12 }), _jsxs("span", { children: ["app.factoryvision.io/modules/", current.id] })] })] }), _jsx("div", { className: "fv-browser-body", children: _jsx("img", { src: current.screenshot, alt: `${current.title} Screenshot Preview`, className: "fv-browser-img", loading: "lazy" }) })] })] }, current.id) })] }) }));
 };
 //# sourceMappingURL=ShowcaseSection.js.map

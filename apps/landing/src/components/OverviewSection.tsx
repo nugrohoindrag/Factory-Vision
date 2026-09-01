@@ -5,7 +5,7 @@ import { FactoryVisionIcon } from '@factory-vision/ui/fv';
 
 export const OverviewSection: React.FC = () => {
   return (
-    <section className="fv-section-py" style={{ backgroundColor: '#FFFFFF' }}>
+    <section className="fv-section-py" style={{ backgroundColor: 'var(--color-surface)' }}>
       <div className="fv-landing-container">
         {/* Header */}
         <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }}>
@@ -16,7 +16,7 @@ export const OverviewSection: React.FC = () => {
           <h2 className="fv-section-title">
             One Operational View of Your Factory
           </h2>
-          <p className="fv-section-desc" style={{ margin: '0 auto', color: '#334155' }}>
+          <p className="fv-section-desc" style={{ margin: '0 auto', color: 'var(--color-on-surface-variant)' }}>
             Break down manufacturing data silos. Factory Vision synchronizes planning, machine sensors,
             operator actions, and quality inspections into a single synchronized digital nervous system.
           </p>
@@ -26,58 +26,58 @@ export const OverviewSection: React.FC = () => {
         <div
           className="fv-card"
           style={{
-            padding: '36px',
-            backgroundColor: '#FFFFFF',
+            padding: 'var(--space-10)',
+            backgroundColor: 'var(--color-surface)',
             position: 'relative',
             overflow: 'hidden',
           }}
         >
           {/* Top Level: Central Engine */}
-          <div style={{ textAlign: 'center', marginBottom: '36px', position: 'relative' }}>
+          <div style={{ textAlign: 'center', marginBottom: 'var(--space-10)', position: 'relative' }}>
             <div
               style={{
                 display: 'inline-flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                background: 'linear-gradient(135deg, #001D39 0%, #0A4174 100%)',
-                color: '#FFFFFF',
-                padding: '20px 44px',
+                background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary) 100%)',
+                color: 'var(--color-on-primary)',
+                padding: `var(--space-5) var(--space-12)`,
                 borderRadius: '24px',
-                boxShadow: '0 12px 30px rgba(10, 65, 116, 0.25)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
+                boxShadow: 'var(--elevation-3)',
+                border: '1px solid color-mix(in srgb, var(--color-on-primary) 20%, transparent)',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-2)' }}>
                 <FactoryVisionIcon size={28} />
                 <span style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '0.03em' }}>
                   FACTORY VISION
                 </span>
               </div>
-              <span style={{ fontSize: '12px', opacity: 0.95, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 600, color: '#FFFFFF' }}>
+              <span style={{ fontSize: '12px', opacity: 0.95, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 600, color: 'var(--color-on-primary)' }}>
                 Real-Time MES Intelligence Engine
               </span>
             </div>
           </div>
 
           {/* 3 Main Pillars Grid */}
-          <div className="fv-grid-3" style={{ position: 'relative', zIndex: 1, marginBottom: '32px' }}>
+          <div className="fv-grid-3" style={{ position: 'relative', zIndex: 1, marginBottom: 'var(--space-8)' }}>
             {/* Pillar 1: Production */}
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               className="fv-card"
-              style={{ padding: '24px', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0' }}
+              style={{ padding: 'var(--space-6)', backgroundColor: 'var(--color-surface-container-low)', border: '1px solid var(--color-outline-variant)' }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
                 <div
                   style={{
                     width: '42px',
                     height: '42px',
                     borderRadius: '12px',
-                    backgroundColor: '#F0F9FF',
-                    color: '#0A4174',
-                    border: '1px solid #BAE6FD',
+                    backgroundColor: 'var(--color-info-container)',
+                    color: 'var(--color-primary)',
+                    border: '1px solid var(--color-info-container)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -86,24 +86,24 @@ export const OverviewSection: React.FC = () => {
                   <Icon name="assignment" size={22} />
                 </div>
                 <div>
-                  <h4 style={{ fontSize: '18px', fontWeight: 800, color: '#001D39' }}>Production</h4>
-                  <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 600 }}>Orders & Planning</span>
+                  <h4 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-on-surface)' }}>Production</h4>
+                  <span style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', fontWeight: 600 }}>Orders & Planning</span>
                 </div>
               </div>
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                 {['Production Orders', 'Work Order Scheduling', 'Batch & Lot Control', 'Bill of Materials (BOM)', 'Routing & WIP Progress'].map((item) => (
                   <li
                     key={item}
                     style={{
                       fontSize: '13px',
-                      color: '#334155',
+                      color: 'var(--color-on-surface-variant)',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '8px',
+                      gap: 'var(--space-2)',
                       fontWeight: 500,
                     }}
                   >
-                    <Icon name="check_circle" size={16} color="#0A4174" />
+                    <Icon name="check_circle" size={16} color="var(--color-primary)" />
                     {item}
                   </li>
                 ))}
@@ -117,17 +117,17 @@ export const OverviewSection: React.FC = () => {
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
               className="fv-card"
-              style={{ padding: '24px', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0' }}
+              style={{ padding: 'var(--space-6)', backgroundColor: 'var(--color-surface-container-low)', border: '1px solid var(--color-outline-variant)' }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
                 <div
                   style={{
                     width: '42px',
                     height: '42px',
                     borderRadius: '12px',
-                    backgroundColor: '#F0F9FF',
-                    color: '#0284C7',
-                    border: '1px solid #BAE6FD',
+                    backgroundColor: 'var(--color-info-container)',
+                    color: 'var(--color-info)',
+                    border: '1px solid var(--color-info-container)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -136,24 +136,24 @@ export const OverviewSection: React.FC = () => {
                   <Icon name="precision_manufacturing" size={22} />
                 </div>
                 <div>
-                  <h4 style={{ fontSize: '18px', fontWeight: 800, color: '#001D39' }}>Machines</h4>
-                  <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 600 }}>Edge Telemetry</span>
+                  <h4 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-on-surface)' }}>Machines</h4>
+                  <span style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', fontWeight: 600 }}>Edge Telemetry</span>
                 </div>
               </div>
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                 {['Real-Time Running / Idle / Down', 'Edge PLC & Sensor Ingestion', 'Automated Downtime Tagging', 'Cycle Time Monitoring', 'Maintenance & Spares Alert'].map((item) => (
                   <li
                     key={item}
                     style={{
                       fontSize: '13px',
-                      color: '#334155',
+                      color: 'var(--color-on-surface-variant)',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '8px',
+                      gap: 'var(--space-2)',
                       fontWeight: 500,
                     }}
                   >
-                    <Icon name="check_circle" size={16} color="#0284C7" />
+                    <Icon name="check_circle" size={16} color="var(--color-info)" />
                     {item}
                   </li>
                 ))}
@@ -167,17 +167,17 @@ export const OverviewSection: React.FC = () => {
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
               className="fv-card"
-              style={{ padding: '24px', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0' }}
+              style={{ padding: 'var(--space-6)', backgroundColor: 'var(--color-surface-container-low)', border: '1px solid var(--color-outline-variant)' }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
                 <div
                   style={{
                     width: '42px',
                     height: '42px',
                     borderRadius: '12px',
-                    backgroundColor: '#ECFDF5',
-                    color: '#059669',
-                    border: '1px solid #A7F3D0',
+                    backgroundColor: 'var(--color-success-container)',
+                    color: 'var(--color-success)',
+                    border: '1px solid var(--color-success-container)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -186,24 +186,24 @@ export const OverviewSection: React.FC = () => {
                   <Icon name="group" size={22} />
                 </div>
                 <div>
-                  <h4 style={{ fontSize: '18px', fontWeight: 800, color: '#001D39' }}>People</h4>
-                  <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 600 }}>Shopfloor Workforce</span>
+                  <h4 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-on-surface)' }}>People</h4>
+                  <span style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', fontWeight: 600 }}>Shopfloor Workforce</span>
                 </div>
               </div>
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                 {['Touchscreen Operator Terminal', 'Shift Setup & Handover Logs', 'Activity & Task Logging', 'Skills & Station Authorization', 'Real-Time Andon Call System'].map((item) => (
                   <li
                     key={item}
                     style={{
                       fontSize: '13px',
-                      color: '#334155',
+                      color: 'var(--color-on-surface-variant)',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '8px',
+                      gap: 'var(--space-2)',
                       fontWeight: 500,
                     }}
                   >
-                    <Icon name="check_circle" size={16} color="#059669" />
+                    <Icon name="check_circle" size={16} color="var(--color-success)" />
                     {item}
                   </li>
                 ))}
@@ -214,23 +214,23 @@ export const OverviewSection: React.FC = () => {
           {/* Bottom Aggregate Layer: Quality, OEE & Insights */}
           <div
             style={{
-              borderTop: '1px solid #E2E8F0',
-              paddingTop: '28px',
+              borderTop: '1px solid var(--color-outline-variant)',
+              paddingTop: 'var(--space-8)',
               display: 'grid',
               gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: '16px',
+              gap: 'var(--space-4)',
             }}
             className="fv-overview-bottom-grid"
           >
             <div
               style={{
-                backgroundColor: '#FFFFFF',
-                border: '1px solid #E2E8F0',
+                backgroundColor: 'var(--color-surface)',
+                border: '1px solid var(--color-outline-variant)',
                 borderRadius: '16px',
-                padding: '16px 20px',
+                padding: `var(--space-4) var(--space-5)`,
                 display: 'flex',
                 alignItems: 'center',
-                gap: '14px',
+                gap: 'var(--space-4)',
                 boxShadow: 'var(--fv-card-shadow)',
               }}
             >
@@ -239,8 +239,8 @@ export const OverviewSection: React.FC = () => {
                   width: '38px',
                   height: '38px',
                   borderRadius: '10px',
-                  backgroundColor: '#F0F9FF',
-                  color: '#0A4174',
+                  backgroundColor: 'var(--color-info-container)',
+                  color: 'var(--color-primary)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -249,20 +249,20 @@ export const OverviewSection: React.FC = () => {
               >
                 <Icon name="verified" size={20} />
               </div>
-              <span style={{ fontSize: '14px', fontWeight: 700, color: '#001D39' }}>
+              <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-on-surface)' }}>
                 Quality Control & Traceability
               </span>
             </div>
 
             <div
               style={{
-                backgroundColor: '#FFFFFF',
-                border: '1px solid #E2E8F0',
+                backgroundColor: 'var(--color-surface)',
+                border: '1px solid var(--color-outline-variant)',
                 borderRadius: '16px',
-                padding: '16px 20px',
+                padding: `var(--space-4) var(--space-5)`,
                 display: 'flex',
                 alignItems: 'center',
-                gap: '14px',
+                gap: 'var(--space-4)',
                 boxShadow: 'var(--fv-card-shadow)',
               }}
             >
@@ -271,8 +271,8 @@ export const OverviewSection: React.FC = () => {
                   width: '38px',
                   height: '38px',
                   borderRadius: '10px',
-                  backgroundColor: '#ECFDF5',
-                  color: '#059669',
+                  backgroundColor: 'var(--color-success-container)',
+                  color: 'var(--color-success)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -281,20 +281,20 @@ export const OverviewSection: React.FC = () => {
               >
                 <Icon name="analytics" size={20} />
               </div>
-              <span style={{ fontSize: '14px', fontWeight: 700, color: '#001D39' }}>
+              <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-on-surface)' }}>
                 OEE & Loss Categorization
               </span>
             </div>
 
             <div
               style={{
-                backgroundColor: '#FFFFFF',
-                border: '1px solid #E2E8F0',
+                backgroundColor: 'var(--color-surface)',
+                border: '1px solid var(--color-outline-variant)',
                 borderRadius: '16px',
-                padding: '16px 20px',
+                padding: `var(--space-4) var(--space-5)`,
                 display: 'flex',
                 alignItems: 'center',
-                gap: '14px',
+                gap: 'var(--space-4)',
                 boxShadow: 'var(--fv-card-shadow)',
               }}
             >
@@ -303,8 +303,8 @@ export const OverviewSection: React.FC = () => {
                   width: '38px',
                   height: '38px',
                   borderRadius: '10px',
-                  backgroundColor: '#F0F9FF',
-                  color: '#0284C7',
+                  backgroundColor: 'var(--color-info-container)',
+                  color: 'var(--color-info)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -313,7 +313,7 @@ export const OverviewSection: React.FC = () => {
               >
                 <Icon name="insights" size={20} />
               </div>
-              <span style={{ fontSize: '14px', fontWeight: 700, color: '#001D39' }}>
+              <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-on-surface)' }}>
                 Factory-Wide Actionable Insights
               </span>
             </div>

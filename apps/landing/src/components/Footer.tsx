@@ -6,11 +6,11 @@ export const Footer: React.FC = () => {
   return (
     <footer
       style={{
-        backgroundColor: '#0B0B0D',
-        color: '#FFFFFF',
-        paddingTop: '64px',
-        paddingBottom: '40px',
-        borderTop: '1px solid #232730',
+        backgroundColor: 'var(--color-inverse-surface)',
+        color: 'var(--color-inverse-on-surface)',
+        paddingTop: 'calc(var(--space-8) * 2)',
+        paddingBottom: 'var(--space-10)',
+        borderTop: '1px solid color-mix(in srgb, var(--color-inverse-on-surface) 18%, transparent)',
       }}
     >
       <div className="fv-landing-container">
@@ -19,22 +19,22 @@ export const Footer: React.FC = () => {
           style={{
             display: 'grid',
             gridTemplateColumns: '1.5fr 1fr 1fr 1fr',
-            gap: '36px',
-            marginBottom: '48px',
+            gap: 'var(--space-10)',
+            marginBottom: 'var(--space-12)',
           }}
           className="fv-footer-grid"
         >
           {/* Col 1: Brand info */}
           <div>
-            <div style={{ marginBottom: '16px' }}>
+            <div style={{ marginBottom: 'var(--space-4)' }}>
               <FactoryVisionLogo size="md" variant="full" />
             </div>
-            <p style={{ fontSize: '14px', color: '#BDD8E9', lineHeight: 1.6, maxWidth: '320px', marginBottom: '20px' }}>
+            <p style={{ fontSize: '14px', color: 'var(--color-primary-container)', lineHeight: 1.6, maxWidth: '320px', marginBottom: 'var(--space-5)' }}>
               The modern Manufacturing Execution System empowering discrete and batch industrial factories with real-time operational intelligence.
             </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
               <span className="fv-status-dot running" />
-              <span style={{ fontSize: '12px', color: '#7BBDE8', fontWeight: 700 }}>
+              <span style={{ fontSize: '12px', color: 'var(--color-primary-soft)', fontWeight: 700 }}>
                 Systems Operational · Cloud & Edge Live
               </span>
             </div>
@@ -42,20 +42,20 @@ export const Footer: React.FC = () => {
 
           {/* Col 2: Product Modules */}
           <div>
-            <h4 style={{ fontSize: '14px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#7BBDE8', marginBottom: '16px' }}>
+            <h4 style={{ fontSize: '14px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-primary-soft)', marginBottom: 'var(--space-4)' }}>
               Product Modules
             </h4>
-            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
               {['Production Orders & WIP', 'Shopfloor & Operator Terminal', 'Machine Fleet & Andon', 'OEE & Loss Analytics', 'Quality & Lot Traceability', 'Master Data & Administration'].map((m) => (
                 <li key={m}>
                   <a
                     href="#modules"
-                    style={{ fontSize: '13px', color: '#8E9BAE', textDecoration: 'none', transition: 'color 0.15s ease' }}
+                    style={{ fontSize: '13px', color: 'var(--color-on-surface-variant)', textDecoration: 'none', transition: 'color 0.15s ease' }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.color = '#FFFFFF';
+                      e.currentTarget.style.color = 'var(--color-inverse-on-surface)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.color = '#8E9BAE';
+                      e.currentTarget.style.color = 'var(--color-on-surface-variant)';
                     }}
                   >
                     {m}
@@ -67,20 +67,20 @@ export const Footer: React.FC = () => {
 
           {/* Col 3: Architecture & Security */}
           <div>
-            <h4 style={{ fontSize: '14px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#7BBDE8', marginBottom: '16px' }}>
+            <h4 style={{ fontSize: '14px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-primary-soft)', marginBottom: 'var(--space-4)' }}>
               Architecture
             </h4>
-            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
               {['Cloud & Hybrid Hosting', 'On-Premise / Air-Gapped', 'Edge Gateway Protocols (OPC-UA)', 'Enterprise RBAC & Security', 'Tamper-Proof Audit Trail', 'REST APIs & Webhooks'].map((s) => (
                 <li key={s}>
                   <a
                     href="#deployment"
-                    style={{ fontSize: '13px', color: '#8E9BAE', textDecoration: 'none', transition: 'color 0.15s ease' }}
+                    style={{ fontSize: '13px', color: 'var(--color-on-surface-variant)', textDecoration: 'none', transition: 'color 0.15s ease' }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.color = '#FFFFFF';
+                      e.currentTarget.style.color = 'var(--color-inverse-on-surface)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.color = '#8E9BAE';
+                      e.currentTarget.style.color = 'var(--color-on-surface-variant)';
                     }}
                   >
                     {s}
@@ -92,20 +92,20 @@ export const Footer: React.FC = () => {
 
           {/* Col 4: Platform Links */}
           <div>
-            <h4 style={{ fontSize: '14px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#7BBDE8', marginBottom: '16px' }}>
+            <h4 style={{ fontSize: '14px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-primary-soft)', marginBottom: 'var(--space-4)' }}>
               Platform
             </h4>
-            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
               {['Operator Terminal', 'Management Console', 'Documentation', 'Release Notes v1.0', 'Contact Technical Sales', 'Schedule Plant Walkthrough'].map((item) => (
                 <li key={item}>
                   <a
                     href="#"
-                    style={{ fontSize: '13px', color: '#8E9BAE', textDecoration: 'none', transition: 'color 0.15s ease' }}
+                    style={{ fontSize: '13px', color: 'var(--color-on-surface-variant)', textDecoration: 'none', transition: 'color 0.15s ease' }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.color = '#FFFFFF';
+                      e.currentTarget.style.color = 'var(--color-inverse-on-surface)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.color = '#8E9BAE';
+                      e.currentTarget.style.color = 'var(--color-on-surface-variant)';
                     }}
                   >
                     {item}
@@ -119,21 +119,21 @@ export const Footer: React.FC = () => {
         {/* Footer Bottom Strip */}
         <div
           style={{
-            borderTop: '1px solid #232730',
-            paddingTop: '24px',
+            borderTop: '1px solid color-mix(in srgb, var(--color-inverse-on-surface) 18%, transparent)',
+            paddingTop: 'var(--space-6)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             fontSize: '12px',
-            color: '#8E9BAE',
+            color: 'var(--color-on-surface-variant)',
             flexWrap: 'wrap',
-            gap: '12px',
+            gap: 'var(--space-3)',
           }}
         >
           <div>
             © {new Date().getFullYear()} Factory Vision Inc. All rights reserved. Enterprise Manufacturing Execution System.
           </div>
-          <div style={{ display: 'flex', gap: '20px' }}>
+          <div style={{ display: 'flex', gap: 'var(--space-5)' }}>
             <span style={{ cursor: 'pointer' }}>Privacy Policy</span>
             <span style={{ cursor: 'pointer' }}>Terms of Service</span>
             <span style={{ cursor: 'pointer' }}>Security Whitepaper</span>

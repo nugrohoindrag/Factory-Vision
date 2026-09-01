@@ -56,7 +56,7 @@ export const UsersInterfacesSection: React.FC = () => {
   const current = personas[selectedPersona];
 
   return (
-    <section className="fv-section-py" style={{ backgroundColor: '#001D39', color: '#FFFFFF' }}>
+    <section className="fv-section-py" style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)' }}>
       <div className="fv-landing-container">
         {/* Header */}
         <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }}>
@@ -78,9 +78,9 @@ export const UsersInterfacesSection: React.FC = () => {
           style={{
             display: 'flex',
             justifyContent: 'center',
-            gap: '12px',
+            gap: 'var(--space-3)',
             flexWrap: 'wrap',
-            marginBottom: '36px',
+            marginBottom: 'var(--space-10)',
           }}
         >
           {personas.map((p, idx) => {
@@ -92,18 +92,18 @@ export const UsersInterfacesSection: React.FC = () => {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '10px',
-                  padding: '12px 26px',
+                  gap: 'var(--space-3)',
+                  padding: `var(--space-3) var(--space-8)`,
                   borderRadius: '9999px',
-                  border: isSelected ? '1px solid #FFFFFF' : '1px solid rgba(255, 255, 255, 0.25)',
-                  backgroundColor: isSelected ? '#FFFFFF' : 'rgba(255, 255, 255, 0.1)',
-                  color: isSelected ? '#001D39' : '#FFFFFF',
+                  border: isSelected ? '1px solid var(--color-on-primary)' : '1px solid color-mix(in srgb, var(--color-on-primary) 25%, transparent)',
+                  backgroundColor: isSelected ? 'var(--color-on-primary)' : 'color-mix(in srgb, var(--color-on-primary) 10%, transparent)',
+                  color: isSelected ? 'var(--color-primary)' : 'var(--color-on-primary)',
                   fontWeight: 700,
                   fontSize: '15px',
                   whiteSpace: 'nowrap',
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',
-                  boxShadow: isSelected ? '0 4px 16px rgba(0, 0, 0, 0.3)' : 'none',
+                  boxShadow: isSelected ? 'var(--elevation-2)' : 'none',
                 }}
               >
                 <Icon name={p.icon} size={20} />
@@ -123,11 +123,11 @@ export const UsersInterfacesSection: React.FC = () => {
             transition={{ duration: 0.25 }}
             className="fv-card-on-blue"
             style={{
-              padding: '36px',
-              backgroundColor: '#FFFFFF',
+              padding: 'var(--space-10)',
+              backgroundColor: 'var(--color-surface)',
               display: 'grid',
               gridTemplateColumns: '1fr 1.15fr',
-              gap: '36px',
+              gap: 'var(--space-10)',
               alignItems: 'center',
             }}
           >
@@ -137,41 +137,41 @@ export const UsersInterfacesSection: React.FC = () => {
                 style={{
                   fontSize: '12px',
                   fontWeight: 700,
-                  color: '#0A4174',
-                  backgroundColor: '#F0F9FF',
-                  border: '1px solid #BAE6FD',
-                  padding: '4px 12px',
+                  color: 'var(--color-primary)',
+                  backgroundColor: 'var(--color-info-container)',
+                  border: '1px solid var(--color-info-container)',
+                  padding: `var(--space-1) var(--space-3)`,
                   borderRadius: '9999px',
                   textTransform: 'uppercase',
                 }}
               >
                 {current.shortTitle} Experience
               </span>
-              <h3 style={{ fontSize: '26px', fontWeight: 800, margin: '12px 0 8px', color: '#001D39' }}>
+              <h3 style={{ fontSize: '26px', fontWeight: 800, margin: `var(--space-3) 0 var(--space-2)`, color: 'var(--color-on-surface)' }}>
                 {current.title}
               </h3>
-              <p style={{ fontSize: '15px', color: '#334155', lineHeight: 1.55, marginBottom: '24px' }}>
+              <p style={{ fontSize: '15px', color: 'var(--color-on-surface-variant)', lineHeight: 1.55, marginBottom: 'var(--space-6)' }}>
                 {current.tagline}
               </p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                 {current.benefits.map((b) => (
                   <div
                     key={b}
                     style={{
-                      padding: '14px 18px',
-                      backgroundColor: '#F8FAFC',
-                      border: '1px solid #E2E8F0',
+                      padding: `var(--space-4) var(--space-5)`,
+                      backgroundColor: 'var(--color-surface-container-low)',
+                      border: '1px solid var(--color-outline-variant)',
                       borderRadius: '12px',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '12px',
+                      gap: 'var(--space-3)',
                       fontSize: '14px',
                       fontWeight: 600,
-                      color: '#001D39',
+                      color: 'var(--color-on-surface)',
                     }}
                   >
-                    <Icon name="check_circle" size={18} color="#0A4174" />
+                    <Icon name="check_circle" size={18} color="var(--color-primary)" />
                     <span>{b}</span>
                   </div>
                 ))}
@@ -179,7 +179,7 @@ export const UsersInterfacesSection: React.FC = () => {
             </div>
 
             {/* Right: Persona UI Screenshot & Context Photo */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
               <div className="fv-browser-frame">
                 <div className="fv-browser-header">
                   <div className="fv-browser-dots">

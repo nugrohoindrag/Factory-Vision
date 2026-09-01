@@ -12,7 +12,7 @@ export const QualityTraceabilitySection: React.FC = () => {
   ];
 
   return (
-    <section className="fv-section-py" style={{ backgroundColor: '#001D39', color: '#FFFFFF' }}>
+    <section className="fv-section-py" style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)' }}>
       <div className="fv-landing-container">
         {/* Header */}
         <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }}>
@@ -33,21 +33,21 @@ export const QualityTraceabilitySection: React.FC = () => {
         <div
           className="fv-card-on-blue"
           style={{
-            padding: '36px',
-            backgroundColor: '#FFFFFF',
+            padding: 'var(--space-10)',
+            backgroundColor: 'var(--color-surface)',
             display: 'grid',
             gridTemplateColumns: '1fr 1.1fr',
-            gap: '36px',
+            gap: 'var(--space-10)',
             alignItems: 'center',
           }}
         >
           {/* Left: Quality Workflow & Sample Lot Card */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
             <div>
-              <h3 style={{ fontSize: '26px', fontWeight: 800, color: '#001D39', marginBottom: '8px' }}>
+              <h3 style={{ fontSize: '26px', fontWeight: 800, color: 'var(--color-on-surface)', marginBottom: 'var(--space-2)' }}>
                 Complete Batch Genealogy Trace
               </h3>
-              <p style={{ fontSize: '15px', color: '#334155', lineHeight: 1.55 }}>
+              <p style={{ fontSize: '15px', color: 'var(--color-on-surface-variant)', lineHeight: 1.55 }}>
                 Track exactly which operator, machine, tool, and raw batch went into every serial number.
               </p>
             </div>
@@ -55,30 +55,30 @@ export const QualityTraceabilitySection: React.FC = () => {
             {/* Live Sample Batch Trace Card */}
             <div
               style={{
-                backgroundColor: '#F8FAFC',
-                border: '1px solid #E2E8F0',
+                backgroundColor: 'var(--color-surface-container-low)',
+                border: '1px solid var(--color-outline-variant)',
                 borderRadius: '16px',
-                padding: '24px',
+                padding: 'var(--space-6)',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '16px',
+                gap: 'var(--space-4)',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
-                  <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>
+                  <span style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', fontWeight: 700, textTransform: 'uppercase' }}>
                     INSPECTED BATCH
                   </span>
-                  <div style={{ fontSize: '18px', fontWeight: 800, color: '#001D39' }}>
+                  <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
                     #LOT-2026-0881 (Aluminium 6061-T6)
                   </div>
                 </div>
                 <span
                   style={{
-                    backgroundColor: '#ECFDF5',
-                    color: '#059669',
-                    border: '1px solid #A7F3D0',
-                    padding: '4px 12px',
+                    backgroundColor: 'var(--color-success-container)',
+                    color: 'var(--color-success)',
+                    border: '1px solid var(--color-success-container)',
+                    padding: `var(--space-1) var(--space-3)`,
                     borderRadius: '9999px',
                     fontSize: '12px',
                     fontWeight: 800,
@@ -88,50 +88,50 @@ export const QualityTraceabilitySection: React.FC = () => {
                 </span>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
-                <div style={{ backgroundColor: '#FFFFFF', padding: '12px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
-                  <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Inspected</div>
-                  <div style={{ fontSize: '16px', fontWeight: 800, color: '#001D39' }}>150 pcs</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-3)' }}>
+                <div style={{ backgroundColor: 'var(--color-surface)', padding: 'var(--space-3)', borderRadius: '10px', border: '1px solid var(--color-outline-variant)' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', fontWeight: 600 }}>Inspected</div>
+                  <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-on-surface)' }}>150 pcs</div>
                 </div>
-                <div style={{ backgroundColor: '#FFFFFF', padding: '12px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
-                  <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Defect Rate</div>
-                  <div style={{ fontSize: '16px', fontWeight: 800, color: '#059669' }}>0.00%</div>
+                <div style={{ backgroundColor: 'var(--color-surface)', padding: 'var(--space-3)', borderRadius: '10px', border: '1px solid var(--color-outline-variant)' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', fontWeight: 600 }}>Defect Rate</div>
+                  <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-success)' }}>0.00%</div>
                 </div>
-                <div style={{ backgroundColor: '#FFFFFF', padding: '12px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
-                  <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Inspector</div>
-                  <div style={{ fontSize: '16px', fontWeight: 800, color: '#0A4174' }}>QC Station 1</div>
+                <div style={{ backgroundColor: 'var(--color-surface)', padding: 'var(--space-3)', borderRadius: '10px', border: '1px solid var(--color-outline-variant)' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', fontWeight: 600 }}>Inspector</div>
+                  <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-primary)' }}>QC Station 1</div>
                 </div>
               </div>
             </div>
 
             {/* Quality Workflow Checklist */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
               {steps.map((st, i) => (
-                <div key={st.title} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                <div key={st.title} style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)' }}>
                   <div
                     style={{
                       width: '24px',
                       height: '24px',
                       borderRadius: '50%',
-                      backgroundColor: '#F0F9FF',
-                      color: '#0A4174',
-                      border: '1px solid #BAE6FD',
+                      backgroundColor: 'var(--color-info-container)',
+                      color: 'var(--color-primary)',
+                      border: '1px solid var(--color-info-container)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       fontSize: '12px',
                       fontWeight: 800,
                       flexShrink: 0,
-                      marginTop: '2px',
+                      marginTop: 'var(--space-1)',
                     }}
                   >
                     {i + 1}
                   </div>
                   <div>
-                    <div style={{ fontSize: '14px', fontWeight: 700, color: '#001D39' }}>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-on-surface)' }}>
                       {st.title}
                     </div>
-                    <div style={{ fontSize: '12px', color: '#334155' }}>
+                    <div style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
                       {st.desc}
                     </div>
                   </div>
@@ -141,7 +141,7 @@ export const QualityTraceabilitySection: React.FC = () => {
           </div>
 
           {/* Right: Inspection Photo & Screenshot */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
             <div style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', height: '220px' }}>
               <img
                 src="/assets/quality/quality-control-lab.jpg"
@@ -152,10 +152,10 @@ export const QualityTraceabilitySection: React.FC = () => {
                 style={{
                   position: 'absolute',
                   inset: 0,
-                  background: 'linear-gradient(180deg, transparent 40%, rgba(0, 29, 57, 0.85) 100%)',
+                  background: 'linear-gradient(180deg, transparent 40%, var(--color-media-scrim) 100%)',
                 }}
               />
-              <div style={{ position: 'absolute', bottom: '16px', left: '16px', color: '#FFFFFF' }}>
+              <div style={{ position: 'absolute', bottom: '16px', left: '16px', color: 'var(--color-on-primary)' }}>
                 <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.9 }}>
                   In-Line Metrology Station
                 </span>

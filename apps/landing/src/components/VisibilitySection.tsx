@@ -51,7 +51,7 @@ export const VisibilitySection: React.FC = () => {
   ];
 
   return (
-    <section id="overview" className="fv-section-py" style={{ backgroundColor: '#001D39', color: '#FFFFFF' }}>
+    <section id="overview" className="fv-section-py" style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)' }}>
       <div className="fv-landing-container">
         {/* Section Header */}
         <div style={{ textAlign: 'center', maxWidth: '780px', margin: '0 auto 48px' }}>
@@ -70,7 +70,7 @@ export const VisibilitySection: React.FC = () => {
         </div>
 
         {/* 4 Pillars Grid with Photography + UI Data Snippets */}
-        <div className="fv-grid-2" style={{ gap: '28px' }}>
+        <div className="fv-grid-2" style={{ gap: 'var(--space-8)' }}>
           {pillars.map((pillar, idx) => (
             <motion.div
               key={pillar.id}
@@ -83,7 +83,7 @@ export const VisibilitySection: React.FC = () => {
                 overflow: 'hidden',
                 display: 'flex',
                 flexDirection: 'column',
-                backgroundColor: '#FFFFFF',
+                backgroundColor: 'var(--color-surface)',
               }}
             >
               {/* Photo Area with Overlay Badge */}
@@ -108,7 +108,7 @@ export const VisibilitySection: React.FC = () => {
                   style={{
                     position: 'absolute',
                     inset: 0,
-                    background: 'linear-gradient(180deg, transparent 35%, rgba(0, 29, 57, 0.85) 100%)',
+                    background: 'linear-gradient(180deg, transparent 35%, var(--color-media-scrim) 100%)',
                   }}
                 />
                 <div
@@ -116,17 +116,17 @@ export const VisibilitySection: React.FC = () => {
                     position: 'absolute',
                     top: '16px',
                     left: '16px',
-                    backgroundColor: 'rgba(0, 29, 57, 0.9)',
+                    backgroundColor: 'var(--color-media-scrim)',
                     backdropFilter: 'blur(6px)',
-                    color: '#FFFFFF',
-                    padding: '6px 14px',
+                    color: 'var(--color-on-primary)',
+                    padding: `var(--space-2) var(--space-4)`,
                     borderRadius: '9999px',
                     fontSize: '12px',
                     fontWeight: 700,
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '6px',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.25)',
+                    gap: 'var(--space-2)',
+                    boxShadow: 'var(--elevation-1)',
                   }}
                 >
                   <Icon name={pillar.icon} size={15} />
@@ -142,38 +142,38 @@ export const VisibilitySection: React.FC = () => {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    color: '#FFFFFF',
+                    color: 'var(--color-on-primary)',
                   }}
                 >
                   <span style={{ fontSize: '13px', opacity: 0.9, fontWeight: 500 }}>{pillar.statLabel}</span>
-                  <span style={{ fontSize: '15px', fontWeight: 800, color: '#FFFFFF' }} className="fv-num">
+                  <span style={{ fontSize: '15px', fontWeight: 800, color: 'var(--color-on-primary)' }} className="fv-num">
                     {pillar.statValue}
                   </span>
                 </div>
               </div>
 
               {/* Content Area */}
-              <div style={{ padding: '28px', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
+              <div style={{ padding: 'var(--space-8)', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', gap: '8px', flexWrap: 'wrap' }}>
-                    <h3 style={{ fontSize: '22px', fontWeight: 800, color: '#001D39' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-3)', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+                    <h3 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
                       {pillar.title}
                     </h3>
                     <span
                       style={{
                         fontSize: '12px',
                         fontWeight: 700,
-                        color: '#0A4174',
-                        backgroundColor: '#F0F9FF',
-                        border: '1px solid #BAE6FD',
-                        padding: '4px 12px',
+                        color: 'var(--color-primary)',
+                        backgroundColor: 'var(--color-info-container)',
+                        border: '1px solid var(--color-info-container)',
+                        padding: `var(--space-1) var(--space-3)`,
                         borderRadius: '9999px',
                       }}
                     >
                       {pillar.highlight}
                     </span>
                   </div>
-                  <p style={{ fontSize: '15px', color: '#334155', lineHeight: 1.55 }}>
+                  <p style={{ fontSize: '15px', color: 'var(--color-on-surface-variant)', lineHeight: 1.55 }}>
                     {pillar.tagline}
                   </p>
                 </div>

@@ -39,7 +39,7 @@ export const BusinessImpactSection: React.FC = () => {
   ];
 
   return (
-    <section className="fv-section-py" style={{ backgroundColor: '#0B0B0D', color: '#FFFFFF' }}>
+    <section className="fv-section-py" style={{ backgroundColor: 'var(--color-inverse-surface)', color: 'var(--color-inverse-on-surface)' }}>
       <div className="fv-landing-container">
         {/* Header */}
         <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }}>
@@ -57,7 +57,7 @@ export const BusinessImpactSection: React.FC = () => {
         </div>
 
         {/* 4 Impact Pillars Grid */}
-        <div className="fv-grid-2" style={{ gap: '28px' }}>
+        <div className="fv-grid-2" style={{ gap: 'var(--space-8)' }}>
           {impacts.map((imp, idx) => (
             <motion.div
               key={imp.title}
@@ -67,24 +67,24 @@ export const BusinessImpactSection: React.FC = () => {
               transition={{ delay: idx * 0.08 }}
               className="fv-card"
               style={{
-                padding: '36px',
-                backgroundColor: '#15171C',
-                border: '1px solid #232730',
+                padding: 'var(--space-10)',
+                backgroundColor: 'var(--color-inverse-surface)',
+                border: '1px solid color-mix(in srgb, var(--color-inverse-on-surface) 18%, transparent)',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
               }}
             >
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-5)' }}>
                   <div
                     style={{
                       width: '48px',
                       height: '48px',
                       borderRadius: '14px',
-                      backgroundColor: 'rgba(56, 189, 248, 0.15)',
-                      color: '#38BDF8',
-                      border: '1px solid rgba(56, 189, 248, 0.35)',
+                      backgroundColor: 'var(--color-info-container)',
+                      color: 'var(--color-info)',
+                      border: '1px solid var(--color-info-container)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -94,24 +94,24 @@ export const BusinessImpactSection: React.FC = () => {
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div
-                      style={{ fontSize: '28px', fontWeight: 800, color: '#38BDF8' }}
+                      style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-info)' }}
                       className="fv-num"
                     >
                       {imp.metric}
                     </div>
-                    <div style={{ fontSize: '11px', color: '#8E9BAE', fontWeight: 700, textTransform: 'uppercase' }}>
+                    <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', fontWeight: 700, textTransform: 'uppercase' }}>
                       {imp.metricLabel}
                     </div>
                   </div>
                 </div>
 
-                <h3 style={{ fontSize: '22px', fontWeight: 800, color: '#FFFFFF', marginBottom: '4px' }}>
+                <h3 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--color-inverse-on-surface)', marginBottom: 'var(--space-1)' }}>
                   {imp.title}
                 </h3>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: '#7BBDE8', marginBottom: '12px' }}>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-primary-soft)', marginBottom: 'var(--space-3)' }}>
                   {imp.tagline}
                 </div>
-                <p style={{ fontSize: '15px', color: '#BDD8E9', lineHeight: 1.55 }}>
+                <p style={{ fontSize: '15px', color: 'var(--color-primary-container)', lineHeight: 1.55 }}>
                   {imp.desc}
                 </p>
               </div>

@@ -10,56 +10,56 @@ export const JourneySection = () => {
         { title: 'Quality Verification', status: 'active', desc: '3,760 pcs accepted (0.3% scrap rate)' },
         { title: 'Packing & Dispatch', status: 'pending', desc: 'Pallet barcode generation & ERP closeout' },
     ];
-    return (_jsx("section", { className: "fv-section-py", style: { backgroundColor: '#FFFFFF' }, children: _jsxs("div", { className: "fv-landing-container", children: [_jsxs("div", { style: { textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }, children: [_jsxs("div", { className: "fv-eyebrow", children: [_jsx(Icon, { name: "trending_up", size: 16 }), "Lifecycle Journey"] }), _jsx("h2", { className: "fv-section-title", children: "Follow Every Order Through the Factory" }), _jsx("p", { className: "fv-section-desc", style: { margin: '0 auto', color: '#334155' }, children: "Get complete visibility from customer sales order intake down to machine execution, quality inspection, and final warehouse dispatch." })] }), _jsxs("div", { className: "fv-card", style: {
-                        padding: '36px',
-                        backgroundColor: '#FFFFFF',
+    return (_jsx("section", { className: "fv-section-py", style: { backgroundColor: 'var(--color-surface)' }, children: _jsxs("div", { className: "fv-landing-container", children: [_jsxs("div", { style: { textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }, children: [_jsxs("div", { className: "fv-eyebrow", children: [_jsx(Icon, { name: "trending_up", size: 16 }), "Lifecycle Journey"] }), _jsx("h2", { className: "fv-section-title", children: "Follow Every Order Through the Factory" }), _jsx("p", { className: "fv-section-desc", style: { margin: '0 auto', color: 'var(--color-on-surface-variant)' }, children: "Get complete visibility from customer sales order intake down to machine execution, quality inspection, and final warehouse dispatch." })] }), _jsxs("div", { className: "fv-card", style: {
+                        padding: 'var(--space-10)',
+                        backgroundColor: 'var(--color-surface)',
                         maxWidth: '1000px',
                         margin: '0 auto',
                     }, children: [_jsxs("div", { style: {
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'space-between',
-                                paddingBottom: '24px',
-                                borderBottom: '1px solid #E2E8F0',
-                                marginBottom: '28px',
+                                paddingBottom: 'var(--space-6)',
+                                borderBottom: '1px solid var(--color-outline-variant)',
+                                marginBottom: 'var(--space-8)',
                                 flexWrap: 'wrap',
-                                gap: '12px',
-                            }, children: [_jsxs("div", { children: [_jsx("span", { style: { fontSize: '11px', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }, children: "TRACKING ACTIVE SALES ORDER" }), _jsx("div", { style: { fontSize: '22px', fontWeight: 800, color: '#001D39' }, children: "#SO-10294 \u00B7 Precision Flange Assembly" })] }), _jsx("div", { style: { display: 'flex', alignItems: 'center', gap: '10px' }, children: _jsx("span", { style: {
-                                            backgroundColor: '#F0F9FF',
-                                            color: '#0A4174',
-                                            border: '1px solid #BAE6FD',
-                                            padding: '6px 14px',
+                                gap: 'var(--space-3)',
+                            }, children: [_jsxs("div", { children: [_jsx("span", { style: { fontSize: '11px', color: 'var(--color-on-surface-variant)', fontWeight: 700, textTransform: 'uppercase' }, children: "TRACKING ACTIVE SALES ORDER" }), _jsx("div", { style: { fontSize: '22px', fontWeight: 800, color: 'var(--color-on-surface)' }, children: "#SO-10294 \u00B7 Precision Flange Assembly" })] }), _jsx("div", { style: { display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }, children: _jsx("span", { style: {
+                                            backgroundColor: 'var(--color-info-container)',
+                                            color: 'var(--color-primary)',
+                                            border: '1px solid var(--color-info-container)',
+                                            padding: `var(--space-2) var(--space-4)`,
                                             borderRadius: '9999px',
                                             fontSize: '13px',
                                             fontWeight: 800,
-                                        }, children: "In Production (84.7%)" }) })] }), _jsx("div", { style: { display: 'flex', flexDirection: 'column', gap: '16px' }, children: steps.map((st, idx) => {
+                                        }, children: "In Production (84.7%)" }) })] }), _jsx("div", { style: { display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }, children: steps.map((st, idx) => {
                                 const isCompleted = st.status === 'completed';
                                 const isActive = st.status === 'active';
                                 const badgeColor = isCompleted
-                                    ? '#059669'
+                                    ? 'var(--color-success)'
                                     : isActive
-                                        ? '#0A4174'
-                                        : '#64748B';
+                                        ? 'var(--color-primary)'
+                                        : 'var(--color-on-surface-variant)';
                                 const badgeBg = isCompleted
-                                    ? '#ECFDF5'
+                                    ? 'var(--color-success-container)'
                                     : isActive
-                                        ? '#F0F9FF'
-                                        : '#F8FAFC';
+                                        ? 'var(--color-info-container)'
+                                        : 'var(--color-surface-container-low)';
                                 const badgeBorder = isCompleted
-                                    ? '#A7F3D0'
+                                    ? 'var(--color-success-container)'
                                     : isActive
-                                        ? '#BAE6FD'
-                                        : '#E2E8F0';
+                                        ? 'var(--color-info-container)'
+                                        : 'var(--color-outline-variant)';
                                 return (_jsxs(motion.div, { initial: { opacity: 0, x: -16 }, whileInView: { opacity: 1, x: 0 }, viewport: { once: true }, transition: { delay: idx * 0.08 }, style: {
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'space-between',
-                                        padding: '16px 20px',
-                                        backgroundColor: '#F8FAFC',
-                                        border: '1px solid #E2E8F0',
+                                        padding: `var(--space-4) var(--space-5)`,
+                                        backgroundColor: 'var(--color-surface-container-low)',
+                                        border: '1px solid var(--color-outline-variant)',
                                         borderRadius: '14px',
-                                        gap: '16px',
-                                    }, children: [_jsxs("div", { style: { display: 'flex', alignItems: 'center', gap: '14px' }, children: [_jsx("div", { style: {
+                                        gap: 'var(--space-4)',
+                                    }, children: [_jsxs("div", { style: { display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }, children: [_jsx("div", { style: {
                                                         width: '32px',
                                                         height: '32px',
                                                         borderRadius: '50%',
@@ -72,11 +72,11 @@ export const JourneySection = () => {
                                                         fontSize: '13px',
                                                         fontWeight: 800,
                                                         flexShrink: 0,
-                                                    }, children: isCompleted ? _jsx(Icon, { name: "check", size: 16 }) : idx + 1 }), _jsxs("div", { children: [_jsx("div", { style: { fontSize: '15px', fontWeight: 800, color: '#001D39' }, children: st.title }), _jsx("div", { style: { fontSize: '13px', color: '#334155' }, children: st.desc })] })] }), _jsx("span", { style: {
+                                                    }, children: isCompleted ? _jsx(Icon, { name: "check", size: 16 }) : idx + 1 }), _jsxs("div", { children: [_jsx("div", { style: { fontSize: '15px', fontWeight: 800, color: 'var(--color-on-surface)' }, children: st.title }), _jsx("div", { style: { fontSize: '13px', color: 'var(--color-on-surface-variant)' }, children: st.desc })] })] }), _jsx("span", { style: {
                                                 fontSize: '11px',
                                                 fontWeight: 800,
                                                 textTransform: 'uppercase',
-                                                padding: '4px 10px',
+                                                padding: `var(--space-1) var(--space-3)`,
                                                 borderRadius: '9999px',
                                                 backgroundColor: badgeBg,
                                                 color: badgeColor,

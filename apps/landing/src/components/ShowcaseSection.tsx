@@ -83,7 +83,7 @@ export const ShowcaseSection: React.FC = () => {
   const current = items[activeTab];
 
   return (
-    <section id="showcase" className="fv-section-py" style={{ backgroundColor: '#001D39', color: '#FFFFFF' }}>
+    <section id="showcase" className="fv-section-py" style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)' }}>
       <div className="fv-landing-container">
         {/* Header */}
         <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }}>
@@ -105,9 +105,9 @@ export const ShowcaseSection: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '10px',
+            gap: 'var(--space-3)',
             flexWrap: 'wrap',
-            marginBottom: '36px',
+            marginBottom: 'var(--space-10)',
           }}
         >
           {items.map((it, idx) => {
@@ -119,18 +119,18 @@ export const ShowcaseSection: React.FC = () => {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
-                  padding: '10px 20px',
+                  gap: 'var(--space-2)',
+                  padding: `var(--space-3) var(--space-5)`,
                   borderRadius: '9999px',
-                  border: isSelected ? '1px solid #FFFFFF' : '1px solid rgba(255, 255, 255, 0.25)',
-                  backgroundColor: isSelected ? '#FFFFFF' : 'rgba(255, 255, 255, 0.1)',
-                  color: isSelected ? '#001D39' : '#FFFFFF',
+                  border: isSelected ? '1px solid var(--color-on-primary)' : '1px solid color-mix(in srgb, var(--color-on-primary) 25%, transparent)',
+                  backgroundColor: isSelected ? 'var(--color-on-primary)' : 'color-mix(in srgb, var(--color-on-primary) 10%, transparent)',
+                  color: isSelected ? 'var(--color-primary)' : 'var(--color-on-primary)',
                   fontSize: '13px',
                   fontWeight: 700,
                   whiteSpace: 'nowrap',
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',
-                  boxShadow: isSelected ? '0 4px 16px rgba(0, 0, 0, 0.3)' : 'none',
+                  boxShadow: isSelected ? 'var(--elevation-2)' : 'none',
                 }}
               >
                 <Icon name={it.icon} size={16} />
@@ -150,8 +150,8 @@ export const ShowcaseSection: React.FC = () => {
             transition={{ duration: 0.25 }}
             className="fv-card-on-blue"
             style={{
-              padding: '36px',
-              backgroundColor: '#FFFFFF',
+              padding: 'var(--space-10)',
+              backgroundColor: 'var(--color-surface)',
             }}
           >
             {/* Header info for active screen */}
@@ -161,8 +161,8 @@ export const ShowcaseSection: React.FC = () => {
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 flexWrap: 'wrap',
-                gap: '16px',
-                marginBottom: '24px',
+                gap: 'var(--space-4)',
+                marginBottom: 'var(--space-6)',
               }}
             >
               <div>
@@ -170,42 +170,42 @@ export const ShowcaseSection: React.FC = () => {
                   style={{
                     fontSize: '12px',
                     fontWeight: 700,
-                    color: '#0A4174',
-                    backgroundColor: '#F0F9FF',
-                    border: '1px solid #BAE6FD',
-                    padding: '4px 12px',
+                    color: 'var(--color-primary)',
+                    backgroundColor: 'var(--color-info-container)',
+                    border: '1px solid var(--color-info-container)',
+                    padding: `var(--space-1) var(--space-3)`,
                     borderRadius: '9999px',
                     textTransform: 'uppercase',
                   }}
                 >
                   Screen {current.id} of 09
                 </span>
-                <h3 style={{ fontSize: '26px', fontWeight: 800, margin: '8px 0 4px', color: '#001D39' }}>
+                <h3 style={{ fontSize: '26px', fontWeight: 800, margin: `var(--space-2) 0 var(--space-1)`, color: 'var(--color-on-surface)' }}>
                   {current.title}
                 </h3>
-                <p style={{ fontSize: '15px', color: '#334155', maxWidth: '640px' }}>
+                <p style={{ fontSize: '15px', color: 'var(--color-on-surface-variant)', maxWidth: '640px' }}>
                   {current.description}
                 </p>
               </div>
 
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
                 {current.highlights.map((hl) => (
                   <span
                     key={hl}
                     style={{
-                      backgroundColor: '#F8FAFC',
-                      border: '1px solid #E2E8F0',
-                      color: '#001D39',
-                      padding: '8px 14px',
+                      backgroundColor: 'var(--color-surface-container-low)',
+                      border: '1px solid var(--color-outline-variant)',
+                      color: 'var(--color-on-surface)',
+                      padding: `var(--space-2) var(--space-4)`,
                       borderRadius: '10px',
                       fontSize: '13px',
                       fontWeight: 600,
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '6px',
+                      gap: 'var(--space-2)',
                     }}
                   >
-                    <Icon name="check_circle" size={16} color="#0A4174" />
+                    <Icon name="check_circle" size={16} color="var(--color-primary)" />
                     {hl}
                   </span>
                 ))}

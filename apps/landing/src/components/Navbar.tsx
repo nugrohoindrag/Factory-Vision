@@ -41,11 +41,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo }) => {
         top: 0,
         zIndex: 100,
         width: '100%',
-        backgroundColor: '#FFFFFF',
-        borderBottom: '1px solid #E2E8F0',
+        backgroundColor: 'var(--color-surface)',
+        borderBottom: '1px solid var(--color-outline-variant)',
         boxShadow: scrolled
-          ? '0 4px 20px rgba(0, 29, 57, 0.08)'
-          : '0 2px 8px rgba(0, 29, 57, 0.03)',
+          ? 'var(--elevation-2)'
+          : 'var(--elevation-1)',
         backdropFilter: 'blur(12px)',
         transition: 'all 0.25s ease',
       }}
@@ -65,9 +65,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo }) => {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '12px',
+            gap: 'var(--space-3)',
             textDecoration: 'none',
-            color: '#001D39',
+            color: 'var(--color-on-surface)',
           }}
         >
           <FactoryVisionLogo size="md" variant="full" tagline="Manufacturing Execution System" />
@@ -78,7 +78,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo }) => {
           style={{
             display: 'none',
             alignItems: 'center',
-            gap: '28px',
+            gap: 'var(--space-8)',
           }}
           className="fv-desktop-nav"
         >
@@ -89,15 +89,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo }) => {
               style={{
                 fontSize: '14px',
                 fontWeight: 600,
-                color: '#334155',
+                color: 'var(--color-on-surface-variant)',
                 textDecoration: 'none',
                 transition: 'color 0.15s ease',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.color = '#0A4174';
+                e.currentTarget.style.color = 'var(--color-primary)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.color = '#334155';
+                e.currentTarget.style.color = 'var(--color-on-surface-variant)';
               }}
             >
               {link.label}
@@ -106,7 +106,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo }) => {
         </nav>
 
         {/* Action Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
           {/* Theme Switcher */}
           <button
             onClick={toggleTheme}
@@ -118,11 +118,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo }) => {
               width: '40px',
               height: '40px',
               borderRadius: '9999px',
-              border: '1px solid #CBD5E1',
-              backgroundColor: '#FFFFFF',
-              color: '#0A4174',
+              border: '1px solid var(--color-outline-variant)',
+              backgroundColor: 'var(--color-surface)',
+              color: 'var(--color-primary)',
               cursor: 'pointer',
-              boxShadow: '0 2px 6px rgba(0, 29, 57, 0.04)',
+              boxShadow: 'var(--elevation-1)',
               transition: 'all 0.15s ease',
             }}
           >
@@ -134,7 +134,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo }) => {
             onClick={onOpenDemo}
             className="fv-btn-primary"
             style={{
-              padding: '10px 22px',
+              padding: `var(--space-3) var(--space-6)`,
               fontSize: '14px',
             }}
           >
@@ -154,9 +154,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo }) => {
               width: '40px',
               height: '40px',
               borderRadius: '10px',
-              border: '1px solid #CBD5E1',
-              backgroundColor: '#FFFFFF',
-              color: '#001D39',
+              border: '1px solid var(--color-outline-variant)',
+              backgroundColor: 'var(--color-surface)',
+              color: 'var(--color-on-surface)',
               cursor: 'pointer',
             }}
           >
@@ -169,13 +169,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo }) => {
       {mobileMenuOpen && (
         <div
           style={{
-            backgroundColor: '#FFFFFF',
-            borderBottom: '1px solid #E2E8F0',
-            padding: '16px 24px',
+            backgroundColor: 'var(--color-surface)',
+            borderBottom: '1px solid var(--color-outline-variant)',
+            padding: `var(--space-4) var(--space-6)`,
             display: 'flex',
             flexDirection: 'column',
-            gap: '12px',
-            boxShadow: '0 8px 24px rgba(0, 29, 57, 0.08)',
+            gap: 'var(--space-3)',
+            boxShadow: 'var(--elevation-2)',
           }}
         >
           {navLinks.map((link) => (
@@ -186,9 +186,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo }) => {
               style={{
                 fontSize: '15px',
                 fontWeight: 600,
-                color: '#001D39',
+                color: 'var(--color-on-surface)',
                 textDecoration: 'none',
-                padding: '8px 0',
+                padding: `var(--space-2) 0`,
               }}
             >
               {link.label}

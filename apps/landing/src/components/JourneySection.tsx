@@ -13,7 +13,7 @@ export const JourneySection: React.FC = () => {
   ];
 
   return (
-    <section className="fv-section-py" style={{ backgroundColor: '#FFFFFF' }}>
+    <section className="fv-section-py" style={{ backgroundColor: 'var(--color-surface)' }}>
       <div className="fv-landing-container">
         {/* Header */}
         <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }}>
@@ -24,7 +24,7 @@ export const JourneySection: React.FC = () => {
           <h2 className="fv-section-title">
             Follow Every Order Through the Factory
           </h2>
-          <p className="fv-section-desc" style={{ margin: '0 auto', color: '#334155' }}>
+          <p className="fv-section-desc" style={{ margin: '0 auto', color: 'var(--color-on-surface-variant)' }}>
             Get complete visibility from customer sales order intake down to machine execution, quality inspection,
             and final warehouse dispatch.
           </p>
@@ -34,8 +34,8 @@ export const JourneySection: React.FC = () => {
         <div
           className="fv-card"
           style={{
-            padding: '36px',
-            backgroundColor: '#FFFFFF',
+            padding: 'var(--space-10)',
+            backgroundColor: 'var(--color-surface)',
             maxWidth: '1000px',
             margin: '0 auto',
           }}
@@ -46,28 +46,28 @@ export const JourneySection: React.FC = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              paddingBottom: '24px',
-              borderBottom: '1px solid #E2E8F0',
-              marginBottom: '28px',
+              paddingBottom: 'var(--space-6)',
+              borderBottom: '1px solid var(--color-outline-variant)',
+              marginBottom: 'var(--space-8)',
               flexWrap: 'wrap',
-              gap: '12px',
+              gap: 'var(--space-3)',
             }}
           >
             <div>
-              <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>
+              <span style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', fontWeight: 700, textTransform: 'uppercase' }}>
                 TRACKING ACTIVE SALES ORDER
               </span>
-              <div style={{ fontSize: '22px', fontWeight: 800, color: '#001D39' }}>
+              <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
                 #SO-10294 · Precision Flange Assembly
               </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
               <span
                 style={{
-                  backgroundColor: '#F0F9FF',
-                  color: '#0A4174',
-                  border: '1px solid #BAE6FD',
-                  padding: '6px 14px',
+                  backgroundColor: 'var(--color-info-container)',
+                  color: 'var(--color-primary)',
+                  border: '1px solid var(--color-info-container)',
+                  padding: `var(--space-2) var(--space-4)`,
                   borderRadius: '9999px',
                   fontSize: '13px',
                   fontWeight: 800,
@@ -79,28 +79,28 @@ export const JourneySection: React.FC = () => {
           </div>
 
           {/* Timeline 6 Stages */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
             {steps.map((st, idx) => {
               const isCompleted = st.status === 'completed';
               const isActive = st.status === 'active';
 
               const badgeColor = isCompleted
-                ? '#059669'
+                ? 'var(--color-success)'
                 : isActive
-                ? '#0A4174'
-                : '#64748B';
+                ? 'var(--color-primary)'
+                : 'var(--color-on-surface-variant)';
 
               const badgeBg = isCompleted
-                ? '#ECFDF5'
+                ? 'var(--color-success-container)'
                 : isActive
-                ? '#F0F9FF'
-                : '#F8FAFC';
+                ? 'var(--color-info-container)'
+                : 'var(--color-surface-container-low)';
 
               const badgeBorder = isCompleted
-                ? '#A7F3D0'
+                ? 'var(--color-success-container)'
                 : isActive
-                ? '#BAE6FD'
-                : '#E2E8F0';
+                ? 'var(--color-info-container)'
+                : 'var(--color-outline-variant)';
 
               return (
                 <motion.div
@@ -113,14 +113,14 @@ export const JourneySection: React.FC = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    padding: '16px 20px',
-                    backgroundColor: '#F8FAFC',
-                    border: '1px solid #E2E8F0',
+                    padding: `var(--space-4) var(--space-5)`,
+                    backgroundColor: 'var(--color-surface-container-low)',
+                    border: '1px solid var(--color-outline-variant)',
                     borderRadius: '14px',
-                    gap: '16px',
+                    gap: 'var(--space-4)',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
                     <div
                       style={{
                         width: '32px',
@@ -140,10 +140,10 @@ export const JourneySection: React.FC = () => {
                       {isCompleted ? <Icon name="check" size={16} /> : idx + 1}
                     </div>
                     <div>
-                      <div style={{ fontSize: '15px', fontWeight: 800, color: '#001D39' }}>
+                      <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
                         {st.title}
                       </div>
-                      <div style={{ fontSize: '13px', color: '#334155' }}>
+                      <div style={{ fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
                         {st.desc}
                       </div>
                     </div>
@@ -154,7 +154,7 @@ export const JourneySection: React.FC = () => {
                       fontSize: '11px',
                       fontWeight: 800,
                       textTransform: 'uppercase',
-                      padding: '4px 10px',
+                      padding: `var(--space-1) var(--space-3)`,
                       borderRadius: '9999px',
                       backgroundColor: badgeBg,
                       color: badgeColor,
