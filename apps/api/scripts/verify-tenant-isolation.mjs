@@ -29,8 +29,13 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 const OWNER_URL = process.env.OWNER_DATABASE_URL || process.env.DATABASE_URL;
+// DATABASE_URL stays in the chain: CI hands the application role that way, and
+// dropping it made the script ignore the credential it was given and reach for
+// a hardcoded password against a hardcoded database instead — which fails as
+// 28P01 on any host whose app role password is not `factory_app_password`.
 const APP_URL =
   process.env.APP_DATABASE_URL ||
+  process.env.DATABASE_URL ||
   `postgresql://${process.env.APP_DB_USER || 'factory_app'}:${process.env.APP_DB_PASSWORD || 'factory_app_password'}@localhost:5432/factory_vision`;
 
 if (!APP_URL || !OWNER_URL) {
@@ -83,11 +88,34 @@ async function seed(owner) {
        VALUES ($1, $2, $3, $4, 10, CURRENT_DATE) ON CONFLICT (id) DO NOTHING`,
       [`iso-po-${suffix}`, t, `ISO-PO-${suffix}`, `iso-prod-${suffix}`]
     );
+    // A Work Order belongs to a Production Plan Line, not to a Production Order
+    // (ADR-16), and production_plan_line_id has been NOT NULL since migration
+    // 011. The fixture has to build the plan above it or the insert is refused.
     await owner.query(
-      `INSERT INTO work_order (id, tenant_id, production_order_id, wo_number, product_id, line_id,
-                              target_quantity, planned_start, planned_end)
-       VALUES ($1, $2, $3, $4, $5, $6, 10, now(), now()) ON CONFLICT (id) DO NOTHING`,
-      [`iso-wo-${suffix}`, t, `iso-po-${suffix}`, `ISO-WO-${suffix}`, `iso-prod-${suffix}`, `iso-line-${suffix}`]
+      `INSERT INTO production_plan (id, tenant_id, plan_number, period_start, period_end, status)
+       VALUES ($1, $2, $3, CURRENT_DATE, CURRENT_DATE + 7, 'CONFIRMED') ON CONFLICT (id) DO NOTHING`,
+      [`iso-plan-${suffix}`, t, `ISO-PLAN-${suffix}`]
+    );
+    await owner.query(
+      `INSERT INTO production_plan_line (id, tenant_id, production_plan_id, product_id,
+                                        demand_quantity, planned_quantity, required_delivery_date, status)
+       VALUES ($1, $2, $3, $4, 10, 10, CURRENT_DATE + 2, 'CONFIRMED') ON CONFLICT (id) DO NOTHING`,
+      [`iso-planline-${suffix}`, t, `iso-plan-${suffix}`, `iso-prod-${suffix}`]
+    );
+    await owner.query(
+      `INSERT INTO work_order (id, tenant_id, production_order_id, production_plan_line_id, wo_number,
+                              product_id, line_id, target_quantity, planned_quantity,
+                              planned_start, planned_end)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 10, 10, now(), now()) ON CONFLICT (id) DO NOTHING`,
+      [
+        `iso-wo-${suffix}`,
+        t,
+        `iso-po-${suffix}`,
+        `iso-planline-${suffix}`,
+        `ISO-WO-${suffix}`,
+        `iso-prod-${suffix}`,
+        `iso-line-${suffix}`,
+      ]
     );
     await owner.query(
       `INSERT INTO production_record (id, tenant_id, work_order_id, machine_id, operator_id, shift_id,
@@ -105,6 +133,8 @@ async function cleanup(owner) {
   for (const table of [
     'production_record',
     'work_order',
+    'production_plan_line',
+    'production_plan',
     'production_order',
     'product',
     'production_line',

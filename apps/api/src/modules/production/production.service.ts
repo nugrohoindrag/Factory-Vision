@@ -225,6 +225,15 @@ export class ProductionService {
     return this.workOrders.findById(exec, tenantId, id);
   }
 
+  /** Exec-scoped sibling of getBatchesForWorkOrder, for callers already in a transaction. */
+  async getBatchesForWorkOrderWith(
+    exec: Executor,
+    tenantId: string,
+    workOrderId: string
+  ): Promise<ProductionBatch[]> {
+    return this.batches.listByWorkOrder(exec, tenantId, workOrderId);
+  }
+
   /**
    * Resolves the Production Plan Line a Work Order belongs to.
    *
@@ -292,6 +301,13 @@ export class ProductionService {
       sequence?: number;
       workCenterId?: string;
       machineId?: string;
+      /**
+       * Confirming refuses a Work Order that names no shift, so dropping this
+       * on the way in made every API-created Work Order unconfirmable: there
+       * was no other way to give it one.
+       */
+      shiftId?: string;
+      moldId?: string;
       targetQuantity: number;
       unit?: string;
       priority?: number;
@@ -315,6 +331,8 @@ export class ProductionService {
         lineId: payload.lineId,
         workCenterId: payload.workCenterId,
         machineId: payload.machineId,
+        shiftId: payload.shiftId,
+        moldId: payload.moldId,
         targetQuantity: payload.targetQuantity,
         plannedQuantity: payload.targetQuantity,
         unit: payload.unit || 'PCS',

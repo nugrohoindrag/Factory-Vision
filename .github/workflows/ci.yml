@@ -88,6 +88,15 @@ jobs:
           APP_DB_PASSWORD: ci-app-role-password
         run: pnpm db:migrate
 
+      # The deployed stack applies migrations and seeds in one step, so CI has
+      # to as well. Without this the acceptance run met a schema with no tenant,
+      # no master data and no production plan, and every story that needs a Work
+      # Order failed on a database that a real install never has.
+      - name: Seed
+        env:
+          DATABASE_URL: postgresql://factory:factory@localhost:5432/factory_vision
+        run: pnpm db:seed
+
       - name: Start API
         env:
           PORT: '4000'

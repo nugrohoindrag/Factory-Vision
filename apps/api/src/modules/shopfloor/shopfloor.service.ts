@@ -64,13 +64,41 @@ export class ShopFloorService {
     const workOrder = workOrderId
       ? await this.productionService.getWorkOrderByIdWith(exec, tenantId, workOrderId)
       : undefined;
+    // A batch-managed Work Order runs the BATCH path, and every record against
+    // it must name a batch: `ck_prod_record_batch_exclusive` pairs
+    // is_batch_managed with batch_id, and is_batch_managed is mirrored from the
+    // work order below. Leaving this undefined therefore made a work order
+    // unusable the moment a batch was attached to it — every capture was
+    // refused by the constraint.
+    //
+    // The batch is resolved here rather than taken from the request: a terminal
+    // that was offline when the plan changed must not be able to post output
+    // against a batch the work order no longer runs. ADR-29 allows one active
+    // batch per work order, which is the one used. Operator-facing selection
+    // among several is MES-075 (Sprint 11).
+    let batchId;
+    if (workOrder?.isBatchManaged && workOrderId) {
+      const batches = await this.productionService.getBatchesForWorkOrderWith(
+        exec,
+        tenantId,
+        workOrderId
+      );
+      const active = batches.find(
+        (b) => b.status !== 'COMPLETED' && b.status !== 'CANCELLED' && b.status !== 'SCRAPPED'
+      );
+      if (!active) {
+        throw ApiError.invalidState(
+          'Work Order berjalan pada mode batch tetapi tidak memiliki batch aktif. ' +
+            'Lampirkan atau buka batch terlebih dahulu.'
+        );
+      }
+      batchId = active.id;
+    }
+
     return {
       workOrder,
       processId: workOrder?.processId,
-      // Batch context is resolved from production_batch.work_order_id once
-      // operator batch selection lands (MES-075, Sprint 11). A work order that
-      // is not batch-managed never carries one (E1).
-      batchId: undefined,
+      batchId,
       productId: workOrder?.productId,
       lineId: workOrder?.lineId,
       machineId: workOrder?.machineId,

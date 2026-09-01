@@ -208,7 +208,9 @@ async function userManagement() {
   await check('US-006', 'System roles exist and are immutable', async () => {
     const { body } = await api('/api/v1/roles', { token: adminToken, expect: 200 });
     const system = body.filter((r) => r.system);
-    assert(system.length === 7, `expected 7 system roles, got ${system.length}`);
+    // Eight since migration 017 added SALES (ADR-32). The count is asserted so
+    // that a role appearing or vanishing is a deliberate change, not a drift.
+    assert(system.length === 8, `expected 8 system roles, got ${system.length}`);
     const { status } = await api(`/api/v1/roles/${system[0].id}`, {
       token: adminToken,
       method: 'PUT',
@@ -338,11 +340,20 @@ async function planning() {
       method: 'POST',
       body: {
         productionOrderId: orderId,
+        // A Work Order hangs off a Production Plan Line, never off a Production
+        // Order alone (ADR-16), and the API refuses one without it. Extrusion on
+        // mc-ext-01 is the routing step the seeded plan leaves free: every other
+        // process on this plan line is taken (uq_wo_plan_line_process) and every
+        // other machine is already running (uq_work_order_machine_in_production).
+        productionPlanLineId: 'planline-seed-001',
         productId: 'prod-tire-a',
         lineId: 'line-01',
-        processId: 'proc-mixing',
-        sequence: 1,
-        machineId: 'mc-mix-01',
+        processId: 'proc-extrusion',
+        sequence: 2,
+        machineId: 'mc-ext-01',
+        // Confirming refuses a Work Order with no shift, so the fixture names
+        // one at creation rather than discovering it four stories later.
+        shiftId: 'shift-1',
         targetQuantity: 100,
         plannedStart: '2026-09-01T00:00:00.000Z',
         plannedEnd: '2026-09-01T08:00:00.000Z',
@@ -351,7 +362,7 @@ async function planning() {
     });
     workOrderId = body.id;
     assert(body.productionOrderId === orderId, 'not linked to the production order');
-    assert(body.processId === 'proc-mixing', 'process not stored');
+    assert(body.processId === 'proc-extrusion', 'process not stored');
     return `${body.woNumber}, seq ${body.sequence}`;
   });
 
@@ -372,6 +383,9 @@ async function planning() {
       method: 'POST',
       body: {
         batchNumber: `B-VERIFY-${Date.now()}`,
+        // The relation is inverted since ADR-29: a Batch is a subdivision
+        // inside one Work Order, and work_order_id is NOT NULL.
+        workOrderId,
         productId: 'prod-tire-a',
         productionOrderId: orderId,
         productionDate: '2026-09-01',
@@ -379,13 +393,21 @@ async function planning() {
       },
       expect: 201,
     });
-    const { body: wo } = await api(`/api/v1/work-orders/${workOrderId}`, {
+    // ADR-29 inverted the relation and work_order.batch_id was dropped, so
+    // attaching is its own command: it writes production_batch.work_order_id
+    // and flips the Work Order into batch-managed mode. Asserting on a
+    // wo.batchId that no longer exists passed only while the column did.
+    const { body: wo } = await api(`/api/v1/work-orders/${workOrderId}/batch`, {
       token: adminToken,
-      method: 'PUT',
+      method: 'POST',
       body: { batchId: batch.id },
       expect: 200,
     });
-    assert(wo.batchId === batch.id, 'batch not attached');
+    assert(wo.isBatchManaged === true, 'work order did not become batch-managed');
+    const { body: batches } = await api('/api/v1/master/batches', { token: adminToken, expect: 200 });
+    const stored = batches.find((b) => b.id === batch.id);
+    assert(stored, 'batch not found after attaching');
+    assert(stored.workOrderId === workOrderId, 'batch does not name the work order');
     return `${batch.batchNumber} attached`;
   });
 
@@ -920,14 +942,19 @@ async function governance() {
     // One work order carried through the five §37.9 scenarios in order.
     const { body: order } = await api('/api/v1/production-orders', {
       token: adminToken, method: 'POST',
-      body: { orderNumber: `PO-TRIAL-${Date.now()}`, productId: 'prod-tire-a', quantity: 60, dueDate: '2026-09-30', createdBy: 'trial' },
+      body: { orderNumber: `PO-TRIAL-${Date.now()}`, productId: 'prod-tire-b', quantity: 60, dueDate: '2026-09-30', createdBy: 'trial' },
       expect: 201,
     });
     const { body: wo } = await api('/api/v1/work-orders', {
       token: adminToken, method: 'POST',
       body: {
-        productionOrderId: order.id, productId: 'prod-tire-a', lineId: 'line-01',
-        processId: 'proc-curing', machineId: 'mc-cpr-01', targetQuantity: 60,
+        // Plan line 002 (tire B) still has curing free, and mc-cpr-02 is the
+        // curing press the seed leaves idle. Reusing plan line 001 or mc-cpr-01
+        // collides with uq_wo_plan_line_process and the in-production machine
+        // constraint respectively.
+        productionOrderId: order.id, productionPlanLineId: 'planline-seed-002',
+        productId: 'prod-tire-b', lineId: 'line-01', shiftId: 'shift-1',
+        processId: 'proc-curing', machineId: 'mc-cpr-02', targetQuantity: 60,
         plannedStart: '2026-09-03T00:00:00.000Z', plannedEnd: '2026-09-03T08:00:00.000Z',
       },
       expect: 201,
@@ -949,7 +976,7 @@ async function governance() {
     // S2, downtime then resume.
     const { body: dt } = await api('/api/v1/shop-floor/downtime/start', {
       token: operatorToken, method: 'POST',
-      body: { workOrderId: wo.id, machineId: 'mc-cpr-01', reasonId: 'dt-breakdown', operatorId: 'op-001', clientEventId: uid(), occurredAt: new Date().toISOString() },
+      body: { workOrderId: wo.id, machineId: 'mc-cpr-02', reasonId: 'dt-breakdown', operatorId: 'op-001', clientEventId: uid(), occurredAt: new Date().toISOString() },
       expect: 201,
     });
     assert(dt.isPlanned === false, 'a breakdown was classified as planned downtime');
@@ -967,7 +994,7 @@ async function governance() {
     });
 
     // S4, OEE investigation reaches the machine that just ran.
-    const { body: machines } = await api('/api/v1/oee/machine-performance?days=7&machineId=mc-cpr-01', { token: adminToken, expect: 200 });
+    const { body: machines } = await api('/api/v1/oee/machine-performance?days=7&machineId=mc-cpr-02', { token: adminToken, expect: 200 });
     assert(machines.length > 0, 'OEE investigation found no data for the trial machine');
 
     // S5, the delayed order is visible as risk.
