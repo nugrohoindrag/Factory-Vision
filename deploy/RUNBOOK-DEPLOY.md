@@ -255,8 +255,10 @@ Traefik ada di profile `proxy`, jadi juga harus dipanggil eksplisit:
 ```dotenv
 # deploy/.env
 ACME_EMAIL=ops@contoh.co.id
-CONSOLE_HOST=console.contoh.co.id
-OPERATOR_HOST=terminal.contoh.co.id
+DASHBOARD_DOMAIN=dashboard.contoh.co.id
+OPERATOR_DOMAIN=operator.contoh.co.id
+API_DOMAIN=api.contoh.co.id
+ADMIN_DOMAIN=admin.contoh.co.id
 ```
 
 ```bash
