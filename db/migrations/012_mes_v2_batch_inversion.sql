@@ -127,10 +127,31 @@ BEGIN
       wo.process_id,
       COALESCE(wo.sequence, 0)                     AS process_sequence,
       pb.id || '-s' || COALESCE(wo.sequence, 0)    AS new_id,
-      pb.batch_number || '-S' || COALESCE(wo.sequence, 0) AS new_number
+      pb.batch_number || '-S' || COALESCE(wo.sequence, 0) AS new_number,
+      -- Several legacy batches can fan out onto the same work order. Ordering
+      -- by legacy id keeps the numbering reproducible across replays.
+      ROW_NUMBER() OVER (PARTITION BY wo.id ORDER BY pb.id) AS fan_rank
     FROM production_batch pb
     JOIN multi   m  ON m.legacy_id = pb.id
     JOIN work_order wo ON wo.batch_id = pb.id
+  ),
+  -- `sequence` is the batch's position within its work order, and it is unique
+  -- per work order (uq_prod_batch_wo_seq). A fixed 1 was wrong: a work order
+  -- that already owns a historical lot at sequence 1 — a completed or scrapped
+  -- batch that step 3a does not release, because it is referenced by only that
+  -- one work order — collides with the fanned-out row the moment it is written.
+  -- The new rows therefore continue the numbering rather than restart it.
+  numbered AS (
+    SELECT
+      f.*,
+      COALESCE(
+        (SELECT MAX(x.sequence)
+           FROM production_batch x
+          WHERE x.tenant_id = f.tenant_id
+            AND x.work_order_id = f.work_order_id),
+        0
+      ) + f.fan_rank AS new_sequence
+    FROM fanout f
   )
   INSERT INTO production_batch (
     id, tenant_id, batch_number, work_order_id, product_id, process_id, sequence,
@@ -139,11 +160,12 @@ BEGIN
     status, production_order_id, production_date
   )
   SELECT
-    f.new_id, f.tenant_id, f.new_number, f.work_order_id, f.product_id, f.process_id, 1,
+    f.new_id, f.tenant_id, f.new_number, f.work_order_id, f.product_id, f.process_id,
+    f.new_sequence,
     -- Zero throughout: the legacy model recorded no batch quantities (see header).
     0, 0, 0, 0, 0, 0, 0,
     f.status, f.production_order_id, f.production_date
-  FROM fanout f
+  FROM numbered f
   WHERE NOT EXISTS (SELECT 1 FROM production_batch x WHERE x.id = f.new_id)
   ON CONFLICT (id) DO NOTHING;
 END $inversion$;
