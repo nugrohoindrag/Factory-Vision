@@ -71,10 +71,10 @@ export const BookDemoModal: React.FC<BookDemoModalProps> = ({ isOpen, onClose })
                 <Icon name="calendar_today" size={14} />
                 Live Demo
               </div>
-              <h3 style={{ fontSize: '26px', fontWeight: 800, color: 'var(--color-on-primary)', marginBottom: 'var(--space-2)' }}>
+              <h3 style={{ fontSize: '26px', fontWeight: 800, color: 'var(--color-primary)', marginBottom: 'var(--space-2)' }}>
                 Schedule a Guided Plant Walkthrough
               </h3>
-              <p style={{ fontSize: '14px', color: 'var(--color-on-primary)', lineHeight: 1.5 }}>
+              <p style={{ fontSize: '14px', color: 'var(--color-on-surface)', lineHeight: 1.5 }}>
                 See how Factory Vision can digitize your specific manufacturing workflow, work orders, and OEE tracking.
               </p>
             </div>
@@ -82,7 +82,7 @@ export const BookDemoModal: React.FC<BookDemoModalProps> = ({ isOpen, onClose })
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: 'var(--space-2)', color: 'var(--color-on-primary)' }}>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: 'var(--space-2)', color: 'var(--color-on-surface)' }}>
                     Your Name *
                   </label>
                   <input
@@ -95,9 +95,9 @@ export const BookDemoModal: React.FC<BookDemoModalProps> = ({ isOpen, onClose })
                       width: '100%',
                       padding: `var(--space-3) var(--space-4)`,
                       borderRadius: '10px',
-                      border: '1px solid color-mix(in srgb, var(--color-on-primary) 24%, transparent)',
-                      backgroundColor: 'var(--color-primary)',
-                      color: 'var(--color-on-primary)',
+                      border: '1px solid var(--color-outline-variant)',
+                      backgroundColor: 'var(--color-surface-container-low)',
+                      color: 'var(--color-on-surface)',
                       fontSize: '14px',
                       outline: 'none',
                     }}
@@ -105,7 +105,7 @@ export const BookDemoModal: React.FC<BookDemoModalProps> = ({ isOpen, onClose })
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: 'var(--space-2)', color: 'var(--color-on-primary)' }}>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: 'var(--space-2)', color: 'var(--color-on-surface)' }}>
                     Work Email *
                   </label>
                   <input
@@ -118,9 +118,9 @@ export const BookDemoModal: React.FC<BookDemoModalProps> = ({ isOpen, onClose })
                       width: '100%',
                       padding: `var(--space-3) var(--space-4)`,
                       borderRadius: '10px',
-                      border: '1px solid color-mix(in srgb, var(--color-on-primary) 24%, transparent)',
-                      backgroundColor: 'var(--color-primary)',
-                      color: 'var(--color-on-primary)',
+                      border: '1px solid var(--color-outline-variant)',
+                      backgroundColor: 'var(--color-surface-container-low)',
+                      color: 'var(--color-on-surface)',
                       fontSize: '14px',
                       outline: 'none',
                     }}
@@ -130,7 +130,7 @@ export const BookDemoModal: React.FC<BookDemoModalProps> = ({ isOpen, onClose })
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: 'var(--space-2)', color: 'var(--color-on-primary)' }}>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: 'var(--space-2)', color: 'var(--color-on-surface)' }}>
                     Company / Factory *
                   </label>
                   <input
@@ -143,9 +143,9 @@ export const BookDemoModal: React.FC<BookDemoModalProps> = ({ isOpen, onClose })
                       width: '100%',
                       padding: `var(--space-3) var(--space-4)`,
                       borderRadius: '10px',
-                      border: '1px solid color-mix(in srgb, var(--color-on-primary) 24%, transparent)',
-                      backgroundColor: 'var(--color-primary)',
-                      color: 'var(--color-on-primary)',
+                      border: '1px solid var(--color-outline-variant)',
+                      backgroundColor: 'var(--color-surface-container-low)',
+                      color: 'var(--color-on-surface)',
                       fontSize: '14px',
                       outline: 'none',
                     }}
@@ -153,7 +153,7 @@ export const BookDemoModal: React.FC<BookDemoModalProps> = ({ isOpen, onClose })
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: 'var(--space-2)', color: 'var(--color-on-primary)' }}>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: 'var(--space-2)', color: 'var(--color-on-surface)' }}>
                     Job Role
                   </label>
                   <input
@@ -165,9 +165,9 @@ export const BookDemoModal: React.FC<BookDemoModalProps> = ({ isOpen, onClose })
                       width: '100%',
                       padding: `var(--space-3) var(--space-4)`,
                       borderRadius: '10px',
-                      border: '1px solid color-mix(in srgb, var(--color-on-primary) 24%, transparent)',
-                      backgroundColor: 'var(--color-primary)',
-                      color: 'var(--color-on-primary)',
+                      border: '1px solid var(--color-outline-variant)',
+                      backgroundColor: 'var(--color-surface-container-low)',
+                      color: 'var(--color-on-surface)',
                       fontSize: '14px',
                       outline: 'none',
                     }}
@@ -177,7 +177,7 @@ export const BookDemoModal: React.FC<BookDemoModalProps> = ({ isOpen, onClose })
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: 'var(--space-2)', color: 'var(--color-on-primary)' }}>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: 'var(--space-2)', color: 'var(--color-on-surface)' }}>
                     Plant Scale
                   </label>
                   <select
@@ -187,9 +187,9 @@ export const BookDemoModal: React.FC<BookDemoModalProps> = ({ isOpen, onClose })
                       width: '100%',
                       padding: `var(--space-3) var(--space-4)`,
                       borderRadius: '10px',
-                      border: '1px solid color-mix(in srgb, var(--color-on-primary) 24%, transparent)',
-                      backgroundColor: 'var(--color-primary)',
-                      color: 'var(--color-on-primary)',
+                      border: '1px solid var(--color-outline-variant)',
+                      backgroundColor: 'var(--color-surface-container-low)',
+                      color: 'var(--color-on-surface)',
                       fontSize: '14px',
                       outline: 'none',
                     }}
@@ -201,7 +201,7 @@ export const BookDemoModal: React.FC<BookDemoModalProps> = ({ isOpen, onClose })
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: 'var(--space-2)', color: 'var(--color-on-primary)' }}>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: 'var(--space-2)', color: 'var(--color-on-surface)' }}>
                     Industry Sector
                   </label>
                   <select
@@ -211,9 +211,9 @@ export const BookDemoModal: React.FC<BookDemoModalProps> = ({ isOpen, onClose })
                       width: '100%',
                       padding: `var(--space-3) var(--space-4)`,
                       borderRadius: '10px',
-                      border: '1px solid color-mix(in srgb, var(--color-on-primary) 24%, transparent)',
-                      backgroundColor: 'var(--color-primary)',
-                      color: 'var(--color-on-primary)',
+                      border: '1px solid var(--color-outline-variant)',
+                      backgroundColor: 'var(--color-surface-container-low)',
+                      color: 'var(--color-on-surface)',
                       fontSize: '14px',
                       outline: 'none',
                     }}
@@ -261,11 +261,11 @@ export const BookDemoModal: React.FC<BookDemoModalProps> = ({ isOpen, onClose })
             >
               <Icon name="check_circle" size={36} />
             </div>
-            <h3 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-on-primary)', marginBottom: 'var(--space-2)' }}>
+            <h3 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-primary)', marginBottom: 'var(--space-2)' }}>
               Demo Request Received!
             </h3>
-            <p style={{ fontSize: '15px', color: 'var(--color-on-primary)', maxWidth: '420px', margin: '0 auto 24px', lineHeight: 1.55 }}>
-              Thank you, <strong style={{ color: 'var(--color-on-primary)' }}>{formData.name}</strong>. Our solutions engineering team will reach out to <strong style={{ color: 'var(--color-info)' }}>{formData.email}</strong> within 24 hours to coordinate your custom plant walkthrough.
+            <p style={{ fontSize: '15px', color: 'var(--color-on-surface)', maxWidth: '420px', margin: '0 auto 24px', lineHeight: 1.55 }}>
+              Thank you, <strong style={{ color: 'var(--color-on-surface)' }}>{formData.name}</strong>. Our solutions engineering team will reach out to <strong style={{ color: 'var(--color-info)' }}>{formData.email}</strong> within 24 hours to coordinate your custom plant walkthrough.
             </p>
             <button
               onClick={() => {

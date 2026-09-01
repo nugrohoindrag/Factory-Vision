@@ -44,58 +44,58 @@ export const BookDemoModal = ({ isOpen, onClose }) => {
                                         fontWeight: 700,
                                         textTransform: 'uppercase',
                                         marginBottom: 'var(--space-3)',
-                                    }, children: [_jsx(Icon, { name: "calendar_today", size: 14 }), "Live Demo"] }), _jsx("h3", { style: { fontSize: '26px', fontWeight: 800, color: 'var(--color-on-primary)', marginBottom: 'var(--space-2)' }, children: "Schedule a Guided Plant Walkthrough" }), _jsx("p", { style: { fontSize: '14px', color: 'var(--color-on-primary)', lineHeight: 1.5 }, children: "See how Factory Vision can digitize your specific manufacturing workflow, work orders, and OEE tracking." })] }), _jsxs("form", { onSubmit: handleSubmit, style: { display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }, children: [_jsxs("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }, children: [_jsxs("div", { children: [_jsx("label", { style: { display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: 'var(--space-2)', color: 'var(--color-on-primary)' }, children: "Your Name *" }), _jsx("input", { type: "text", required: true, placeholder: "e.g. Budi Pratama", value: formData.name, onChange: (e) => setFormData({ ...formData, name: e.target.value }), style: {
+                                    }, children: [_jsx(Icon, { name: "calendar_today", size: 14 }), "Live Demo"] }), _jsx("h3", { style: { fontSize: '26px', fontWeight: 800, color: 'var(--color-primary)', marginBottom: 'var(--space-2)' }, children: "Schedule a Guided Plant Walkthrough" }), _jsx("p", { style: { fontSize: '14px', color: 'var(--color-on-surface)', lineHeight: 1.5 }, children: "See how Factory Vision can digitize your specific manufacturing workflow, work orders, and OEE tracking." })] }), _jsxs("form", { onSubmit: handleSubmit, style: { display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }, children: [_jsxs("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }, children: [_jsxs("div", { children: [_jsx("label", { style: { display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: 'var(--space-2)', color: 'var(--color-on-surface)' }, children: "Your Name *" }), _jsx("input", { type: "text", required: true, placeholder: "e.g. Budi Pratama", value: formData.name, onChange: (e) => setFormData({ ...formData, name: e.target.value }), style: {
                                                         width: '100%',
                                                         padding: `var(--space-3) var(--space-4)`,
                                                         borderRadius: '10px',
-                                                        border: '1px solid color-mix(in srgb, var(--color-on-primary) 24%, transparent)',
-                                                        backgroundColor: 'var(--color-primary)',
-                                                        color: 'var(--color-on-primary)',
+                                                        border: '1px solid var(--color-outline-variant)',
+                                                        backgroundColor: 'var(--color-surface-container-low)',
+                                                        color: 'var(--color-on-surface)',
                                                         fontSize: '14px',
                                                         outline: 'none',
-                                                    } })] }), _jsxs("div", { children: [_jsx("label", { style: { display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: 'var(--space-2)', color: 'var(--color-on-primary)' }, children: "Work Email *" }), _jsx("input", { type: "email", required: true, placeholder: "budi@company.com", value: formData.email, onChange: (e) => setFormData({ ...formData, email: e.target.value }), style: {
+                                                    } })] }), _jsxs("div", { children: [_jsx("label", { style: { display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: 'var(--space-2)', color: 'var(--color-on-surface)' }, children: "Work Email *" }), _jsx("input", { type: "email", required: true, placeholder: "budi@company.com", value: formData.email, onChange: (e) => setFormData({ ...formData, email: e.target.value }), style: {
                                                         width: '100%',
                                                         padding: `var(--space-3) var(--space-4)`,
                                                         borderRadius: '10px',
-                                                        border: '1px solid color-mix(in srgb, var(--color-on-primary) 24%, transparent)',
-                                                        backgroundColor: 'var(--color-primary)',
-                                                        color: 'var(--color-on-primary)',
+                                                        border: '1px solid var(--color-outline-variant)',
+                                                        backgroundColor: 'var(--color-surface-container-low)',
+                                                        color: 'var(--color-on-surface)',
                                                         fontSize: '14px',
                                                         outline: 'none',
-                                                    } })] })] }), _jsxs("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }, children: [_jsxs("div", { children: [_jsx("label", { style: { display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: 'var(--space-2)', color: 'var(--color-on-primary)' }, children: "Company / Factory *" }), _jsx("input", { type: "text", required: true, placeholder: "PT Precision Parts", value: formData.company, onChange: (e) => setFormData({ ...formData, company: e.target.value }), style: {
+                                                    } })] })] }), _jsxs("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }, children: [_jsxs("div", { children: [_jsx("label", { style: { display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: 'var(--space-2)', color: 'var(--color-on-surface)' }, children: "Company / Factory *" }), _jsx("input", { type: "text", required: true, placeholder: "PT Precision Parts", value: formData.company, onChange: (e) => setFormData({ ...formData, company: e.target.value }), style: {
                                                         width: '100%',
                                                         padding: `var(--space-3) var(--space-4)`,
                                                         borderRadius: '10px',
-                                                        border: '1px solid color-mix(in srgb, var(--color-on-primary) 24%, transparent)',
-                                                        backgroundColor: 'var(--color-primary)',
-                                                        color: 'var(--color-on-primary)',
+                                                        border: '1px solid var(--color-outline-variant)',
+                                                        backgroundColor: 'var(--color-surface-container-low)',
+                                                        color: 'var(--color-on-surface)',
                                                         fontSize: '14px',
                                                         outline: 'none',
-                                                    } })] }), _jsxs("div", { children: [_jsx("label", { style: { display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: 'var(--space-2)', color: 'var(--color-on-primary)' }, children: "Job Role" }), _jsx("input", { type: "text", placeholder: "Plant Manager / PPIC Lead", value: formData.role, onChange: (e) => setFormData({ ...formData, role: e.target.value }), style: {
+                                                    } })] }), _jsxs("div", { children: [_jsx("label", { style: { display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: 'var(--space-2)', color: 'var(--color-on-surface)' }, children: "Job Role" }), _jsx("input", { type: "text", placeholder: "Plant Manager / PPIC Lead", value: formData.role, onChange: (e) => setFormData({ ...formData, role: e.target.value }), style: {
                                                         width: '100%',
                                                         padding: `var(--space-3) var(--space-4)`,
                                                         borderRadius: '10px',
-                                                        border: '1px solid color-mix(in srgb, var(--color-on-primary) 24%, transparent)',
-                                                        backgroundColor: 'var(--color-primary)',
-                                                        color: 'var(--color-on-primary)',
+                                                        border: '1px solid var(--color-outline-variant)',
+                                                        backgroundColor: 'var(--color-surface-container-low)',
+                                                        color: 'var(--color-on-surface)',
                                                         fontSize: '14px',
                                                         outline: 'none',
-                                                    } })] })] }), _jsxs("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }, children: [_jsxs("div", { children: [_jsx("label", { style: { display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: 'var(--space-2)', color: 'var(--color-on-primary)' }, children: "Plant Scale" }), _jsxs("select", { value: formData.plantScale, onChange: (e) => setFormData({ ...formData, plantScale: e.target.value }), style: {
+                                                    } })] })] }), _jsxs("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }, children: [_jsxs("div", { children: [_jsx("label", { style: { display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: 'var(--space-2)', color: 'var(--color-on-surface)' }, children: "Plant Scale" }), _jsxs("select", { value: formData.plantScale, onChange: (e) => setFormData({ ...formData, plantScale: e.target.value }), style: {
                                                         width: '100%',
                                                         padding: `var(--space-3) var(--space-4)`,
                                                         borderRadius: '10px',
-                                                        border: '1px solid color-mix(in srgb, var(--color-on-primary) 24%, transparent)',
-                                                        backgroundColor: 'var(--color-primary)',
-                                                        color: 'var(--color-on-primary)',
+                                                        border: '1px solid var(--color-outline-variant)',
+                                                        backgroundColor: 'var(--color-surface-container-low)',
+                                                        color: 'var(--color-on-surface)',
                                                         fontSize: '14px',
                                                         outline: 'none',
-                                                    }, children: [_jsx("option", { value: "1-3 Lines", children: "1 to 3 Production Lines" }), _jsx("option", { value: "4-10 Lines", children: "4 to 10 Production Lines" }), _jsx("option", { value: "10+ Lines", children: "10+ Lines (Multi-Plant Enterprise)" })] })] }), _jsxs("div", { children: [_jsx("label", { style: { display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: 'var(--space-2)', color: 'var(--color-on-primary)' }, children: "Industry Sector" }), _jsxs("select", { value: formData.industry, onChange: (e) => setFormData({ ...formData, industry: e.target.value }), style: {
+                                                    }, children: [_jsx("option", { value: "1-3 Lines", children: "1 to 3 Production Lines" }), _jsx("option", { value: "4-10 Lines", children: "4 to 10 Production Lines" }), _jsx("option", { value: "10+ Lines", children: "10+ Lines (Multi-Plant Enterprise)" })] })] }), _jsxs("div", { children: [_jsx("label", { style: { display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: 'var(--space-2)', color: 'var(--color-on-surface)' }, children: "Industry Sector" }), _jsxs("select", { value: formData.industry, onChange: (e) => setFormData({ ...formData, industry: e.target.value }), style: {
                                                         width: '100%',
                                                         padding: `var(--space-3) var(--space-4)`,
                                                         borderRadius: '10px',
-                                                        border: '1px solid color-mix(in srgb, var(--color-on-primary) 24%, transparent)',
-                                                        backgroundColor: 'var(--color-primary)',
-                                                        color: 'var(--color-on-primary)',
+                                                        border: '1px solid var(--color-outline-variant)',
+                                                        backgroundColor: 'var(--color-surface-container-low)',
+                                                        color: 'var(--color-on-surface)',
                                                         fontSize: '14px',
                                                         outline: 'none',
                                                     }, children: [_jsx("option", { value: "Discrete Machining & Assembly", children: "Discrete Machining & Assembly" }), _jsx("option", { value: "Automotive & Tier-1 Components", children: "Automotive & Tier-1 Components" }), _jsx("option", { value: "Electronics & PCB Manufacturing", children: "Electronics & PCB Manufacturing" }), _jsx("option", { value: "FMCG & Packaging", children: "FMCG & Packaging" }), _jsx("option", { value: "Plastic Injection & Stamping", children: "Plastic Injection & Stamping" }), _jsx("option", { value: "Other Manufacturing", children: "Other Manufacturing" })] })] })] }), _jsxs("button", { type: "submit", className: "fv-btn-primary", style: {
@@ -114,7 +114,7 @@ export const BookDemoModal = ({ isOpen, onClose }) => {
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 margin: '0 auto 20px',
-                            }, children: _jsx(Icon, { name: "check_circle", size: 36 }) }), _jsx("h3", { style: { fontSize: '24px', fontWeight: 800, color: 'var(--color-on-primary)', marginBottom: 'var(--space-2)' }, children: "Demo Request Received!" }), _jsxs("p", { style: { fontSize: '15px', color: 'var(--color-on-primary)', maxWidth: '420px', margin: '0 auto 24px', lineHeight: 1.55 }, children: ["Thank you, ", _jsx("strong", { style: { color: 'var(--color-on-primary)' }, children: formData.name }), ". Our solutions engineering team will reach out to ", _jsx("strong", { style: { color: 'var(--color-info)' }, children: formData.email }), " within 24 hours to coordinate your custom plant walkthrough."] }), _jsx("button", { onClick: () => {
+                            }, children: _jsx(Icon, { name: "check_circle", size: 36 }) }), _jsx("h3", { style: { fontSize: '24px', fontWeight: 800, color: 'var(--color-primary)', marginBottom: 'var(--space-2)' }, children: "Demo Request Received!" }), _jsxs("p", { style: { fontSize: '15px', color: 'var(--color-on-surface)', maxWidth: '420px', margin: '0 auto 24px', lineHeight: 1.55 }, children: ["Thank you, ", _jsx("strong", { style: { color: 'var(--color-on-surface)' }, children: formData.name }), ". Our solutions engineering team will reach out to ", _jsx("strong", { style: { color: 'var(--color-info)' }, children: formData.email }), " within 24 hours to coordinate your custom plant walkthrough."] }), _jsx("button", { onClick: () => {
                                 setSubmitted(false);
                                 onClose();
                             }, className: "fv-btn-secondary", style: { padding: `var(--space-3) var(--space-8)` }, children: "Close Window" })] }))] }) }));
