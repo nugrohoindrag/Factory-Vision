@@ -255,6 +255,8 @@ Traefik ada di profile `proxy`, jadi juga harus dipanggil eksplisit:
 ```dotenv
 # deploy/.env
 ACME_EMAIL=ops@contoh.co.id
+LANDING_DOMAIN=contoh.co.id
+LANDING_WWW_DOMAIN=www.contoh.co.id
 DASHBOARD_DOMAIN=dashboard.contoh.co.id
 OPERATOR_DOMAIN=operator.contoh.co.id
 API_DOMAIN=api.contoh.co.id
@@ -269,6 +271,31 @@ docker compose -f deploy/docker-compose.yml --env-file deploy/.env \
 Port 80 dan 443 harus terbuka dan DNS sudah mengarah ke host sebelum Let's
 Encrypt bisa menerbitkan sertifikat. Admin console tetap tidak dipublikasikan
 kecuali `ADMIN_PUBLIC=true` diset sadar-sadar.
+
+### Pastikan router benar-benar membawa domain Anda
+
+Setiap `*_DOMAIN` yang tidak diset **jatuh diam-diam** ke `*.localhost`. Stack
+tetap naik sehat dan setiap health check hijau — ia hanya tidak menjawab domain
+Anda, dan gejalanya adalah `curl` yang mengembalikan `000`, bukan pesan error.
+Periksa apa yang benar-benar tertanam di container, bukan apa yang tertulis di
+`.env`:
+
+```bash
+for c in landing console operator; do
+  echo "--- $c"
+  docker inspect factory-vision-$c-1 --format '{{json .Config.Labels}}' | tr ',' '\n' | grep 'routers.*rule'
+done
+```
+
+Tidak boleh ada satu pun `localhost` di keluarannya.
+
+Label ditanamkan **saat container dibuat**, jadi mengubah `.env` saja tidak
+cukup: container yang sudah berjalan tetap membawa nilai lamanya sampai dibuat
+ulang.
+
+```bash
+docker compose -f deploy/docker-compose.yml --env-file deploy/.env --profile proxy up -d --force-recreate landing
+```
 
 ---
 
