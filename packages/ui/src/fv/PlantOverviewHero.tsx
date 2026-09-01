@@ -187,9 +187,13 @@ export const PlantOverviewHero: React.FC<PlantOverviewHeroProps> = ({
               fontSize: '12px',
               padding: '3px 10px',
               borderRadius: 'var(--radius-pill)',
-              backgroundColor: 'var(--color-success)',
-              color: 'var(--color-on-success)',
-              fontWeight: 400,
+              // Guideline §2.3: a pill fills with the solid tone *container*
+              // pair. `success` / `on-success` is the pair for a solid action
+              // surface, and at 12px it resolves to only 3:1 — below AA for
+              // small text, which this badge is.
+              backgroundColor: 'var(--color-success-container)',
+              color: 'var(--color-on-success-container)',
+              fontWeight: 600,
             }}
           >
             {completionRate}

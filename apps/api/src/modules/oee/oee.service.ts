@@ -253,7 +253,7 @@ export class OeeService {
     const targetByMachine = new Map<string, number>();
     for (const wo of workOrders) {
       const key = wo.machineId ?? `line:${wo.lineId}`;
-      targetByMachine.set(key, (targetByMachine.get(key) ?? 0) + wo.targetQuantity);
+      targetByMachine.set(key, (targetByMachine.get(key) ?? 0) + wo.plannedQuantity);
     }
 
     const buckets = new Map<string, MachineDayRow>();

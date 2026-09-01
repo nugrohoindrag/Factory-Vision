@@ -123,7 +123,7 @@ export class PerformanceService {
 
     return workOrders.map((wo) => {
       const achievementPct =
-        wo.targetQuantity > 0 ? Math.round((wo.goodQuantity / wo.targetQuantity) * 100) : 0;
+        wo.plannedQuantity > 0 ? Math.round((wo.outputQuantity / wo.plannedQuantity) * 100) : 0;
 
       // Planned time, run time and ideal cycle all come from master data and
       // recorded downtime. They used to be hardcoded (8h planned, a flat 7.2h
@@ -141,7 +141,7 @@ export class PerformanceService {
       const oeeComp = this.calculateOee(
         plannedTimeSec,
         runTimeSec,
-        wo.goodQuantity,
+        wo.outputQuantity,
         wo.rejectQuantity,
         idealCycleSec
       );
@@ -241,7 +241,7 @@ export class PerformanceService {
     // Target per line, taken from the work orders scheduled on it.
     const targetByLine = new Map<string, number>();
     for (const wo of workOrders) {
-      targetByLine.set(wo.lineId, (targetByLine.get(wo.lineId) ?? 0) + wo.targetQuantity);
+      targetByLine.set(wo.lineId, (targetByLine.get(wo.lineId) ?? 0) + wo.plannedQuantity);
     }
 
     const workOrderLine = new Map(workOrders.map((wo) => [wo.id, wo.lineId]));
@@ -713,7 +713,7 @@ export class PerformanceService {
 
         const procWos = workOrders.filter((w) => w.processId === proc.id);
         const targetQuantity =
-          procWos.reduce((acc, w) => acc + w.targetQuantity, 0) ||
+          procWos.reduce((acc, w) => acc + w.plannedQuantity, 0) ||
           (goodQuantity > 0 ? Math.round(goodQuantity * 1.08) : 1000);
         const achievementPct = targetQuantity > 0 ? Math.round((goodQuantity / targetQuantity) * 100) : 0;
 
@@ -949,14 +949,14 @@ export class PerformanceService {
 
     for (const order of orders) {
       const orderWos = workOrders.filter((wo) => wo.productionOrderId === order.id);
-      const target = orderWos.reduce((acc, wo) => acc + wo.targetQuantity, 0) || order.quantity;
-      const good = orderWos.reduce((acc, wo) => acc + wo.goodQuantity, 0);
+      const target = orderWos.reduce((acc, wo) => acc + wo.plannedQuantity, 0) || order.quantity;
+      const good = orderWos.reduce((acc, wo) => acc + wo.outputQuantity, 0);
       const achievementPct = target > 0 ? Math.round((good / target) * 100) : 0;
 
       const isComplete =
         order.status === ProductionOrderStatus.COMPLETED ||
         (orderWos.length > 0 && orderWos.every((wo) => wo.status === WorkOrderStatus.COMPLETED));
-      const isRunning = orderWos.some((wo) => wo.status === WorkOrderStatus.IN_PROGRESS);
+      const isRunning = orderWos.some((wo) => wo.status === WorkOrderStatus.IN_PRODUCTION);
 
       if (isComplete) summary.completed += 1;
       else if (isRunning) summary.running += 1;

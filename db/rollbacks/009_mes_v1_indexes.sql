@@ -1,0 +1,20 @@
+-- Rollback 009 Indexes
+DROP INDEX IF EXISTS idx_customer_order_unique;
+DROP INDEX IF EXISTS idx_customer_order_status_deliv;
+DROP INDEX IF EXISTS idx_customer_order_line_lookup;
+DROP INDEX IF EXISTS idx_production_plan_unique;
+DROP INDEX IF EXISTS idx_production_plan_line_lookup;
+DROP INDEX IF EXISTS idx_prod_plan_demand_col;
+DROP INDEX IF EXISTS idx_prod_plan_demand_ppl;
+DROP INDEX IF EXISTS idx_work_order_plan_line;
+DROP INDEX IF EXISTS idx_work_order_generate_idempotency;
+DROP INDEX IF EXISTS idx_work_order_parent;
+DROP INDEX IF EXISTS idx_work_order_predecessor;
+DROP INDEX IF EXISTS idx_work_order_machine_schedule;
+DROP INDEX IF EXISTS idx_work_order_mold_schedule;
+DROP INDEX IF EXISTS idx_production_batch_num;
+DROP INDEX IF EXISTS idx_production_batch_wo_seq;
+DROP INDEX IF EXISTS idx_production_batch_status_active;
+DROP INDEX IF EXISTS idx_production_batch_date_proc;
+DROP INDEX IF EXISTS idx_production_record_batch;
+DROP INDEX IF EXISTS idx_product_mold_compat_unique;

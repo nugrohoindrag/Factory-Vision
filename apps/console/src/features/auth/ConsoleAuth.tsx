@@ -3,7 +3,7 @@ import { UserRole } from '@factory-vision/domain-types';
 import { ApiRequestError } from '@factory-vision/api-client';
 import { Button, Icon } from '@factory-vision/ui';
 import {
-  FullCircleLogo,
+  FactoryVisionLogo,
   SurfaceCard,
   toneColor,
   toneContainer,
@@ -218,7 +218,7 @@ export const ConsoleAuth: React.FC = () => {
         <div
           style={{ width: '100%', maxWidth: '460px', display: 'flex', flexDirection: 'column', gap: '20px' }}
         >
-          <FullCircleLogo size="md" variant="full" />
+          <FactoryVisionLogo size="md" variant="full" />
 
           <div>
             <h1

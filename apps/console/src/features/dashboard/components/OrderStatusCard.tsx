@@ -31,7 +31,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = ({
   const tiles: Array<{ key: string; label: string; value: number; tone?: Tone }> = summary
     ? [
         { key: 'PLANNED', label: 'Planned', value: summary.planned },
-        { key: 'IN_PROGRESS', label: 'Running', value: summary.running },
+        { key: 'IN_PRODUCTION', label: 'Running', value: summary.running },
         { key: 'COMPLETED', label: 'Completed', value: summary.completed },
         { key: 'AT_RISK', label: 'At Risk', value: summary.atRisk, tone: 'warning' },
         { key: 'DELAYED', label: 'Delayed', value: summary.delayed, tone: 'error' },
@@ -65,7 +65,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = ({
                   style={{
                     textAlign: 'left',
                     padding: '8px',
-                    borderRadius: 'var(--radius-sm, 6px)',
+                    borderRadius: 'var(--radius-sm)',
                     border: 'none',
                     cursor: onSelectStatus ? 'pointer' : 'default',
                     backgroundColor: isPriority
@@ -118,7 +118,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = ({
                         justifyContent: 'space-between',
                         gap: '10px',
                         padding: '7px 9px',
-                        borderRadius: 'var(--radius-sm, 6px)',
+                        borderRadius: 'var(--radius-sm)',
                         backgroundColor: 'var(--color-surface-container)',
                         borderLeft: `3px solid ${toneColor[tone]}`,
                         cursor: onSelectOrder ? 'pointer' : 'default',

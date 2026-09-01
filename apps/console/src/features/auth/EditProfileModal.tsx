@@ -50,7 +50,9 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.65)',
+          // The scrim token, mixed rather than a fixed black: on the light
+          // theme a 65% black scrim is heavier than the design system intends.
+          backgroundColor: 'color-mix(in srgb, var(--color-scrim) 65%, transparent)',
           backdropFilter: 'blur(6px)',
           zIndex: 1000,
           display: 'flex',
@@ -66,11 +68,11 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
           transition={{ duration: 0.2 }}
           style={{
             backgroundColor: 'var(--color-surface)',
-            borderRadius: 'var(--radius-xl, 16px)',
+            borderRadius: 'var(--radius-xl)',
             border: '1px solid var(--color-outline-variant)',
             width: '100%',
             maxWidth: '520px',
-            boxShadow: 'var(--elevation-4, 0 16px 40px rgba(0,0,0,0.4))',
+            boxShadow: 'var(--elevation-4)',
             overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column',
@@ -92,7 +94,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                 style={{
                   width: '32px',
                   height: '32px',
-                  borderRadius: 'var(--radius-md, 8px)',
+                  borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-primary-container)',
                   color: 'var(--color-on-primary-container)',
                   display: 'flex',
@@ -220,7 +222,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                   style={{
                     flex: 1,
                     padding: '6px 10px',
-                    borderRadius: 'var(--radius-sm, 6px)',
+                    borderRadius: 'var(--radius-sm)',
                     border: '1px solid var(--color-outline-variant)',
                     backgroundColor: 'var(--color-surface-container)',
                     color: 'var(--color-on-surface)',
@@ -252,7 +254,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                   style={{
                     width: '100%',
                     padding: '8px 10px',
-                    borderRadius: 'var(--radius-sm, 6px)',
+                    borderRadius: 'var(--radius-sm)',
                     border: '1px solid var(--color-outline-variant)',
                     backgroundColor: 'var(--color-surface-container)',
                     color: 'var(--color-on-surface)',
@@ -282,7 +284,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                   style={{
                     width: '100%',
                     padding: '8px 10px',
-                    borderRadius: 'var(--radius-sm, 6px)',
+                    borderRadius: 'var(--radius-sm)',
                     border: '1px solid var(--color-outline-variant)',
                     backgroundColor: 'var(--color-surface-container)',
                     color: 'var(--color-on-surface)',
@@ -310,7 +312,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                   style={{
                     width: '100%',
                     padding: '8px 10px',
-                    borderRadius: 'var(--radius-sm, 6px)',
+                    borderRadius: 'var(--radius-sm)',
                     border: '1px solid var(--color-outline-variant)',
                     backgroundColor: 'var(--color-surface-container)',
                     color: 'var(--color-on-surface)',
@@ -344,7 +346,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                   style={{
                     width: '100%',
                     padding: '8px 10px',
-                    borderRadius: 'var(--radius-sm, 6px)',
+                    borderRadius: 'var(--radius-sm)',
                     border: '1px solid var(--color-outline-variant)',
                     backgroundColor: 'var(--color-surface-container)',
                     color: 'var(--color-on-surface)',
@@ -378,7 +380,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                 style={{
                   width: '100%',
                   padding: '8px 10px',
-                  borderRadius: 'var(--radius-sm, 6px)',
+                  borderRadius: 'var(--radius-sm)',
                   border: '1px solid var(--color-outline-variant)',
                   backgroundColor: 'var(--color-surface-container)',
                   color: 'var(--color-on-surface)',

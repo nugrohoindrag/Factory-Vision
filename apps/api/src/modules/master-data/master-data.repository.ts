@@ -1,4 +1,5 @@
 import type { Executor } from '../../platform/db/executor.js';
+import { ApiError } from '../../platform/http/api-error.js';
 import type { MasterDataService } from './master-data.service.js';
 
 /**
@@ -136,33 +137,72 @@ export class MasterDataRepository {
       id: string;
       batchNumber: string;
       productId: string;
-      productionOrderId: string;
+      productionOrderId?: string;
+      workOrderId?: string;
       productionDate: string;
       status?: string;
     }
   ): Promise<void> {
+    // The Work Order is never guessed.
+    //
+    // This used to fall back to "the oldest Work Order for this product", which
+    // is an invented association: ADR-29 makes a batch a subdivision of one
+    // *specific* Work Order, so filing it under unrelated work is worse than
+    // refusing. It also collided — every guessed batch landed on sequence 1 of
+    // the same order — and surfaced as a 500 carrying the raw constraint name.
+    if (!batch.workOrderId) {
+      throw ApiError.validation('Batch harus melekat pada satu work order (ADR-29).', [
+        {
+          field: 'workOrderId',
+          code: 'REQUIRED',
+          message: 'Pilih work order yang batch ini bagi.',
+        },
+      ]);
+    }
+
+    const owner = await exec.query<{ id: string }>(
+      'SELECT id FROM work_order WHERE tenant_id = $1 AND id = $2',
+      [tenantId, batch.workOrderId]
+    );
+    if (owner.rows.length === 0) {
+      throw ApiError.validation('Work order tidak ditemukan.', [
+        { field: 'workOrderId', code: 'NOT_FOUND', message: 'Work order tidak ditemukan.' },
+      ]);
+    }
+
+    // `uq_prod_batch_wo_seq` is on (tenant, work_order, sequence), and the
+    // column defaults to 1 — so the second batch of a Work Order has to be told
+    // its own number rather than inheriting the default.
+    const nextSequence = await exec.query<{ next: string }>(
+      `SELECT COALESCE(MAX(sequence), 0) + 1 AS next
+         FROM production_batch WHERE tenant_id = $1 AND work_order_id = $2`,
+      [tenantId, batch.workOrderId]
+    );
+
     await exec.query(
-      `INSERT INTO production_batch (id, tenant_id, batch_number, product_id, production_order_id, production_date, status)
-       VALUES ($1,$2,$3,$4,$5,$6,$7)
+      `INSERT INTO production_batch (id, tenant_id, batch_number, product_id, production_order_id, work_order_id, production_date, status, sequence)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
        ON CONFLICT (id) DO UPDATE
-         SET batch_number = EXCLUDED.batch_number, status = EXCLUDED.status`,
+         SET batch_number = EXCLUDED.batch_number,
+             status = EXCLUDED.status,
+             work_order_id = COALESCE(EXCLUDED.work_order_id, production_batch.work_order_id)`,
       [
         batch.id,
         tenantId,
         batch.batchNumber,
         batch.productId,
-        batch.productionOrderId,
+        batch.productionOrderId ?? null,
+        batch.workOrderId,
         batch.productionDate,
         batch.status ?? 'OPEN',
+        Number(nextSequence.rows[0]?.next ?? 1),
       ]
     );
   }
 
   /**
    * Batches, which sit between production orders and work orders in the
-   * foreign-key order: a batch references its production order, and a work
-   * order references the batch. The caller therefore seeds production orders,
-   * then calls this, then seeds work orders.
+   * foreign-key order.
    */
   async syncBatches(
     exec: Executor,
@@ -172,24 +212,28 @@ export class MasterDataRepository {
     const batches = masterData.getBatches(tenantId);
     let batchCount = 0;
     for (const batch of batches) {
-      const parent = await exec.query<{ id: string }>(
-        'SELECT id FROM production_order WHERE tenant_id = $1 AND id = $2',
-        [tenantId, batch.productionOrderId]
-      );
-      // A batch whose production order is not persisted would fail the foreign
-      // key. Skipping it is correct: nothing can reference it either.
-      if (parent.rows.length === 0) continue;
+      const woResult = (batch as { workOrderId?: string }).workOrderId
+        ? { rows: [{ id: (batch as { workOrderId?: string }).workOrderId }] }
+        : await exec.query<{ id: string }>(
+            'SELECT id FROM work_order WHERE tenant_id = $1 AND product_id = $2 ORDER BY created_at ASC LIMIT 1',
+            [tenantId, batch.productId]
+          );
+      const targetWoId = woResult.rows[0]?.id ?? null;
 
       await exec.query(
-        `INSERT INTO production_batch (id, tenant_id, batch_number, product_id, production_order_id, production_date, status)
-         VALUES ($1,$2,$3,$4,$5,$6,$7)
-         ON CONFLICT (id) DO UPDATE SET status = EXCLUDED.status`,
+        `INSERT INTO production_batch (id, tenant_id, batch_number, product_id, production_order_id, work_order_id, production_date, status)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+         ON CONFLICT (id) DO UPDATE
+           SET batch_number = EXCLUDED.batch_number,
+               status = EXCLUDED.status,
+               work_order_id = COALESCE(EXCLUDED.work_order_id, production_batch.work_order_id)`,
         [
           batch.id,
           tenantId,
           batch.batchNumber,
           batch.productId,
-          batch.productionOrderId,
+          batch.productionOrderId ?? null,
+          targetWoId,
           batch.productionDate,
           batch.status ?? 'OPEN',
         ]

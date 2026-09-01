@@ -7,9 +7,15 @@ import { Icon, Button, M3_EASE, M3_TRANSITIONS } from '@factory-vision/ui';
 import { enqueueCommand, syncQueue } from '../../offline/queue.js';
 import { SyncStatusBar } from './SyncStatusBar.js';
 import {
+  acknowledgeRejections,
+  getSyncStatus,
+  subscribeSyncStatus,
+  type SyncStatus,
+} from '../../offline/queue.js';
+import {
   Page,
   Section,
-  FullCircleIcon,
+  FactoryVisionIcon,
   toneContainer,
   toneOnContainer,
   type Tone,
@@ -21,6 +27,65 @@ interface OperatorTerminalProps {
   operator: Operator;
   onLogout: () => void;
 }
+
+/**
+ * The unmissable half of "sync status dapat diketahui operator".
+ *
+ * `SyncStatusBar` answers the question when asked; this one asks for attention
+ * when something was refused. It stays until dismissed, because the rejection
+ * stays until dealt with.
+ */
+const RejectionBanner: React.FC = () => {
+  const [status, setStatus] = useState<SyncStatus>(getSyncStatus());
+  useEffect(() => subscribeSyncStatus(setStatus), []);
+
+  const notice = status.rejectionNotice;
+  if (!notice) return null;
+
+  return (
+    <div
+      role="alert"
+      style={{
+        backgroundColor: 'var(--color-error)',
+        color: 'var(--color-on-error)',
+        padding: '12px 20px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '12px',
+        fontFamily: 'var(--font-family)',
+      }}
+    >
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontSize: '13px', fontWeight: 800 }}>
+          {notice.count} catatan tidak diterima server
+        </div>
+        <div style={{ fontSize: '12px', opacity: 0.92 }}>
+          {notice.message} Catatan tetap tersimpan di terminal dan sudah dilaporkan ke supervisor.
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={acknowledgeRejections}
+        style={{
+          flexShrink: 0,
+          minHeight: '36px',
+          padding: '0 16px',
+          borderRadius: 'var(--radius-sm, 8px)',
+          border: '1px solid var(--color-on-error)',
+          backgroundColor: 'transparent',
+          color: 'var(--color-on-error)',
+          fontSize: '12px',
+          fontWeight: 700,
+          cursor: 'pointer',
+          fontFamily: 'var(--font-family)',
+        }}
+      >
+        Mengerti
+      </button>
+    </div>
+  );
+};
 
 export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, onLogout }) => {
   const queryClient = useQueryClient();
@@ -353,7 +418,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <FullCircleIcon size={32} />
+          <FactoryVisionIcon size={32} />
           <div>
             <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--color-on-surface)' }}>
               OPERATOR TERMINAL
@@ -387,6 +452,14 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
           </motion.button>
         </div>
       </Section>
+
+      {/*
+        MES-082-4 — the operator is told when the server refused a record.
+        A banner they have to dismiss, not a chip they might tap: an operator
+        who does not know a count was rejected will not re-enter it, and the
+        production is then only on the terminal.
+      */}
+      <RejectionBanner />
 
       {/* Active Downtime Emergency Alert Banner */}
       <AnimatePresence>
@@ -526,12 +599,12 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                       borderRadius: 'var(--radius-pill)',
                       backgroundColor: isSelected
                         ? 'var(--color-on-primary)'
-                        : wo.status === WorkOrderStatus.IN_PROGRESS
+                        : wo.status === WorkOrderStatus.IN_PRODUCTION
                           ? 'var(--color-primary-container)'
                           : 'var(--color-surface-container)',
                       color: isSelected
                         ? 'var(--color-primary)'
-                        : wo.status === WorkOrderStatus.IN_PROGRESS
+                        : wo.status === WorkOrderStatus.IN_PRODUCTION
                           ? 'var(--color-primary)'
                           : 'var(--color-on-surface-variant)',
                     }}
@@ -546,7 +619,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                     opacity: isSelected ? 0.85 : 1,
                   }}
                 >
-                  {wo.lineId} • Target: {wo.targetQuantity.toLocaleString('en-US')} {wo.unit}
+                  {wo.lineId} • Target: {(wo.plannedQuantity ?? 0).toLocaleString('en-US')} {wo.unit}
                 </div>
               </motion.button>
             );
@@ -605,7 +678,12 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                     );
                   })()}
                   {(() => {
-                    const batch = batches?.find((b) => b.id === activeWo.batchId);
+                    // ADR-29: a batch names its work order, not the other way
+                    // round. Operator batch selection arrives with MES-075
+                    // (Sprint 11); until then the chip shows the batch that
+                    // names this work order, if any.
+                    const batch = batches?.find((b) => b.workOrderId === activeWo.id);
+                    if (!batch) return null;
                     return (
                       <span
                         style={{
@@ -618,7 +696,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                           border: '1px solid var(--color-outline-variant)',
                         }}
                       >
-                        Lot: {batch ? batch.batchNumber : activeWo.batchId || 'B260829-01'}
+                        Lot: {batch.batchNumber}
                       </span>
                     );
                   })()}
@@ -651,7 +729,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                       fontFeatureSettings: '"tnum" 1',
                     }}
                   >
-                    {activeWo.targetQuantity.toLocaleString('en-US')}
+                    {(activeWo.plannedQuantity ?? 0).toLocaleString('en-US')}
                   </div>
                 </div>
                 <div>
@@ -666,7 +744,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                       fontFeatureSettings: '"tnum" 1',
                     }}
                   >
-                    {activeWo.goodQuantity.toLocaleString('en-US')}
+                    {(activeWo.outputQuantity ?? 0).toLocaleString('en-US')}
                   </div>
                 </div>
                 <div>
@@ -682,7 +760,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                       fontFeatureSettings: '"tnum" 1',
                     }}
                   >
-                    {activeWo.rejectQuantity.toLocaleString('en-US')}
+                    {(activeWo.rejectQuantity ?? 0).toLocaleString('en-US')}
                   </div>
                 </div>
                 <div>
@@ -697,8 +775,8 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                       fontFeatureSettings: '"tnum" 1',
                     }}
                   >
-                    {activeWo.targetQuantity > 0
-                      ? Math.round((activeWo.goodQuantity / activeWo.targetQuantity) * 100)
+                    {activeWo.plannedQuantity > 0
+                      ? Math.round((activeWo.outputQuantity / activeWo.plannedQuantity) * 100)
                       : 0}
                     %
                   </div>
@@ -729,7 +807,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                   borderBottom: '1px solid var(--color-outline-variant)',
                 }}
               >
-                {activeWo.status === WorkOrderStatus.RELEASED && (
+                {activeWo.status === WorkOrderStatus.CONFIRMED && (
                   <motion.button
                     whileHover={{ scale: 1.02, y: -1 }}
                     whileTap={{ scale: 0.98 }}
@@ -747,56 +825,15 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                       boxShadow: 'var(--elevation-1)',
                     }}
                   >
-                    ▶ START PRODUCTION
+                    ▶ MULAI PRODUKSI (START)
                   </motion.button>
                 )}
 
-                {activeWo.status === WorkOrderStatus.IN_PROGRESS && (
-                  <>
-                    <motion.button
-                      whileHover={{ scale: 1.02, y: -1 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={handlePauseWo}
-                      style={{
-                        flex: 1,
-                        minHeight: '44px',
-                        borderRadius: 'var(--radius-md, 10px)',
-                        backgroundColor: 'var(--color-surface-container-high)',
-                        color: 'var(--color-warning)',
-                        fontWeight: 800,
-                        fontSize: '13px',
-                        border: '1px solid var(--color-outline-variant)',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      ⏸ PAUSE WO
-                    </motion.button>
-                    <motion.button
-                      whileHover={{ scale: 1.02, y: -1 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={handleCompleteWo}
-                      style={{
-                        flex: 1,
-                        minHeight: '44px',
-                        borderRadius: 'var(--radius-md, 10px)',
-                        backgroundColor: 'var(--color-primary)',
-                        color: 'var(--color-on-primary)',
-                        fontWeight: 800,
-                        fontSize: '13px',
-                        border: 'none',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      ✓ COMPLETE WO
-                    </motion.button>
-                  </>
-                )}
-
-                {activeWo.status === WorkOrderStatus.PAUSED && (
+                {activeWo.status === WorkOrderStatus.IN_PRODUCTION && (
                   <motion.button
                     whileHover={{ scale: 1.02, y: -1 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={handleResumeWo}
+                    onClick={handleCompleteWo}
                     style={{
                       flex: 1,
                       minHeight: '44px',
@@ -809,7 +846,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                       cursor: 'pointer',
                     }}
                   >
-                    ▶ RESUME PRODUCTION
+                    ✓ SELESAIKAN WO (COMPLETE)
                   </motion.button>
                 )}
               </div>
@@ -853,31 +890,31 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                   {[1, 5, 10, 50].map((qty) => (
                     <motion.button
                       key={qty}
-                      whileHover={activeWo.status === WorkOrderStatus.IN_PROGRESS ? { scale: 1.03, y: -1 } : {}}
-                      whileTap={activeWo.status === WorkOrderStatus.IN_PROGRESS ? { scale: 0.95 } : {}}
+                      whileHover={activeWo.status === WorkOrderStatus.IN_PRODUCTION ? { scale: 1.03, y: -1 } : {}}
+                      whileTap={activeWo.status === WorkOrderStatus.IN_PRODUCTION ? { scale: 0.95 } : {}}
                       onClick={() => handleQuickGoodOutput(qty)}
-                      disabled={activeWo.status !== WorkOrderStatus.IN_PROGRESS}
+                      disabled={activeWo.status !== WorkOrderStatus.IN_PRODUCTION}
                       style={{
                         minHeight: '58px',
                         borderRadius: 'var(--radius-md, 12px)',
                         backgroundColor:
-                          activeWo.status === WorkOrderStatus.IN_PROGRESS
+                          activeWo.status === WorkOrderStatus.IN_PRODUCTION
                             ? 'var(--color-primary)'
                             : 'var(--color-surface-container)',
                         color:
-                          activeWo.status === WorkOrderStatus.IN_PROGRESS
+                          activeWo.status === WorkOrderStatus.IN_PRODUCTION
                             ? 'var(--color-on-primary)'
                             : 'var(--color-on-surface-variant)',
                         fontWeight: 800,
                         fontSize: '22px',
                         border: 'none',
-                        cursor: activeWo.status === WorkOrderStatus.IN_PROGRESS ? 'pointer' : 'not-allowed',
+                        cursor: activeWo.status === WorkOrderStatus.IN_PRODUCTION ? 'pointer' : 'not-allowed',
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
                         boxShadow:
-                          activeWo.status === WorkOrderStatus.IN_PROGRESS ? 'var(--elevation-1)' : 'none',
+                          activeWo.status === WorkOrderStatus.IN_PRODUCTION ? 'var(--elevation-1)' : 'none',
                       }}
                     >
                       +{qty}
@@ -904,7 +941,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                     whileHover={{ scale: 1.04 }}
                     whileTap={{ scale: 0.96 }}
                     onClick={() => setShowRejectModal(true)}
-                    disabled={activeWo.status !== WorkOrderStatus.IN_PROGRESS}
+                    disabled={activeWo.status !== WorkOrderStatus.IN_PRODUCTION}
                     style={{
                       padding: '4px 10px',
                       borderRadius: 'var(--radius-sm, 6px)',
@@ -913,7 +950,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                       color: 'var(--color-on-error-container)',
                       fontWeight: 700,
                       fontSize: '11px',
-                      cursor: activeWo.status === WorkOrderStatus.IN_PROGRESS ? 'pointer' : 'not-allowed',
+                      cursor: activeWo.status === WorkOrderStatus.IN_PRODUCTION ? 'pointer' : 'not-allowed',
                     }}
                   >
                     + Alasan Reject Lainnya
@@ -931,10 +968,10 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                   ).map((rej) => (
                     <motion.button
                       key={rej.id}
-                      whileHover={activeWo.status === WorkOrderStatus.IN_PROGRESS ? { scale: 1.02, y: -1 } : {}}
-                      whileTap={activeWo.status === WorkOrderStatus.IN_PROGRESS ? { scale: 0.96 } : {}}
+                      whileHover={activeWo.status === WorkOrderStatus.IN_PRODUCTION ? { scale: 1.02, y: -1 } : {}}
+                      whileTap={activeWo.status === WorkOrderStatus.IN_PRODUCTION ? { scale: 0.96 } : {}}
                       onClick={() => handleRecordReject(rej.id)}
-                      disabled={activeWo.status !== WorkOrderStatus.IN_PROGRESS}
+                      disabled={activeWo.status !== WorkOrderStatus.IN_PRODUCTION}
                       style={{
                         minHeight: '44px',
                         borderRadius: 'var(--radius-sm, 8px)',
@@ -943,8 +980,8 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({ operator, on
                         color: 'var(--color-error)',
                         fontWeight: 700,
                         fontSize: '11px',
-                        cursor: activeWo.status === WorkOrderStatus.IN_PROGRESS ? 'pointer' : 'not-allowed',
-                        opacity: activeWo.status === WorkOrderStatus.IN_PROGRESS ? 1 : 0.5,
+                        cursor: activeWo.status === WorkOrderStatus.IN_PRODUCTION ? 'pointer' : 'not-allowed',
+                        opacity: activeWo.status === WorkOrderStatus.IN_PRODUCTION ? 1 : 0.5,
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',

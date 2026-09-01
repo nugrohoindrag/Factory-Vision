@@ -11,7 +11,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@factory-vision/api": "workspace:*",
     "@factory-vision/domain-types": "workspace:*",
+    "@factory-vision/job-queue": "workspace:*",
     "dotenv": "^16.4.7"
   },
   "devDependencies": {

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Icon, StatusBadge } from '@factory-vision/ui';
-import { FullCircleLogo, FullCircleIcon } from '@factory-vision/ui/fv';
+import { FactoryVisionLogo, FactoryVisionIcon } from '@factory-vision/ui/fv';
 import { DashboardPage } from '../features/dashboard/DashboardPage.js';
 import { LiveBoardPage } from '../features/live-board/LiveBoardPage.js';
 import { WorkOrdersPage } from '../features/work-orders/WorkOrdersPage.js';
@@ -10,6 +10,7 @@ import { DowntimeAnalyticsPage } from '../features/downtime/DowntimeAnalyticsPag
 import { ReportsPage } from '../features/reports/ReportsPage.js';
 import { SettingsPage } from '../features/settings/SettingsPage.js';
 import { CorrectionsPage } from '../features/corrections/CorrectionsPage.js';
+import { SyncExceptionsPage } from '../features/sync-exceptions/SyncExceptionsPage.js';
 import { AuditLogPage } from '../features/audit/AuditLogPage.js';
 import { ConsoleAuth, UserSession } from '../features/auth/ConsoleAuth.js';
 import { avatarDataUri } from '../features/auth/avatars.js';
@@ -19,6 +20,13 @@ import { BottleneckPage } from '../features/oee/BottleneckPage.js';
 import { OeeValidationPage } from '../features/oee/OeeValidationPage.js';
 import { TargetVsActualPage } from '../features/target-actual/TargetVsActualPage.js';
 import { ShiftHandoverPage } from '../features/shift/ShiftHandoverPage.js';
+import { OrderReceivingPage } from '../features/planning/OrderReceivingPage.js';
+import { CustomerOrdersPage } from '../features/planning/CustomerOrdersPage.js';
+import { CustomerMasterPage } from '../features/planning/CustomerMasterPage.js';
+import { DemandForecastPage } from '../features/planning/DemandForecastPage.js';
+import { CapacityPlanningPage } from '../features/planning/CapacityPlanningPage.js';
+import { ProductionPlansPage } from '../features/planning/ProductionPlansPage.js';
+import { ProductionPlanWizardPage } from '../features/planning/ProductionPlanWizardPage.js';
 import { useSession } from './SessionContext.js';
 
 interface NavSubItem {
@@ -225,6 +233,47 @@ export const App: React.FC = () => {
       ],
     },
     {
+      // Demand and planning (MES Improvement v1.0). Sits above execution because
+      // that is the order the work happens in: an order arrives, becomes a plan,
+      // and only then becomes work orders on the floor.
+      id: 'demand-planning',
+      label: 'Demand & Perencanaan',
+      icon: 'calendar_month',
+      basePath: '/customer-orders',
+      children: [
+        {
+          label: 'Penerimaan Order',
+          path: '/order-receiving',
+          icon: 'add',
+          permission: 'customer_order:create',
+        },
+        {
+          label: 'Customer Order',
+          path: '/customer-orders',
+          icon: 'description',
+          permission: 'customer_order:view',
+        },
+        {
+          label: 'Demand Forecast',
+          path: '/demand-forecast',
+          icon: 'query_stats',
+          permission: 'demand_forecast:view',
+        },
+        {
+          label: 'Capacity Planning',
+          path: '/capacity-planning',
+          icon: 'factory',
+          permission: 'capacity_plan:view',
+        },
+        {
+          label: 'Production Plan',
+          path: '/production-plans',
+          icon: 'inventory_2',
+          permission: 'production_plan:view',
+        },
+      ],
+    },
+    {
       id: 'production',
       label: 'Eksekusi Produksi',
       icon: 'assignment',
@@ -300,6 +349,12 @@ export const App: React.FC = () => {
           icon: 'published_with_changes',
           permission: 'production_record:correct',
         },
+        {
+          label: 'Exception Sinkronisasi',
+          path: '/sync-exceptions',
+          icon: 'compare_arrows',
+          permission: 'work_order:view',
+        },
         { label: 'Audit Trail', path: '/audit-logs', icon: 'history', permission: 'audit:view' },
         { label: 'Validasi OEE', path: '/oee-validation', icon: 'fact_check', permission: 'analytics:view' },
       ],
@@ -310,6 +365,12 @@ export const App: React.FC = () => {
       icon: 'tune',
       basePath: '/settings',
       children: [
+        {
+          label: 'Customer',
+          path: '/master-customers',
+          icon: 'apartment',
+          permission: 'customer:view',
+        },
         {
           label: 'Proses Produksi',
           path: '/settings?tab=processes',
@@ -364,6 +425,13 @@ export const App: React.FC = () => {
           path: '/settings?tab=work-centers',
           tabKey: 'work-centers',
           icon: 'grid_view',
+          permission: 'master_data:view',
+        },
+        {
+          label: 'Mold',
+          path: '/settings?tab=molds',
+          tabKey: 'molds',
+          icon: 'compress',
           permission: 'master_data:view',
         },
         {
@@ -500,16 +568,16 @@ export const App: React.FC = () => {
                 backgroundColor: 'transparent',
                 cursor: 'pointer',
                 padding: '4px',
-                borderRadius: 'var(--radius-md, 8px)',
+                borderRadius: 'var(--radius-md)',
               }}
               title="Click to expand sidebar (Uncollapse)"
             >
-              <FullCircleIcon size={28} />
+              <FactoryVisionIcon size={28} />
             </button>
           ) : (
             /* Expanded Header: Clean Logo + Brand Name */
             <div style={{ display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-              <FullCircleLogo size="md" variant="full" />
+              <FactoryVisionLogo size="md" variant="full" />
             </div>
           )}
         </div>
@@ -552,7 +620,7 @@ export const App: React.FC = () => {
                     style={{
                       width: '42px',
                       height: '42px',
-                      borderRadius: 'var(--radius-md, 8px)',
+                      borderRadius: 'var(--radius-md)',
                       border: isGroupActive ? '1px solid var(--color-primary)' : '1px solid transparent',
                       backgroundColor: isGroupActive
                         ? 'var(--color-surface-container-high)'
@@ -602,9 +670,9 @@ export const App: React.FC = () => {
                           top: 0,
                           width: '210px',
                           backgroundColor: 'var(--color-surface-container-highest)',
-                          borderRadius: 'var(--radius-md, 10px)',
+                          borderRadius: 'var(--radius-md)',
                           border: '1px solid var(--color-outline-variant)',
-                          boxShadow: 'var(--elevation-3, 0 8px 24px rgba(0,0,0,0.35))',
+                          boxShadow: 'var(--elevation-3)',
                           padding: '8px',
                           display: 'flex',
                           flexDirection: 'column',
@@ -641,7 +709,7 @@ export const App: React.FC = () => {
                                 alignItems: 'center',
                                 gap: '8px',
                                 padding: '6px 8px',
-                                borderRadius: 'var(--radius-sm, 6px)',
+                                borderRadius: 'var(--radius-sm)',
                                 textDecoration: 'none',
                                 fontSize: '11.5px',
                                 fontWeight: isSubActive ? 800 : 500,
@@ -682,7 +750,7 @@ export const App: React.FC = () => {
                     justifyContent: 'space-between',
                     width: '100%',
                     padding: '8px 10px',
-                    borderRadius: 'var(--radius-md, 8px)',
+                    borderRadius: 'var(--radius-md)',
                     border: 'none',
                     backgroundColor: isGroupActive ? 'var(--color-surface-container)' : 'transparent',
                     color: isGroupActive ? 'var(--color-primary)' : 'var(--color-on-surface)',
@@ -744,7 +812,7 @@ export const App: React.FC = () => {
                               alignItems: 'center',
                               gap: '8px',
                               padding: '6px 8px',
-                              borderRadius: 'var(--radius-sm, 6px)',
+                              borderRadius: 'var(--radius-sm)',
                               textDecoration: 'none',
                               fontSize: '11px',
                               fontWeight: isSubActive ? 800 : 500,
@@ -807,7 +875,7 @@ export const App: React.FC = () => {
                 style={{
                   width: '38px',
                   height: '38px',
-                  borderRadius: 'var(--radius-md, 8px)',
+                  borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
                   color: 'var(--color-primary)',
@@ -862,7 +930,7 @@ export const App: React.FC = () => {
                   cursor: 'pointer',
                   flex: 1,
                   padding: '2px 4px',
-                  borderRadius: 'var(--radius-sm, 6px)',
+                  borderRadius: 'var(--radius-sm)',
                   transition: 'background-color 0.15s ease',
                 }}
                 title="Click to update your profile details"
@@ -927,7 +995,7 @@ export const App: React.FC = () => {
                   style={{
                     width: '28px',
                     height: '28px',
-                    borderRadius: 'var(--radius-sm, 6px)',
+                    borderRadius: 'var(--radius-sm)',
                     backgroundColor: 'var(--color-surface-container)',
                     border: '1px solid var(--color-outline-variant)',
                     color: 'var(--color-on-surface-variant)',
@@ -945,7 +1013,7 @@ export const App: React.FC = () => {
                   onClick={handleLogout}
                   style={{
                     padding: '4px 7px',
-                    borderRadius: 'var(--radius-sm, 6px)',
+                    borderRadius: 'var(--radius-sm)',
                     backgroundColor: 'var(--color-surface-container)',
                     border: '1px solid var(--color-outline-variant)',
                     color: 'var(--color-on-surface-variant)',
@@ -989,7 +1057,7 @@ export const App: React.FC = () => {
               style={{
                 width: '32px',
                 height: '32px',
-                borderRadius: 'var(--radius-md, 8px)',
+                borderRadius: 'var(--radius-md)',
                 border: '1px solid var(--color-outline-variant)',
                 backgroundColor: 'var(--color-surface-container)',
                 color: 'var(--color-primary)',
@@ -1012,7 +1080,12 @@ export const App: React.FC = () => {
               </span>
             </div>
 
-            <span style={{ color: 'var(--color-outline-variant)' }}>|</span>
+            {/* Decorative divider, not content: it carries no meaning a screen
+                reader should announce, and holding it to text contrast would
+                make it read as text. */}
+            <span aria-hidden="true" style={{ color: 'var(--color-outline-variant)' }}>
+              |
+            </span>
             <span style={{ fontSize: '11.5px', color: 'var(--color-on-surface-variant)' }}>
               Shift 1 (07:00, 15:00 UTC+7)
             </span>
@@ -1036,7 +1109,7 @@ export const App: React.FC = () => {
                 justifyContent: 'center',
                 width: '32px',
                 height: '32px',
-                borderRadius: 'var(--radius-md, 8px)',
+                borderRadius: 'var(--radius-md)',
                 backgroundColor: 'var(--color-surface-container)',
                 border: '1px solid var(--color-outline-variant)',
                 color: 'var(--color-on-surface)',
@@ -1104,6 +1177,62 @@ export const App: React.FC = () => {
               }
             />
             <Route
+              path="/order-receiving"
+              element={
+                <Guarded need="customer_order:create">
+                  <OrderReceivingPage />
+                </Guarded>
+              }
+            />
+            <Route
+              path="/customer-orders"
+              element={
+                <Guarded need="customer_order:view">
+                  <CustomerOrdersPage />
+                </Guarded>
+              }
+            />
+            <Route
+              path="/master-customers"
+              element={
+                <Guarded need="customer:view">
+                  <CustomerMasterPage />
+                </Guarded>
+              }
+            />
+            <Route
+              path="/demand-forecast"
+              element={
+                <Guarded need="demand_forecast:view">
+                  <DemandForecastPage />
+                </Guarded>
+              }
+            />
+            <Route
+              path="/capacity-planning"
+              element={
+                <Guarded need="capacity_plan:view">
+                  <CapacityPlanningPage />
+                </Guarded>
+              }
+            />
+            <Route
+              path="/production-plans"
+              element={
+                <Guarded need="production_plan:view">
+                  <ProductionPlansPage />
+                </Guarded>
+              }
+            />
+            <Route
+              path="/production-plans/:planId"
+              element={
+                <Guarded need="production_plan:view">
+                  <ProductionPlanWizardPage />
+                </Guarded>
+              }
+            />
+            <Route
               path="/downtime-analytics"
               element={
                 <Guarded need="analytics:view">
@@ -1164,6 +1293,20 @@ export const App: React.FC = () => {
               element={
                 <Guarded need="production_record:correct">
                   <CorrectionsPage userRole={session.role} userName={session.name} />
+                </Guarded>
+              }
+            />
+            {/*
+              Guarded on `work_order:view` rather than on the permission that
+              resolves an exception: seeing that a record was not accepted is
+              wider than being able to act on it, and hiding the list from the
+              people closest to the line is how a rejection goes unnoticed.
+            */}
+            <Route
+              path="/sync-exceptions"
+              element={
+                <Guarded need="work_order:view">
+                  <SyncExceptionsPage />
                 </Guarded>
               }
             />

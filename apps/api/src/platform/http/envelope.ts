@@ -96,6 +96,54 @@ export function paginate<T extends Record<string, unknown>>(
   };
 }
 
+/**
+ * Recognises a PostgreSQL constraint violation and says what it means.
+ *
+ * Only the classes a request can actually cause are translated; anything else
+ * falls through to the generic handler, because inventing an explanation for an
+ * error we do not understand is worse than admitting it is a fault.
+ */
+function describeDatabaseError(
+  error: unknown
+): { status: number; code: string; message: string } | undefined {
+  const pgCode = (error as { code?: string })?.code;
+  const constraint = (error as { constraint?: string })?.constraint;
+  const column = (error as { column?: string })?.column;
+
+  switch (pgCode) {
+    case '23505':
+      return {
+        status: 409,
+        code: 'CONFLICT',
+        message: constraint
+          ? `Data serupa sudah ada dan melanggar batasan ${constraint}.`
+          : 'Data serupa sudah ada.',
+      };
+    case '23503':
+      return {
+        status: 422,
+        code: 'VALIDATION_ERROR',
+        message: 'Data yang direferensikan tidak ditemukan.',
+      };
+    case '23502':
+      return {
+        status: 422,
+        code: 'VALIDATION_ERROR',
+        message: column ? `Kolom ${column} wajib diisi.` : 'Ada kolom wajib yang belum diisi.',
+      };
+    case '23514':
+      return {
+        status: 422,
+        code: 'VALIDATION_ERROR',
+        message: constraint
+          ? `Nilai tidak memenuhi aturan ${constraint}.`
+          : 'Nilai tidak memenuhi aturan yang berlaku.',
+      };
+    default:
+      return undefined;
+  }
+}
+
 /** Terminal error middleware, the only place an error body is constructed. */
 export function errorMiddleware(error: unknown, req: Request, res: Response, _next: NextFunction): void {
   const requestId = req.requestId ?? 'unknown';
@@ -103,6 +151,18 @@ export function errorMiddleware(error: unknown, req: Request, res: Response, _ne
   if (error instanceof ApiError) {
     res.status(error.status).json({
       error: { code: error.code, message: error.message, fields: error.fields, requestId },
+    });
+    return;
+  }
+
+  // A PostgreSQL constraint violation is a *client* problem expressed in the
+  // database's vocabulary. Answering 500 with the raw text is wrong twice over:
+  // it tells the caller nothing they can act on, and it publishes constraint
+  // names, column names and sometimes values to whoever asked.
+  const database = describeDatabaseError(error);
+  if (database) {
+    res.status(database.status).json({
+      error: { code: database.code, message: database.message, requestId },
     });
     return;
   }
@@ -118,6 +178,16 @@ export function errorMiddleware(error: unknown, req: Request, res: Response, _ne
   if (status === 500) {
     // eslint-disable-next-line no-console
     console.error(`[${requestId}] Unhandled error:`, error);
+    // The detail stays in the log, where an engineer can read it. The caller
+    // gets the request id, which is how the two are joined up.
+    res.status(500).json({
+      error: {
+        code,
+        message: 'Terjadi kesalahan internal. Sertakan request id saat melaporkan.',
+        requestId,
+      },
+    });
+    return;
   }
 
   res.status(status).json({ error: { code, message, requestId } });

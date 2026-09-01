@@ -150,17 +150,54 @@ VALUES
   ('po-260829-003', 'tenant-pilot-factory-01', 'PO-260829-003', 'prod-tire-c', 800, CURRENT_DATE + INTERVAL '4 days', 'DRAFT', 'PPIC Supervisor')
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO production_batch (id, tenant_id, batch_number, product_id, production_order_id, production_date, status)
-VALUES
-  ('batch-260829-01', 'tenant-pilot-factory-01', 'B260829-01', 'prod-tire-a', 'po-260829-001', CURRENT_DATE, 'ACTIVE'),
-  ('batch-260829-02', 'tenant-pilot-factory-01', 'B260829-02', 'prod-tire-b', 'po-260829-002', CURRENT_DATE, 'ACTIVE')
-ON CONFLICT (id) DO NOTHING;
+-- (Batches are seeded after the work orders — see below.)
 
 -- 16. Work Orders (Multi-Process Sequence per Routing)
-INSERT INTO work_order (id, tenant_id, production_order_id, wo_number, product_id, process_id, sequence, batch_id, line_id, work_center_id, machine_id, target_quantity, unit, planned_start, planned_end, good_quantity, reject_quantity, status, priority)
+-- Production Plan and Plan Line: a Work Order belongs to a plan line, not to a
+-- Production Order (ADR-16). production_plan_line_id is NOT NULL since §22
+-- step 15.
+INSERT INTO production_plan (id, tenant_id, plan_number, period_start, period_end, status, wizard_step)
 VALUES
-  ('wo-101', 'tenant-pilot-factory-01', 'po-260829-001', 'WO-260829-01-MIX', 'prod-tire-a', 'proc-mixing', 1, 'batch-260829-01', 'line-01', 'wc-mixing', 'mc-mix-01', 2000, 'PCS', CURRENT_TIMESTAMP - INTERVAL '4 hours', CURRENT_TIMESTAMP + INTERVAL '4 hours', 1450, 15, 'IN_PROGRESS', 1),
-  ('wo-102', 'tenant-pilot-factory-01', 'po-260829-001', 'WO-260829-01-TBM', 'prod-tire-a', 'proc-building', 3, 'batch-260829-01', 'line-01', 'wc-building', 'mc-tbm-01', 2000, 'PCS', CURRENT_TIMESTAMP - INTERVAL '2 hours', CURRENT_TIMESTAMP + INTERVAL '6 hours', 980, 12, 'IN_PROGRESS', 1),
-  ('wo-103', 'tenant-pilot-factory-01', 'po-260829-001', 'WO-260829-01-CPR', 'prod-tire-a', 'proc-curing', 4, 'batch-260829-01', 'line-01', 'wc-curing', 'mc-cpr-01', 2000, 'PCS', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '8 hours', 480, 8, 'IN_PROGRESS', 1),
-  ('wo-104', 'tenant-pilot-factory-01', 'po-260829-001', 'WO-260829-01-INS', 'prod-tire-a', 'proc-inspection', 5, 'batch-260829-01', 'line-01', 'wc-inspection', 'mc-ins-01', 2000, 'PCS', CURRENT_TIMESTAMP + INTERVAL '2 hours', CURRENT_TIMESTAMP + INTERVAL '10 hours', 0, 0, 'RELEASED', 1)
+  ('plan-seed-001', 'tenant-pilot-factory-01', 'PLAN-SEED-001', CURRENT_DATE, CURRENT_DATE + 7, 'CONFIRMED', 6),
+  ('plan-seed-002', 'tenant-pilot-factory-01', 'PLAN-SEED-002', CURRENT_DATE, CURRENT_DATE + 9, 'CONFIRMED', 6)
 ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO production_plan_line (id, tenant_id, production_plan_id, product_id, demand_quantity, planned_quantity, required_delivery_date, priority, capacity_status, status)
+VALUES
+  ('planline-seed-001', 'tenant-pilot-factory-01', 'plan-seed-001', 'prod-tire-a', 2000, 2000, CURRENT_DATE + 2, 1, 'WITHIN_PLAN', 'CONFIRMED'),
+  ('planline-seed-002', 'tenant-pilot-factory-01', 'plan-seed-002', 'prod-tire-b', 1500, 1500, CURRENT_DATE + 3, 1, 'WITHIN_PLAN', 'CONFIRMED')
+ON CONFLICT (id) DO NOTHING;
+
+-- output_quantity is what passed quality; reject is a separate bucket and is
+-- never folded in (ADR-23). work_order.good_quantity no longer exists.
+INSERT INTO work_order (id, tenant_id, production_order_id, production_plan_line_id, wo_number, product_id, process_id, sequence, line_id, work_center_id, machine_id, target_quantity, planned_quantity, unit, planned_start, planned_end, input_quantity, output_quantity, reject_quantity, scrap_quantity, rework_quantity, transferred_quantity, status, priority)
+VALUES
+  ('wo-101', 'tenant-pilot-factory-01', 'po-260829-001', 'planline-seed-001', 'WO-260829-01-MIX', 'prod-tire-a', 'proc-mixing', 1, 'line-01', 'wc-mixing', 'mc-mix-01', 2000, 2000, 'PCS', CURRENT_TIMESTAMP - INTERVAL '4 hours', CURRENT_TIMESTAMP + INTERVAL '4 hours', 1465, 1450, 15, 0, 0, 1450, 'IN_PRODUCTION', 1),
+  ('wo-102', 'tenant-pilot-factory-01', 'po-260829-001', 'planline-seed-001', 'WO-260829-01-TBM', 'prod-tire-a', 'proc-building', 3, 'line-01', 'wc-building', 'mc-tbm-01', 2000, 2000, 'PCS', CURRENT_TIMESTAMP - INTERVAL '2 hours', CURRENT_TIMESTAMP + INTERVAL '6 hours', 992, 980, 12, 0, 0, 980, 'IN_PRODUCTION', 1),
+  ('wo-103', 'tenant-pilot-factory-01', 'po-260829-001', 'planline-seed-001', 'WO-260829-01-CPR', 'prod-tire-a', 'proc-curing', 4, 'line-01', 'wc-curing', 'mc-cpr-01', 2000, 2000, 'PCS', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '8 hours', 488, 480, 8, 0, 0, 480, 'IN_PRODUCTION', 1),
+  ('wo-104', 'tenant-pilot-factory-01', 'po-260829-001', 'planline-seed-001', 'WO-260829-01-INS', 'prod-tire-a', 'proc-inspection', 5, 'line-01', 'wc-inspection', 'mc-ins-01', 2000, 2000, 'PCS', CURRENT_TIMESTAMP + INTERVAL '2 hours', CURRENT_TIMESTAMP + INTERVAL '10 hours', 0, 0, 0, 0, 0, 0, 'CONFIRMED', 1),
+  -- Order 002 carries batch-260829-02. Under the v1.0 model a batch belongs to a
+  -- Work Order, not to a Production Order (ADR-29), so the order needs work
+  -- orders of its own — without them the batch would be an orphan that MES-011
+  -- rightly refuses to migrate.
+  ('wo-201', 'tenant-pilot-factory-01', 'po-260829-002', 'planline-seed-002', 'WO-260829-02-MIX', 'prod-tire-b', 'proc-mixing', 1, 'line-02', 'wc-mixing', 'mc-mix-02', 1500, 1500, 'PCS', CURRENT_TIMESTAMP - INTERVAL '3 hours', CURRENT_TIMESTAMP + INTERVAL '5 hours', 910, 900, 10, 0, 0, 900, 'IN_PRODUCTION', 1),
+  ('wo-202', 'tenant-pilot-factory-01', 'po-260829-002', 'planline-seed-002', 'WO-260829-02-TBM', 'prod-tire-b', 'proc-building', 3, 'line-02', 'wc-building', 'mc-tbm-01', 1500, 1500, 'PCS', CURRENT_TIMESTAMP - INTERVAL '1 hours', CURRENT_TIMESTAMP + INTERVAL '7 hours', 426, 420, 6, 0, 0, 420, 'IN_PRODUCTION', 1)
+ON CONFLICT (id) DO NOTHING;
+
+-- 17. Production Batches (ADR-29: a batch belongs to a Work Order)
+INSERT INTO production_batch (
+  id, tenant_id, batch_number, work_order_id, product_id, process_id, sequence,
+  planned_quantity, input_quantity, output_quantity,
+  reject_quantity, scrap_quantity, rework_quantity, transferred_quantity,
+  production_date, status
+)
+VALUES
+  ('batch-260829-01', 'tenant-pilot-factory-01', 'B260829-01', 'wo-101', 'prod-tire-a', 'proc-mixing', 1,
+   1000, 1465, 1450, 15, 0, 0, 1450, CURRENT_DATE, 'IN_PRODUCTION'),
+  ('batch-260829-02', 'tenant-pilot-factory-01', 'B260829-02', 'wo-201', 'prod-tire-b', 'proc-mixing', 1,
+   750, 910, 900, 10, 0, 0, 900, CURRENT_DATE, 'IN_PRODUCTION')
+ON CONFLICT (id) DO NOTHING;
+
+-- The two work orders that own a batch must be batch-managed, or E1/E2 would
+-- reject any production record written against them.
+UPDATE work_order SET is_batch_managed = TRUE WHERE id IN ('wo-101', 'wo-201');

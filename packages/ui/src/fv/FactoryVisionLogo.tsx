@@ -1,16 +1,24 @@
 import React from 'react';
 
-export interface FullCircleIconProps {
+export interface FactoryVisionIconProps {
   size?: number | string;
   className?: string;
   style?: React.CSSProperties;
 }
 
 /**
- * FullCircle Dot Cluster Symbol
- * Precision vector reproduction of the multi-ring concentric circular dot flower.
+ * The FactoryVision emblem: concentric rings of dots.
+ *
+ * The colours are literal hex on purpose and this is one of the two files
+ * allowed to name them. A logo is a fixed brand asset, not a themed surface —
+ * re-pointing it at `--color-primary` would make it change with the palette,
+ * which is the one thing a mark must never do.
  */
-export const FullCircleIcon: React.FC<FullCircleIconProps> = ({ size = 32, className, style }) => {
+export const FactoryVisionIcon: React.FC<FactoryVisionIconProps> = ({
+  size = 32,
+  className,
+  style,
+}) => {
   return (
     <svg
       width={size}
@@ -63,7 +71,7 @@ export const FullCircleIcon: React.FC<FullCircleIconProps> = ({ size = 32, class
   );
 };
 
-export interface FullCircleLogoProps {
+export interface FactoryVisionLogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   variant?: 'full' | 'compact' | 'icon-only';
   tagline?: string;
@@ -100,14 +108,13 @@ const sizeConfig = {
 };
 
 /**
- * FullCircle Brand Logo Component
- * Incorporates the multi-ring dot cluster emblem and the "FullCircle" typography
- * with the "Fully Solution For Your Obstacle Circlelation" tagline.
+ * FactoryVision Brand Logo Component
+ * Incorporates the dot cluster emblem and the "FactoryVision" typography.
  */
-export const FullCircleLogo: React.FC<FullCircleLogoProps> = ({
+export const FactoryVisionLogo: React.FC<FactoryVisionLogoProps> = ({
   size = 'md',
   variant = 'full',
-  tagline = 'Fully Solution For Your Obstacle Circlelation',
+  tagline = 'Manufacturing Execution System',
   showTagline = true,
   className = '',
   style,
@@ -115,12 +122,12 @@ export const FullCircleLogo: React.FC<FullCircleLogoProps> = ({
   const conf = sizeConfig[size];
 
   if (variant === 'icon-only') {
-    return <FullCircleIcon size={conf.iconSize} className={className} style={style} />;
+    return <FactoryVisionIcon size={conf.iconSize} className={className} style={style} />;
   }
 
   return (
     <div
-      className={`fullcircle-brand-logo ${className}`}
+      className={`factoryvision-brand-logo ${className}`}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -129,7 +136,7 @@ export const FullCircleLogo: React.FC<FullCircleLogoProps> = ({
         ...style,
       }}
     >
-      <FullCircleIcon size={conf.iconSize} />
+      <FactoryVisionIcon size={conf.iconSize} />
 
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', lineHeight: 1.15 }}>
         <div
@@ -137,13 +144,13 @@ export const FullCircleLogo: React.FC<FullCircleLogoProps> = ({
             fontWeight: 800,
             fontSize: conf.titleSize,
             letterSpacing: '-0.025em',
-            color: 'var(--color-on-surface, #002D80)',
+            color: 'var(--fv-text-main, var(--color-on-surface, #001D39))',
             display: 'flex',
             alignItems: 'baseline',
           }}
         >
-          <span>Full</span>
-          <span style={{ color: 'var(--color-primary, #1D5BC7)' }}>Circle</span>
+          <span>Factory</span>
+          <span style={{ color: 'var(--fv-deep, var(--color-primary, #0A4174))' }}>Vision</span>
         </div>
 
         {(variant === 'full' || showTagline) && tagline && (
@@ -152,7 +159,7 @@ export const FullCircleLogo: React.FC<FullCircleLogoProps> = ({
               fontSize: conf.taglineSize,
               fontWeight: 600,
               letterSpacing: '-0.01em',
-              color: 'var(--color-on-surface-variant, #4068B2)',
+              color: 'var(--fv-text-muted, var(--color-on-surface-variant, #49769F))',
               marginTop: '1.5px',
               whiteSpace: 'nowrap',
             }}
@@ -164,3 +171,4 @@ export const FullCircleLogo: React.FC<FullCircleLogoProps> = ({
     </div>
   );
 };
+

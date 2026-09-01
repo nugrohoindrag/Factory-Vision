@@ -35,7 +35,7 @@ export const LiveBoardPage: React.FC = () => {
 
   const totalLines = liveBoard?.length || 0;
   const runningLines =
-    liveBoard?.filter((l) => l.workOrder.status === WorkOrderStatus.IN_PROGRESS && !l.hasActiveDowntime)
+    liveBoard?.filter((l) => l.workOrder.status === WorkOrderStatus.IN_PRODUCTION && !l.hasActiveDowntime)
       .length || 0;
   const downtimeLines = liveBoard?.filter((l) => l.hasActiveDowntime).length || 0;
 
@@ -130,7 +130,7 @@ export const LiveBoardPage: React.FC = () => {
           filteredBoard.map((item) => {
             const isDowntime = item.hasActiveDowntime;
             const isLowOee = item.oee < 50;
-            const isNormal = item.workOrder.status === WorkOrderStatus.IN_PROGRESS && !isLowOee && !isDowntime;
+            const isNormal = item.workOrder.status === WorkOrderStatus.IN_PRODUCTION && !isLowOee && !isDowntime;
 
             // The line's state picks a semantic tone, never a colour. Tone
             // rides the rail, the strokes, the gauge and the figures; the
@@ -277,7 +277,7 @@ export const LiveBoardPage: React.FC = () => {
                   <div
                     style={{
                       backgroundColor: 'var(--color-surface-container)',
-                      borderRadius: 'var(--radius-md, 8px)',
+                      borderRadius: 'var(--radius-md)',
                       padding: '10px 12px',
                       border: '1px solid var(--color-outline-variant)',
                     }}
@@ -304,8 +304,8 @@ export const LiveBoardPage: React.FC = () => {
                     >
                       <span style={{ color: 'var(--color-on-surface-variant)' }}>Target Progress</span>
                       <strong style={{ color: 'var(--color-on-surface)', fontFeatureSettings: '"tnum" 1' }}>
-                        {item.workOrder.goodQuantity.toLocaleString('en-US')} /{' '}
-                        {item.workOrder.targetQuantity.toLocaleString('en-US')} ({item.achievementPct}%)
+                        {item.workOrder.outputQuantity.toLocaleString('en-US')} /{' '}
+                        {item.workOrder.plannedQuantity.toLocaleString('en-US')} ({item.achievementPct}%)
                       </strong>
                     </div>
 
@@ -348,7 +348,7 @@ export const LiveBoardPage: React.FC = () => {
                     style={{
                       backgroundColor: 'var(--color-surface-container)',
                       padding: '6px 4px',
-                      borderRadius: 'var(--radius-sm, 6px)',
+                      borderRadius: 'var(--radius-sm)',
                       border: '1px solid var(--color-outline-variant)',
                     }}
                   >
@@ -368,7 +368,7 @@ export const LiveBoardPage: React.FC = () => {
                     style={{
                       backgroundColor: 'var(--color-surface-container)',
                       padding: '6px 4px',
-                      borderRadius: 'var(--radius-sm, 6px)',
+                      borderRadius: 'var(--radius-sm)',
                       border: '1px solid var(--color-outline-variant)',
                     }}
                   >
@@ -388,7 +388,7 @@ export const LiveBoardPage: React.FC = () => {
                     style={{
                       backgroundColor: 'var(--color-surface-container)',
                       padding: '6px 4px',
-                      borderRadius: 'var(--radius-sm, 6px)',
+                      borderRadius: 'var(--radius-sm)',
                       border: '1px solid var(--color-outline-variant)',
                     }}
                   >
@@ -408,7 +408,7 @@ export const LiveBoardPage: React.FC = () => {
                     style={{
                       backgroundColor: 'var(--color-surface-container)',
                       padding: '6px 4px',
-                      borderRadius: 'var(--radius-sm, 6px)',
+                      borderRadius: 'var(--radius-sm)',
                       border: '1px solid var(--color-outline-variant)',
                     }}
                   >

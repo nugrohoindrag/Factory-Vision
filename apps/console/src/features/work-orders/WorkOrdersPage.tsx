@@ -215,11 +215,11 @@ export const WorkOrdersPage: React.FC = () => {
   const handleOpenEditWo = (wo: WorkOrder) => {
     setSelectedWo(wo);
     setFormData({
-      productionOrderId: wo.productionOrderId,
+      productionOrderId: wo.productionOrderId || '',
       productId: wo.productId,
       lineId: wo.lineId,
       machineId: wo.machineId || 'mc-stamping-01',
-      targetQuantity: wo.targetQuantity,
+      targetQuantity: wo.plannedQuantity,
       unit: wo.unit || 'PCS',
       priority: wo.priority || 1,
       plannedStart: wo.plannedStart
@@ -257,28 +257,26 @@ export const WorkOrdersPage: React.FC = () => {
   });
 
   const totalWos = workOrders?.length || 0;
-  const inProgressWos = workOrders?.filter((w) => w.status === WorkOrderStatus.IN_PROGRESS).length || 0;
-  const releasedWos =
-    workOrders?.filter((w) => w.status === WorkOrderStatus.RELEASED || w.status === WorkOrderStatus.SCHEDULED)
+  const inProductionWos = workOrders?.filter((w) => w.status === WorkOrderStatus.IN_PRODUCTION).length || 0;
+  const confirmedWos =
+    workOrders?.filter((w) => w.status === WorkOrderStatus.CONFIRMED || w.status === WorkOrderStatus.SCHEDULED)
       .length || 0;
   const completedWos = workOrders?.filter((w) => w.status === WorkOrderStatus.COMPLETED).length || 0;
 
   // Status Chip Colors
   const getStatusColor = (status: WorkOrderStatus | string) => {
     switch (status) {
-      case WorkOrderStatus.IN_PROGRESS:
-        return 'var(--color-success, #22c55e)';
-      case WorkOrderStatus.RELEASED:
+      case WorkOrderStatus.IN_PRODUCTION:
+        return 'var(--color-success)';
+      case WorkOrderStatus.CONFIRMED:
       case WorkOrderStatus.SCHEDULED:
-        return 'var(--color-primary, #3b82f6)';
+        return 'var(--color-primary)';
       case WorkOrderStatus.COMPLETED:
-        return 'var(--color-info, #06b6d4)';
-      case WorkOrderStatus.PAUSED:
-        return 'var(--color-warning, #f59e0b)';
+        return 'var(--color-info)';
       case WorkOrderStatus.CANCELLED:
-        return 'var(--color-error, #ef4444)';
+        return 'var(--color-error)';
       default:
-        return 'var(--color-on-surface-variant, #94a3b8)';
+        return 'var(--color-on-surface-variant)';
     }
   };
 
@@ -308,7 +306,8 @@ export const WorkOrdersPage: React.FC = () => {
       sortable: true,
       render: (wo) => {
         const proc = processes?.find((p) => p.id === wo.processId);
-        const batch = batches?.find((b) => b.id === wo.batchId);
+        // ADR-29: the batch names its work order, not the reverse.
+        const batch = batches?.find((b) => b.workOrderId === wo.id);
         return (
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -357,7 +356,7 @@ export const WorkOrdersPage: React.FC = () => {
       header: 'Target Produksi & Produksi Aktual',
       sortable: true,
       render: (wo) => {
-        const pct = wo.targetQuantity > 0 ? Math.round((wo.goodQuantity / wo.targetQuantity) * 100) : 0;
+        const pct = wo.plannedQuantity > 0 ? Math.round((wo.outputQuantity / wo.plannedQuantity) * 100) : 0;
         return (
           <div style={{ minWidth: '160px' }}>
             <div
@@ -369,10 +368,10 @@ export const WorkOrdersPage: React.FC = () => {
               }}
             >
               <span style={{ fontWeight: 800, color: 'var(--color-success)' }}>
-                {wo.goodQuantity.toLocaleString('id-ID')} Good
+                {wo.outputQuantity.toLocaleString('id-ID')} Good
               </span>
               <span style={{ color: 'var(--color-on-surface-variant)' }}>
-                / {wo.targetQuantity.toLocaleString('en-US')} {wo.unit}
+                / {wo.plannedQuantity.toLocaleString('en-US')} {wo.unit}
               </span>
             </div>
             <div
@@ -522,13 +521,16 @@ export const WorkOrdersPage: React.FC = () => {
             zIndex: 9999,
             backgroundColor:
               toastMessage.type === 'success'
-                ? 'var(--color-success, #16a34a)'
+                ? 'var(--color-success)'
                 : toastMessage.type === 'error'
-                  ? 'var(--color-error, #dc2626)'
-                  : 'var(--color-primary, #2563eb)',
-            color: '#FFFFFF',
+                  ? 'var(--color-error)'
+                  : 'var(--color-primary)',
+            // The toast fills with a tone container, so its text takes the
+            // matching on-container token. A hardcoded white was legible on the
+            // dark theme and washed out on the light one.
+            color: 'var(--color-on-primary)',
             padding: '10px 18px',
-            borderRadius: 'var(--radius-md, 8px)',
+            borderRadius: 'var(--radius-md)',
             fontWeight: 700,
             fontSize: '13px',
             boxShadow: 'var(--elevation-3)',
@@ -617,16 +619,16 @@ export const WorkOrdersPage: React.FC = () => {
           icon={<Icon name="assignment" size={18} />}
         />
         <MetricCard
-          label="In Progress"
-          value={`${inProgressWos} WO`}
+          label="In Production"
+          value={`${inProductionWos} WO`}
           delta="Aktif di lantai produksi"
           deltaType="positive"
           tone="success"
           icon={<Icon name="play_arrow" size={18} />}
         />
         <MetricCard
-          label="Released & Scheduled"
-          value={`${releasedWos} WO`}
+          label="Confirmed & Scheduled"
+          value={`${confirmedWos} WO`}
           delta="Menunggu eksekusi operator"
           deltaType="neutral"
           tone="primary"
@@ -728,7 +730,7 @@ export const WorkOrdersPage: React.FC = () => {
               >
                 Status:
               </span>
-              {['ALL', 'SCHEDULED', 'RELEASED', 'IN_PROGRESS', 'PAUSED', 'COMPLETED', 'CANCELLED'].map((st) => (
+              {['ALL', 'DRAFT', 'SCHEDULED', 'CONFIRMED', 'IN_PRODUCTION', 'COMPLETED', 'CANCELLED'].map((st) => (
                 <FilterChip key={st} selected={selectedStatus === st} onClick={() => setSelectedStatus(st)}>
                   {st === 'ALL' ? 'Semua' : statusLabel(st)}
                 </FilterChip>
@@ -741,7 +743,7 @@ export const WorkOrdersPage: React.FC = () => {
                 onChange={(e) => setSelectedLineFilter(e.target.value)}
                 style={{
                   padding: '6px 12px',
-                  borderRadius: 'var(--radius-md, 8px)',
+                  borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
                   color: 'var(--color-on-surface)',
@@ -765,7 +767,7 @@ export const WorkOrdersPage: React.FC = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={{
                   padding: '6px 12px',
-                  borderRadius: 'var(--radius-md, 8px)',
+                  borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
                   color: 'var(--color-on-surface)',
@@ -843,7 +845,7 @@ export const WorkOrdersPage: React.FC = () => {
             {productionOrders?.map((po) => {
               const prod = products?.find((p) => p.id === po.productId);
               const relatedWos = workOrders?.filter((w) => w.productionOrderId === po.id) || [];
-              const totalOutput = relatedWos.reduce((acc, curr) => acc + curr.goodQuantity, 0);
+              const totalOutput = relatedWos.reduce((acc, curr) => acc + curr.outputQuantity, 0);
               const pct = po.quantity > 0 ? Math.round((totalOutput / po.quantity) * 100) : 0;
               const poRoutings = (routings || [])
                 .filter((r) => r.productId === po.productId)
@@ -855,7 +857,7 @@ export const WorkOrdersPage: React.FC = () => {
                   style={{
                     backgroundColor: 'var(--color-surface)',
                     border: '1px solid var(--color-outline-variant)',
-                    borderRadius: 'var(--radius-lg, 12px)',
+                    borderRadius: 'var(--radius-lg)',
                     padding: '18px 20px',
                     display: 'flex',
                     flexDirection: 'column',
@@ -969,7 +971,7 @@ export const WorkOrdersPage: React.FC = () => {
                   <div
                     style={{
                       backgroundColor: 'var(--color-surface-container)',
-                      borderRadius: 'var(--radius-md, 8px)',
+                      borderRadius: 'var(--radius-md)',
                       padding: '10px 14px',
                       display: 'flex',
                       flexDirection: 'column',
@@ -1007,7 +1009,7 @@ export const WorkOrdersPage: React.FC = () => {
                               <div
                                 style={{
                                   padding: '6px 10px',
-                                  borderRadius: 'var(--radius-md, 6px)',
+                                  borderRadius: 'var(--radius-md)',
                                   backgroundColor: stepWo
                                     ? 'var(--color-surface)'
                                     : 'var(--color-surface-container-high)',
@@ -1122,7 +1124,7 @@ export const WorkOrdersPage: React.FC = () => {
               style={{
                 width: '100%',
                 padding: '9px 12px',
-                borderRadius: 'var(--radius-md, 8px)',
+                borderRadius: 'var(--radius-md)',
                 backgroundColor: 'var(--color-surface-container-high)',
                 border: '1px solid var(--color-outline-variant)',
                 color: 'var(--color-on-surface)',
@@ -1156,7 +1158,7 @@ export const WorkOrdersPage: React.FC = () => {
               style={{
                 width: '100%',
                 padding: '9px 12px',
-                borderRadius: 'var(--radius-md, 8px)',
+                borderRadius: 'var(--radius-md)',
                 backgroundColor: 'var(--color-surface-container-high)',
                 border: '1px solid var(--color-outline-variant)',
                 color: 'var(--color-on-surface)',
@@ -1191,7 +1193,7 @@ export const WorkOrdersPage: React.FC = () => {
                 style={{
                   width: '100%',
                   padding: '9px 12px',
-                  borderRadius: 'var(--radius-md, 8px)',
+                  borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
                   color: 'var(--color-on-surface)',
@@ -1224,7 +1226,7 @@ export const WorkOrdersPage: React.FC = () => {
                 style={{
                   width: '100%',
                   padding: '9px 12px',
-                  borderRadius: 'var(--radius-md, 8px)',
+                  borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
                   color: 'var(--color-on-surface)',
@@ -1263,7 +1265,7 @@ export const WorkOrdersPage: React.FC = () => {
                 style={{
                   width: '100%',
                   padding: '9px 12px',
-                  borderRadius: 'var(--radius-md, 8px)',
+                  borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
                   color: 'var(--color-on-surface)',
@@ -1292,7 +1294,7 @@ export const WorkOrdersPage: React.FC = () => {
                 style={{
                   width: '100%',
                   padding: '9px 12px',
-                  borderRadius: 'var(--radius-md, 8px)',
+                  borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
                   color: 'var(--color-on-surface)',
@@ -1329,7 +1331,7 @@ export const WorkOrdersPage: React.FC = () => {
                 style={{
                   width: '100%',
                   padding: '9px 12px',
-                  borderRadius: 'var(--radius-md, 8px)',
+                  borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
                   color: 'var(--color-on-surface)',
@@ -1359,7 +1361,7 @@ export const WorkOrdersPage: React.FC = () => {
                 style={{
                   width: '100%',
                   padding: '9px 12px',
-                  borderRadius: 'var(--radius-md, 8px)',
+                  borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
                   color: 'var(--color-on-surface)',
@@ -1427,7 +1429,7 @@ export const WorkOrdersPage: React.FC = () => {
               style={{
                 width: '100%',
                 padding: '9px 12px',
-                borderRadius: 'var(--radius-md, 8px)',
+                borderRadius: 'var(--radius-md)',
                 backgroundColor: 'var(--color-surface-container-high)',
                 border: '1px solid var(--color-outline-variant)',
                 color: 'var(--color-on-surface)',
@@ -1461,7 +1463,7 @@ export const WorkOrdersPage: React.FC = () => {
                 style={{
                   width: '100%',
                   padding: '9px 12px',
-                  borderRadius: 'var(--radius-md, 8px)',
+                  borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
                   color: 'var(--color-on-surface)',
@@ -1494,7 +1496,7 @@ export const WorkOrdersPage: React.FC = () => {
                 style={{
                   width: '100%',
                   padding: '9px 12px',
-                  borderRadius: 'var(--radius-md, 8px)',
+                  borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
                   color: 'var(--color-on-surface)',
@@ -1532,7 +1534,7 @@ export const WorkOrdersPage: React.FC = () => {
                 style={{
                   width: '100%',
                   padding: '9px 12px',
-                  borderRadius: 'var(--radius-md, 8px)',
+                  borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
                   color: 'var(--color-on-surface)',
@@ -1562,7 +1564,7 @@ export const WorkOrdersPage: React.FC = () => {
                 style={{
                   width: '100%',
                   padding: '9px 12px',
-                  borderRadius: 'var(--radius-md, 8px)',
+                  borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
                   color: 'var(--color-on-surface)',
@@ -1593,7 +1595,7 @@ export const WorkOrdersPage: React.FC = () => {
                 style={{
                   width: '100%',
                   padding: '9px 12px',
-                  borderRadius: 'var(--radius-md, 8px)',
+                  borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
                   color: 'var(--color-on-surface)',
@@ -1623,7 +1625,7 @@ export const WorkOrdersPage: React.FC = () => {
                 style={{
                   width: '100%',
                   padding: '9px 12px',
-                  borderRadius: 'var(--radius-md, 8px)',
+                  borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
                   color: 'var(--color-on-surface)',
@@ -1658,7 +1660,7 @@ export const WorkOrdersPage: React.FC = () => {
             <div
               style={{
                 backgroundColor: 'var(--color-surface-container-high)',
-                borderRadius: 'var(--radius-md, 10px)',
+                borderRadius: 'var(--radius-md)',
                 padding: '16px',
                 display: 'flex',
                 justifyContent: 'space-between',
@@ -1693,8 +1695,8 @@ export const WorkOrdersPage: React.FC = () => {
                     marginTop: '2px',
                   }}
                 >
-                  {selectedWo.targetQuantity > 0
-                    ? Math.round((selectedWo.goodQuantity / selectedWo.targetQuantity) * 100)
+                  {selectedWo.plannedQuantity > 0
+                    ? Math.round((selectedWo.outputQuantity / selectedWo.plannedQuantity) * 100)
                     : 0}
                   %
                 </div>
@@ -1731,7 +1733,7 @@ export const WorkOrdersPage: React.FC = () => {
               <div>
                 <span style={{ color: 'var(--color-on-surface-variant)' }}>Jumlah Good:</span>
                 <div style={{ fontWeight: 800, color: 'var(--color-success)', fontSize: '15px' }}>
-                  {selectedWo.goodQuantity.toLocaleString('en-US')} {selectedWo.unit}
+                  {selectedWo.outputQuantity.toLocaleString('en-US')} {selectedWo.unit}
                 </div>
               </div>
 
@@ -1802,7 +1804,7 @@ export const WorkOrdersPage: React.FC = () => {
                   Edit Parameter
                 </Button>
 
-                {selectedWo.status === WorkOrderStatus.DRAFT && (
+                {(selectedWo.status === WorkOrderStatus.DRAFT || selectedWo.status === WorkOrderStatus.SCHEDULED) && (
                   <Button
                     variant="filled"
                     onClick={() => {
@@ -1810,11 +1812,11 @@ export const WorkOrdersPage: React.FC = () => {
                       setShowDetailModal(false);
                     }}
                   >
-                    Release ke Operator
+                    Konfirmasi ke Shop Floor
                   </Button>
                 )}
 
-                {selectedWo.status === WorkOrderStatus.IN_PROGRESS && (
+                {selectedWo.status === WorkOrderStatus.IN_PRODUCTION && (
                   <Button
                     variant="tonal"
                     style={{ color: 'var(--color-warning)' }}
@@ -1880,7 +1882,7 @@ export const WorkOrdersPage: React.FC = () => {
               style={{
                 width: '100%',
                 padding: '9px 12px',
-                borderRadius: 'var(--radius-md, 8px)',
+                borderRadius: 'var(--radius-md)',
                 backgroundColor: 'var(--color-surface-container-high)',
                 border: '1px solid var(--color-outline-variant)',
                 color: 'var(--color-on-surface)',
@@ -1909,7 +1911,7 @@ export const WorkOrdersPage: React.FC = () => {
               style={{
                 width: '100%',
                 padding: '9px 12px',
-                borderRadius: 'var(--radius-md, 8px)',
+                borderRadius: 'var(--radius-md)',
                 backgroundColor: 'var(--color-surface-container-high)',
                 border: '1px solid var(--color-outline-variant)',
                 color: 'var(--color-on-surface)',
@@ -1946,7 +1948,7 @@ export const WorkOrdersPage: React.FC = () => {
                 style={{
                   width: '100%',
                   padding: '9px 12px',
-                  borderRadius: 'var(--radius-md, 8px)',
+                  borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
                   color: 'var(--color-on-surface)',
@@ -1977,7 +1979,7 @@ export const WorkOrdersPage: React.FC = () => {
                 style={{
                   width: '100%',
                   padding: '9px 12px',
-                  borderRadius: 'var(--radius-md, 8px)',
+                  borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
                   color: 'var(--color-on-surface)',

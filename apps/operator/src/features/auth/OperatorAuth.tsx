@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Operator } from '@factory-vision/domain-types';
 import { ApiRequestError } from '@factory-vision/api-client';
 import { Button, M3_TRANSITIONS } from '@factory-vision/ui';
-import { FullCircleLogo } from '@factory-vision/ui/fv';
+import { FactoryVisionLogo } from '@factory-vision/ui/fv';
 
 interface OperatorAuthProps {
   operators: Operator[];
@@ -105,7 +105,7 @@ export const OperatorAuth: React.FC<OperatorAuthProps> = ({ operators, onAuthent
             gap: '6px',
           }}
         >
-          <FullCircleLogo size="lg" variant="full" />
+          <FactoryVisionLogo size="lg" variant="full" />
           <div style={{ marginTop: '8px' }}>
             <h1
               style={{

@@ -68,7 +68,7 @@ export class ShiftHandoverService {
     // measured against it.
     const targetQuantity = workOrders
       .filter((wo) => wo.status !== WorkOrderStatus.CANCELLED)
-      .reduce((acc, wo) => acc + wo.targetQuantity, 0);
+      .reduce((acc, wo) => acc + wo.plannedQuantity, 0);
 
     const downtimeSeconds = downtimeRecords.reduce((acc, r) => acc + (r.durationSeconds ?? 0), 0);
     const unplannedSeconds = downtimeRecords
@@ -96,7 +96,7 @@ export class ShiftHandoverService {
     const products = this.masterData.getProducts(tenantId);
     const openWorkOrders = workOrders
       .filter((wo) =>
-        [WorkOrderStatus.IN_PROGRESS, WorkOrderStatus.PAUSED, WorkOrderStatus.RELEASED].includes(wo.status)
+        [WorkOrderStatus.IN_PRODUCTION, WorkOrderStatus.CONFIRMED, WorkOrderStatus.SCHEDULED].includes(wo.status)
       )
       .map((wo) => ({
         id: wo.id,
@@ -104,7 +104,9 @@ export class ShiftHandoverService {
         productName: products.find((p) => p.id === wo.productId)?.name ?? wo.productId,
         status: wo.status,
         achievementPct:
-          wo.targetQuantity > 0 ? Number(((wo.goodQuantity / wo.targetQuantity) * 100).toFixed(1)) : 0,
+          wo.plannedQuantity > 0
+            ? Number(((wo.outputQuantity / wo.plannedQuantity) * 100).toFixed(1))
+            : 0,
       }));
 
     const previousHandover =

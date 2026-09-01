@@ -73,7 +73,12 @@
  --md-sys-color-on-tertiary-container: #0C2B35; /* derived */
 
  /* Semantic data states, meaning, not brand (see header note) */
- --md-sys-color-success: #2FA968;
+ /* #2FA968 read only 3.0:1 on the light surface. It works as a fill, but the
+    product also uses `success` as a text colour — "Target terpenuhi", "242
+    Good", a running line's name — and at 11px that failed WCAG AA. Darkened to
+    5.34:1; white on it stays 5.34:1, so fills are unaffected. The dark theme's
+    #6FD39B already reads 9.6:1 on its own ground and is unchanged. */
+ --md-sys-color-success: #1E7A48;
  --md-sys-color-on-success: #FFFFFF;
  --md-sys-color-success-container: #C9E9D7;
  --md-sys-color-on-success-container: #05301C;

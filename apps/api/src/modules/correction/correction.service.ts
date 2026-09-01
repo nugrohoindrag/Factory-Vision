@@ -234,7 +234,16 @@ export class CorrectionService {
         ? Number(corr.fieldChanges.rejectQuantity.to) - Number(corr.fieldChanges.rejectQuantity.from)
         : 0;
       if (goodDiff !== 0 || rejectDiff !== 0) {
-        await this.productionService.incrementQuantities(tenantId, corr.entityId, goodDiff, rejectDiff);
+        // Input moves with the dispositions it accounts for. Correcting good
+        // down by 5 means five fewer units passed through, not five units
+        // stranded in WIP for ever (§10).
+        await this.productionService.incrementQuantities(
+          tenantId,
+          corr.entityId,
+          goodDiff,
+          rejectDiff,
+          { input: goodDiff + rejectDiff }
+        );
       }
     }
 

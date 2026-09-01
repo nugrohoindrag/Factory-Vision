@@ -26,6 +26,8 @@ import { demoRows } from '../../platform/config/demo-seed.js';
 
 import { withTenant } from '../../platform/db/pool.js';
 import { AppUserRepository, OperatorRepository, ShiftRepository } from './reference.repository.js';
+import { MasterReferenceRepository } from './master-reference.repository.js';
+import type { Executor } from '../../platform/db/executor.js';
 
 export class MasterDataService {
   /**
@@ -35,6 +37,7 @@ export class MasterDataService {
    * PostgreSQL at boot and every mutation below writes there first, so a
    * restart changes nothing about what the plant sees.
    */
+  private readonly referenceRepo = new MasterReferenceRepository();
   private readonly shiftRepo = new ShiftRepository();
   private readonly operatorRepo = new OperatorRepository();
   private readonly userRepo = new AppUserRepository();
@@ -1052,6 +1055,20 @@ export class MasterDataService {
       status: 'ACTIVE',
       createdAt: '2026-01-08T08:00:00.000Z',
     },
+    {
+      // Order Receiving is Sales' decision (Improvement PRD §5, §8.1), so the
+      // pilot needs an account that can actually demonstrate the boundary:
+      // full on Customer Order, nothing on Planning or the shop floor.
+      id: 'usr-007',
+      tenantId: 'tenant-pilot-factory-01',
+      email: 'sinta.sales@factoryvision.local',
+      name: 'Sinta Rahmawati',
+      role: UserRole.SALES,
+      accountType: 'APPLICATION_USER',
+      scopeLevel: 'TENANT',
+      status: 'ACTIVE',
+      createdAt: '2026-01-08T08:00:00.000Z',
+    },
   ]);
 
   private devices: DeviceTerminal[] = demoRows<DeviceTerminal>(() => [
@@ -1182,6 +1199,7 @@ export class MasterDataService {
       updatedAt: new Date().toISOString(),
     };
     this.processes.push(process);
+    this.persist(tenantId, (repo, exec) => repo.upsertProcess(exec, process));
     return process;
   }
 
@@ -1193,6 +1211,7 @@ export class MasterDataService {
     const process = this.getProcessById(tenantId, id);
     if (!process) throw new Error('Production process not found');
     Object.assign(process, payload, { updatedAt: new Date().toISOString() });
+    this.persist(tenantId, (repo, exec) => repo.upsertProcess(exec, process));
     return process;
   }
 
@@ -1200,6 +1219,7 @@ export class MasterDataService {
     const index = this.processes.findIndex((p) => p.id === id && p.tenantId === tenantId);
     if (index === -1) throw new Error('Production process not found');
     this.processes.splice(index, 1);
+    this.persist(tenantId, (repo, exec) => repo.remove(exec, 'production_process', tenantId, id));
     return true;
   }
 
@@ -1215,6 +1235,7 @@ export class MasterDataService {
       ...payload,
     };
     this.productRoutings.push(routing);
+    this.persist(tenantId, (repo, exec) => repo.upsertRouting(exec, routing));
     return routing;
   }
 
@@ -1226,6 +1247,7 @@ export class MasterDataService {
     const routing = this.getRoutingById(tenantId, id);
     if (!routing) throw new Error('Product routing not found');
     Object.assign(routing, payload);
+    this.persist(tenantId, (repo, exec) => repo.upsertRouting(exec, routing));
     return routing;
   }
 
@@ -1233,6 +1255,7 @@ export class MasterDataService {
     const index = this.productRoutings.findIndex((r) => r.id === id && r.tenantId === tenantId);
     if (index === -1) throw new Error('Product routing not found');
     this.productRoutings.splice(index, 1);
+    this.persist(tenantId, (repo, exec) => repo.remove(exec, 'product_routing', tenantId, id));
     return true;
   }
 
@@ -1254,6 +1277,7 @@ export class MasterDataService {
       ...payload,
     };
     this.productMachineRates.push(rate);
+    this.persist(tenantId, (repo, exec) => repo.upsertRate(exec, rate));
     return rate;
   }
 
@@ -1261,6 +1285,7 @@ export class MasterDataService {
     const index = this.productMachineRates.findIndex((r) => r.id === id && r.tenantId === tenantId);
     if (index === -1) throw new Error('Product machine rate not found');
     this.productMachineRates.splice(index, 1);
+    this.persist(tenantId, (repo, exec) => repo.remove(exec, 'product_machine_rate', tenantId, id));
     return true;
   }
 
@@ -1306,6 +1331,7 @@ export class MasterDataService {
       ...payload,
     };
     this.lines.push(line);
+    this.persist(tenantId, (repo, exec) => repo.upsertLine(exec, line));
     return line;
   }
 
@@ -1317,6 +1343,7 @@ export class MasterDataService {
     const line = this.getLineById(tenantId, id);
     if (!line) throw new Error('Line not found');
     Object.assign(line, payload);
+    this.persist(tenantId, (repo, exec) => repo.upsertLine(exec, line));
     return line;
   }
 
@@ -1324,6 +1351,7 @@ export class MasterDataService {
     const index = this.lines.findIndex((l) => l.id === id && l.tenantId === tenantId);
     if (index === -1) throw new Error('Line not found');
     this.lines.splice(index, 1);
+    this.persist(tenantId, (repo, exec) => repo.remove(exec, 'production_line', tenantId, id));
     return true;
   }
 
@@ -1344,6 +1372,7 @@ export class MasterDataService {
       currentStateSince: new Date().toISOString(),
     };
     this.machines.push(machine);
+    this.persist(tenantId, (repo, exec) => repo.upsertMachine(exec, machine));
     return machine;
   }
 
@@ -1351,6 +1380,7 @@ export class MasterDataService {
     const machine = this.getMachineById(tenantId, id);
     if (!machine) throw new Error('Machine not found');
     Object.assign(machine, payload);
+    this.persist(tenantId, (repo, exec) => repo.upsertMachine(exec, machine));
     return machine;
   }
 
@@ -1358,6 +1388,7 @@ export class MasterDataService {
     const index = this.machines.findIndex((m) => m.id === id && m.tenantId === tenantId);
     if (index === -1) throw new Error('Machine not found');
     this.machines.splice(index, 1);
+    this.persist(tenantId, (repo, exec) => repo.remove(exec, 'machine', tenantId, id));
     return true;
   }
 
@@ -1373,6 +1404,7 @@ export class MasterDataService {
       ...payload,
     };
     this.products.push(product);
+    this.persist(tenantId, (repo, exec) => repo.upsertProduct(exec, product));
     return product;
   }
 
@@ -1380,6 +1412,7 @@ export class MasterDataService {
     const product = this.getProductById(tenantId, id);
     if (!product) throw new Error('Product not found');
     Object.assign(product, payload);
+    this.persist(tenantId, (repo, exec) => repo.upsertProduct(exec, product));
     return product;
   }
 
@@ -1387,6 +1420,7 @@ export class MasterDataService {
     const index = this.products.findIndex((p) => p.id === id && p.tenantId === tenantId);
     if (index === -1) throw new Error('Product not found');
     this.products.splice(index, 1);
+    this.persist(tenantId, (repo, exec) => repo.remove(exec, 'product', tenantId, id));
     return true;
   }
 
@@ -1450,6 +1484,7 @@ export class MasterDataService {
       ...payload,
     };
     this.downtimeReasons.push(reason);
+    this.persist(tenantId, (repo, exec) => repo.upsertDowntimeReason(exec, reason));
     return reason;
   }
 
@@ -1460,7 +1495,7 @@ export class MasterDataService {
   ): DowntimeReason {
     const reason = this.getDowntimeReasonById(tenantId, id);
     if (!reason) throw new Error('Downtime reason not found');
-    Object.assign(reason, payload);
+    this.persist(tenantId, (repo, exec) => repo.upsertDowntimeReason(exec, reason));
     return reason;
   }
 
@@ -1468,6 +1503,7 @@ export class MasterDataService {
     const index = this.downtimeReasons.findIndex((r) => r.id === id && r.tenantId === tenantId);
     if (index === -1) throw new Error('Downtime reason not found');
     this.downtimeReasons.splice(index, 1);
+    this.persist(tenantId, (repo, exec) => repo.remove(exec, 'downtime_reason', tenantId, id));
     return true;
   }
 
@@ -1483,6 +1519,7 @@ export class MasterDataService {
       ...payload,
     };
     this.rejectReasons.push(reason);
+    this.persist(tenantId, (repo, exec) => repo.upsertRejectReason(exec, reason));
     return reason;
   }
 
@@ -1493,7 +1530,7 @@ export class MasterDataService {
   ): RejectReason {
     const reason = this.getRejectReasonById(tenantId, id);
     if (!reason) throw new Error('Reject reason not found');
-    Object.assign(reason, payload);
+    this.persist(tenantId, (repo, exec) => repo.upsertRejectReason(exec, reason));
     return reason;
   }
 
@@ -1501,6 +1538,7 @@ export class MasterDataService {
     const index = this.rejectReasons.findIndex((r) => r.id === id && r.tenantId === tenantId);
     if (index === -1) throw new Error('Reject reason not found');
     this.rejectReasons.splice(index, 1);
+    this.persist(tenantId, (repo, exec) => repo.remove(exec, 'reject_reason', tenantId, id));
     return true;
   }
 
@@ -1588,8 +1626,70 @@ export class MasterDataService {
    * memory is pushed down instead, so a demo install converges to the same
    * place a real one starts from: the database holding the record.
    */
+
+  /**
+   * Writes one reference row through to PostgreSQL.
+   *
+   * The mutators stay synchronous because the read model is in memory and the
+   * shop floor reads it on the hot path; the durable write happens behind them.
+   * A failure is logged loudly rather than swallowed — losing a Product the
+   * administrator believes they created is exactly the defect this closes, and
+   * a silent catch would recreate it in a new form.
+   */
+  private persist(tenantId: string, write: (repo: MasterReferenceRepository, exec: Executor) => Promise<void>): void {
+    withTenant(tenantId, (client) => write(this.referenceRepo, client)).catch((error) => {
+      // eslint-disable-next-line no-console
+      console.error(
+        '[master-data] gagal menyimpan reference data ke PostgreSQL:',
+        error instanceof Error ? error.message : error
+      );
+    });
+  }
+
+  /**
+   * Rebuilds the reference caches from PostgreSQL.
+   *
+   * Only replaces a cache when the database actually holds rows for the tenant:
+   * a fresh install boots with the demo defaults in memory and writes them down
+   * on first use, exactly as shifts and operators already do.
+   */
+  private async hydrateReference(exec: Executor, tenantId: string): Promise<number> {
+    let loaded = 0;
+    const swap = <T extends { tenantId: string }>(current: T[], stored: T[]): T[] => {
+      if (stored.length === 0) return current;
+      loaded += stored.length;
+      return current.filter((row) => row.tenantId !== tenantId).concat(stored);
+    };
+
+    this.plants = swap(this.plants, await this.referenceRepo.listPlants(exec, tenantId));
+    this.lines = swap(this.lines, await this.referenceRepo.listLines(exec, tenantId));
+    this.workCenters = swap(this.workCenters, await this.referenceRepo.listWorkCenters(exec, tenantId));
+    this.machines = swap(this.machines, await this.referenceRepo.listMachines(exec, tenantId));
+    this.products = swap(this.products, await this.referenceRepo.listProducts(exec, tenantId));
+    this.processes = swap(this.processes, await this.referenceRepo.listProcesses(exec, tenantId));
+    this.productRoutings = swap(this.productRoutings, await this.referenceRepo.listRoutings(exec, tenantId));
+    this.productMachineRates = swap(
+      this.productMachineRates,
+      await this.referenceRepo.listRates(exec, tenantId)
+    );
+    this.downtimeReasons = swap(
+      this.downtimeReasons,
+      await this.referenceRepo.listDowntimeReasons(exec, tenantId)
+    );
+    this.rejectReasons = swap(
+      this.rejectReasons,
+      await this.referenceRepo.listRejectReasons(exec, tenantId)
+    );
+    return loaded;
+  }
+
   async hydrate(tenantId: string): Promise<{ shifts: number; operators: number; users: number }> {
     return withTenant(tenantId, async (client) => {
+      // Plants, lines, machines, products, processes, routings and reason codes
+      // were written to the database and never read back, so every restart
+      // erased whatever an administrator had created. They are a projection now.
+      await this.hydrateReference(client, tenantId);
+
       const storedShifts = await this.shiftRepo.list(client, tenantId);
       if (storedShifts.length === 0) {
         for (const shift of this.shifts.filter((s) => s.tenantId === tenantId)) {
@@ -1763,6 +1863,7 @@ export class MasterDataService {
   createWorkCenter(tenantId: string, payload: Omit<WorkCenter, 'id' | 'tenantId'>): WorkCenter {
     const workCenter: WorkCenter = { id: `wc-${Date.now()}`, tenantId, ...payload };
     this.workCenters.push(workCenter);
+    this.persist(tenantId, (repo, exec) => repo.upsertWorkCenter(exec, workCenter));
     return workCenter;
   }
 

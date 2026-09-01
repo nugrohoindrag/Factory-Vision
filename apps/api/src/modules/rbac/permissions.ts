@@ -17,11 +17,36 @@ export const PERMISSION_CATALOG: PermissionDefinition[] = [
   perm('production_order:release', 'Merilis production order'),
   perm('production_order:delete', 'Menghapus production order'),
 
+  // --- MES Improvement v1.0: demand & planning (Sprint 3–6) -----------
+  perm('customer:view', 'Melihat master customer'),
+  perm('customer:manage', 'Mengelola master customer'),
+
+  perm('customer_order:view', 'Melihat customer order'),
+  perm('customer_order:create', 'Membuat customer order'),
+  perm('customer_order:edit', 'Mengubah customer order dan order line'),
+  perm('customer_order:cancel', 'Membatalkan customer order'),
+
+  perm('demand_forecast:view', 'Melihat demand forecast'),
+  perm('demand_forecast:generate', 'Menghasilkan demand forecast'),
+
+  perm('capacity_plan:view', 'Melihat capacity plan'),
+  perm('capacity_plan:manage', 'Menghitung ulang capacity plan'),
+
+  perm('production_plan:view', 'Melihat production plan'),
+  perm('production_plan:create', 'Membuat production plan'),
+  perm('production_plan:edit', 'Mengubah production plan dan plan line'),
+  perm('production_plan:confirm', 'Mengonfirmasi production plan'),
+
   perm('work_order:view', 'Melihat work order'),
   perm('work_order:create', 'Membuat work order'),
   perm('work_order:edit', 'Mengubah work order'),
   perm('work_order:schedule', 'Menjadwalkan work order'),
-  perm('work_order:release', 'Merilis work order ke shop floor'),
+  // ADR-18 retired RELEASED in favour of CONFIRMED. `work_order:release` stays
+  // in the catalogue so a tenant that customised its roles against it does not
+  // silently lose the grant, but confirmation is the v1.0 gate and has its own
+  // permission — it is what puts a Work Order on the operator terminal (§25.7).
+  perm('work_order:release', 'Merilis work order ke shop floor (dialihkan ke work_order:confirm, ADR-18)'),
+  perm('work_order:confirm', 'Mengonfirmasi work order sehingga muncul di terminal operator'),
   perm('work_order:cancel', 'Membatalkan work order'),
 
   perm('batch:view', 'Melihat batch/lot produksi'),
@@ -81,6 +106,11 @@ const ALL = PERMISSION_IDS;
 const VIEW_ONLY: PermissionId[] = [
   'dashboard:view',
   'production_order:view',
+  'customer:view',
+  'customer_order:view',
+  'demand_forecast:view',
+  'capacity_plan:view',
+  'production_plan:view',
   'work_order:view',
   'batch:view',
   'shift:view',
@@ -101,6 +131,15 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<UserRole, PermissionId[]> = {
 
   [UserRole.PRODUCTION_MANAGER]: [
     'dashboard:view',
+    'customer:view',
+    'customer_order:view',
+    'demand_forecast:view',
+    'capacity_plan:view',
+    'capacity_plan:manage',
+    'production_plan:view',
+    'production_plan:create',
+    'production_plan:edit',
+    'production_plan:confirm',
     'production_order:view',
     'production_order:create',
     'production_order:edit',
@@ -111,6 +150,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<UserRole, PermissionId[]> = {
     'work_order:edit',
     'work_order:schedule',
     'work_order:release',
+    'work_order:confirm',
     'work_order:cancel',
     'batch:view',
     'batch:create',
@@ -137,11 +177,15 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<UserRole, PermissionId[]> = {
 
   [UserRole.SUPERVISOR]: [
     'dashboard:view',
+    'customer_order:view',
+    'production_plan:view',
+    'capacity_plan:view',
     'production_order:view',
     'work_order:view',
     'work_order:edit',
     'work_order:schedule',
     'work_order:release',
+    'work_order:confirm',
     'batch:view',
     'batch:create',
     'batch:edit',
@@ -181,6 +225,19 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<UserRole, PermissionId[]> = {
 
   [UserRole.PPIC]: [
     'dashboard:view',
+    // PPIC reads Customer Orders because demand is what it plans against, but
+    // it no longer owns them: receiving, editing and cancelling an order is
+    // Sales' responsibility (Improvement PRD §5, §8.1).
+    'customer:view',
+    'customer_order:view',
+    'demand_forecast:view',
+    'demand_forecast:generate',
+    'capacity_plan:view',
+    'capacity_plan:manage',
+    'production_plan:view',
+    'production_plan:create',
+    'production_plan:edit',
+    'production_plan:confirm',
     'production_order:view',
     'production_order:create',
     'production_order:edit',
@@ -190,6 +247,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<UserRole, PermissionId[]> = {
     'work_order:create',
     'work_order:edit',
     'work_order:schedule',
+    'work_order:confirm',
     'batch:view',
     'batch:create',
     'batch:edit',
@@ -204,6 +262,8 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<UserRole, PermissionId[]> = {
 
   [UserRole.QUALITY]: [
     'dashboard:view',
+    'customer_order:view',
+    'production_plan:view',
     'production_order:view',
     'work_order:view',
     'batch:view',
@@ -217,6 +277,29 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<UserRole, PermissionId[]> = {
     'audit:view',
   ],
 
+  /**
+   * Sales: Order Receiving, and nothing downstream of it.
+   *
+   * The list is short on purpose. Sales answers "apakah order ini bisa dipenuhi,
+   * dan kapan" from the order's own derived status (Received → Planned → In
+   * Production → Produced), which `customer_order:view` already carries — so
+   * there is no reason to hand them the Planning module to get it. No
+   * `production_plan:*`, no `work_order:*`, no `shopfloor:execute`.
+   */
+  [UserRole.SALES]: [
+    'dashboard:view',
+    'customer:view',
+    'customer:manage',
+    'customer_order:view',
+    'customer_order:create',
+    'customer_order:edit',
+    'customer_order:cancel',
+    // Choosing a Product on an order line needs the product master readable;
+    // scope still narrows the rows, and no write is granted.
+    'master_data:view',
+    'report:export',
+  ],
+
   [UserRole.ADMIN]: ALL,
 };
 
@@ -228,6 +311,7 @@ export const ROLE_LANDING_PATH: Record<UserRole, string> = {
   [UserRole.OPERATOR]: '/terminal',
   [UserRole.PPIC]: '/work-orders',
   [UserRole.QUALITY]: '/quality',
+  [UserRole.SALES]: '/order-receiving',
   [UserRole.ADMIN]: '/settings?tab=users',
 };
 
@@ -238,6 +322,8 @@ export const ROLE_DESCRIPTION: Record<UserRole, string> = {
   [UserRole.OPERATOR]: 'Eksekusi work order yang ditugaskan pada terminal shop floor.',
   [UserRole.PPIC]: 'Perencanaan production order, work order, dan penjadwalan.',
   [UserRole.QUALITY]: 'Pencatatan dan analisis reject serta traceability kualitas.',
+  [UserRole.SALES]:
+    'Penerimaan dan pencatatan Customer Order, beserta status pemenuhannya. Tanpa akses planning maupun eksekusi produksi.',
   [UserRole.ADMIN]: 'Administrasi tenant: pengguna, peran, master data, dan audit.',
 };
 

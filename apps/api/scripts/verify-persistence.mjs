@@ -32,7 +32,7 @@ const BASE = `http://127.0.0.1:${PORT}`;
 const TENANT = process.env.DEFAULT_TENANT_ID || 'tenant-pilot-factory-01';
 
 const ADMIN_EMAIL = process.env.BOOTSTRAP_ADMIN_EMAIL || 'admin@pabrik.co.id';
-const ADMIN_PASSWORD = process.env.BOOTSTRAP_ADMIN_PASSWORD || 'RahasiaKuat2026';
+const ADMIN_PASSWORD = process.env.BOOTSTRAP_ADMIN_PASSWORD || 'ChangeMe-Local-Only';
 
 if (!APP_URL) {
   console.error('Set DATABASE_URL (and ideally OWNER_DATABASE_URL) before running.');
@@ -135,9 +135,12 @@ async function main() {
   await startApi('first boot');
   await login();
 
+  // The fetch this line depends on had been lost, so `list` was undefined and
+  // the whole P0 persistence check died on a ReferenceError before asserting
+  // anything. Restored: a work order to record production against.
   const workOrders = await api('/api/v1/work-orders');
-  const list = Array.isArray(workOrders.body) ? workOrders.body : workOrders.body?.data;
-  const workOrder = list?.find((w) => w.status === 'IN_PROGRESS') ?? list?.[0];
+  const list = Array.isArray(workOrders.body) ? workOrders.body : [];
+  const workOrder = list.find((w) => w.status === 'IN_PRODUCTION') ?? list[0];
   if (!workOrder) throw new Error('no work order to record against');
   ids.workOrderId = workOrder.id;
 
@@ -193,9 +196,54 @@ async function main() {
     `start ${dtStarted.status}, resolve ${dtResolved.status}`
   );
 
-  // A work-order state transition, the operational state §11 calls out.
-  const paused = await api(`/api/v1/work-orders/${workOrder.id}/pause`, { method: 'POST' });
-  check('work order transitioned to PAUSED', paused.body?.status === 'PAUSED', String(paused.body?.status));
+  // A work-order state transition: create a scheduled WO and confirm it.
+  //
+  // A Work Order belongs to a Production Plan Line (§8) and the column carries
+  // a foreign key, so the create needs one. The legacy `productionOrderId` is
+  // accepted and resolved to the plan line migration 010 created for it.
+  const existingPo = await api('/api/v1/production-orders');
+  const poForWo =
+    (Array.isArray(existingPo.body) ? existingPo.body : existingPo.body?.data)?.[0]?.id ??
+    'po-260829-001';
+
+  const newWo = await api('/api/v1/work-orders', {
+    method: 'POST',
+    body: JSON.stringify({
+      woNumber: `WO-PERSIST-${stamp}`,
+      productionOrderId: poForWo,
+      productId: 'prod-tire-a',
+      lineId: 'line-01',
+      targetQuantity: 100,
+      plannedQuantity: 100,
+      unit: 'PCS',
+      plannedStart: new Date().toISOString(),
+      plannedEnd: new Date(Date.now() + 8 * 3600 * 1000).toISOString(),
+      status: 'SCHEDULED',
+      priority: 1,
+    }),
+  });
+  const woToTransitionId = newWo.body?.id ?? workOrder.id;
+  ids.transitionWoId = woToTransitionId;
+
+  // §11's confirmation checklist wants machine, mold and shift on the work
+  // order. Assign them the way a planner would before confirming, so this
+  // exercises the guarded path rather than an unguarded one.
+  const molds = await owner.query(
+    'SELECT id FROM mold WHERE tenant_id = $1 ORDER BY code LIMIT 1',
+    [TENANT]
+  );
+  const shifts = await api('/api/v1/master/shifts');
+  await api(`/api/v1/work-orders/${woToTransitionId}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      machineId: 'mc-mixer-01',
+      moldId: molds.rows[0]?.id,
+      shiftId: Array.isArray(shifts.body) ? shifts.body[0]?.id : undefined,
+    }),
+  });
+
+  const confirmed = await api(`/api/v1/work-orders/${woToTransitionId}/confirm`, { method: 'POST' });
+  check('work order transitioned to CONFIRMED', confirmed.body?.status === 'CONFIRMED', String(confirmed.body?.status));
 
   // A production order, so the whole planning chain is covered.
   const poCreated = await api('/api/v1/production-orders', {
@@ -376,10 +424,10 @@ async function main() {
   );
 
   // The API must serve it back too, not merely have it in the database.
-  const viaApi = await api(`/api/v1/work-orders/${ids.workOrderId}`);
+  const viaApi = await api(`/api/v1/work-orders/${ids.transitionWoId}`);
   check(
     "the work order's status survives the restart",
-    viaApi.body?.status === 'PAUSED',
+    viaApi.body?.status === 'CONFIRMED',
     `status ${viaApi.body?.status}`
   );
 
@@ -544,6 +592,48 @@ async function main() {
       `  ${d.name.padEnd(20)}  ${String(d.inTable).padStart(9)}   ${String(d.served ?? '-').padStart(8)}   ${persisted}`
     );
   }
+
+  // Housekeeping. The suite writes an operator, a user and a role on every run
+  // to prove they persist; leaving them behind pollutes the pilot tenant, and
+  // the operator rows in particular end up looking like real shop-floor staff
+  // on the terminal's sign-in screen.
+  await owner.query(
+    `DELETE FROM operator_credential WHERE operator_id IN
+       (SELECT id FROM operator WHERE tenant_id = $1 AND employee_number LIKE 'OP-P-%')`,
+    [TENANT]
+  );
+  await owner.query(
+    `DELETE FROM operator WHERE tenant_id = $1 AND employee_number LIKE 'OP-P-%'
+       AND NOT EXISTS (SELECT 1 FROM production_record pr WHERE pr.operator_id = operator.id)`,
+    [TENANT]
+  );
+  await owner.query(
+    `DELETE FROM role_permission WHERE role_id IN
+       (SELECT id FROM role_definition WHERE tenant_id = $1 AND key LIKE 'PERSIST_%')`,
+    [TENANT]
+  );
+  await owner.query(
+    `DELETE FROM role_definition WHERE tenant_id = $1 AND key LIKE 'PERSIST_%'`,
+    [TENANT]
+  );
+  await owner.query(
+    `DELETE FROM app_user WHERE tenant_id = $1 AND email LIKE 'persist-%@%'`,
+    [TENANT]
+  );
+  // The work order this suite confirms, and the shift it creates. A stale shift
+  // is worse than untidy: it shows up in the operator's shift picker and in
+  // every shift-dimensioned OEE figure.
+  await owner.query(
+    `DELETE FROM work_order WHERE tenant_id = $1 AND wo_number LIKE 'WO-PERSIST-%'
+       AND NOT EXISTS (SELECT 1 FROM production_record pr WHERE pr.work_order_id = work_order.id)`,
+    [TENANT]
+  );
+  await owner.query(
+    `DELETE FROM shift WHERE tenant_id = $1 AND name LIKE 'Shift Persist %'
+       AND NOT EXISTS (SELECT 1 FROM production_record pr WHERE pr.shift_id = shift.id)
+       AND NOT EXISTS (SELECT 1 FROM downtime_record dr WHERE dr.shift_id = shift.id)`,
+    [TENANT]
+  );
 
   await stopApi();
 }

@@ -75,7 +75,7 @@ export const NewClientDialog: React.FC<{ onClose: () => void; onCreated: () => v
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'color-mix(in srgb, var(--color-scrim, #000) 55%, transparent)',
+        backgroundColor: 'color-mix(in srgb, var(--color-scrim) 55%, transparent)',
         display: 'grid',
         placeItems: 'center',
         padding: '24px',
@@ -202,7 +202,7 @@ export const NewClientDialog: React.FC<{ onClose: () => void; onCreated: () => v
             style={{
               marginTop: '12px',
               padding: '10px 12px',
-              borderRadius: 'var(--radius-sm, 8px)',
+              borderRadius: 'var(--radius-sm)',
               backgroundColor: 'var(--color-surface-container)',
               fontSize: '11.5px',
               color: 'var(--color-on-surface-variant)',
@@ -221,7 +221,7 @@ export const NewClientDialog: React.FC<{ onClose: () => void; onCreated: () => v
             style={{
               marginTop: '12px',
               padding: '10px 12px',
-              borderRadius: 'var(--radius-sm, 8px)',
+              borderRadius: 'var(--radius-sm)',
               backgroundColor: 'var(--color-error-container)',
               color: 'var(--color-on-error-container)',
               fontSize: '12px',
@@ -253,7 +253,7 @@ const fieldStyle: React.CSSProperties = {
   color: 'var(--color-on-surface)',
   backgroundColor: 'var(--color-surface-container)',
   border: '1px solid var(--color-outline-variant)',
-  borderRadius: 'var(--radius-sm, 8px)',
+  borderRadius: 'var(--radius-sm)',
   outline: 'none',
   boxSizing: 'border-box',
 };

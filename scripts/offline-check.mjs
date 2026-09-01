@@ -6,7 +6,11 @@
  */
 import { chromium } from 'playwright-core';
 
-const OUT = process.env.OUT_DIR || '.';
+// Screenshots go where every other QA script puts its evidence, which is
+// git-ignored. Defaulting to '.' scattered PNGs across the repository root.
+import fs from 'fs';
+const OUT = process.env.OUT_DIR || 'qa-evidence';
+fs.mkdirSync(OUT, { recursive: true });
 const blocked = [];
 const consoleErrors = [];
 
@@ -23,20 +27,29 @@ await page.route('**/*', (route) => {
   return route.abort();
 });
 
+/**
+ * The console under test.
+ *
+ * Parameterised rather than hardcoded to :3100: a long-lived dev server on the
+ * default port is exactly what made an earlier defect invisible, and a check
+ * that silently reports on stale code is worse than no check.
+ */
+const CONSOLE_URL = process.env.CONSOLE_URL || 'http://localhost:3100';
+
 page.on('console', (m) => m.type() === 'error' && consoleErrors.push(m.text()));
 page.on('pageerror', (e) => consoleErrors.push(`pageerror: ${e.message}`));
 
-await page.goto('http://localhost:3100/', { waitUntil: 'networkidle' });
+await page.goto(CONSOLE_URL + '/', { waitUntil: 'networkidle' });
 await page.waitForTimeout(1500);
 await page.screenshot({ path: `${OUT}/offline-login.png` });
 
 await page.fill('#fv-email', 'admin@pabrik.co.id');
-await page.fill('#fv-password', 'RahasiaKuat2026');
+await page.fill('#fv-password', process.env.BOOTSTRAP_ADMIN_PASSWORD || 'ChangeMe-Local-Only');
 await page.getByRole('button', { name: /^Masuk$/ }).click();
 await page.waitForTimeout(3500);
 await page.screenshot({ path: `${OUT}/offline-dashboard.png` });
 
-await page.goto('http://localhost:3100/work-orders', { waitUntil: 'networkidle' });
+await page.goto(CONSOLE_URL + '/work-orders', { waitUntil: 'networkidle' });
 await page.waitForTimeout(1800);
 await page.screenshot({ path: `${OUT}/offline-workorders.png` });
 
@@ -45,7 +58,7 @@ await page.screenshot({ path: `${OUT}/offline-workorders.png` });
 // width: one glyph is about the font size, the spelled-out word is far wider.
 let failures = 0;
 for (const route of ['/', '/work-orders', '/oee', '/settings?tab=products', '/reports?tab=production']) {
-  await page.goto(`http://localhost:3100${route}`, { waitUntil: 'networkidle' });
+  await page.goto(`${CONSOLE_URL}${route}`, { waitUntil: 'networkidle' });
   await page.waitForTimeout(1200);
   const bad = await page.evaluate(async () => {
     await document.fonts.ready;

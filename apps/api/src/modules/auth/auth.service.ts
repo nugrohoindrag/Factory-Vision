@@ -218,7 +218,7 @@ export class AuthService {
       tenantId,
       subjectId: user.id,
       name: user.name,
-      role: user.role,
+      role: user.role as UserRole,
       scopeLevel: user.scopeLevel,
       scopeId: user.scopeId,
     });
@@ -389,7 +389,7 @@ export class AuthService {
         this.sessions.delete(entry.principal.sessionId);
         return undefined;
       }
-      entry.principal.role = subject.role;
+      entry.principal.role = subject.role as UserRole;
       entry.principal.permissions = this.rbac.permissionsFor(entry.principal.tenantId, subject.role);
       entry.principal.scope = this.rbac.resolveScope(subject);
     } else {

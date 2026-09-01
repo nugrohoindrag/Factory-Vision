@@ -87,6 +87,28 @@ services:
       # Leave unset for a real factory, which should start empty and be filled
       # from its own master data.
       SEED_DEMO_DATA: ${SEED_DEMO_DATA:-}
+      # Customer Order source documents (MES-025). `filesystem` keeps them on
+      # the volume below, which is correct while there is exactly one API
+      # container. Set OBJECT_STORAGE_DRIVER=s3 — and start the `minio` profile,
+      # or point at a managed bucket — before running a second replica: two
+      # replicas on local volumes would each hold half the attachments, with
+      # nothing to show for it but intermittent 404s.
+      OBJECT_STORAGE_DRIVER: ${OBJECT_STORAGE_DRIVER:-filesystem}
+      DOCUMENT_STORAGE_DIR: /var/lib/factory-vision/documents
+      OBJECT_STORAGE_ENDPOINT: ${OBJECT_STORAGE_ENDPOINT:-}
+      OBJECT_STORAGE_BUCKET: ${OBJECT_STORAGE_BUCKET:-}
+      OBJECT_STORAGE_REGION: ${OBJECT_STORAGE_REGION:-us-east-1}
+      OBJECT_STORAGE_ACCESS_KEY: ${OBJECT_STORAGE_ACCESS_KEY:-}
+      OBJECT_STORAGE_SECRET_KEY: ${OBJECT_STORAGE_SECRET_KEY:-}
+      # The planning queue belongs to the worker container. The API keeps the
+      # ability to run it — `SKIP LOCKED` makes either arrangement correct — but
+      # leaving it off is what makes the split real rather than decorative.
+      API_RUN_JOB_RUNNER: ${API_RUN_JOB_RUNNER:-false}
+      # How often the outbox relay publishes planning events. This one does run
+      # in the API: its subscriber is the WebSocket gateway, which lives here.
+      OUTBOX_RELAY_INTERVAL_MS: ${OUTBOX_RELAY_INTERVAL_MS:-5000}
+    volumes:
+      - document-data:/var/lib/factory-vision/documents
     expose:
       - '4000'
     labels:
@@ -137,8 +159,41 @@ services:
       NODE_ENV: production
       TZ: ${TZ:-Asia/Jakarta}
       # The worker shares the API's database, as the same RLS-bound role (§5).
+      # It must be the RLS-bound role for the same reason the API is: a job runs
+      # with the tenant its row carries, and a BYPASSRLS role would make that
+      # declaration decorative.
       DATABASE_URL: postgresql://${APP_DB_USER:-factory_app}:${APP_DB_PASSWORD:?set APP_DB_PASSWORD in deploy/.env}@db:5432/${POSTGRES_DB:-factory_vision}
       DEFAULT_TENANT_ID: ${DEFAULT_TENANT_ID:-tenant-pilot-factory-01}
+      # How often the planning queue is drained (demand forecast, capacity
+      # recalculation). This is the process that actually drains it.
+      PLANNING_JOB_INTERVAL_MS: ${PLANNING_JOB_INTERVAL_MS:-5000}
+
+  # S3-compatible object storage for Customer Order attachments (ADR-09).
+  #
+  # Behind a profile because the single-VPS stack does not need it: one API
+  # container with one volume is simpler and has less to go wrong. Start it —
+  # and set OBJECT_STORAGE_DRIVER=s3 — when there is more than one API replica,
+  # or when the documents should live somewhere the API container does not.
+  #
+  #   docker compose -f deploy/docker-compose.yml --profile minio up -d
+  minio:
+    image: minio/minio:latest
+    profiles: ['minio']
+    restart: unless-stopped
+    command: ['server', '/data', '--console-address', ':9001']
+    environment:
+      MINIO_ROOT_USER: ${OBJECT_STORAGE_ACCESS_KEY:?set OBJECT_STORAGE_ACCESS_KEY in deploy/.env}
+      MINIO_ROOT_PASSWORD: ${OBJECT_STORAGE_SECRET_KEY:?set OBJECT_STORAGE_SECRET_KEY in deploy/.env}
+    volumes:
+      - minio-data:/data
+    expose:
+      - '9000'
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   # Supervisor / manager console, "Main Dashboard" in the deployment doc.
   console:
@@ -235,4 +290,10 @@ services:
 
 volumes:
   db-data:
+  # Order attachments on the filesystem driver. Separate from db-data so a
+  # database restore and a document restore are independent operations.
+  document-data:
+  # The same attachments under the s3 driver. Unused unless the minio profile
+  # is started.
+  minio-data:
   letsencrypt:

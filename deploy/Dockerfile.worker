@@ -1,9 +1,14 @@
 # Factory Vision — Background Worker
 #
-# Scheduled aggregation, OEE rollups and other asynchronous jobs. It is a
-# separate image from the API so the two can be restarted, scaled and resource-
-# limited independently: a long aggregation must never be able to make the
-# shop floor's capture endpoint slow to answer.
+# The process that runs the planning queue: demand forecast aggregation and
+# capacity recalculation. Separate from the API so the two can be restarted,
+# scaled and resource-limited independently — a long aggregation must never be
+# able to make the shop floor's capture endpoint slow to answer.
+#
+# It carries the API's build because the job handlers *are* the planning
+# application services, reached through the `./jobs` entry point the API package
+# declares. The queue contract itself lives in `@factory-vision/job-queue`,
+# below both, so the two processes cannot disagree about what a job is.
 #
 # The worker shares the API's PostgreSQL. It holds no state of its own.
 
@@ -49,6 +54,9 @@ WORKDIR /app
 
 COPY --from=build --chown=factory:factory /repo/node_modules ./node_modules
 COPY --from=build --chown=factory:factory /repo/packages ./packages
+COPY --from=build --chown=factory:factory /repo/apps/api/dist ./apps/api/dist
+COPY --from=build --chown=factory:factory /repo/apps/api/package.json ./apps/api/
+COPY --from=build --chown=factory:factory /repo/apps/api/node_modules ./apps/api/node_modules
 COPY --from=build --chown=factory:factory /repo/apps/worker/dist ./apps/worker/dist
 COPY --from=build --chown=factory:factory /repo/apps/worker/package.json ./apps/worker/
 COPY --from=build --chown=factory:factory /repo/apps/worker/node_modules ./apps/worker/node_modules

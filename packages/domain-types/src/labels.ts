@@ -12,10 +12,16 @@
  */
 
 import {
+  CapacityPlanStatus,
+  CapacityStatus,
+  CustomerOrderStatus,
+  DemandForecastStatus,
   DowntimeCategory,
   MachineState,
+  OrderChannel,
   ProductionBatchStatus,
   ProductionOrderStatus,
+  ProductionPlanStatus,
   RejectCategory,
   UserRole,
   WorkOrderStatus,
@@ -25,9 +31,8 @@ import {
 export const WORK_ORDER_STATUS_LABEL: Record<WorkOrderStatus, string> = {
   [WorkOrderStatus.DRAFT]: 'Draft',
   [WorkOrderStatus.SCHEDULED]: 'Scheduled',
-  [WorkOrderStatus.RELEASED]: 'Released',
-  [WorkOrderStatus.IN_PROGRESS]: 'In Progress',
-  [WorkOrderStatus.PAUSED]: 'Paused',
+  [WorkOrderStatus.CONFIRMED]: 'Confirmed',
+  [WorkOrderStatus.IN_PRODUCTION]: 'In Production',
   [WorkOrderStatus.COMPLETED]: 'Completed',
   [WorkOrderStatus.CANCELLED]: 'Cancelled',
 };
@@ -52,8 +57,12 @@ export const MACHINE_STATE_LABEL: Record<MachineState, string> = {
 };
 
 export const PRODUCTION_BATCH_STATUS_LABEL: Record<ProductionBatchStatus, string> = {
-  [ProductionBatchStatus.ACTIVE]: 'Active',
+  [ProductionBatchStatus.PLANNED]: 'Planned',
+  [ProductionBatchStatus.IN_PRODUCTION]: 'In Production',
   [ProductionBatchStatus.COMPLETED]: 'Completed',
+  [ProductionBatchStatus.CANCELLED]: 'Cancelled',
+  // Legacy aliases
+  [ProductionBatchStatus.ACTIVE]: 'Active',
   [ProductionBatchStatus.HOLD]: 'Hold',
   [ProductionBatchStatus.SCRAPPED]: 'Scrapped',
 };
@@ -78,6 +87,73 @@ export const REJECT_CATEGORY_LABEL: Record<RejectCategory, string> = {
   [RejectCategory.OTHER]: 'Other',
 };
 
+/**
+ * Customer Order status (MES-026).
+ *
+ * The first four are derived from production facts; the last three are set by
+ * hand because the MVP does not execute shipping.
+ */
+export const CUSTOMER_ORDER_STATUS_LABEL: Record<CustomerOrderStatus, string> = {
+  [CustomerOrderStatus.RECEIVED]: 'Received',
+  [CustomerOrderStatus.PLANNED]: 'Planned',
+  [CustomerOrderStatus.IN_PRODUCTION]: 'In Production',
+  [CustomerOrderStatus.PRODUCED]: 'Produced',
+  [CustomerOrderStatus.READY_TO_SHIP]: 'Ready to Ship',
+  [CustomerOrderStatus.SHIPPED]: 'Shipped',
+  [CustomerOrderStatus.COMPLETED]: 'Completed',
+  [CustomerOrderStatus.CANCELLED]: 'Cancelled',
+};
+
+/** Where an order came from. Mandatory on every order, so it is never blank. */
+export const ORDER_CHANNEL_LABEL: Record<OrderChannel, string> = {
+  [OrderChannel.KANBAN_CARD]: 'Kartu Kanban',
+  [OrderChannel.EMAIL]: 'Email',
+  [OrderChannel.INVOICE]: 'Invoice',
+  [OrderChannel.PO_DOCUMENT]: 'Dokumen PO',
+  [OrderChannel.MANUAL]: 'Input Manual',
+};
+
+export const PRODUCTION_PLAN_STATUS_LABEL: Record<ProductionPlanStatus, string> = {
+  [ProductionPlanStatus.DRAFT]: 'Draft',
+  [ProductionPlanStatus.PLANNING]: 'Planning',
+  [ProductionPlanStatus.READY]: 'Ready',
+  [ProductionPlanStatus.CONFIRMED]: 'Confirmed',
+  [ProductionPlanStatus.IN_EXECUTION]: 'In Execution',
+  [ProductionPlanStatus.COMPLETED]: 'Completed',
+  [ProductionPlanStatus.CANCELLED]: 'Cancelled',
+};
+
+/**
+ * Capacity status (S45.6). Determined by the system from demand against
+ * capacity; there is no screen on which a user types one.
+ */
+export const CAPACITY_STATUS_LABEL: Record<CapacityStatus, string> = {
+  [CapacityStatus.WITHIN_PLAN]: 'Within Plan',
+  [CapacityStatus.ADDITIONAL_DEMAND]: 'Additional Demand',
+  [CapacityStatus.CAPACITY_UP_REQUIRED]: 'Capacity Up Required',
+};
+
+/** What each capacity status means, for the badge's tooltip. */
+export const CAPACITY_STATUS_DESCRIPTION: Record<CapacityStatus, string> = {
+  [CapacityStatus.WITHIN_PLAN]: 'Demand masih di dalam Planning Capacity.',
+  [CapacityStatus.ADDITIONAL_DEMAND]:
+    'Demand melewati Planning Capacity tetapi masih tertampung Capacity Buffer.',
+  [CapacityStatus.CAPACITY_UP_REQUIRED]:
+    'Demand melebihi Total Capacity; ada gap yang membutuhkan keputusan Capacity Up.',
+};
+
+export const DEMAND_FORECAST_STATUS_LABEL: Record<DemandForecastStatus, string> = {
+  [DemandForecastStatus.DRAFT]: 'Draft',
+  [DemandForecastStatus.GENERATED]: 'Generated',
+  [DemandForecastStatus.SUPERSEDED]: 'Superseded',
+};
+
+export const CAPACITY_PLAN_STATUS_LABEL: Record<CapacityPlanStatus, string> = {
+  [CapacityPlanStatus.DRAFT]: 'Draft',
+  [CapacityPlanStatus.COMPUTED]: 'Computed',
+  [CapacityPlanStatus.SUPERSEDED]: 'Superseded',
+};
+
 export const USER_ROLE_LABEL: Record<UserRole, string> = {
   [UserRole.EXECUTIVE]: 'Executive',
   [UserRole.PRODUCTION_MANAGER]: 'Production Manager',
@@ -85,6 +161,7 @@ export const USER_ROLE_LABEL: Record<UserRole, string> = {
   [UserRole.OPERATOR]: 'Operator',
   [UserRole.PPIC]: 'PPIC',
   [UserRole.QUALITY]: 'Quality',
+  [UserRole.SALES]: 'Sales',
   [UserRole.ADMIN]: 'Admin',
 };
 
@@ -99,6 +176,12 @@ export function statusLabel(value: string | undefined | null): string {
     PRODUCTION_ORDER_STATUS_LABEL,
     MACHINE_STATE_LABEL,
     PRODUCTION_BATCH_STATUS_LABEL,
+    // Planning statuses come after execution: WorkOrderStatus and
+    // CustomerOrderStatus share IN_PRODUCTION, COMPLETED and CANCELLED, and
+    // both render identically, so the collision is harmless in either order.
+    CUSTOMER_ORDER_STATUS_LABEL,
+    PRODUCTION_PLAN_STATUS_LABEL,
+    CAPACITY_STATUS_LABEL,
   ];
   for (const map of maps) {
     if (value in map) return map[value];

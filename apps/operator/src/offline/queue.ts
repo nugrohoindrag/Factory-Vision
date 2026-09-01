@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { OfflineCommand, OfflineCommandStatus } from '@factory-vision/domain-types';
-import { getOperatorDb } from './db.js';
+import { getOperatorDb, hasCommandsStore } from './db.js';
 import { FactoryVisionApiClient, ApiRequestError } from '@factory-vision/api-client';
 
 const api = new FactoryVisionApiClient({ baseUrl: '' });
@@ -49,6 +49,14 @@ export interface SyncStatus {
   failed: number;
   lastSyncedAt: string | null;
   lastError: string | null;
+  /**
+   * A rejection the operator has not yet seen (MES-082-4).
+   *
+   * Separate from `failed`, which is a standing count: this is the *event*, and
+   * it is what raises a banner the operator has to dismiss. A count in a chip
+   * they never tap is not being told.
+   */
+  rejectionNotice: { count: number; at: string; message: string } | null;
 }
 
 let status: SyncStatus = {
@@ -58,6 +66,7 @@ let status: SyncStatus = {
   failed: 0,
   lastSyncedAt: null,
   lastError: null,
+  rejectionNotice: null,
 };
 
 const listeners = new Set<(next: SyncStatus) => void>();
@@ -79,6 +88,9 @@ function publish(patch: Partial<SyncStatus>): void {
 }
 
 async function refreshCounts(): Promise<void> {
+  // The store may not exist yet: the sync engine starts before the schema
+  // bootstrap finishes, and a terminal mid-deferral is a legitimate state.
+  if (!(await hasCommandsStore())) return;
   const db = await getOperatorDb();
   const pending = await db.getAllFromIndex('commands', 'by-status', OfflineCommandStatus.PENDING);
   const failed = await db.getAllFromIndex('commands', 'by-status', OfflineCommandStatus.FAILED);
@@ -146,6 +158,8 @@ async function runSync(): Promise<void> {
     return;
   }
 
+  if (!(await hasCommandsStore())) return;
+
   const db = await getOperatorDb();
   const pending = (await db.getAllFromIndex('commands', 'by-status', OfflineCommandStatus.PENDING))
     // FIFO: a start must reach the server before the output it produced.
@@ -159,6 +173,10 @@ async function runSync(): Promise<void> {
   }
 
   publish({ syncing: true, lastError: null });
+
+  // Collected per run so the banner reports what just happened rather than the
+  // standing total, which may include rejections the operator already saw.
+  const rejectedThisRun: OfflineCommand[] = [];
 
   // Mark in-flight so a second pass cannot pick the same rows up again.
   for (const cmd of pending) {
@@ -198,12 +216,29 @@ async function runSync(): Promise<void> {
         // exactly what the shop floor tried to record (US-046: no silent loss).
         cmd.status = OfflineCommandStatus.FAILED;
         cmd.errorMessage = outcome.errorMessage;
+        rejectedThisRun.push(cmd);
       }
 
       if (cmd.id !== undefined) await db.put('commands', cmd);
     }
 
-    publish({ syncing: false, online: true, lastSyncedAt: result.serverTime });
+    publish({
+      syncing: false,
+      online: true,
+      lastSyncedAt: result.serverTime,
+      // MES-082-4: the operator is told, rather than left to notice a chip.
+      ...(rejectedThisRun.length > 0
+        ? {
+            rejectionNotice: {
+              count: rejectedThisRun.length,
+              at: result.serverTime,
+              message:
+                rejectedThisRun[0].errorMessage ??
+                'Server tidak menerima catatan ini. Catatan tetap tersimpan di terminal.',
+            },
+          }
+        : {}),
+    });
     await refreshCounts();
 
     // More waiting than one batch holds: keep going.
@@ -234,8 +269,20 @@ async function runSync(): Promise<void> {
   }
 }
 
+/**
+ * Dismisses the rejection banner (MES-082-4).
+ *
+ * Only the notice is cleared; the failed commands stay exactly where they are,
+ * because acknowledging that something was refused is not the same as it having
+ * been dealt with.
+ */
+export function acknowledgeRejections(): void {
+  publish({ rejectionNotice: null });
+}
+
 /** Puts failed commands back in line, the operator's "coba lagi". */
 export async function retryFailedCommands(): Promise<void> {
+  if (!(await hasCommandsStore())) return;
   const db = await getOperatorDb();
   const failed = await db.getAllFromIndex('commands', 'by-status', OfflineCommandStatus.FAILED);
   for (const cmd of failed) {
@@ -244,18 +291,40 @@ export async function retryFailedCommands(): Promise<void> {
     cmd.errorMessage = undefined;
     if (cmd.id !== undefined) await db.put('commands', cmd);
   }
+  publish({ rejectionNotice: null });
   await refreshCounts();
   await syncQueue();
 }
 
+/**
+ * How many commands still hold production the server has not acknowledged.
+ *
+ * PENDING, SYNCING and FAILED all count. This is what the schema upgrade asks
+ * before it runs (MES-077): a non-zero answer means an upgrade would be
+ * touching a database that still holds the only copy of something, so it is
+ * deferred instead.
+ */
+export async function countUnsyncedCommands(): Promise<number> {
+  if (!(await hasCommandsStore())) return 0;
+  const db = await getOperatorDb();
+  const unsynced = await Promise.all([
+    db.getAllFromIndex('commands', 'by-status', OfflineCommandStatus.PENDING),
+    db.getAllFromIndex('commands', 'by-status', OfflineCommandStatus.SYNCING),
+    db.getAllFromIndex('commands', 'by-status', OfflineCommandStatus.FAILED),
+  ]);
+  return unsynced.reduce((total, rows) => total + rows.length, 0);
+}
+
 /** The commands a supervisor may need to inspect after a bad shift. */
 export async function listFailedCommands(): Promise<OfflineCommand[]> {
+  if (!(await hasCommandsStore())) return [];
   const db = await getOperatorDb();
   return db.getAllFromIndex('commands', 'by-status', OfflineCommandStatus.FAILED);
 }
 
 /** Clears synced rows so IndexedDB does not grow without bound. */
 export async function pruneSyncedCommands(olderThanMs = 24 * 60 * 60 * 1000): Promise<number> {
+  if (!(await hasCommandsStore())) return 0;
   const db = await getOperatorDb();
   const synced = await db.getAllFromIndex('commands', 'by-status', OfflineCommandStatus.SYNCED);
   const cutoff = Date.now() - olderThanMs;

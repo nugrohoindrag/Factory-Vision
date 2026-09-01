@@ -42,20 +42,40 @@ export class RbacService {
    * Roles are the security context the API authorises from, and they are read
    * synchronously on every request, so they stay in `this.roles` — but that
    * array is now a projection of `role_definition` rather than the record. On
-   * an empty database the seven system roles are materialised and written
-   * down, so the next boot reads them back rather than inventing them again.
+   * an empty database the system roles are materialised and written down, so
+   * the next boot reads them back rather than inventing them again.
+   *
+   * **A system role missing from a non-empty database is also created.** The
+   * original code only seeded when the table was completely empty, so a role
+   * added to `UserRole` after a tenant was first provisioned — SALES is the
+   * first such case — existed in the enum and in `SYSTEM_ROLE_PERMISSIONS` but
+   * never in the database, and therefore could never be assigned to a user.
+   *
+   * What this deliberately does **not** do is re-apply the baseline to roles
+   * that already exist. §22.4 lets a tenant retune what a Supervisor or a PPIC
+   * may do, and overwriting that on every boot would silently undo their
+   * decision. Changing the baseline for an existing role is a migration, where
+   * it is reviewable — see `017_mes_v1_sales_role.sql`.
    */
   async hydrate(tenantId: string): Promise<number> {
     return withTenant(tenantId, async (client) => {
       const stored = await this.repo.list(client, tenantId);
-      if (stored.length === 0) {
+      this.roles = this.roles.filter((r) => r.tenantId !== tenantId).concat(stored);
+
+      const storedKeys = new Set(stored.map((r) => r.key));
+      const missing = Object.values(UserRole).filter((role) => !storedKeys.has(role));
+
+      if (missing.length > 0) {
         this.ensureSystemRoles(tenantId);
-        for (const role of this.roles.filter((r) => r.tenantId === tenantId)) {
+        for (const role of this.roles.filter(
+          (r) => r.tenantId === tenantId && missing.includes(r.key as UserRole)
+        )) {
           await this.repo.upsert(client, role);
         }
-      } else {
-        this.roles = this.roles.filter((r) => r.tenantId !== tenantId).concat(stored);
+        // eslint-disable-next-line no-console
+        console.log(`[rbac] system role baru ditulis ke database: ${missing.join(', ')}`);
       }
+
       return this.roles.filter((r) => r.tenantId === tenantId).length;
     });
   }

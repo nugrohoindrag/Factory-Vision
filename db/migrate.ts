@@ -11,6 +11,15 @@ const __dirname = path.dirname(__filename);
 
 const databaseUrl = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/factory_vision';
 
+async function ensureMigrationTable(client: pg.Client) {
+  await client.query(`
+    CREATE TABLE IF NOT EXISTS schema_migrations (
+      version VARCHAR(128) PRIMARY KEY,
+      applied_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+}
+
 export async function runMigrations() {
   console.log(`[DB Migrate] Connecting to PostgreSQL at ${databaseUrl.replace(/:[^:@]+@/, ':***@')}...`);
   const client = new pg.Client({ connectionString: databaseUrl });
@@ -19,14 +28,33 @@ export async function runMigrations() {
     await client.connect();
     console.log('[DB Migrate] Connected successfully.');
 
+    await ensureMigrationTable(client);
+
+    const appliedRows = await client.query<{ version: string }>('SELECT version FROM schema_migrations');
+    const applied = new Set(appliedRows.rows.map((r) => r.version));
+
     const migrationsDir = path.join(__dirname, 'migrations');
     const files = fs.readdirSync(migrationsDir).filter((f) => f.endsWith('.sql')).sort();
 
     for (const file of files) {
+      if (applied.has(file)) {
+        console.log(`[DB Migrate] Skipping already applied: ${file}`);
+        continue;
+      }
+
       console.log(`[DB Migrate] Executing migration: ${file}...`);
       const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf-8');
-      await client.query(sql);
-      console.log(`[DB Migrate] Migration completed: ${file}`);
+      
+      await client.query('BEGIN');
+      try {
+        await client.query(sql);
+        await client.query('INSERT INTO schema_migrations (version) VALUES ($1)', [file]);
+        await client.query('COMMIT');
+        console.log(`[DB Migrate] Migration completed and recorded: ${file}`);
+      } catch (migrationErr) {
+        await client.query('ROLLBACK');
+        throw migrationErr;
+      }
     }
 
     await grantAppRoleLogin(client);
@@ -34,22 +62,61 @@ export async function runMigrations() {
     console.log('[DB Migrate] All migrations applied successfully!');
   } catch (err: any) {
     console.error('[DB Migrate] Migration failed:', err.message);
-    // Rethrow: a swallowed failure exits 0, so a deploy script or CI job reads
-    // a half-applied schema as success.
     throw err;
   } finally {
     await client.end();
   }
 }
 
-/**
- * Gives the RLS-bound application role its password.
- *
- * Migration 004 creates `factory_app` NOLOGIN and deliberately carries no
- * password: a credential in a committed .sql file is a credential in the Git
- * history forever. The password therefore arrives from the environment, and
- * the role stays unusable until it does.
- */
+export async function runRollback() {
+  console.log(`[DB Rollback] Connecting to PostgreSQL at ${databaseUrl.replace(/:[^:@]+@/, ':***@')}...`);
+  const client = new pg.Client({ connectionString: databaseUrl });
+
+  try {
+    await client.connect();
+    console.log('[DB Rollback] Connected successfully.');
+
+    await ensureMigrationTable(client);
+
+    const lastApplied = await client.query<{ version: string }>(
+      'SELECT version FROM schema_migrations ORDER BY version DESC LIMIT 1'
+    );
+
+    if (lastApplied.rows.length === 0) {
+      console.log('[DB Rollback] No migrations to rollback.');
+      return;
+    }
+
+    const version = lastApplied.rows[0].version;
+    const rollbackFile = path.join(__dirname, 'rollbacks', version);
+
+    if (!fs.existsSync(rollbackFile)) {
+      console.warn(`[DB Rollback] No rollback file found at ${rollbackFile}. Removing version record.`);
+      await client.query('DELETE FROM schema_migrations WHERE version = $1', [version]);
+      return;
+    }
+
+    console.log(`[DB Rollback] Executing rollback for: ${version}...`);
+    const sql = fs.readFileSync(rollbackFile, 'utf-8');
+
+    await client.query('BEGIN');
+    try {
+      await client.query(sql);
+      await client.query('DELETE FROM schema_migrations WHERE version = $1', [version]);
+      await client.query('COMMIT');
+      console.log(`[DB Rollback] Rollback completed for: ${version}`);
+    } catch (rbErr) {
+      await client.query('ROLLBACK');
+      throw rbErr;
+    }
+  } catch (err: any) {
+    console.error('[DB Rollback] Rollback failed:', err.message);
+    throw err;
+  } finally {
+    await client.end();
+  }
+}
+
 async function grantAppRoleLogin(client: pg.Client) {
   const role = process.env.APP_DB_USER || 'factory_app';
   const password = process.env.APP_DB_PASSWORD;
@@ -63,8 +130,6 @@ async function grantAppRoleLogin(client: pg.Client) {
     return;
   }
 
-  // The role name cannot be a bind parameter in ALTER ROLE, so it is quoted as
-  // an identifier by the server rather than interpolated raw.
   const quoted = await client.query<{ ident: string }>('SELECT quote_ident($1) AS ident', [role]);
   const literal = await client.query<{ lit: string }>('SELECT quote_literal($1) AS lit', [password]);
   await client.query(`ALTER ROLE ${quoted.rows[0].ident} LOGIN PASSWORD ${literal.rows[0].lit}`);
@@ -99,5 +164,8 @@ export async function runSeeds() {
 }
 
 const action = process.argv[2];
-const run = action === 'seed' ? runSeeds : runMigrations;
-run().catch(() => process.exit(1));
+let runner = runMigrations;
+if (action === 'seed') runner = runSeeds;
+if (action === 'rollback') runner = runRollback;
+
+runner().catch(() => process.exit(1));

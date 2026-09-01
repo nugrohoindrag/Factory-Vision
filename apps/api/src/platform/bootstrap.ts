@@ -133,14 +133,14 @@ export async function seedDemoHistory(
     return {
       lineId: wo.lineId,
       processId: wo.processId,
-      batchId: wo.batchId,
+      batchId: undefined,
       machineId: wo.machineId,
       workOrderId: wo.id,
       operatorId: operators[0]?.id ?? 'op-001',
       //, Alpha is the good performer, Beta the average one, and Gamma
       // (the pilot validation line) the under-performer the drill-down finds.
       profile: wo.lineId === 'line-01' ? 'GOOD' : wo.lineId === 'line-02' ? 'AVERAGE' : 'POOR',
-      dailyTarget: wo.targetQuantity,
+      dailyTarget: wo.plannedQuantity,
       // The generator must bound output with the very rate the OEE engine
       // later divides by. Resolving both through `resolveIdealCycleSeconds` is
       // what keeps Performance believable: a seed that produced at 750 s/unit

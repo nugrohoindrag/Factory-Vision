@@ -6,7 +6,7 @@
  * the API first:
  *
  *   BOOTSTRAP_ADMIN_EMAIL=admin@pabrik.co.id \
- *   BOOTSTRAP_ADMIN_PASSWORD=RahasiaKuat2026 \
+ *   BOOTSTRAP_ADMIN_PASSWORD=<password admin> \
  *   BOOTSTRAP_OPERATOR_PIN=1234 pnpm dev:api
  *
  *   node scripts/verify-user-stories.mjs
@@ -17,7 +17,7 @@
 
 const BASE = process.env.API_BASE || 'http://localhost:4000';
 const ADMIN_EMAIL = process.env.BOOTSTRAP_ADMIN_EMAIL || 'admin@pabrik.co.id';
-const ADMIN_PASSWORD = process.env.BOOTSTRAP_ADMIN_PASSWORD || 'RahasiaKuat2026';
+const ADMIN_PASSWORD = process.env.BOOTSTRAP_ADMIN_PASSWORD || 'ChangeMe-Local-Only';
 const OPERATOR_PIN = process.env.BOOTSTRAP_OPERATOR_PIN || '1234';
 
 const results = [];
@@ -389,16 +389,16 @@ async function planning() {
     return `${batch.batchNumber} attached`;
   });
 
-  await check('US-012', 'Only an eligible Work Order can be released', async () => {
-    const { body } = await api(`/api/v1/work-orders/${workOrderId}/release`, {
+  await check('US-012', 'Only an eligible Work Order can be confirmed', async () => {
+    const { body } = await api(`/api/v1/work-orders/${workOrderId}/confirm`, {
       token: adminToken,
       method: 'POST',
       expect: 200,
     });
-    assert(body.status === 'RELEASED', `status is ${body.status}`);
-    const again = await api(`/api/v1/work-orders/${workOrderId}/release`, { token: adminToken, method: 'POST' });
-    assert(again.status >= 400, 'releasing twice was allowed');
-    return 'RELEASED, second release refused';
+    assert(body.status === 'CONFIRMED', `status is ${body.status}`);
+    const again = await api(`/api/v1/work-orders/${workOrderId}/confirm`, { token: adminToken, method: 'POST' });
+    assert(again.status >= 400, 'confirming twice was allowed');
+    return 'CONFIRMED, second confirm refused';
   });
 
   return { orderId, workOrderId };
@@ -417,16 +417,16 @@ async function shopFloor(workOrderId) {
     return `${body.length} work orders, context inherited`;
   });
 
-  await check('US-015', 'Start moves the Work Order to In Progress', async () => {
+  await check('US-015', 'Start moves the Work Order to In Production', async () => {
     const { body } = await api(`/api/v1/work-orders/${workOrderId}/start`, {
       token: operatorToken,
       method: 'POST',
       body: { operatorId: 'op-001', clientEventId: uid(), occurredAt: new Date().toISOString() },
       expect: 200,
     });
-    assert(body.status === 'IN_PROGRESS', `status ${body.status}`);
+    assert(body.status === 'IN_PRODUCTION', `status ${body.status}`);
     assert(body.actualStart, 'actualStart not captured');
-    return `IN_PROGRESS at ${body.actualStart}`;
+    return `IN_PRODUCTION at ${body.actualStart}`;
   });
 
   await check('US-018', 'Good quantity is recorded with full context', async () => {

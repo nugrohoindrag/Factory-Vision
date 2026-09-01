@@ -17,8 +17,9 @@ export class ReportingService {
     return workOrders.map((wo) => {
       const prod = products.find((p) => p.id === wo.productId);
       const line = lines.find((l) => l.id === wo.lineId);
-      const achievement = wo.targetQuantity > 0 ? Math.round((wo.goodQuantity / wo.targetQuantity) * 100) : 0;
-      const variance = wo.goodQuantity - wo.targetQuantity;
+      const achievement =
+        wo.plannedQuantity > 0 ? Math.round((wo.outputQuantity / wo.plannedQuantity) * 100) : 0;
+      const variance = wo.outputQuantity - wo.plannedQuantity;
 
       return {
         workOrderId: wo.id,
@@ -87,8 +88,8 @@ export class ReportingService {
       const lineWos = workOrders.filter((w) => w.lineId === line.id);
       const lineDts = downtimes.filter((d) => d.lineId === line.id);
 
-      const targetSum = lineWos.reduce((acc, w) => acc + w.targetQuantity, 0);
-      const goodSum = lineWos.reduce((acc, w) => acc + w.goodQuantity, 0);
+      const targetSum = lineWos.reduce((acc, w) => acc + w.plannedQuantity, 0);
+      const goodSum = lineWos.reduce((acc, w) => acc + w.outputQuantity, 0);
       const rejectSum = lineWos.reduce((acc, w) => acc + w.rejectQuantity, 0);
       const downtimeMinutes = lineDts.reduce((acc, d) => acc + Math.round((d.durationSeconds || 0) / 60), 0);
       const achievement = targetSum > 0 ? Math.round((goodSum / targetSum) * 100) : 0;

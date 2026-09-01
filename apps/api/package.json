@@ -4,30 +4,53 @@
   "private": true,
   "type": "module",
   "main": "dist/main.js",
+  "exports": {
+    ".": "./dist/main.js",
+    "./jobs": "./dist/platform/queue/index.js"
+  },
   "scripts": {
     "dev": "tsx watch src/main.ts",
     "build": "tsc",
     "start": "node dist/main.js",
     "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test test/sprint-3-domain.test.ts",
+    "test:db": "node --import tsx --test test/*.test.ts",
     "verify:isolation": "node scripts/verify-tenant-isolation.mjs",
-    "verify:persistence": "node scripts/verify-persistence.mjs"
+    "verify:persistence": "node scripts/verify-persistence.mjs",
+    "verify:planning": "tsx scripts/verify-planning-flow.mjs",
+    "qa:routes": "tsx scripts/audit-route-permissions.mjs",
+    "qa:db": "tsx scripts/qa-database-integrity.mjs",
+    "qa:execution": "tsx scripts/qa-execution-flow.mjs",
+    "qa:master-data": "tsx scripts/qa-master-data-persistence.mjs",
+    "qa:migration": "tsx scripts/qa-migration-lifecycle.mjs",
+    "qa:sales": "node scripts/qa-sales-http-boundary.mjs",
+    "qa:mold": "tsx scripts/qa-mold-conditional.mjs",
+    "qa:posture": "node scripts/qa-production-posture.mjs",
+    "qa:worker": "node --import tsx scripts/qa-worker-queue.mjs",
+    "qa:outbox": "node --import tsx scripts/qa-outbox-relay.mjs",
+    "qa:storage": "node --import tsx scripts/qa-object-storage.mjs",
+    "qa:mold-crud": "node --import tsx scripts/qa-mold-crud.mjs",
+    "qa:sync-exceptions": "node --import tsx scripts/qa-sync-exceptions.mjs",
+    "qa:exclusivity": "node --import tsx scripts/qa-resource-exclusivity.mjs",
+    "qa:batch": "node --import tsx scripts/qa-batch-integrity.mjs",
+    "qa": "pnpm run qa:routes && pnpm run qa:db && pnpm run qa:execution && pnpm run qa:master-data && pnpm run qa:mold && pnpm run qa:mold-crud && pnpm run verify:planning && pnpm run qa:worker && pnpm run qa:outbox && pnpm run qa:storage && pnpm run qa:sync-exceptions && pnpm run qa:exclusivity && pnpm run qa:batch && pnpm run qa:migration"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1121.0",
     "@factory-vision/domain-types": "workspace:*",
     "@factory-vision/i18n": "workspace:*",
+    "@factory-vision/job-queue": "workspace:*",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "pg": "^8.13.1",
-    "socket.io": "^4.8.1",
-    "uuid": "^11.0.5"
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.1",
     "@types/pg": "^8.11.10",
-    "@types/uuid": "^10.0.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.0"
   }

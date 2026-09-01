@@ -2,6 +2,10 @@ import { DowntimeStatus, MachineState, RecordSource } from '@factory-vision/doma
 import type { DowntimeRecord, MachineStateLog, ProductionRecord } from '@factory-vision/domain-types';
 import type { SyncBatchResult, SyncCommandResult } from '@factory-vision/domain-types';
 import { ApiError } from '../../platform/http/api-error.js';
+import {
+  QuantityFlowService,
+  QuantityFlowViolation,
+} from '../production/quantity-flow.service.js';
 import { getPool, withTenant } from '../../platform/db/pool.js';
 import type { Executor } from '../../platform/db/executor.js';
 import { MasterDataService } from '../master-data/master-data.service.js';
@@ -12,6 +16,12 @@ import { ProductionRecordRepository } from './production-record.repository.js';
 import { DowntimeRepository } from './downtime.repository.js';
 import { SyncEventRepository } from './sync-event.repository.js';
 import { MachineStateRepository } from './machine-state.repository.js';
+import {
+  SyncExceptionRepository,
+  type SyncException,
+  type SyncExceptionFilter,
+} from './sync-exception.repository.js';
+import { ProcessChainService } from '../production/process-chain.service.js';
 
 /**
  * Shop-floor capture (US-014 … US-020, US-045, US-046).
@@ -34,6 +44,8 @@ export class ShopFloorService {
   private readonly downtimes = new DowntimeRepository();
   private readonly syncEvents = new SyncEventRepository();
   private readonly machineStates = new MachineStateRepository();
+  private readonly syncExceptions = new SyncExceptionRepository();
+  private readonly processChain = new ProcessChainService();
 
   constructor(
     private productionService: ProductionService,
@@ -55,7 +67,10 @@ export class ShopFloorService {
     return {
       workOrder,
       processId: workOrder?.processId,
-      batchId: workOrder?.batchId,
+      // Batch context is resolved from production_batch.work_order_id once
+      // operator batch selection lands (MES-075, Sprint 11). A work order that
+      // is not batch-managed never carries one (E1).
+      batchId: undefined,
       productId: workOrder?.productId,
       lineId: workOrder?.lineId,
       machineId: workOrder?.machineId,
@@ -107,6 +122,52 @@ export class ShopFloorService {
 
       const shift = this.shiftContext(tenantId, cmd.occurredAt, cmd.shiftId);
 
+      // The units this record accounts for. `good + reject` today; scrap and
+      // rework join it when the terminal captures them (MES-067).
+      const inputQuantity = cmd.goodQuantity + cmd.rejectQuantity;
+
+      // MES-017 exists so an impossible number is never stored, which is only
+      // true if the write path consults it. Judged against the totals the work
+      // order already holds, before the increment is applied.
+      //
+      // The domain throws its own violation type; the service is where that
+      // becomes the HTTP contract. It matters beyond tidiness: the offline sync
+      // classifies a non-ApiError as transient and would retry an impossible
+      // quantity for ever, instead of reporting it once as an exception a
+      // supervisor can act on.
+      try {
+        QuantityFlowService.assertDelta(
+          'WORK_ORDER',
+          context.workOrder.woNumber,
+          {
+            plannedQuantity: context.workOrder.plannedQuantity,
+            inputQuantity: context.workOrder.inputQuantity,
+            outputQuantity: context.workOrder.outputQuantity,
+            rejectQuantity: context.workOrder.rejectQuantity,
+            scrapQuantity: context.workOrder.scrapQuantity,
+            reworkQuantity: context.workOrder.reworkQuantity,
+            transferredQuantity: context.workOrder.transferredQuantity,
+          },
+          {
+            inputQuantity,
+            outputQuantity: cmd.goodQuantity,
+            rejectQuantity: cmd.rejectQuantity,
+          }
+        );
+      } catch (error) {
+        if (error instanceof QuantityFlowViolation) {
+          throw ApiError.validation(
+            error.message,
+            error.violations.map((violation) => ({
+              field: 'goodQuantity',
+              code: violation.invariant,
+              message: violation.message,
+            }))
+          );
+        }
+        throw error;
+      }
+
       const draft: ProductionRecord = {
         id: `pr-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
         tenantId,
@@ -119,6 +180,16 @@ export class ShopFloorService {
         shiftDate: shift.shiftDate,
         goodQuantity: cmd.goodQuantity,
         rejectQuantity: cmd.rejectQuantity,
+        // §10: input is what actually entered the process. Every unit this
+        // record accounts for entered it, so unless the operator states a
+        // different figure the input is the sum of the dispositions. Leaving it
+        // at zero is what produced work orders with negative WIP.
+        inputQuantity: inputQuantity,
+        // §7: the composite FK requires these to match the work order exactly.
+        // Copying them from the row we just read is what makes the exclusivity
+        // constraint verifiable rather than merely declared.
+        isBatchManaged: context.workOrder.isBatchManaged ?? false,
+        hasChildWorkOrder: context.workOrder.hasChildWorkOrder ?? false,
         rejectReasonId: cmd.rejectReasonId,
         recordedAt: cmd.occurredAt,
         source: RecordSource.OPERATOR_MANUAL,
@@ -137,7 +208,8 @@ export class ShopFloorService {
           tenantId,
           cmd.workOrderId,
           cmd.goodQuantity,
-          cmd.rejectQuantity
+          cmd.rejectQuantity,
+          { input: inputQuantity }
         );
         await this.syncEvents.claim(
           client,
@@ -470,18 +542,36 @@ export class ShopFloorService {
       try {
         const entityId = await this.applyCommand(tenantId, cmd);
         results.push({ clientEventId: cmd.clientEventId, status: 'APPLIED', entityId, retryable: false });
+
+        // A command that finally lands closes the exception it raised earlier;
+        // otherwise a transient failure would sit in the supervisor's list for
+        // ever and train them to ignore it.
+        await this.closeExceptionFor(tenantId, cmd.clientEventId);
+
+        // Section 13 / MES-082: a quantity beyond what the predecessor handed
+        // over is *reported*, not refused. The shop floor legitimately knows
+        // about material the counters do not, and refusing the record would
+        // push the count onto paper where nobody can see it at all.
+        await this.reportAvailableQuantityVariance(tenantId, cmd);
       } catch (error) {
         const apiError = error instanceof ApiError ? error : undefined;
         // A validation failure will fail identically forever; anything else
         // may be transient, so the terminal is told it can retry.
         const retryable = !apiError || !['VALIDATION_ERROR', 'FORBIDDEN', 'NOT_FOUND'].includes(apiError.code);
+        const errorCode = apiError?.code ?? 'INTERNAL_ERROR';
+        const errorMessage = error instanceof Error ? error.message : 'Gagal memproses perintah.';
+
         results.push({
           clientEventId: cmd.clientEventId,
           status: 'FAILED',
-          errorCode: apiError?.code ?? 'INTERNAL_ERROR',
-          errorMessage: error instanceof Error ? error.message : 'Gagal memproses perintah.',
+          errorCode,
+          errorMessage,
           retryable,
         });
+
+        // The whole point of MES-082: the rejection is filed where a supervisor
+        // can see it, instead of living only in the tablet that was refused.
+        await this.recordSyncException(tenantId, cmd, errorCode, errorMessage, retryable);
       }
     }
 
@@ -493,6 +583,162 @@ export class ShopFloorService {
       results,
       serverTime: new Date().toISOString(),
     };
+  }
+
+  // --- Sync exceptions (MES-082) --------------------------------------
+
+  /**
+   * Files a rejected command as an exception.
+   *
+   * Deliberately never throws: a failure to *record* the failure must not turn
+   * a reported rejection into a 500 that loses the whole batch. The command's
+   * own outcome has already been decided by the time this runs.
+   */
+  private async recordSyncException(
+    tenantId: string,
+    cmd: { type: string; clientEventId: string; payload: any; occurredAt: string; workOrderId: string },
+    errorCode: string,
+    reason: string,
+    retryable: boolean
+  ): Promise<void> {
+    try {
+      const context = await withTenant(tenantId, (client) =>
+        this.contextFor(client, tenantId, cmd.workOrderId)
+      );
+
+      await withTenant(tenantId, (client) =>
+        this.syncExceptions.record(client, {
+          tenantId,
+          clientEventId: cmd.clientEventId,
+          commandType: cmd.type,
+          workOrderId: cmd.workOrderId || undefined,
+          operatorId: cmd.payload?.operatorId,
+          payload: cmd.payload ?? {},
+          occurredAt: cmd.occurredAt,
+          errorCode,
+          reason,
+          retryable,
+          lineId: context.lineId,
+          shiftDate: cmd.occurredAt ? cmd.occurredAt.slice(0, 10) : undefined,
+        })
+      );
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(
+        '[sync-exception] gagal mencatat exception:',
+        error instanceof Error ? error.message : error
+      );
+    }
+  }
+
+  private async closeExceptionFor(tenantId: string, clientEventId: string): Promise<void> {
+    try {
+      await withTenant(tenantId, (client) =>
+        this.syncExceptions.resolveByEvent(
+          client,
+          tenantId,
+          clientEventId,
+          'Perintah berhasil diterapkan pada percobaan berikutnya.'
+        )
+      );
+    } catch {
+      // Non-fatal: an exception left open is visible, which is the safe side.
+    }
+  }
+
+  /**
+   * Files an available-quantity difference as an exception, not a rejection.
+   *
+   * ADR-25 and ADR-26 already make the successor's available quantity a
+   * recommendation. MES-082 adds the other half: when the recommendation is
+   * exceeded, somebody should be told. Reporting it here means the count is
+   * kept *and* the discrepancy is visible.
+   */
+  private async reportAvailableQuantityVariance(
+    tenantId: string,
+    cmd: { type: string; clientEventId: string; payload: any; occurredAt: string; workOrderId: string }
+  ): Promise<void> {
+    if (cmd.type !== 'RECORD_OUTPUT' || !cmd.workOrderId) return;
+
+    try {
+      const recorded =
+        Number(cmd.payload?.goodQuantity ?? 0) + Number(cmd.payload?.rejectQuantity ?? 0);
+      if (recorded <= 0) return;
+
+      const detail = await withTenant(tenantId, async (client) => {
+        const workOrder = await this.productionService.getWorkOrderByIdWith(
+          client,
+          tenantId,
+          cmd.workOrderId
+        );
+        if (!workOrder || !workOrder.predecessorWorkOrderId) return undefined;
+        // `inputQuantity` already includes this command's contribution, so the
+        // available figure is measured *before* it, to answer "was enough
+        // handed over for what was just recorded?".
+        const available = await this.processChain.availableQuantity(client, tenantId, {
+          ...workOrder,
+          inputQuantity: Math.max(Number(workOrder.inputQuantity ?? 0) - recorded, 0),
+        });
+        return { workOrder, available };
+      });
+
+      if (!detail || detail.available >= recorded) return;
+
+      const shortfall = recorded - detail.available;
+
+      await withTenant(tenantId, (client) =>
+        this.syncExceptions.record(client, {
+          tenantId,
+          clientEventId: cmd.clientEventId + ':available-qty',
+          commandType: cmd.type,
+          workOrderId: cmd.workOrderId,
+          operatorId: cmd.payload?.operatorId,
+          payload: { recorded, available: detail.available, shortfall },
+          occurredAt: cmd.occurredAt,
+          errorCode: 'AVAILABLE_QUANTITY_VARIANCE',
+          reason:
+            'Tercatat ' + recorded + ' unit sementara process sebelumnya baru menyerahkan ' +
+            detail.available + ' unit; selisih ' + shortfall + ' unit. Catatan tetap diterima, ' +
+            'mohon periksa serah terima antar process.',
+          retryable: false,
+          lineId: detail.workOrder.lineId,
+          shiftDate: cmd.occurredAt ? cmd.occurredAt.slice(0, 10) : undefined,
+        })
+      );
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(
+        '[sync-exception] gagal memeriksa selisih available quantity:',
+        error instanceof Error ? error.message : error
+      );
+    }
+  }
+
+  async listSyncExceptions(
+    tenantId: string,
+    filter: SyncExceptionFilter = {}
+  ): Promise<SyncException[]> {
+    return withTenant(tenantId, (client) => this.syncExceptions.list(client, tenantId, filter));
+  }
+
+  async syncExceptionSummary(
+    tenantId: string
+  ): Promise<Array<{ lineId?: string; lineName?: string; count: number }>> {
+    return withTenant(tenantId, (client) => this.syncExceptions.openSummary(client, tenantId));
+  }
+
+  async setSyncExceptionStatus(
+    tenantId: string,
+    id: string,
+    status: 'RESOLVED' | 'IGNORED' | 'OPEN',
+    actorId: string,
+    note?: string
+  ): Promise<SyncException> {
+    const updated = await withTenant(tenantId, (client) =>
+      this.syncExceptions.setStatus(client, tenantId, id, status, actorId, note)
+    );
+    if (!updated) throw ApiError.notFound('Sync exception tidak ditemukan.');
+    return updated;
   }
 
   private async applyCommand(
@@ -542,16 +788,19 @@ export class ShopFloorService {
         return wo.id;
       }
 
-      case 'PAUSE_WO': {
-        const wo = await this.productionService.pauseWorkOrder(tenantId, cmd.workOrderId);
+      case 'CONFIRM_WO': {
+        const wo = await this.productionService.confirmWorkOrder(tenantId, cmd.workOrderId, {
+          confirmedBy: payload?.operatorId,
+        });
         await this.markProcessed(tenantId, cmd.clientEventId, cmd.type, cmd.workOrderId, wo.id);
         return wo.id;
       }
 
+      case 'PAUSE_WO':
       case 'RESUME_WO': {
-        const wo = await this.productionService.resumeWorkOrder(tenantId, cmd.workOrderId);
-        await this.markProcessed(tenantId, cmd.clientEventId, cmd.type, cmd.workOrderId, wo.id);
-        return wo.id;
+        // Pauses and resumptions on shop floor are handled via Machine Downtime events (ADR-18, ADR-24)
+        await this.markProcessed(tenantId, cmd.clientEventId, cmd.type, cmd.workOrderId, cmd.workOrderId);
+        return cmd.workOrderId;
       }
 
       case 'COMPLETE_WO': {

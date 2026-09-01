@@ -16,6 +16,7 @@ export * from './SurfaceCard.js';
 export * from './FactoryHeroScene.js';
 export * from './PlantOverviewHero.js';
 export * from './PageMotion.js';
-export * from './FullCircleLogo.js';
+export * from './FactoryVisionLogo.js';
 export * from './FilterChip.js';
+export * from './DateField.js';
 export * from './Gauge.js';

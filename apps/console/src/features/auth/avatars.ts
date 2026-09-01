@@ -9,7 +9,7 @@
  *
  * The palette is baked into the SVG because a `data:` URI cannot read CSS
  * custom properties. That is the same allowance the brand mark takes in
- * `fv/FullCircleLogo`, and it is confined to this file: nothing else in the
+ * `fv/FactoryVisionLogo`, and it is confined to this file: nothing else in the
  * product names a colour directly.
  */
 

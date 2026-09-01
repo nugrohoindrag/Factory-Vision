@@ -17,12 +17,21 @@
  *
  * OWNER_DATABASE_URL creates and removes the fixtures (the app role is not
  * allowed to write another tenant's rows, which is the very thing under test).
- * DATABASE_URL must be the role the API actually uses.
  */
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import pg from 'pg';
 
-const OWNER_URL = process.env.OWNER_DATABASE_URL;
-const APP_URL = process.env.DATABASE_URL;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
+
+const OWNER_URL = process.env.OWNER_DATABASE_URL || process.env.DATABASE_URL;
+const APP_URL =
+  process.env.APP_DATABASE_URL ||
+  `postgresql://${process.env.APP_DB_USER || 'factory_app'}:${process.env.APP_DB_PASSWORD || 'factory_app_password'}@localhost:5432/factory_vision`;
 
 if (!APP_URL || !OWNER_URL) {
   console.error('Set OWNER_DATABASE_URL (schema owner) and DATABASE_URL (application role).');

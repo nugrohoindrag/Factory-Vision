@@ -58,6 +58,35 @@ const RULES: Rule[] = [
   { method: 'DELETE', pattern: '/api/v1/sessions*', permission: 'user:deactivate' },
   { method: 'POST', pattern: '/api/v1/operators/:id/pin', permission: 'user:edit' },
 
+  // --- Demand & planning (MES Improvement v1.0) -------------------
+  { method: 'GET', pattern: '/api/v1/customers*', permission: 'customer:view' },
+  { method: '*', pattern: '/api/v1/customers*', permission: 'customer:manage' },
+
+  { method: 'GET', pattern: '/api/v1/customer-orders*', permission: 'customer_order:view' },
+  { method: 'POST', pattern: '/api/v1/customer-orders/:id/cancel', permission: 'customer_order:cancel' },
+  { method: 'POST', pattern: '/api/v1/customer-orders', permission: 'customer_order:create' },
+  { method: '*', pattern: '/api/v1/customer-orders*', permission: 'customer_order:edit' },
+
+  { method: 'POST', pattern: '/api/v1/demand-forecasts/generate', permission: 'demand_forecast:generate' },
+  { method: 'GET', pattern: '/api/v1/demand-forecasts*', permission: 'demand_forecast:view' },
+
+  { method: 'POST', pattern: '/api/v1/capacity-plans/:id/recalculate', permission: 'capacity_plan:manage' },
+  { method: 'GET', pattern: '/api/v1/capacity-plans*', permission: 'capacity_plan:view' },
+  { method: '*', pattern: '/api/v1/capacity-plans*', permission: 'capacity_plan:manage' },
+
+  { method: 'POST', pattern: '/api/v1/production-plans/:id/confirm', permission: 'production_plan:confirm' },
+  { method: 'POST', pattern: '/api/v1/production-plans/:id/cancel', permission: 'production_plan:confirm' },
+  { method: 'POST', pattern: '/api/v1/production-plans/:id/generate-work-orders', permission: 'work_order:create' },
+  { method: 'GET', pattern: '/api/v1/production-plans*', permission: 'production_plan:view' },
+  { method: 'POST', pattern: '/api/v1/production-plans', permission: 'production_plan:create' },
+  { method: '*', pattern: '/api/v1/production-plans*', permission: 'production_plan:edit' },
+
+  { method: 'GET', pattern: '/api/v1/planning/config', permission: 'production_plan:view' },
+  { method: 'PUT', pattern: '/api/v1/planning/config', permission: 'configuration:manage' },
+
+  { method: 'GET', pattern: '/api/v1/molds*', permission: 'master_data:view' },
+  { method: '*', pattern: '/api/v1/molds*', permission: 'master_data:manage' },
+
   // --- Planning ---------------------------------------------------
   { method: 'GET', pattern: '/api/v1/production-orders*', permission: 'production_order:view' },
   { method: 'POST', pattern: '/api/v1/production-orders/:id/release', permission: 'production_order:release' },
@@ -66,7 +95,11 @@ const RULES: Rule[] = [
   { method: 'DELETE', pattern: '/api/v1/production-orders/:id', permission: 'production_order:delete' },
 
   { method: 'GET', pattern: '/api/v1/work-orders*', permission: 'work_order:view' },
-  { method: 'POST', pattern: '/api/v1/work-orders/:id/release', permission: 'work_order:release' },
+  // Confirmation is the gate that puts a Work Order on the operator terminal
+  // (§25.7). It had no rule at all, so it fell through to `dashboard:view` and
+  // every signed-in role could call it.
+  { method: 'POST', pattern: '/api/v1/work-orders/:id/confirm', permission: 'work_order:confirm' },
+  { method: 'POST', pattern: '/api/v1/work-orders/:id/release', permission: 'work_order:confirm' },
   { method: 'POST', pattern: '/api/v1/work-orders/:id/cancel', permission: 'work_order:cancel' },
   { method: 'POST', pattern: '/api/v1/work-orders/:id/start', permission: 'shopfloor:execute' },
   { method: 'POST', pattern: '/api/v1/work-orders/:id/pause', permission: 'shopfloor:execute' },
@@ -83,6 +116,17 @@ const RULES: Rule[] = [
   { method: 'POST', pattern: '/api/v1/shop-floor/downtime/start', permission: 'downtime:create' },
   { method: 'POST', pattern: '/api/v1/shop-floor/downtime/:id/resolve', permission: 'downtime:create' },
   { method: 'POST', pattern: '/api/v1/shop-floor/sync-batch', permission: 'shopfloor:execute' },
+  // Sync exceptions (MES-082). Reading is deliberately as wide as the shop
+  // floor itself — an operator must be able to see that something they
+  // recorded was not accepted. Acting on one is a data-correction decision,
+  // which is why it takes `production_record:correct` rather than a new
+  // permission no existing role would hold.
+  { method: 'GET', pattern: '/api/v1/shop-floor/sync-exceptions*', permission: 'work_order:view' },
+  {
+    method: 'PATCH',
+    pattern: '/api/v1/shop-floor/sync-exceptions/:id',
+    permission: 'production_record:correct',
+  },
 
   // --- Shift ------------------------------------------------------
   { method: 'GET', pattern: '/api/v1/shifts*', permission: 'shift:view' },
@@ -132,7 +176,14 @@ export function permissionForRoute(method: string, path: string): PermissionId |
   return rule?.permission;
 }
 
-const PUBLIC_PATHS = new Set([
+/**
+ * Paths the middleware lets past before consulting the table.
+ *
+ * Exported so `scripts/audit-route-permissions.mjs` can tell "public by design"
+ * apart from "someone forgot a rule" — the distinction that matters when the
+ * fallback for a forgotten rule is `dashboard:view`.
+ */
+export const PUBLIC_API_PATHS = new Set([
   '/health',
   '/api/v1/auth/login',
   '/api/v1/auth/operator-login',
@@ -153,7 +204,7 @@ export function authorizeRoutes(options: { enabled: boolean }): RequestHandler {
   return (req: Request, _res: Response, next: NextFunction) => {
     if (!options.enabled) return next();
     if (!req.path.startsWith('/api/v1')) return next();
-    if (PUBLIC_PATHS.has(req.path)) return next();
+    if (PUBLIC_API_PATHS.has(req.path)) return next();
 
     const principal = req.principal;
     if (!principal) return next(ApiError.unauthenticated());

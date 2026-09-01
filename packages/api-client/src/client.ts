@@ -57,9 +57,75 @@ import {
   TargetVsActualDimension,
   TargetVsActualSummary,
   WorkCenter,
+  Mold,
+  ProductMoldCompatibility,
+  Customer,
+  CustomerOrder,
+  CustomerOrderLine,
+  CustomerOrderDocumentRef,
+  CustomerOrderStatus,
+  OrderChannel,
+  DemandForecast,
+  DemandForecastLine,
+  DemandForecastComparison,
+  CapacityPlan,
+  CapacityPlanLine,
+  CapacityAssessment,
+  ProductionPlan,
+  ProductionPlanLine,
+  ProductionPlanDemand,
+  ProductionPlanDemandBreakdown,
+  ProductionPlanWizardState,
+  PlanningConfig,
+  PlanningJobView,
+  ProcessChainView,
+  WorkOrderDemandTrace,
 } from '@factory-vision/domain-types';
 import { ApiRequestError } from './api-error.js';
 import { getAuthToken, getTenantId } from './auth-store.js';
+
+/**
+ * A compatibility row as the API returns it: the domain type plus the product's
+ * own labels, so a list can be rendered without a second lookup per row.
+ */
+export interface MoldCompatibility extends ProductMoldCompatibility {
+  productSku?: string;
+  productName?: string;
+}
+
+/**
+ * A record the shop floor captured and the server refused (MES-082).
+ *
+ * `reason` is written for a supervisor, not a developer: it is what the list
+ * shows, and the whole story is that the record was kept rather than dropped.
+ */
+export interface SyncExceptionRecord {
+  id: string;
+  clientEventId: string;
+  commandType: string;
+  workOrderId?: string;
+  workOrderNumber?: string;
+  operatorId?: string;
+  payload: Record<string, unknown>;
+  occurredAt?: string;
+  errorCode: string;
+  reason: string;
+  retryable: boolean;
+  lineId?: string;
+  lineName?: string;
+  shiftDate?: string;
+  status: 'OPEN' | 'RESOLVED' | 'IGNORED';
+  resolvedBy?: string;
+  resolvedAt?: string;
+  resolutionNote?: string;
+  createdAt?: string;
+}
+
+export interface SyncExceptionSummaryRow {
+  lineId?: string;
+  lineName?: string;
+  count: number;
+}
 
 export interface ApiClientConfig {
   baseUrl: string;
@@ -429,7 +495,7 @@ export class FactoryVisionApiClient {
   // Work Orders API
   readonly workOrders = {
     list: (params?: { lineId?: string; status?: string; processId?: string }) => {
-      const query = new URLSearchParams(params as Record<string, string>).toString;
+      const query = new URLSearchParams(params as Record<string, string>).toString();
       return this.request<WorkOrder[]>(`/api/v1/work-orders${query ? `?${query}` : ''}`);
     },
     get: (id: string) => this.request<WorkOrder>(`/api/v1/work-orders/${id}`),
@@ -745,6 +811,78 @@ export class FactoryVisionApiClient {
       }),
   };
 
+  /**
+   * MES-006, the mould register, and the compatibility ADR-36 reads.
+   *
+   * `list({ productId })` is the query the Work Order form asks: ADR-36 makes a
+   * mould mandatory exactly when a product has at least one active
+   * compatibility, so an empty answer means "this product needs no mould"
+   * rather than "no mould available".
+   */
+  readonly molds = {
+    list: (params?: { status?: string; search?: string; productId?: string; machineId?: string }) =>
+      this.request<Mold[]>(`/api/v1/molds${qs(params)}`),
+    get: (id: string) =>
+      this.request<Mold & { compatibilities: MoldCompatibility[] }>(`/api/v1/molds/${id}`),
+    create: (body: {
+      code: string;
+      name: string;
+      cavityCount: number;
+      status?: string;
+      currentMachineId?: string | null;
+    }) => this.request<Mold>('/api/v1/molds', { method: 'POST', body: JSON.stringify(body) }),
+    update: (
+      id: string,
+      body: {
+        code?: string;
+        name?: string;
+        cavityCount?: number;
+        status?: string;
+        currentMachineId?: string | null;
+      }
+    ) => this.request<Mold>(`/api/v1/molds/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    delete: (id: string) => this.request<void>(`/api/v1/molds/${id}`, { method: 'DELETE' }),
+
+    listCompatibilities: (moldId: string, params?: { activeOnly?: boolean }) =>
+      this.request<MoldCompatibility[]>(`/api/v1/molds/${moldId}/compatibilities${qs(params)}`),
+    addCompatibility: (moldId: string, productId: string) =>
+      this.request<MoldCompatibility>(`/api/v1/molds/${moldId}/compatibilities`, {
+        method: 'POST',
+        body: JSON.stringify({ productId }),
+      }),
+    setCompatibilityActive: (moldId: string, compatibilityId: string, active: boolean) =>
+      this.request<MoldCompatibility>(
+        `/api/v1/molds/${moldId}/compatibilities/${compatibilityId}`,
+        { method: 'PATCH', body: JSON.stringify({ active }) }
+      ),
+    removeCompatibility: (moldId: string, compatibilityId: string) =>
+      this.request<void>(`/api/v1/molds/${moldId}/compatibilities/${compatibilityId}`, {
+        method: 'DELETE',
+      }),
+  };
+
+  /**
+   * Sync exceptions (MES-082).
+   *
+   * The list defaults to OPEN server-side, so a supervisor opening the screen
+   * sees what still needs attention rather than every failure ever recorded.
+   */
+  readonly syncExceptions = {
+    list: (params?: {
+      lineId?: string;
+      shiftDate?: string;
+      status?: string;
+      workOrderId?: string;
+    }) => this.request<SyncExceptionRecord[]>(`/api/v1/shop-floor/sync-exceptions${qs(params)}`),
+    summary: () =>
+      this.request<SyncExceptionSummaryRow[]>('/api/v1/shop-floor/sync-exceptions/summary'),
+    setStatus: (id: string, status: 'RESOLVED' | 'IGNORED' | 'OPEN', note?: string) =>
+      this.request<SyncExceptionRecord>(`/api/v1/shop-floor/sync-exceptions/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status, note }),
+      }),
+  };
+
   /** US-021, US-022, US-023, shift configuration, performance and handover. */
   readonly shifts = {
     list: () => this.request<Shift[]>('/api/v1/shifts'),
@@ -859,6 +997,248 @@ export class FactoryVisionApiClient {
       }>(`/api/v1/corrections/policy${qs({ shiftDate })}`),
   };
 
+  /**
+   * Demand and planning (MES Improvement v1.0, Sprints 3-6).
+   *
+   * Grouped rather than flattened onto the client so a screen imports the one
+   * area it works in, and so the planning surface stays visibly separate from
+   * shop-floor execution - the same boundary the API enforces (MES-019).
+   */
+  readonly planning = {
+    // --- Customer master (MES-029) ---------------------------------
+    getCustomers: (params?: { status?: string; search?: string; activeOnly?: boolean }) =>
+      this.request<Customer[]>(`/api/v1/customers${qs(params)}`),
+    getCustomer: (id: string) => this.request<Customer>(`/api/v1/customers/${id}`),
+    createCustomer: (body: Omit<Customer, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>) =>
+      this.request<Customer>('/api/v1/customers', { method: 'POST', body: JSON.stringify(body) }),
+    updateCustomer: (id: string, body: Partial<Omit<Customer, 'id' | 'tenantId'>>) =>
+      this.request<Customer>(`/api/v1/customers/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+
+    // --- Customer Order (MES-021, MES-022, MES-024, MES-026) -------
+    getOrders: (params?: {
+      status?: string;
+      customerId?: string;
+      productId?: string;
+      deliveryFrom?: string;
+      deliveryTo?: string;
+      search?: string;
+    }) => this.request<CustomerOrderDetailView[]>(`/api/v1/customer-orders${qs(params)}`),
+    getOrder: (id: string) => this.request<CustomerOrderDetailView>(`/api/v1/customer-orders/${id}`),
+    createOrder: (body: CreateCustomerOrderBody) =>
+      this.request<CustomerOrderDetailView>('/api/v1/customer-orders', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    updateOrder: (id: string, body: Partial<Omit<CreateCustomerOrderBody, 'lines'>>) =>
+      this.request<CustomerOrderDetailView>(`/api/v1/customer-orders/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      }),
+    addOrderLine: (orderId: string, body: CreateCustomerOrderLineBody) =>
+      this.request<CustomerOrderLine>(`/api/v1/customer-orders/${orderId}/lines`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    updateOrderLine: (orderId: string, lineId: string, body: Partial<CreateCustomerOrderLineBody>) =>
+      this.request<CustomerOrderLine>(`/api/v1/customer-orders/${orderId}/lines/${lineId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      }),
+    removeOrderLine: (orderId: string, lineId: string) =>
+      this.request<{ success: boolean }>(`/api/v1/customer-orders/${orderId}/lines/${lineId}`, {
+        method: 'DELETE',
+      }),
+    cancelOrder: (id: string, reason: string) =>
+      this.request<CustomerOrder>(`/api/v1/customer-orders/${id}/cancel`, {
+        method: 'POST',
+        body: JSON.stringify({ reason }),
+      }),
+    setOrderLogisticsStatus: (id: string, status: CustomerOrderStatus) =>
+      this.request<CustomerOrder>(`/api/v1/customer-orders/${id}/logistics-status`, {
+        method: 'POST',
+        body: JSON.stringify({ status }),
+      }),
+
+    // --- Documents (MES-025) ---------------------------------------
+    getOrderDocuments: (orderId: string) =>
+      this.request<CustomerOrderDocumentRef[]>(`/api/v1/customer-orders/${orderId}/documents`),
+    /** `content` is base64; the bytes go to storage, never into a table. */
+    attachOrderDocument: (
+      orderId: string,
+      body: { fileName: string; contentType: string; sizeBytes: number; content: string }
+    ) =>
+      this.request<CustomerOrderDocumentRef>(`/api/v1/customer-orders/${orderId}/documents`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    removeOrderDocument: (orderId: string, documentId: string) =>
+      this.request<{ success: boolean }>(
+        `/api/v1/customer-orders/${orderId}/documents/${documentId}`,
+        { method: 'DELETE' }
+      ),
+
+    // --- Demand Forecast (MES-027, MES-028, MES-030) ---------------
+    getForecasts: (params?: { status?: string }) =>
+      this.request<DemandForecast[]>(`/api/v1/demand-forecasts${qs(params)}`),
+    getForecast: (id: string) =>
+      this.request<
+        DemandForecast & {
+          lines: DemandForecastLine[];
+          usedByPlans: { productionPlanId: string; planNumber: string; status: string }[];
+        }
+      >(`/api/v1/demand-forecasts/${id}`),
+    getForecastComparison: (id: string) =>
+      this.request<DemandForecastComparison>(`/api/v1/demand-forecasts/${id}/comparison`),
+    /** Returns 202 and a job id: the aggregation runs on the worker (MES-027). */
+    generateForecast: (body: {
+      periodStart: string;
+      periodEnd: string;
+      lookbackMonths: 3 | 6 | 12;
+      productIds?: string[];
+      perCustomer?: boolean;
+    }) =>
+      this.request<{ jobId: string; status: string; message: string }>(
+        '/api/v1/demand-forecasts/generate',
+        { method: 'POST', body: JSON.stringify(body) }
+      ),
+    getForecastJob: (jobId: string) =>
+      this.request<PlanningJobView>(`/api/v1/demand-forecasts/jobs/${jobId}`),
+    getForecastJobs: () => this.request<PlanningJobView[]>('/api/v1/demand-forecasts/jobs'),
+
+    // --- Capacity (MES-031..MES-034) -------------------------------
+    getCapacityPlans: (params?: { status?: string }) =>
+      this.request<CapacityPlan[]>(`/api/v1/capacity-plans${qs(params)}`),
+    getCurrentCapacityPlan: (periodStart?: string) =>
+      this.request<{ periodStart: string; plan: CapacityPlan | null; lines: CapacityPlanLine[] }>(
+        `/api/v1/capacity-plans/current${qs({ periodStart })}`
+      ),
+    getCapacityPlan: (id: string) =>
+      this.request<CapacityPlan & { lines: CapacityPlanLine[] }>(`/api/v1/capacity-plans/${id}`),
+    computeCapacityPlan: (body: {
+      periodStart: string;
+      periodEnd: string;
+      planningUtilizationPct?: number;
+      plantId?: string;
+      lineId?: string;
+    }) =>
+      this.request<CapacityPlan & { lines: CapacityPlanLine[] }>('/api/v1/capacity-plans', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    recalculateCapacityPlan: (id: string) =>
+      this.request<{ jobId: string; status: string; message: string }>(
+        `/api/v1/capacity-plans/${id}/recalculate`,
+        { method: 'POST' }
+      ),
+    /** Capacity for one product and quantity, without writing a snapshot. */
+    assessCapacity: (params: {
+      productId: string;
+      periodStart: string;
+      periodEnd: string;
+      demandQuantity: number;
+    }) => this.request<CapacityAssessment>(`/api/v1/capacity-plans/assess${qs(params)}`),
+
+    // --- Production Plan (MES-035..MES-043) ------------------------
+    getPlans: (params?: { status?: string; periodStart?: string; periodEnd?: string }) =>
+      this.request<ProductionPlan[]>(`/api/v1/production-plans${qs(params)}`),
+    getPlan: (id: string) =>
+      this.request<ProductionPlan & { lines: ProductionPlanLine[]; demands: ProductionPlanDemand[] }>(
+        `/api/v1/production-plans/${id}`
+      ),
+    createPlan: (body: {
+      periodStart: string;
+      periodEnd: string;
+      demandForecastId?: string;
+      capacityPlanId?: string;
+    }) =>
+      this.request<ProductionPlan & { lines: ProductionPlanLine[]; demands: ProductionPlanDemand[] }>(
+        '/api/v1/production-plans',
+        { method: 'POST', body: JSON.stringify(body) }
+      ),
+    /** `version` is mandatory: the wizard is optimistically locked (MES-039-3). */
+    updatePlan: (
+      id: string,
+      version: number,
+      body: {
+        periodStart?: string;
+        periodEnd?: string;
+        demandForecastId?: string;
+        capacityPlanId?: string;
+        wizardStep?: number;
+        wizardState?: Record<string, unknown>;
+      }
+    ) =>
+      this.request<ProductionPlan & { lines: ProductionPlanLine[]; demands: ProductionPlanDemand[] }>(
+        `/api/v1/production-plans/${id}`,
+        { method: 'PATCH', body: JSON.stringify({ ...body, version }) }
+      ),
+    getPlanWizard: (id: string) =>
+      this.request<ProductionPlanWizardState>(`/api/v1/production-plans/${id}/wizard`),
+    getPlanLines: (id: string) =>
+      this.request<ProductionPlanLine[]>(`/api/v1/production-plans/${id}/lines`),
+    updatePlanLine: (
+      planId: string,
+      lineId: string,
+      body: { plannedQuantity?: number; priority?: number; requiredDeliveryDate?: string }
+    ) =>
+      this.request<ProductionPlanLine>(`/api/v1/production-plans/${planId}/lines/${lineId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      }),
+    getPlanDemand: (id: string) =>
+      this.request<ProductionPlanDemandBreakdown[]>(`/api/v1/production-plans/${id}/demand`),
+    addPlanDemand: (id: string, body: { customerOrderLineId: string; demandQuantity?: number }) =>
+      this.request<{ line: ProductionPlanLine; demand: ProductionPlanDemand }>(
+        `/api/v1/production-plans/${id}/demand`,
+        { method: 'POST', body: JSON.stringify(body) }
+      ),
+    removePlanDemand: (id: string, demandId: string) =>
+      this.request<{ success: boolean }>(`/api/v1/production-plans/${id}/demand/${demandId}`, {
+        method: 'DELETE',
+      }),
+    generateWorkOrders: (id: string) =>
+      this.request<{
+        productionPlanId: string;
+        created: WorkOrder[];
+        existing: WorkOrder[];
+        skippedPlanLineIds: string[];
+        createdCount: number;
+        existingCount: number;
+        message: string;
+      }>(`/api/v1/production-plans/${id}/generate-work-orders`, { method: 'POST' }),
+    confirmPlan: (id: string) =>
+      this.request<ProductionPlan & { lines: ProductionPlanLine[] }>(
+        `/api/v1/production-plans/${id}/confirm`,
+        { method: 'POST' }
+      ),
+    cancelPlan: (id: string, reason: string) =>
+      this.request<ProductionPlan>(`/api/v1/production-plans/${id}/cancel`, {
+        method: 'POST',
+        body: JSON.stringify({ reason }),
+      }),
+
+    // --- Work Order traceability (MES-018, ADR-22) -----------------
+    getWorkOrderChain: (workOrderId: string) =>
+      this.request<ProcessChainView>(`/api/v1/work-orders/${workOrderId}/chain`),
+    getWorkOrderDemand: (workOrderId: string) =>
+      this.request<WorkOrderDemandTrace>(`/api/v1/work-orders/${workOrderId}/demand`),
+    getWorkOrderAvailableQuantity: (workOrderId: string) =>
+      this.request<{
+        workOrderId: string;
+        availableQuantity: number;
+        inputs: { predecessorTransferred: number; ownInput: number };
+        isFirstProcess: boolean;
+      }>(`/api/v1/work-orders/${workOrderId}/available-quantity`),
+
+    // --- Policy (S13, S45.6) ---------------------------------------
+    getConfig: () => this.request<PlanningConfig>('/api/v1/planning/config'),
+    updateConfig: (body: { planningUtilizationPct?: number; strictProcessSequence?: boolean }) =>
+      this.request<PlanningConfig>('/api/v1/planning/config', {
+        method: 'PUT',
+        body: JSON.stringify(body),
+      }),
+  };
+
   /** US-046, the offline queue drain, with per-command results. */
   syncOfflineBatch(commands: unknown[]): Promise<SyncBatchResult> {
     return this.request<SyncBatchResult>('/api/v1/shop-floor/sync-batch', {
@@ -884,4 +1264,30 @@ export interface OeeQuery {
   shiftId?: string;
   productId?: string;
   [key: string]: string | number | boolean | undefined;
+}
+
+/** A Customer Order with its lines and documents, as the API returns it. */
+export interface CustomerOrderDetailView extends CustomerOrder {
+  lines: CustomerOrderLine[];
+  documents: CustomerOrderDocumentRef[];
+}
+
+export interface CreateCustomerOrderLineBody {
+  productId: string;
+  orderedQuantity: number;
+  unit?: string;
+  modelType?: string;
+  requestedDeliveryDate?: string;
+}
+
+export interface CreateCustomerOrderBody {
+  customerId: string;
+  orderChannel: OrderChannel;
+  requestedDeliveryDate: string;
+  orderDate?: string;
+  poNumber?: string;
+  customerPic?: string;
+  deliveryAddress?: string;
+  dockNumber?: string;
+  lines?: CreateCustomerOrderLineBody[];
 }

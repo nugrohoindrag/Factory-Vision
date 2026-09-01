@@ -43,17 +43,16 @@
     "status": {
       "DRAFT": "Draft",
       "SCHEDULED": "Scheduled",
-      "RELEASED": "Released",
-      "IN_PROGRESS": "In Progress",
-      "PAUSED": "Paused",
+      "CONFIRMED": "Confirmed",
+      "IN_PRODUCTION": "In Production",
       "COMPLETED": "Completed",
       "CANCELLED": "Cancelled"
     },
     "actions": {
+      "confirm": "Confirm WO",
       "start": "Start Production",
-      "pause": "Pause Production",
-      "resume": "Resume Production",
       "complete": "Complete WO",
+      "cancel": "Cancel WO",
       "recordOutput": "Record Output",
       "recordDowntime": "Record Downtime"
     }

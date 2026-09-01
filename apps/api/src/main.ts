@@ -1,10 +1,17 @@
+// Environment first: every import below may read it, and bootstrap refuses to
+// start without DATABASE_URL.
+import './platform/env.js';
 import http from 'http';
 import express from 'express';
 import cors from 'cors';
 import { CorrectionEntityType, UserRole, WorkOrderStatus } from '@factory-vision/domain-types';
 import { tenantMiddleware } from './platform/tenancy/tenant.middleware.js';
 import { RealtimeGateway } from './platform/realtime/socket.gateway.js';
+import { OutboxRelay } from './platform/outbox/outbox.relay.js';
+import { getObjectStore } from './platform/storage/index.js';
 import { MasterDataService } from './modules/master-data/master-data.service.js';
+import { MoldService } from './modules/master-data/mold.service.js';
+import { moldRoutes } from './modules/master-data/mold.routes.js';
 import { ProductionService } from './modules/production/production.service.js';
 import { ShopFloorService } from './modules/shopfloor/shopfloor.service.js';
 import { PerformanceService } from './modules/performance/performance.service.js';
@@ -25,7 +32,7 @@ import { internalRoutes } from './routes/internal.routes.js';
 import { ClientManagementService } from './modules/client-management/client.service.js';
 import { ClientAdminService } from './modules/client-management/client.admin.service.js';
 import { InternalAuthService } from './modules/client-management/internal-auth.service.js';
-import { checkDatabase } from './platform/db/pool.js';
+import { checkDatabase, isDatabaseConfigured } from './platform/db/pool.js';
 import {
   assertDatabaseReady,
   ensureTenant,
@@ -41,6 +48,10 @@ import { shiftRoutes } from './routes/shift.routes.js';
 import { csvRoutes } from './routes/csv.routes.js';
 import { oeeRoutes } from './routes/oee.routes.js';
 import { metaRoutes } from './routes/meta.routes.js';
+import { workOrderRoutes } from './routes/work-order.routes.js';
+import { ProcessChainService } from './modules/production/process-chain.service.js';
+import { WorkOrderGenerationService } from './modules/production/work-order-generation.service.js';
+import { PlanningFacade, planningRoutes } from './modules/planning/public/index.js';
 import { SEED_DEMO_DATA } from './platform/config/demo-seed.js';
 
 const app = express();
@@ -62,6 +73,7 @@ app.use(tenantMiddleware);
 
 // Initialize Services
 const masterDataService = new MasterDataService();
+const moldService = new MoldService();
 const masterDataRepository = new MasterDataRepository();
 const productionService = new ProductionService();
 const shopFloorService = new ShopFloorService(productionService, masterDataService);
@@ -85,7 +97,19 @@ const oeeService = new OeeService(masterDataService, productionService, shopFloo
 const csvService = new CsvService(masterDataService);
 const shiftHandoverService = new ShiftHandoverService(masterDataService, productionService, shopFloorService);
 
+// Demand and planning (MES Improvement v1.0). The planning module is reached
+// only through its public surface: `main.ts` mounts a router and holds a
+// facade, and knows nothing of the services behind either (MES-019).
+const processChainService = new ProcessChainService();
+const workOrderGenerationService = new WorkOrderGenerationService();
+const planningFacade = new PlanningFacade();
+
 correctionService.attachDependencies({ shopFloor: shopFloorService, audit: auditService, oee: oeeService });
+
+// Production tells planning when a fact it derives from has changed (MES-026-1).
+// Injected here rather than imported inside the module, so the dependency runs
+// through planning's public facade and only in that direction.
+productionService.attachPlanning(planningFacade);
 
 // Resolve the bearer token before anything reads `req.context`, then apply the
 // route to permission policy in one place (US-003, US-054).
@@ -802,7 +826,28 @@ app.get('/api/v1/master/batches', async (req, res) => {
 app.post('/api/v1/master/batches', async (req, res, next) => {
   try {
     const tenantId = req.context!.tenantId;
-    const batch = masterDataService.createBatch(tenantId, req.body);
+
+    // Validated here rather than discovered by PostgreSQL: a missing
+    // `productionDate` used to reach the NOT NULL constraint and come back as a
+    // 500 quoting the column name at the operator.
+    const v = validate(req.body);
+    const batchNumber = v.string('batchNumber', { min: 1, max: 64 });
+    const productId = v.string('productId', { min: 1, max: 64 });
+    const workOrderId = v.string('workOrderId', { min: 1, max: 64 });
+    const productionDate = v.isoDate('productionDate');
+    const productionOrderId = v.string('productionOrderId', { optional: true, max: 64 });
+    const status = v.string('status', { optional: true, max: 32 });
+    v.done();
+
+    const batch = masterDataService.createBatch(tenantId, {
+      ...req.body,
+      batchNumber: batchNumber!,
+      productId: productId!,
+      workOrderId: workOrderId!,
+      productionDate: productionDate!,
+      productionOrderId,
+      status: status as never,
+    });
     // work_order.batch_id is a foreign key, so a batch that exists only in
     // memory cannot be attached to a work order (US-013).
     await withTenant(tenantId, (client) => masterDataRepository.upsertBatch(client, tenantId, batch));
@@ -956,6 +1001,23 @@ app.delete('/api/v1/work-orders/:id', async (req, res, next) => {
 });
 
 app.post(
+  '/api/v1/work-orders/:id/confirm',
+  route(async (req, res) => {
+    const tenantId = req.context!.tenantId;
+    const before = await productionService.getWorkOrderById(tenantId, req.params.id);
+    if (!before) throw ApiError.notFound('Work order tidak ditemukan.');
+    scope.assertLine(req.principal, before.lineId);
+
+    const wo = await productionService.confirmWorkOrder(tenantId, req.params.id, {
+      confirmedBy: req.principal?.subjectId ?? 'Supervisor',
+    });
+    recordAudit(req, 'work_order', wo.id, 'CONFIRM', { status: before.status }, { status: wo.status });
+    realtimeGateway.emitTenantEvent(tenantId, 'work-order:updated', wo);
+    res.json(wo);
+  })
+);
+
+app.post(
   '/api/v1/work-orders/:id/release',
   route(async (req, res) => {
     const tenantId = req.context!.tenantId;
@@ -963,8 +1025,10 @@ app.post(
     if (!before) throw ApiError.notFound('Work order tidak ditemukan.');
     scope.assertLine(req.principal, before.lineId);
 
-    const wo = await productionService.releaseWorkOrder(tenantId, req.params.id);
-    recordAudit(req, 'work_order', wo.id, 'RELEASE', { status: before.status }, { status: wo.status });
+    const wo = await productionService.confirmWorkOrder(tenantId, req.params.id, {
+      confirmedBy: req.principal?.subjectId ?? 'Supervisor',
+    });
+    recordAudit(req, 'work_order', wo.id, 'CONFIRM', { status: before.status }, { status: wo.status });
     realtimeGateway.emitTenantEvent(tenantId, 'work-order:updated', wo);
     res.json(wo);
   })
@@ -988,9 +1052,9 @@ app.post(
     const operatorId = req.body?.operatorId ?? req.principal?.subjectId;
     scope.assertAssignedWorkOrder(req.principal, wo, operatorId);
 
-    if (![WorkOrderStatus.RELEASED, WorkOrderStatus.PAUSED].includes(wo.status)) {
+    if (wo.status !== WorkOrderStatus.CONFIRMED) {
       throw ApiError.invalidState(
-        `Work order berstatus ${wo.status} tidak dapat dimulai. Work order harus sudah dirilis.`
+        `Work order berstatus ${wo.status} tidak dapat dimulai. Work order harus berstatus CONFIRMED.`
       );
     }
 
@@ -1035,19 +1099,9 @@ app.post(
   })
 );
 
-app.post('/api/v1/work-orders/:id/pause', async (req, res, next) => {
+app.post('/api/v1/work-orders/:id/cancel', async (req, res, next) => {
   try {
-    const wo = await productionService.pauseWorkOrder(req.context!.tenantId, req.params.id);
-    realtimeGateway.emitTenantEvent(req.context!.tenantId, 'work-order:updated', wo);
-    res.json(wo);
-  } catch (err) {
-    next(err);
-  }
-});
-
-app.post('/api/v1/work-orders/:id/resume', async (req, res, next) => {
-  try {
-    const wo = await productionService.resumeWorkOrder(req.context!.tenantId, req.params.id);
+    const wo = await productionService.cancelWorkOrder(req.context!.tenantId, req.params.id);
     realtimeGateway.emitTenantEvent(req.context!.tenantId, 'work-order:updated', wo);
     res.json(wo);
   } catch (err) {
@@ -1145,6 +1199,60 @@ app.post('/api/v1/shop-floor/downtime/:id/resolve', async (req, res, next) => {
 app.get('/api/v1/shop-floor/downtime', async (req, res) => {
   const { lineId } = req.query as { lineId?: string };
   res.json(await shopFloorService.getDowntimeRecords(req.context!.tenantId, lineId));
+});
+
+/**
+ * Sync exceptions (MES-082) — what the shop floor recorded and the server would
+ * not take.
+ *
+ * A list rather than a log line: the acceptance criteria ask for it per line
+ * and per shift, because that is how a supervisor works through a bad shift.
+ */
+app.get('/api/v1/shop-floor/sync-exceptions', async (req, res, next) => {
+  try {
+    const { lineId, shiftDate, status, workOrderId } = req.query as Record<string, string | undefined>;
+    res.json(
+      await shopFloorService.listSyncExceptions(req.context!.tenantId, {
+        lineId,
+        shiftDate,
+        // Defaults to the open ones: a supervisor opening this screen wants
+        // what still needs attention, not everything that ever failed.
+        status: status ?? 'OPEN',
+        workOrderId,
+      })
+    );
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get('/api/v1/shop-floor/sync-exceptions/summary', async (req, res, next) => {
+  try {
+    res.json(await shopFloorService.syncExceptionSummary(req.context!.tenantId));
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.patch('/api/v1/shop-floor/sync-exceptions/:id', async (req, res, next) => {
+  try {
+    const status = req.body?.status;
+    if (!['RESOLVED', 'IGNORED', 'OPEN'].includes(status)) {
+      throw ApiError.validation('status harus RESOLVED, IGNORED atau OPEN.');
+    }
+    const actorId = req.principal?.subjectId ?? req.context?.userId ?? 'system';
+    const updated = await shopFloorService.setSyncExceptionStatus(
+      req.context!.tenantId,
+      req.params.id,
+      status,
+      actorId,
+      typeof req.body?.note === 'string' ? req.body.note : undefined
+    );
+    recordAudit(req, 'sync_exception', updated.id, `SYNC_EXCEPTION_${status}`, undefined, updated);
+    res.json(updated);
+  } catch (err) {
+    next(err);
+  }
 });
 
 app.post('/api/v1/shop-floor/sync-batch', async (req, res, next) => {
@@ -1476,15 +1584,20 @@ app.post(
       throw ApiError.invalidState(`Work order berstatus ${workOrder.status} tidak dapat diubah.`);
     }
 
-    const previousBatchId = workOrder.batchId;
-    const updated = await productionService.updateWorkOrder(tenantId, req.params.id, { batchId: batch.id });
+    // ADR-29 inverts this relation: the batch names its work order. Attaching is
+    // therefore a write to production_batch.work_order_id, not to work_order.
+    const updated = await productionService.assignBatchToWorkOrder(
+      tenantId,
+      req.params.id,
+      batch.id
+    );
     recordAudit(
       req,
       'work_order',
       updated.id,
       'ATTACH_BATCH',
-      { batchId: previousBatchId },
-      { batchId: batch.id }
+      { isBatchManaged: workOrder.isBatchManaged ?? false },
+      { isBatchManaged: true, batchId: batch.id }
     );
 
     res.json(updated);
@@ -1543,6 +1656,21 @@ app.use('/api/v1', rbacRoutes(rbacService, auditService));
 app.use('/api/v1', shiftRoutes(masterDataService, shiftHandoverService, auditService));
 app.use('/api/v1', csvRoutes(csvService, auditService));
 app.use('/api/v1', oeeRoutes(oeeService, auditService));
+app.use('/api/v1', workOrderRoutes(processChainService, planningFacade));
+app.use(
+  '/api/v1',
+  planningRoutes({
+    // Generating Work Orders writes `work_order`, so the generator lives in
+    // production and is handed to planning here rather than imported by it.
+    workOrderGenerator: workOrderGenerationService,
+  })
+);
+app.use(
+  '/api/v1',
+  moldRoutes(moldService, (req, entityId, action, previousValue, newValue) =>
+    recordAudit(req, 'mold', entityId, action, previousValue, newValue)
+  )
+);
 app.use('/api/v1', metaRoutes());
 app.use('/api/internal/v1', internalRoutes(internalAuthService, clientManagementService, clientAdminService));
 
@@ -1585,8 +1713,50 @@ void (async () => {
   // eslint-disable-next-line no-console
   console.log(`[db] ${db.ok ? 'connected' : `unavailable: ${db.detail}`}`);
   if (db.ok) await internalAuthService.bootstrap();
+
+  // Storage is checked at boot rather than at the first upload: an unwritable
+  // volume or a bucket that does not exist is a deployment mistake, and it
+  // should be visible in the startup log instead of surfacing days later as one
+  // planner failing to attach a purchase order.
+  try {
+    const storage = await getObjectStore().check();
+    // eslint-disable-next-line no-console
+    console[storage.ok ? 'log' : 'error'](
+      `[storage] ${storage.ok ? storage.detail : `unavailable: ${storage.detail}`}`
+    );
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error(
+      `[storage] konfigurasi tidak valid: ${error instanceof Error ? error.message : error}`
+    );
+  }
 })();
+
+/**
+ * The outbox relay runs here, not in the worker.
+ *
+ * Its subscribers are in-process — the realtime gateway holds the WebSocket
+ * connections — so a relay in another container would mark events published
+ * that no client ever heard. When a subscriber appears that is not tied to this
+ * process, the relay can move; the loop itself is deployment-neutral.
+ */
+const outboxRelay = new OutboxRelay();
+outboxRelay.subscribe((event) => {
+  // Namespaced so a console listening for planning events cannot collide with
+  // the execution events emitted directly by the route handlers above.
+  realtimeGateway.emitTenantEvent(event.tenantId, `planning:${event.eventType}`, {
+    eventId: event.id,
+    aggregateType: event.aggregateType,
+    aggregateId: event.aggregateId,
+    occurredAt: event.occurredAt,
+    ...event.payload,
+  });
+});
 
 server.listen(PORT, () => {
   console.log(`[Factory Vision API] Server listening on port http://localhost:${PORT}`);
+  if (isDatabaseConfigured() && process.env.OUTBOX_RELAY_ENABLED !== 'false') {
+    outboxRelay.start();
+    console.log('[outbox] relay aktif.');
+  }
 });

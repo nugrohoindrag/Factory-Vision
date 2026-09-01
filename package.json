@@ -13,7 +13,9 @@
     "build": "pnpm -r run build",
     "typecheck": "pnpm -r run typecheck",
     "test": "pnpm -r run test",
-    "lint": "pnpm -r run lint",
+    "lint": "node scripts/check-module-boundaries.mjs && node scripts/check-design-system-compliance.mjs && pnpm -r run --if-present lint",
+    "lint:boundaries": "node scripts/check-module-boundaries.mjs",
+    "lint:design": "node scripts/check-design-system-compliance.mjs",
     "ds:check": "pnpm --filter @factory-vision/ui run ds:check",
     "ds:pull": "pnpm --filter @factory-vision/ui run ds:pull",
     "db:migrate": "tsx db/migrate.ts migrate",
@@ -22,9 +24,18 @@
     "verify:stories": "node scripts/verify-user-stories.mjs",
     "verify:isolation": "pnpm --filter @factory-vision/api run verify:isolation",
     "verify:persistence": "pnpm --filter @factory-vision/api run verify:persistence",
-    "dev:admin": "pnpm --filter @factory-vision/admin dev"
+    "verify:planning": "pnpm --filter @factory-vision/api run verify:planning",
+    "qa": "pnpm --filter @factory-vision/api run qa",
+    "qa:posture": "pnpm --filter @factory-vision/api run qa:posture",
+    "qa:themes": "node scripts/qa-visual-themes.mjs",
+    "qa:pwa": "node scripts/qa-pwa-offline-sync.mjs",
+    "dev:admin": "pnpm --filter @factory-vision/admin dev",
+    "dev:landing": "pnpm --filter @factory-vision/landing dev"
   },
   "devDependencies": {
+    "dotenv": "^16.6.1",
+    "pg": "^8.23.0",
+    "playwright-core": "^1.62.1",
     "tsx": "^4.23.12",
     "typescript": "^5.7.0"
   }

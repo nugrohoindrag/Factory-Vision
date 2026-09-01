@@ -19,7 +19,8 @@ const COLUMNS = `
   id, tenant_id, work_order_id, process_id, batch_id, machine_id, operator_id,
   shift_id, to_char(shift_date, 'YYYY-MM-DD') AS shift_date,
   good_quantity, reject_quantity, reject_reason_id, recorded_at, source,
-  client_event_id, correction_of_id, notes
+  client_event_id, correction_of_id, notes,
+  input_quantity, scrap_quantity, rework_quantity, is_batch_managed, has_child_work_order
 `;
 
 interface Row {
@@ -28,6 +29,11 @@ interface Row {
   work_order_id: string;
   process_id: string | null;
   batch_id: string | null;
+  input_quantity: number | null;
+  scrap_quantity: number | null;
+  rework_quantity: number | null;
+  is_batch_managed: boolean | null;
+  has_child_work_order: boolean | null;
   machine_id: string;
   operator_id: string;
   shift_id: string;
@@ -61,6 +67,11 @@ function toDomain(row: Row): ProductionRecord {
     clientEventId: row.client_event_id,
     correctionOfId: orUndefined(row.correction_of_id),
     notes: orUndefined(row.notes),
+    inputQuantity: Number(row.input_quantity ?? 0),
+    scrapQuantity: Number(row.scrap_quantity ?? 0),
+    reworkQuantity: Number(row.rework_quantity ?? 0),
+    isBatchManaged: Boolean(row.is_batch_managed),
+    hasChildWorkOrder: Boolean(row.has_child_work_order),
   };
 }
 
@@ -86,8 +97,9 @@ export class ProductionRecordRepository {
       `INSERT INTO production_record (
          id, tenant_id, work_order_id, process_id, batch_id, machine_id, operator_id,
          shift_id, shift_date, good_quantity, reject_quantity, reject_reason_id,
-         recorded_at, source, client_event_id, correction_of_id, notes
-       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+         recorded_at, source, client_event_id, correction_of_id, notes,
+         input_quantity, scrap_quantity, rework_quantity, is_batch_managed, has_child_work_order
+       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)
        ON CONFLICT (tenant_id, client_event_id) DO NOTHING
        RETURNING ${COLUMNS}`,
       [
@@ -108,6 +120,15 @@ export class ProductionRecordRepository {
         record.clientEventId,
         record.correctionOfId ?? null,
         record.notes ?? null,
+        // Migration 005 added these five and the repository never wrote them,
+        // so every record carried input 0 and the per-record quantity flow was
+        // unusable. `is_batch_managed` / `has_child_work_order` also feed the
+        // composite FK that enforces execution-path exclusivity (§7).
+        record.inputQuantity ?? record.goodQuantity + record.rejectQuantity,
+        record.scrapQuantity ?? 0,
+        record.reworkQuantity ?? 0,
+        record.isBatchManaged ?? false,
+        record.hasChildWorkOrder ?? false,
       ]
     );
 

@@ -42,18 +42,17 @@
     "batch": "Nomor Batch / Lot",
     "status": {
       "DRAFT": "Draf",
-      "SCHEDULED": "Dijadwalkan",
-      "RELEASED": "Dirilis",
-      "IN_PROGRESS": "Sedang Berjalan",
-      "PAUSED": "Dijeda",
+      "SCHEDULED": "Terjadwal",
+      "CONFIRMED": "Terkonfirmasi",
+      "IN_PRODUCTION": "Sedang Produksi",
       "COMPLETED": "Selesai",
       "CANCELLED": "Dibatalkan"
     },
     "actions": {
+      "confirm": "Konfirmasi WO",
       "start": "Mulai Produksi",
-      "pause": "Jeda Produksi",
-      "resume": "Lanjutkan Produksi",
       "complete": "Selesaikan WO",
+      "cancel": "Batalkan WO",
       "recordOutput": "Catat Output",
       "recordDowntime": "Catat Downtime"
     }

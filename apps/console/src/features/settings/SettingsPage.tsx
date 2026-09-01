@@ -13,6 +13,7 @@ import {
   ProductRouting,
   ProductMachineRate,
   ProductionBatch,
+  WorkOrder,
   ProductionBatchStatus,
   Machine,
   ProductionLine,
@@ -21,9 +22,11 @@ import {
   RejectReason,
   DowntimeCategory,
   RejectCategory,
+  USER_ROLE_LABEL,
 } from '@factory-vision/domain-types';
 import { ShiftsTab } from './tabs/ShiftsTab.js';
 import { WorkCentersTab } from './tabs/WorkCentersTab.js';
+import { MoldsTab } from './tabs/MoldsTab.js';
 import { RolesTab } from './tabs/RolesTab.js';
 import { ImportExportTab } from './tabs/ImportExportTab.js';
 import { SessionsTab } from './tabs/SessionsTab.js';
@@ -35,7 +38,7 @@ const api = new FactoryVisionApiClient({ baseUrl: '' });
 const inputStyle: React.CSSProperties = {
   width: '100%',
   padding: '10px 12px',
-  borderRadius: 'var(--radius-md, 8px)',
+  borderRadius: 'var(--radius-md)',
   backgroundColor: 'var(--color-surface-container-high)',
   border: '1px solid var(--color-outline-variant)',
   color: 'var(--color-on-surface)',
@@ -304,6 +307,7 @@ const RoutingFormModal: React.FC<RoutingModalProps> = ({
             ))}
           </select>
         </div>
+
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '10px' }}>
           <div>
             <label
@@ -554,12 +558,21 @@ interface BatchModalProps {
   onSave: (payload: {
     batchNumber: string;
     productId: string;
+    /**
+     * The Work Order this batch subdivides (ADR-29).
+     *
+     * Required, because `production_batch.work_order_id` is. The API used to
+     * guess it from the product, which quietly filed batches under unrelated
+     * work; asking here is the honest version of the same question.
+     */
+    workOrderId: string;
     productionOrderId: string;
     productionDate: string;
     status: ProductionBatchStatus;
   }) => void;
   isLoading: boolean;
   products: Product[];
+  workOrders: WorkOrder[];
   initialData?: ProductionBatch | null;
 }
 
@@ -569,10 +582,12 @@ const BatchFormModal: React.FC<BatchModalProps> = ({
   onSave,
   isLoading,
   products,
+  workOrders,
   initialData,
 }) => {
   const [batchNumber, setBatchNumber] = useState('');
   const [productId, setProductId] = useState('');
+  const [workOrderId, setWorkOrderId] = useState('');
   const [productionOrderId, setProductionOrderId] = useState('');
   const [productionDate, setProductionDate] = useState('');
   const [status, setStatus] = useState<ProductionBatchStatus>(ProductionBatchStatus.ACTIVE);
@@ -581,12 +596,14 @@ const BatchFormModal: React.FC<BatchModalProps> = ({
     if (initialData) {
       setBatchNumber(initialData.batchNumber || '');
       setProductId(initialData.productId || (products[0]?.id ?? ''));
+      setWorkOrderId(initialData.workOrderId || '');
       setProductionOrderId(initialData.productionOrderId || '');
       setProductionDate(initialData.productionDate || new Date().toISOString().slice(0, 10));
       setStatus(initialData.status || ProductionBatchStatus.ACTIVE);
     } else {
       setBatchNumber(`B${new Date().toISOString().slice(2, 10).replace(/-/g, '')}-01`);
       setProductId(products[0]?.id ?? '');
+      setWorkOrderId('');
       setProductionOrderId('po-260829-001');
       setProductionDate(new Date().toISOString().slice(0, 10));
       setStatus(ProductionBatchStatus.ACTIVE);
@@ -595,7 +612,7 @@ const BatchFormModal: React.FC<BatchModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({ batchNumber, productId, productionOrderId, productionDate, status });
+    onSave({ batchNumber, productId, workOrderId, productionOrderId, productionDate, status });
   };
 
   return (
@@ -637,13 +654,61 @@ const BatchFormModal: React.FC<BatchModalProps> = ({
           >
             KODE PRODUK
           </label>
-          <select value={productId} onChange={(e) => setProductId(e.target.value)} style={inputStyle} required>
+          <select
+            value={productId}
+            onChange={(e) => {
+              setProductId(e.target.value);
+              // The Work Order list narrows to the chosen product, so a stale
+              // selection must not survive the change.
+              setWorkOrderId('');
+            }}
+            style={inputStyle}
+            required
+          >
             {products.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.sku} - {p.name}
               </option>
             ))}
           </select>
+        </div>
+        <div>
+          <label
+            style={{
+              display: 'block',
+              fontSize: '11px',
+              fontWeight: 700,
+              color: 'var(--color-on-surface-variant)',
+              marginBottom: '4px',
+            }}
+          >
+            WORK ORDER
+          </label>
+          <select
+            value={workOrderId}
+            onChange={(e) => setWorkOrderId(e.target.value)}
+            style={inputStyle}
+            required
+          >
+            <option value="">Pilih work order…</option>
+            {workOrders
+              .filter((wo) => !productId || wo.productId === productId)
+              .map((wo) => (
+                <option key={wo.id} value={wo.id}>
+                  {wo.woNumber} · {wo.status}
+                </option>
+              ))}
+          </select>
+          <p
+            style={{
+              margin: '4px 0 0',
+              fontSize: '10.5px',
+              color: 'var(--color-on-surface-variant)',
+            }}
+          >
+            Batch adalah pembagian quantity di dalam satu work order (ADR-29), sehingga harus
+            melekat pada work order tertentu.
+          </p>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
           <div>
@@ -1793,13 +1858,24 @@ const UserFormModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, isLo
             >
               SYSTEM ROLE
             </label>
+            {/*
+              Options come from the enum, not from a hand-written list. The list
+              was already missing OPERATOR and would have silently omitted SALES
+              too, which would have made a role that exists everywhere else
+              impossible to actually assign.
+
+              OPERATOR is the one deliberate exclusion: an operator signs in with
+              an employee number and PIN through a registered terminal (§22.1),
+              so it is created on the Operator master, not here.
+            */}
             <select value={role} onChange={(e) => setRole(e.target.value as UserRole)} style={inputStyle}>
-              <option value={UserRole.SUPERVISOR}>Supervisor</option>
-              <option value={UserRole.PRODUCTION_MANAGER}>Production Manager</option>
-              <option value={UserRole.PPIC}>PPIC Planner</option>
-              <option value={UserRole.QUALITY}>Quality Inspector</option>
-              <option value={UserRole.EXECUTIVE}>Executive / GM</option>
-              <option value={UserRole.ADMIN}>System Admin</option>
+              {Object.values(UserRole)
+                .filter((value) => value !== UserRole.OPERATOR)
+                .map((value) => (
+                  <option key={value} value={value}>
+                    {USER_ROLE_LABEL[value]}
+                  </option>
+                ))}
             </select>
           </div>
           <div>
@@ -2159,6 +2235,13 @@ export const SettingsPage: React.FC = () => {
     queryFn: () => api.master.getProducts(),
   });
 
+  // A batch subdivides a Work Order (ADR-29), so the batch form has to offer
+  // the Work Orders it may subdivide.
+  const { data: workOrdersForBatches } = useQuery({
+    queryKey: ['master-work-orders-for-batches'],
+    queryFn: () => api.workOrders.list(),
+  });
+
   const { data: machines } = useQuery({
     queryKey: ['master-machines'],
     queryFn: () => api.master.getMachines(),
@@ -2292,6 +2375,7 @@ export const SettingsPage: React.FC = () => {
     mutationFn: (payload: {
       batchNumber: string;
       productId: string;
+      workOrderId: string;
       productionOrderId: string;
       productionDate: string;
       status: ProductionBatchStatus;
@@ -3092,6 +3176,32 @@ export const SettingsPage: React.FC = () => {
   ];
 
   // Operator Columns
+  // Issuing an operator's PIN (§22.1 "Reset operator PIN where applicable").
+  // The API has always had `POST /operators/:id/pin` and the client has always
+  // wrapped it, but nothing in the console called it — so on an install where
+  // BOOTSTRAP_OPERATOR_PIN was left empty, no operator could sign in to a
+  // terminal and an administrator had no way to fix it from the product.
+  const [pinOperator, setPinOperator] = useState<Operator | null>(null);
+  const [pinValue, setPinValue] = useState('');
+  const [pinConfirm, setPinConfirm] = useState('');
+  const [pinError, setPinError] = useState<string | null>(null);
+  const [pinDone, setPinDone] = useState<string | null>(null);
+
+  const setOperatorPin = useMutation({
+    mutationFn: () => api.auth.setOperatorPin(pinOperator!.id, pinValue),
+    onSuccess: () => {
+      setPinDone(`PIN untuk ${pinOperator?.name} berhasil disetel.`);
+      setPinOperator(null);
+      setPinValue('');
+      setPinConfirm('');
+      setPinError(null);
+      window.setTimeout(() => setPinDone(null), 4000);
+    },
+    onError: (error: unknown) => {
+      setPinError(error instanceof Error ? error.message : 'Gagal menyetel PIN.');
+    },
+  });
+
   const operatorColumns: ColumnDef<Operator>[] = [
     {
       key: 'employeeNumber',
@@ -3141,6 +3251,20 @@ export const SettingsPage: React.FC = () => {
             title="Edit Operator"
           >
             Edit
+          </Button>
+          <Button
+            variant="text"
+            size="sm"
+            icon={<Icon name="lock" size={15} />}
+            onClick={() => {
+              setPinOperator(o);
+              setPinValue('');
+              setPinConfirm('');
+              setPinError(null);
+            }}
+            title="Setel PIN terminal untuk operator ini"
+          >
+            PIN
           </Button>
           <Button
             variant="text"
@@ -3462,6 +3586,8 @@ export const SettingsPage: React.FC = () => {
         return 'Shift';
       case 'work-centers':
         return 'Work Center';
+      case 'molds':
+        return 'Mold dan Kompatibilitas Produk';
       case 'roles':
         return 'Peran & Permission';
       case 'import-export':
@@ -3757,6 +3883,106 @@ export const SettingsPage: React.FC = () => {
         />
       )}
 
+      {pinDone && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '24px',
+            right: '24px',
+            zIndex: 9999,
+            backgroundColor: 'var(--color-success-container)',
+            color: 'var(--color-on-success-container)',
+            padding: '12px 20px',
+            borderRadius: 'var(--radius-md)',
+            fontSize: '13px',
+            fontWeight: 600,
+          }}
+        >
+          {pinDone}
+        </div>
+      )}
+
+      <Dialog
+        isOpen={Boolean(pinOperator)}
+        onClose={() => setPinOperator(null)}
+        title={pinOperator ? `Setel PIN — ${pinOperator.name}` : 'Setel PIN'}
+        maxWidth="440px"
+      >
+        <p style={{ margin: '0 0 14px', fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
+          PIN 4–8 digit untuk masuk ke terminal shop floor dengan nomor karyawan{' '}
+          <strong>{pinOperator?.employeeNumber}</strong>. PIN lama langsung tidak berlaku, dan
+          perubahan tercatat di audit log.
+        </p>
+        <div style={{ display: 'grid', gap: '12px' }}>
+          <div>
+            <label
+              style={{
+                display: 'block',
+                fontSize: '11px',
+                fontWeight: 700,
+                color: 'var(--color-on-surface-variant)',
+                marginBottom: '4px',
+              }}
+            >
+              PIN BARU
+            </label>
+            <input
+              type="password"
+              inputMode="numeric"
+              autoComplete="new-password"
+              value={pinValue}
+              onChange={(e) => setPinValue(e.target.value.replace(/\D/g, '').slice(0, 8))}
+              style={inputStyle}
+            />
+          </div>
+          <div>
+            <label
+              style={{
+                display: 'block',
+                fontSize: '11px',
+                fontWeight: 700,
+                color: 'var(--color-on-surface-variant)',
+                marginBottom: '4px',
+              }}
+            >
+              ULANGI PIN
+            </label>
+            <input
+              type="password"
+              inputMode="numeric"
+              autoComplete="new-password"
+              value={pinConfirm}
+              onChange={(e) => setPinConfirm(e.target.value.replace(/\D/g, '').slice(0, 8))}
+              style={inputStyle}
+            />
+          </div>
+        </div>
+        {pinError && (
+          <p style={{ margin: '10px 0 0', fontSize: '12px', color: 'var(--color-error)' }}>{pinError}</p>
+        )}
+        {pinValue && pinConfirm && pinValue !== pinConfirm && (
+          <p style={{ margin: '10px 0 0', fontSize: '12px', color: 'var(--color-error)' }}>
+            Kedua PIN belum sama.
+          </p>
+        )}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '18px' }}>
+          <Button variant="text" onClick={() => setPinOperator(null)}>
+            Batal
+          </Button>
+          <Button
+            variant="filled"
+            disabled={
+              setOperatorPin.isPending ||
+              pinValue.length < 4 ||
+              pinValue !== pinConfirm
+            }
+            onClick={() => setOperatorPin.mutate()}
+          >
+            {setOperatorPin.isPending ? 'Menyimpan…' : 'Setel PIN'}
+          </Button>
+        </div>
+      </Dialog>
+
       {activeTab === 'operators' && (
         <AdvancedDataTable
           columns={operatorColumns}
@@ -3821,6 +4047,7 @@ export const SettingsPage: React.FC = () => {
  readable rather than growing a seventh inline table. */}
       {activeTab === 'shifts' && <ShiftsTab onToast={showToast} />}
       {activeTab === 'work-centers' && <WorkCentersTab onToast={showToast} />}
+      {activeTab === 'molds' && <MoldsTab onToast={showToast} />}
       {activeTab === 'roles' && <RolesTab onToast={showToast} />}
       {activeTab === 'import-export' && <ImportExportTab onToast={showToast} />}
       {activeTab === 'sessions' && <SessionsTab onToast={showToast} />}
@@ -3902,6 +4129,7 @@ export const SettingsPage: React.FC = () => {
         isOpen={showBatchModal}
         onClose={() => setShowBatchModal(false)}
         products={products || []}
+        workOrders={workOrdersForBatches || []}
         initialData={selectedBatch}
         onSave={(payload) => saveBatchMutation.mutate(payload)}
         isLoading={saveBatchMutation.isPending}
@@ -4085,11 +4313,11 @@ export const SettingsPage: React.FC = () => {
             bottom: '24px',
             right: '24px',
             zIndex: 9999,
-            backgroundColor: 'var(--color-inverse-surface, #1e293b)',
-            color: 'var(--color-inverse-on-surface, #ffffff)',
+            backgroundColor: 'var(--color-inverse-surface)',
+            color: 'var(--color-inverse-on-surface)',
             padding: '12px 20px',
-            borderRadius: 'var(--radius-md, 8px)',
-            boxShadow: 'var(--elevation-3, 0 10px 25px rgba(0,0,0,0.25))',
+            borderRadius: 'var(--radius-md)',
+            boxShadow: 'var(--elevation-3)',
             display: 'flex',
             alignItems: 'center',
             gap: '10px',
@@ -4098,7 +4326,7 @@ export const SettingsPage: React.FC = () => {
             animation: 'fadeIn 0.2s ease',
           }}
         >
-          <Icon name="check_circle" size={18} style={{ color: 'var(--color-success, #22c55e)' }} />
+          <Icon name="check_circle" size={18} style={{ color: 'var(--color-success)' }} />
           <span>{toastMessage}</span>
         </div>
       )}
