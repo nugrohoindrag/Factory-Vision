@@ -167,7 +167,7 @@ export const ModulesSection: React.FC = () => {
                 <span
                   style={{
                     backgroundColor: 'var(--color-info-container)',
-                    color: 'var(--color-primary)',
+                    color: 'var(--color-on-info-container)',
                     border: '1px solid var(--color-info-container)',
                     padding: `var(--space-1) var(--space-3)`,
                     borderRadius: '9999px',

@@ -93,7 +93,7 @@ export const VisibilitySection = () => {
                                         }, children: [_jsx("span", { style: { fontSize: '13px', opacity: 0.9, fontWeight: 500 }, children: pillar.statLabel }), _jsx("span", { style: { fontSize: '15px', fontWeight: 800, color: 'var(--color-on-primary)' }, className: "fv-num", children: pillar.statValue })] })] }), _jsx("div", { style: { padding: 'var(--space-8)', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }, children: _jsxs("div", { children: [_jsxs("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-3)', gap: 'var(--space-2)', flexWrap: 'wrap' }, children: [_jsx("h3", { style: { fontSize: '22px', fontWeight: 800, color: 'var(--color-on-surface)' }, children: pillar.title }), _jsx("span", { style: {
                                                         fontSize: '12px',
                                                         fontWeight: 700,
-                                                        color: 'var(--color-primary)',
+                                                        color: 'var(--color-on-info-container)',
                                                         backgroundColor: 'var(--color-info-container)',
                                                         border: '1px solid var(--color-info-container)',
                                                         padding: `var(--space-1) var(--space-3)`,

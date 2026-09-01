@@ -8,7 +8,7 @@ interface CtaSectionProps {
 
 export const CtaSection: React.FC<CtaSectionProps> = ({ onOpenDemo }) => {
   return (
-    <section className="fv-section-py" style={{ backgroundColor: 'var(--color-inverse-surface)' }}>
+    <section className="fv-section-py" style={{ backgroundColor: 'var(--color-primary)' }}>
       <div className="fv-landing-container">
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
@@ -16,7 +16,7 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ onOpenDemo }) => {
           viewport={{ once: true }}
           style={{
             background: 'var(--color-primary)',
-            color: 'var(--color-inverse-on-surface)',
+            color: 'var(--color-on-primary)',
             borderRadius: '28px',
             padding: `calc(var(--space-8) * 2) var(--space-10)`,
             textAlign: 'center',
@@ -57,7 +57,7 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ onOpenDemo }) => {
                 letterSpacing: '0.05em',
                 textTransform: 'uppercase',
                 marginBottom: 'var(--space-5)',
-                color: 'var(--color-info)',
+                color: 'var(--color-on-info-container)',
               }}
             >
               <Icon name="verified" size={16} />
@@ -71,7 +71,7 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ onOpenDemo }) => {
                 lineHeight: 1.15,
                 letterSpacing: '-0.025em',
                 marginBottom: 'var(--space-4)',
-                color: 'var(--color-inverse-on-surface)',
+                color: 'var(--color-on-primary)',
               }}
             >
               See What Your Factory Can See.
@@ -82,7 +82,7 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ onOpenDemo }) => {
                 fontSize: 'clamp(16px, 1.8vw, 19px)',
                 lineHeight: 1.6,
                 marginBottom: 'var(--space-10)',
-                color: 'var(--color-primary-container)',
+                color: 'var(--color-on-primary)',
               }}
             >
               Join modern manufacturing plants transforming their production execution with real-time shopfloor telemetry,

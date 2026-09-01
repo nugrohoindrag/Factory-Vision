@@ -114,7 +114,7 @@ export const QualityTraceabilitySection: React.FC = () => {
                       height: '24px',
                       borderRadius: '50%',
                       backgroundColor: 'var(--color-info-container)',
-                      color: 'var(--color-primary)',
+                      color: 'var(--color-on-info-container)',
                       border: '1px solid var(--color-info-container)',
                       display: 'flex',
                       alignItems: 'center',

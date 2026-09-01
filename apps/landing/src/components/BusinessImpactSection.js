@@ -36,10 +36,10 @@ export const BusinessImpactSection = () => {
             metricLabel: 'Paper checksheets required',
         },
     ];
-    return (_jsx("section", { className: "fv-section-py", style: { backgroundColor: 'var(--color-inverse-surface)', color: 'var(--color-inverse-on-surface)' }, children: _jsxs("div", { className: "fv-landing-container", children: [_jsxs("div", { style: { textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }, children: [_jsxs("div", { className: "fv-eyebrow", children: [_jsx(Icon, { name: "verified", size: 16 }), "Measurable Value"] }), _jsx("h2", { className: "fv-section-title", children: "Built to Improve Factory Performance" }), _jsx("p", { className: "fv-section-desc", style: { margin: '0 auto' }, children: "Transforming shopfloor execution delivers immediate operational dividends across production velocity, quality compliance, and machine availability." })] }), _jsx("div", { className: "fv-grid-2", style: { gap: 'var(--space-8)' }, children: impacts.map((imp, idx) => (_jsx(motion.div, { initial: { opacity: 0, y: 20 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { delay: idx * 0.08 }, className: "fv-card", style: {
+    return (_jsx("section", { className: "fv-section-py", style: { backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)' }, children: _jsxs("div", { className: "fv-landing-container", children: [_jsxs("div", { style: { textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }, children: [_jsxs("div", { className: "fv-eyebrow", children: [_jsx(Icon, { name: "verified", size: 16 }), "Measurable Value"] }), _jsx("h2", { className: "fv-section-title", children: "Built to Improve Factory Performance" }), _jsx("p", { className: "fv-section-desc", style: { margin: '0 auto' }, children: "Transforming shopfloor execution delivers immediate operational dividends across production velocity, quality compliance, and machine availability." })] }), _jsx("div", { className: "fv-grid-2", style: { gap: 'var(--space-8)' }, children: impacts.map((imp, idx) => (_jsx(motion.div, { initial: { opacity: 0, y: 20 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { delay: idx * 0.08 }, className: "fv-card", style: {
                             padding: 'var(--space-10)',
-                            backgroundColor: 'var(--color-inverse-surface)',
-                            border: '1px solid color-mix(in srgb, var(--color-inverse-on-surface) 18%, transparent)',
+                            backgroundColor: 'var(--color-primary)',
+                            border: '1px solid color-mix(in srgb, var(--color-on-primary) 18%, transparent)',
                             display: 'flex',
                             flexDirection: 'column',
                             justifyContent: 'space-between',
@@ -48,11 +48,11 @@ export const BusinessImpactSection = () => {
                                                 height: '48px',
                                                 borderRadius: '14px',
                                                 backgroundColor: 'var(--color-info-container)',
-                                                color: 'var(--color-info)',
+                                                color: 'var(--color-on-info-container)',
                                                 border: '1px solid var(--color-info-container)',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                            }, children: _jsx(Icon, { name: imp.icon, size: 26 }) }), _jsxs("div", { style: { textAlign: 'right' }, children: [_jsx("div", { style: { fontSize: '28px', fontWeight: 800, color: 'var(--color-info)' }, className: "fv-num", children: imp.metric }), _jsx("div", { style: { fontSize: '11px', color: 'var(--color-on-surface-variant)', fontWeight: 700, textTransform: 'uppercase' }, children: imp.metricLabel })] })] }), _jsx("h3", { style: { fontSize: '22px', fontWeight: 800, color: 'var(--color-inverse-on-surface)', marginBottom: 'var(--space-1)' }, children: imp.title }), _jsx("div", { style: { fontSize: '13px', fontWeight: 700, color: 'var(--color-primary-soft)', marginBottom: 'var(--space-3)' }, children: imp.tagline }), _jsx("p", { style: { fontSize: '15px', color: 'var(--color-primary-container)', lineHeight: 1.55 }, children: imp.desc })] }) }, imp.title))) })] }) }));
+                                            }, children: _jsx(Icon, { name: imp.icon, size: 26 }) }), _jsxs("div", { style: { textAlign: 'right' }, children: [_jsx("div", { style: { fontSize: '28px', fontWeight: 800, color: 'var(--color-info)' }, className: "fv-num", children: imp.metric }), _jsx("div", { style: { fontSize: '11px', color: 'var(--color-on-surface-variant)', fontWeight: 700, textTransform: 'uppercase' }, children: imp.metricLabel })] })] }), _jsx("h3", { style: { fontSize: '22px', fontWeight: 800, color: 'var(--color-on-primary)', marginBottom: 'var(--space-1)' }, children: imp.title }), _jsx("div", { style: { fontSize: '13px', fontWeight: 700, color: 'var(--color-primary-soft)', marginBottom: 'var(--space-3)' }, children: imp.tagline }), _jsx("p", { style: { fontSize: '15px', color: 'var(--color-on-primary)', lineHeight: 1.55 }, children: imp.desc })] }) }, imp.title))) })] }) }));
 };
 //# sourceMappingURL=BusinessImpactSection.js.map

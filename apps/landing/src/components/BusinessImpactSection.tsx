@@ -39,7 +39,7 @@ export const BusinessImpactSection: React.FC = () => {
   ];
 
   return (
-    <section className="fv-section-py" style={{ backgroundColor: 'var(--color-inverse-surface)', color: 'var(--color-inverse-on-surface)' }}>
+    <section className="fv-section-py" style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)' }}>
       <div className="fv-landing-container">
         {/* Header */}
         <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }}>
@@ -68,8 +68,8 @@ export const BusinessImpactSection: React.FC = () => {
               className="fv-card"
               style={{
                 padding: 'var(--space-10)',
-                backgroundColor: 'var(--color-inverse-surface)',
-                border: '1px solid color-mix(in srgb, var(--color-inverse-on-surface) 18%, transparent)',
+                backgroundColor: 'var(--color-primary)',
+                border: '1px solid color-mix(in srgb, var(--color-on-primary) 18%, transparent)',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
@@ -83,7 +83,7 @@ export const BusinessImpactSection: React.FC = () => {
                       height: '48px',
                       borderRadius: '14px',
                       backgroundColor: 'var(--color-info-container)',
-                      color: 'var(--color-info)',
+                      color: 'var(--color-on-info-container)',
                       border: '1px solid var(--color-info-container)',
                       display: 'flex',
                       alignItems: 'center',
@@ -105,13 +105,13 @@ export const BusinessImpactSection: React.FC = () => {
                   </div>
                 </div>
 
-                <h3 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--color-inverse-on-surface)', marginBottom: 'var(--space-1)' }}>
+                <h3 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--color-on-primary)', marginBottom: 'var(--space-1)' }}>
                   {imp.title}
                 </h3>
                 <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-primary-soft)', marginBottom: 'var(--space-3)' }}>
                   {imp.tagline}
                 </div>
-                <p style={{ fontSize: '15px', color: 'var(--color-primary-container)', lineHeight: 1.55 }}>
+                <p style={{ fontSize: '15px', color: 'var(--color-on-primary)', lineHeight: 1.55 }}>
                   {imp.desc}
                 </p>
               </div>

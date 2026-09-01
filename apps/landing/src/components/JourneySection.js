@@ -26,7 +26,7 @@ export const JourneySection = () => {
                                 gap: 'var(--space-3)',
                             }, children: [_jsxs("div", { children: [_jsx("span", { style: { fontSize: '11px', color: 'var(--color-on-surface-variant)', fontWeight: 700, textTransform: 'uppercase' }, children: "TRACKING ACTIVE SALES ORDER" }), _jsx("div", { style: { fontSize: '22px', fontWeight: 800, color: 'var(--color-on-surface)' }, children: "#SO-10294 \u00B7 Precision Flange Assembly" })] }), _jsx("div", { style: { display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }, children: _jsx("span", { style: {
                                             backgroundColor: 'var(--color-info-container)',
-                                            color: 'var(--color-primary)',
+                                            color: 'var(--color-on-info-container)',
                                             border: '1px solid var(--color-info-container)',
                                             padding: `var(--space-2) var(--space-4)`,
                                             borderRadius: '9999px',

@@ -6,11 +6,11 @@ export const Footer: React.FC = () => {
   return (
     <footer
       style={{
-        backgroundColor: 'var(--color-inverse-surface)',
-        color: 'var(--color-inverse-on-surface)',
+        backgroundColor: 'var(--color-primary)',
+        color: 'var(--color-on-primary)',
         paddingTop: 'calc(var(--space-8) * 2)',
         paddingBottom: 'var(--space-10)',
-        borderTop: '1px solid color-mix(in srgb, var(--color-inverse-on-surface) 18%, transparent)',
+        borderTop: '1px solid color-mix(in srgb, var(--color-on-primary) 18%, transparent)',
       }}
     >
       <div className="fv-landing-container">
@@ -29,7 +29,7 @@ export const Footer: React.FC = () => {
             <div style={{ marginBottom: 'var(--space-4)' }}>
               <FactoryVisionLogo size="md" variant="full" />
             </div>
-            <p style={{ fontSize: '14px', color: 'var(--color-primary-container)', lineHeight: 1.6, maxWidth: '320px', marginBottom: 'var(--space-5)' }}>
+            <p style={{ fontSize: '14px', color: 'var(--color-on-primary)', lineHeight: 1.6, maxWidth: '320px', marginBottom: 'var(--space-5)' }}>
               The modern Manufacturing Execution System empowering discrete and batch industrial factories with real-time operational intelligence.
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
@@ -52,7 +52,7 @@ export const Footer: React.FC = () => {
                     href="#modules"
                     style={{ fontSize: '13px', color: 'var(--color-on-surface-variant)', textDecoration: 'none', transition: 'color 0.15s ease' }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.color = 'var(--color-inverse-on-surface)';
+                      e.currentTarget.style.color = 'var(--color-on-primary)';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.color = 'var(--color-on-surface-variant)';
@@ -77,7 +77,7 @@ export const Footer: React.FC = () => {
                     href="#deployment"
                     style={{ fontSize: '13px', color: 'var(--color-on-surface-variant)', textDecoration: 'none', transition: 'color 0.15s ease' }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.color = 'var(--color-inverse-on-surface)';
+                      e.currentTarget.style.color = 'var(--color-on-primary)';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.color = 'var(--color-on-surface-variant)';
@@ -102,7 +102,7 @@ export const Footer: React.FC = () => {
                     href="#"
                     style={{ fontSize: '13px', color: 'var(--color-on-surface-variant)', textDecoration: 'none', transition: 'color 0.15s ease' }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.color = 'var(--color-inverse-on-surface)';
+                      e.currentTarget.style.color = 'var(--color-on-primary)';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.color = 'var(--color-on-surface-variant)';
@@ -119,7 +119,7 @@ export const Footer: React.FC = () => {
         {/* Footer Bottom Strip */}
         <div
           style={{
-            borderTop: '1px solid color-mix(in srgb, var(--color-inverse-on-surface) 18%, transparent)',
+            borderTop: '1px solid color-mix(in srgb, var(--color-on-primary) 18%, transparent)',
             paddingTop: 'var(--space-6)',
             display: 'flex',
             alignItems: 'center',

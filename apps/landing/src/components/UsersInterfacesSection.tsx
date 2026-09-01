@@ -137,7 +137,7 @@ export const UsersInterfacesSection: React.FC = () => {
                 style={{
                   fontSize: '12px',
                   fontWeight: 700,
-                  color: 'var(--color-primary)',
+                  color: 'var(--color-on-info-container)',
                   backgroundColor: 'var(--color-info-container)',
                   border: '1px solid var(--color-info-container)',
                   padding: `var(--space-1) var(--space-3)`,

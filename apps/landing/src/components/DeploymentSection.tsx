@@ -4,7 +4,7 @@ import { Icon } from '@factory-vision/ui';
 
 export const DeploymentSection: React.FC = () => {
   return (
-    <section id="deployment" className="fv-section-py" style={{ backgroundColor: 'var(--color-inverse-surface)', color: 'var(--color-inverse-on-surface)' }}>
+    <section id="deployment" className="fv-section-py" style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)' }}>
       <div className="fv-landing-container">
         {/* Header */}
         <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }}>
@@ -28,8 +28,8 @@ export const DeploymentSection: React.FC = () => {
             className="fv-card"
             style={{
               padding: 'var(--space-10)',
-              backgroundColor: 'var(--color-inverse-surface)',
-              border: '1px solid color-mix(in srgb, var(--color-inverse-on-surface) 18%, transparent)',
+              backgroundColor: 'var(--color-primary)',
+              border: '1px solid color-mix(in srgb, var(--color-on-primary) 18%, transparent)',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
@@ -42,7 +42,7 @@ export const DeploymentSection: React.FC = () => {
                   height: '52px',
                   borderRadius: '14px',
                   backgroundColor: 'var(--color-info-container)',
-                  color: 'var(--color-info)',
+                  color: 'var(--color-on-info-container)',
                   border: '1px solid var(--color-info-container)',
                   display: 'flex',
                   alignItems: 'center',
@@ -52,10 +52,10 @@ export const DeploymentSection: React.FC = () => {
               >
                 <Icon name="cloud" size={28} />
               </div>
-              <h3 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-inverse-on-surface)', marginBottom: 'var(--space-2)' }}>
+              <h3 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-on-primary)', marginBottom: 'var(--space-2)' }}>
                 Cloud / Hybrid Deployment
               </h3>
-              <p style={{ fontSize: '15px', color: 'var(--color-primary-container)', lineHeight: 1.55, marginBottom: 'var(--space-6)' }}>
+              <p style={{ fontSize: '15px', color: 'var(--color-on-primary)', lineHeight: 1.55, marginBottom: 'var(--space-6)' }}>
                 Access plant dashboards from any device or corporate headquarters with zero server maintenance and automatic updates.
               </p>
 
@@ -66,7 +66,7 @@ export const DeploymentSection: React.FC = () => {
                   'Automated encrypted backups and disaster recovery',
                   '99.9% SLA with modern microservice architecture',
                 ].map((item) => (
-                  <li key={item} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', fontSize: '14px', color: 'var(--color-inverse-on-surface)' }}>
+                  <li key={item} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', fontSize: '14px', color: 'var(--color-on-primary)' }}>
                     <Icon name="check_circle" size={18} color="var(--color-info)" />
                     {item}
                   </li>
@@ -78,11 +78,11 @@ export const DeploymentSection: React.FC = () => {
               style={{
                 marginTop: 'var(--space-8)',
                 padding: `var(--space-4) var(--space-5)`,
-                backgroundColor: 'var(--color-inverse-surface)',
-                border: '1px solid color-mix(in srgb, var(--color-inverse-on-surface) 24%, transparent)',
+                backgroundColor: 'var(--color-primary)',
+                border: '1px solid color-mix(in srgb, var(--color-on-primary) 24%, transparent)',
                 borderRadius: '12px',
                 fontSize: '13px',
-                color: 'var(--color-primary-container)',
+                color: 'var(--color-on-primary)',
               }}
             >
               <strong style={{ color: 'var(--color-info)' }}>Ideal for:</strong> Multi-site manufacturers, fast-growing mid-market plants, and distributed operations.
@@ -94,8 +94,8 @@ export const DeploymentSection: React.FC = () => {
             className="fv-card"
             style={{
               padding: 'var(--space-10)',
-              backgroundColor: 'var(--color-inverse-surface)',
-              border: '1px solid color-mix(in srgb, var(--color-inverse-on-surface) 18%, transparent)',
+              backgroundColor: 'var(--color-primary)',
+              border: '1px solid color-mix(in srgb, var(--color-on-primary) 18%, transparent)',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
@@ -118,10 +118,10 @@ export const DeploymentSection: React.FC = () => {
               >
                 <Icon name="dns" size={28} />
               </div>
-              <h3 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-inverse-on-surface)', marginBottom: 'var(--space-2)' }}>
+              <h3 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-on-primary)', marginBottom: 'var(--space-2)' }}>
                 On-Premise / Air-Gapped
               </h3>
-              <p style={{ fontSize: '15px', color: 'var(--color-primary-container)', lineHeight: 1.55, marginBottom: 'var(--space-6)' }}>
+              <p style={{ fontSize: '15px', color: 'var(--color-on-primary)', lineHeight: 1.55, marginBottom: 'var(--space-6)' }}>
                 Keep 100% of your manufacturing telemetry and recipe data strictly inside your local plant network and firewalls.
               </p>
 
@@ -132,7 +132,7 @@ export const DeploymentSection: React.FC = () => {
                   'Local edge gateway connection to PLC & SCADA protocols',
                   'Docker & Kubernetes containerized infrastructure',
                 ].map((item) => (
-                  <li key={item} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', fontSize: '14px', color: 'var(--color-inverse-on-surface)' }}>
+                  <li key={item} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', fontSize: '14px', color: 'var(--color-on-primary)' }}>
                     <Icon name="check_circle" size={18} color="var(--color-success)" />
                     {item}
                   </li>
@@ -144,11 +144,11 @@ export const DeploymentSection: React.FC = () => {
               style={{
                 marginTop: 'var(--space-8)',
                 padding: `var(--space-4) var(--space-5)`,
-                backgroundColor: 'var(--color-inverse-surface)',
-                border: '1px solid color-mix(in srgb, var(--color-inverse-on-surface) 24%, transparent)',
+                backgroundColor: 'var(--color-primary)',
+                border: '1px solid color-mix(in srgb, var(--color-on-primary) 24%, transparent)',
                 borderRadius: '12px',
                 fontSize: '13px',
-                color: 'var(--color-primary-container)',
+                color: 'var(--color-on-primary)',
               }}
             >
               <strong style={{ color: 'var(--color-success)' }}>Ideal for:</strong> Defense, automotive tier-1, and mission-critical production with strict OT security policies.
@@ -175,8 +175,8 @@ export const DeploymentSection: React.FC = () => {
               key={sec.title}
               style={{
                 padding: 'var(--space-5)',
-                backgroundColor: 'var(--color-inverse-surface)',
-                border: '1px solid color-mix(in srgb, var(--color-inverse-on-surface) 18%, transparent)',
+                backgroundColor: 'var(--color-primary)',
+                border: '1px solid color-mix(in srgb, var(--color-on-primary) 18%, transparent)',
                 borderRadius: '16px',
                 boxShadow: 'var(--fv-card-shadow)',
               }}
@@ -187,7 +187,7 @@ export const DeploymentSection: React.FC = () => {
                   height: '38px',
                   borderRadius: '10px',
                   backgroundColor: 'var(--color-info-container)',
-                  color: 'var(--color-info)',
+                  color: 'var(--color-on-info-container)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -196,7 +196,7 @@ export const DeploymentSection: React.FC = () => {
               >
                 <Icon name={sec.icon} size={20} />
               </div>
-              <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--color-inverse-on-surface)', marginBottom: 'var(--space-1)' }}>
+              <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--color-on-primary)', marginBottom: 'var(--space-1)' }}>
                 {sec.title}
               </div>
               <div style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', lineHeight: 1.4 }}>

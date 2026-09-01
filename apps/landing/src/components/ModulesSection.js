@@ -116,7 +116,7 @@ export const ModulesSection = () => {
                                 alignItems: 'center',
                             }, children: [_jsxs("div", { children: [_jsx("div", { style: { display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' }, children: _jsxs("span", { style: {
                                                     backgroundColor: 'var(--color-info-container)',
-                                                    color: 'var(--color-primary)',
+                                                    color: 'var(--color-on-info-container)',
                                                     border: '1px solid var(--color-info-container)',
                                                     padding: `var(--space-1) var(--space-3)`,
                                                     borderRadius: '9999px',

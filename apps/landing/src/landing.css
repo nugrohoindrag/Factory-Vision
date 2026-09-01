@@ -126,26 +126,26 @@ body {
   max-width: 1280px;
   margin-left: auto;
   margin-right: auto;
-  padding-left: 24px;
-  padding-right: 24px;
+  padding-left: var(--space-6);
+  padding-right: var(--space-6);
 }
 
 @media (max-width: 768px) {
   .fv-landing-container {
-    padding-left: 16px;
-    padding-right: 16px;
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
   }
 }
 
 .fv-section-py {
-  padding-top: 88px;
-  padding-bottom: 88px;
+  padding-top: calc(var(--space-12) * 2);
+  padding-bottom: calc(var(--space-12) * 2);
 }
 
 @media (max-width: 768px) {
   .fv-section-py {
-    padding-top: 56px;
-    padding-bottom: 56px;
+    padding-top: calc(var(--space-8) * 2);
+    padding-bottom: calc(var(--space-8) * 2);
   }
 }
 
@@ -153,8 +153,8 @@ body {
 .fv-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
   border-radius: 9999px;
   background-color: var(--color-primary-container);
   color: var(--color-on-primary-container);
@@ -162,23 +162,23 @@ body {
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
   border: 1px solid var(--color-primary-container);
 }
 
 .fv-eyebrow-on-blue {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
   border-radius: 9999px;
   background-color: var(--color-on-primary);
-  color: var(--color-on-primary);
+  color: var(--color-primary);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
   border: 1px solid var(--color-on-primary);
 }
 
@@ -189,7 +189,7 @@ body {
   line-height: 1.15;
   letter-spacing: -0.025em;
   color: var(--color-on-surface);
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
 .fv-section-title-on-blue {
@@ -198,7 +198,7 @@ body {
   line-height: 1.15;
   letter-spacing: -0.025em;
   color: var(--color-on-primary);
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
 .fv-section-desc {
@@ -259,7 +259,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 20px;
+  padding: var(--space-3) var(--space-5);
   background-color: var(--color-surface-container-low);
   border-bottom: 1px solid var(--color-outline-variant);
   font-size: 12px;
@@ -268,7 +268,7 @@ body {
 
 .fv-browser-dots {
   display: flex;
-  gap: 6px;
+  gap: var(--space-2);
   align-items: center;
 }
 
@@ -282,11 +282,11 @@ body {
 .fv-browser-address-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   background-color: var(--color-surface);
   border: 1px solid var(--color-outline-variant);
   border-radius: 9999px;
-  padding: 4px 16px;
+  padding: var(--space-1) var(--space-4);
   font-size: 11px;
   font-weight: 500;
   color: var(--color-on-surface-variant);
@@ -311,19 +311,19 @@ body {
 .fv-grid-2 {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 28px;
+  gap: var(--space-8);
 }
 
 .fv-grid-3 {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 24px;
+  gap: var(--space-6);
 }
 
 .fv-grid-4 {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 20px;
+  gap: var(--space-5);
 }
 
 @media (max-width: 1024px) {
@@ -335,7 +335,7 @@ body {
 @media (max-width: 768px) {
   .fv-grid-2, .fv-grid-3, .fv-grid-4 {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: var(--space-5);
   }
 }
 
@@ -368,10 +368,10 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--space-2);
   background: var(--color-primary);
-  color: var(--color-primary);
-  padding: 12px 26px;
+  color: var(--color-on-primary);
+  padding: var(--space-3) var(--space-8);
   border-radius: 9999px;
   font-weight: 700;
   font-size: 15px;
@@ -392,11 +392,11 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--space-2);
   background-color: var(--color-surface);
   color: var(--color-primary);
   border: 1px solid var(--color-outline-variant);
-  padding: 12px 24px;
+  padding: var(--space-3) var(--space-6);
   border-radius: 9999px;
   font-weight: 700;
   font-size: 15px;
@@ -422,7 +422,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: var(--space-5);
 }
 
 .fv-modal-content {
@@ -434,7 +434,7 @@ body {
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: var(--elevation-5);
-  padding: 36px;
+  padding: var(--space-10);
   position: relative;
   color: var(--color-on-surface);
 }

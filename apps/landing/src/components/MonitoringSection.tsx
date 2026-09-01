@@ -72,7 +72,7 @@ export const MonitoringSection: React.FC = () => {
             Live Machine Monitoring
           </div>
           <h2 className="fv-section-title-on-blue">
-            Know What's Happening on the Shopfloor — Now
+            Know What's Happening on the Shopfloor, Now
           </h2>
           <p className="fv-section-desc-on-blue" style={{ margin: '0 auto' }}>
             Instant machine fleet telemetry. Get direct visibility into active jobs, cycle speed, operator assignments,
@@ -224,7 +224,7 @@ export const MonitoringSection: React.FC = () => {
                       </span>
                     </div>
                     <h4 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
-                      {m.id} — {m.name}
+                      {m.id} · {m.name}
                     </h4>
                     <span style={{ fontSize: '13px', color: 'var(--color-on-surface-variant)', fontWeight: 500 }}>
                       {m.line}
@@ -235,7 +235,7 @@ export const MonitoringSection: React.FC = () => {
                       fontSize: '12px',
                       fontWeight: 700,
                       backgroundColor: 'var(--color-info-container)',
-                      color: 'var(--color-primary)',
+                      color: 'var(--color-on-info-container)',
                       border: '1px solid var(--color-info-container)',
                       padding: `var(--space-1) var(--space-3)`,
                       borderRadius: '8px',

@@ -58,7 +58,7 @@ export const MonitoringSection = () => {
         },
     ];
     const filteredMachines = filter === 'all' ? machines : machines.filter((m) => m.status === filter);
-    return (_jsxs("section", { className: "fv-section-py", style: { backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)' }, children: [_jsxs("div", { className: "fv-landing-container", children: [_jsxs("div", { style: { textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }, children: [_jsxs("div", { className: "fv-eyebrow-on-blue", children: [_jsx(Icon, { name: "precision_manufacturing", size: 16 }), "Live Machine Monitoring"] }), _jsx("h2", { className: "fv-section-title-on-blue", children: "Know What's Happening on the Shopfloor \u2014 Now" }), _jsx("p", { className: "fv-section-desc-on-blue", style: { margin: '0 auto' }, children: "Instant machine fleet telemetry. Get direct visibility into active jobs, cycle speed, operator assignments, and andon stoppage events." })] }), _jsxs("div", { style: {
+    return (_jsxs("section", { className: "fv-section-py", style: { backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)' }, children: [_jsxs("div", { className: "fv-landing-container", children: [_jsxs("div", { style: { textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }, children: [_jsxs("div", { className: "fv-eyebrow-on-blue", children: [_jsx(Icon, { name: "precision_manufacturing", size: 16 }), "Live Machine Monitoring"] }), _jsx("h2", { className: "fv-section-title-on-blue", children: "Know What's Happening on the Shopfloor, Now" }), _jsx("p", { className: "fv-section-desc-on-blue", style: { margin: '0 auto' }, children: "Instant machine fleet telemetry. Get direct visibility into active jobs, cycle speed, operator assignments, and andon stoppage events." })] }), _jsxs("div", { style: {
                             display: 'grid',
                             gridTemplateColumns: 'repeat(4, 1fr)',
                             gap: 'var(--space-4)',
@@ -121,11 +121,11 @@ export const MonitoringSection = () => {
                                                                     padding: `var(--space-1) var(--space-2)`,
                                                                     borderRadius: '9999px',
                                                                     textTransform: 'uppercase',
-                                                                }, children: [m.status, " \u00B7 ", m.uptime] })] }), _jsxs("h4", { style: { fontSize: '20px', fontWeight: 800, color: 'var(--color-on-surface)' }, children: [m.id, " \u2014 ", m.name] }), _jsx("span", { style: { fontSize: '13px', color: 'var(--color-on-surface-variant)', fontWeight: 500 }, children: m.line })] }), _jsx("span", { style: {
+                                                                }, children: [m.status, " \u00B7 ", m.uptime] })] }), _jsxs("h4", { style: { fontSize: '20px', fontWeight: 800, color: 'var(--color-on-surface)' }, children: [m.id, " \u00B7 ", m.name] }), _jsx("span", { style: { fontSize: '13px', color: 'var(--color-on-surface-variant)', fontWeight: 500 }, children: m.line })] }), _jsx("span", { style: {
                                                     fontSize: '12px',
                                                     fontWeight: 700,
                                                     backgroundColor: 'var(--color-info-container)',
-                                                    color: 'var(--color-primary)',
+                                                    color: 'var(--color-on-info-container)',
                                                     border: '1px solid var(--color-info-container)',
                                                     padding: `var(--space-1) var(--space-3)`,
                                                     borderRadius: '8px',

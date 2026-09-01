@@ -22,7 +22,7 @@ export const LiveProductionSection = () => {
                             }, children: [_jsxs("div", { style: {
                                         fontSize: '12px',
                                         fontWeight: 800,
-                                        color: 'var(--color-primary)',
+                                        color: 'var(--color-on-info-container)',
                                         backgroundColor: 'var(--color-info-container)',
                                         border: '1px solid var(--color-info-container)',
                                         padding: `var(--space-1) var(--space-2)`,
@@ -39,7 +39,7 @@ export const LiveProductionSection = () => {
                         }, children: [_jsx("div", { children: _jsxs("div", { className: "fv-browser-frame", children: [_jsxs("div", { className: "fv-browser-header", children: [_jsxs("div", { className: "fv-browser-dots", children: [_jsx("span", { className: "fv-browser-dot" }), _jsx("span", { className: "fv-browser-dot" }), _jsx("span", { className: "fv-browser-dot" })] }), _jsxs("div", { className: "fv-browser-address-bar", children: [_jsx(Icon, { name: "devices", size: 14 }), _jsx("span", { children: "terminal.factoryvision.io/station-cnc-02" })] }), _jsxs("div", { style: { display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }, children: [_jsx("span", { className: "fv-status-dot running" }), _jsx("span", { style: { fontSize: '11px', fontWeight: 800, color: 'var(--color-success)' }, children: "RUNNING" })] })] }), _jsx("div", { className: "fv-browser-body", children: _jsx("img", { src: "/screenshots/20-operator-terminal.png", alt: "Factory Vision Operator Terminal", className: "fv-browser-img", loading: "lazy" }) })] }) }), _jsxs("div", { style: { display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }, children: [_jsxs("div", { children: [_jsx("span", { style: {
                                                     fontSize: '12px',
                                                     fontWeight: 700,
-                                                    color: 'var(--color-primary)',
+                                                    color: 'var(--color-on-info-container)',
                                                     backgroundColor: 'var(--color-info-container)',
                                                     border: '1px solid var(--color-info-container)',
                                                     padding: `var(--space-1) var(--space-3)`,
