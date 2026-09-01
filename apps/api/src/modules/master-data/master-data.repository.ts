@@ -212,13 +212,17 @@ export class MasterDataRepository {
     const batches = masterData.getBatches(tenantId);
     let batchCount = 0;
     for (const batch of batches) {
-      const woResult = (batch as { workOrderId?: string }).workOrderId
-        ? { rows: [{ id: (batch as { workOrderId?: string }).workOrderId }] }
-        : await exec.query<{ id: string }>(
-            'SELECT id FROM work_order WHERE tenant_id = $1 AND product_id = $2 ORDER BY created_at ASC LIMIT 1',
-            [tenantId, batch.productId]
-          );
-      const targetWoId = woResult.rows[0]?.id ?? null;
+      // ADR-29 inverts the relation: a Batch is a subdivision *inside* one
+      // Work Order, so work_order_id is mandatory. Picking "the first work order
+      // for this product" would be a guess, and a wrong guess here silently
+      // reassigns produced quantity. Demo rows name their work order; anything
+      // that does not is a defect in the fixture, not something to paper over.
+      const targetWoId = batch.workOrderId ?? null;
+      if (!targetWoId) {
+        throw new Error(
+          `Demo batch ${batch.id} has no workOrderId; production_batch.work_order_id is NOT NULL (ADR-29)`
+        );
+      }
 
       await exec.query(
         `INSERT INTO production_batch (id, tenant_id, batch_number, product_id, production_order_id, work_order_id, production_date, status)

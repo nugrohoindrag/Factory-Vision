@@ -1,5 +1,5 @@
 import { MachineState, ProductionOrderStatus, WorkOrderStatus } from '@factory-vision/domain-types';
-import type { ProductionOrder, WorkOrder } from '@factory-vision/domain-types';
+import type { ProductionBatch, ProductionOrder, WorkOrder } from '@factory-vision/domain-types';
 import { ApiError } from '../../platform/http/api-error.js';
 import { withTenant } from '../../platform/db/pool.js';
 import type { Executor } from '../../platform/db/executor.js';
@@ -349,6 +349,13 @@ export class ProductionService {
    * recorded — so it is surfaced as a domain error rather than a raw
    * constraint violation.
    */
+  /** The batches that subdivide one work order, oldest sequence first (ADR-29). */
+  async getBatchesForWorkOrder(tenantId: string, workOrderId: string): Promise<ProductionBatch[]> {
+    return withTenant(tenantId, (client) =>
+      this.batches.listByWorkOrder(client, tenantId, workOrderId)
+    );
+  }
+
   async assignBatchToWorkOrder(tenantId: string, workOrderId: string, batchId: string): Promise<WorkOrder> {
     return withTenant(tenantId, async (client) => {
       const wo = await this.workOrders.findById(client, tenantId, workOrderId);

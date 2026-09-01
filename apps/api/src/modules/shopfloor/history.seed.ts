@@ -81,6 +81,14 @@ export interface HistoryLineSpec {
   lineId: string;
   processId?: string;
   batchId?: string;
+  /**
+   * Mirrors the owning work order's execution mode. `production_record`
+   * references `work_order(id, is_batch_managed, has_child_work_order)` as a
+   * composite foreign key, so a record that claims a different mode than its
+   * work order is rejected outright (Execution Path Exclusivity, ADR-35).
+   * A batch-managed line must also carry `batchId`.
+   */
+  isBatchManaged?: boolean;
   /** Optional: line-03 in the pilot seed has no machine assigned. */
   machineId?: string;
   workOrderId: string;
@@ -207,6 +215,8 @@ export function generateHistory(input: HistorySeedInput): GeneratedHistory {
         workOrderId: line.workOrderId,
         processId: line.processId,
         batchId: line.batchId,
+        isBatchManaged: line.isBatchManaged ?? false,
+        hasChildWorkOrder: false,
         machineId: line.machineId ?? '',
         operatorId: line.operatorId,
         shiftId: input.shiftId,

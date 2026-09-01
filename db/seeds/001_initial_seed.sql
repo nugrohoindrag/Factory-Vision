@@ -135,11 +135,18 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- 14. Operators
+--
+-- pin_hash is deliberately left NULL. The column holds a scrypt digest, and the
+-- seed used to write the literal string '1234' into it, which no operator could
+-- ever log in with — and, worse, a non-null value makes the bootstrap skip that
+-- operator, so BOOTSTRAP_OPERATOR_PIN silently never applied either. An
+-- operator receives a PIN from BOOTSTRAP_OPERATOR_PIN on first boot, or from an
+-- administrator; a plaintext credential is never seeded.
 INSERT INTO operator (id, tenant_id, employee_number, name, pin_hash, default_line_id, status)
 VALUES
-  ('op-001', 'tenant-pilot-factory-01', 'OP-1001', 'Budi Santoso', '1234', 'line-01', 'ACTIVE'),
-  ('op-002', 'tenant-pilot-factory-01', 'OP-1002', 'Siti Rahmawati', '1234', 'line-01', 'ACTIVE'),
-  ('op-003', 'tenant-pilot-factory-01', 'OP-1003', 'Agus Prasetyo', '1234', 'line-02', 'ACTIVE')
+  ('op-001', 'tenant-pilot-factory-01', 'OP-1001', 'Budi Santoso', NULL, 'line-01', 'ACTIVE'),
+  ('op-002', 'tenant-pilot-factory-01', 'OP-1002', 'Siti Rahmawati', NULL, 'line-01', 'ACTIVE'),
+  ('op-003', 'tenant-pilot-factory-01', 'OP-1003', 'Agus Prasetyo', NULL, 'line-02', 'ACTIVE')
 ON CONFLICT (id) DO NOTHING;
 
 -- 15. Production Orders & Batches
@@ -181,7 +188,7 @@ VALUES
   -- orders of its own — without them the batch would be an orphan that MES-011
   -- rightly refuses to migrate.
   ('wo-201', 'tenant-pilot-factory-01', 'po-260829-002', 'planline-seed-002', 'WO-260829-02-MIX', 'prod-tire-b', 'proc-mixing', 1, 'line-02', 'wc-mixing', 'mc-mix-02', 1500, 1500, 'PCS', CURRENT_TIMESTAMP - INTERVAL '3 hours', CURRENT_TIMESTAMP + INTERVAL '5 hours', 910, 900, 10, 0, 0, 900, 'IN_PRODUCTION', 1),
-  ('wo-202', 'tenant-pilot-factory-01', 'po-260829-002', 'planline-seed-002', 'WO-260829-02-TBM', 'prod-tire-b', 'proc-building', 3, 'line-02', 'wc-building', 'mc-tbm-01', 1500, 1500, 'PCS', CURRENT_TIMESTAMP - INTERVAL '1 hours', CURRENT_TIMESTAMP + INTERVAL '7 hours', 426, 420, 6, 0, 0, 420, 'IN_PRODUCTION', 1)
+  ('wo-202', 'tenant-pilot-factory-01', 'po-260829-002', 'planline-seed-002', 'WO-260829-02-TBM', 'prod-tire-b', 'proc-building', 3, 'line-02', 'wc-building', 'mc-tbm-02', 1500, 1500, 'PCS', CURRENT_TIMESTAMP - INTERVAL '1 hours', CURRENT_TIMESTAMP + INTERVAL '7 hours', 426, 420, 6, 0, 0, 420, 'IN_PRODUCTION', 1)
 ON CONFLICT (id) DO NOTHING;
 
 -- 17. Production Batches (ADR-29: a batch belongs to a Work Order)

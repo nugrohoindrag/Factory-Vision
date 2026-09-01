@@ -103,8 +103,17 @@ export async function seedDemoPlant(
   return withTenant(tenantId, async (client) => {
     const reference = await masterDataRepo.syncReferenceData(client, services.masterData, tenantId);
     const productionOrders = await services.production.seedDemoProductionOrders(client, tenantId);
-    const { batches } = await masterDataRepo.syncBatches(client, services.masterData, tenantId);
-    const workOrders = await services.production.seedDemoWorkOrders(client, tenantId);
+
+    // Work orders and batches are no longer hydrated from the in-memory demo
+    // lists. Since Sprint 2 a work order requires a Production Plan Line and a
+    // batch requires an owning work order (ADR-29), and those in-memory rows
+    // predate both — they name plan lines and products that no plan covers, and
+    // the only work orders left for their batches to sit on already carry
+    // direct production records, which E1/E2 forbids. `db/seeds` builds the
+    // whole plan → plan line → work order → batch chain coherently, and is now
+    // the single source of the demo plant's production data.
+    const workOrders = 0;
+    const batches = 0;
 
     return { ...reference, productionOrders, workOrders, batches };
   });
@@ -128,12 +137,32 @@ export async function seedDemoHistory(
   const operators = services.masterData.getOperators(tenantId);
   const products = services.masterData.getProducts(tenantId);
 
-  const historyLines: HistoryLineSpec[] = workOrders.map((wo) => {
+  // A parent work order is a SPLIT container: its children hold the production,
+  // and `ck_prod_record_not_parent` refuses any record written against it (E3).
+  const executable = workOrders.filter((wo) => !wo.hasChildWorkOrder);
+
+  const historyLines: HistoryLineSpec[] = await Promise.all(
+    executable.map(async (wo) => {
     const product = products.find((p) => p.id === wo.productId);
+    // A batch-managed work order takes its output through a batch, so the
+    // history has to name one. Resolved from the database rather than assumed:
+    // the composite foreign key compares the record's mode against the work
+    // order's, and a batch-managed order with no batch cannot be seeded at all.
+    let batchId: string | undefined;
+    if (wo.isBatchManaged) {
+      const batches = await services.production.getBatchesForWorkOrder(tenantId, wo.id);
+      batchId = batches[0]?.id;
+      if (!batchId) {
+        throw new Error(
+          `Work order ${wo.id} is batch-managed but owns no batch; demo history cannot be seeded (ADR-35 E1)`
+        );
+      }
+    }
     return {
       lineId: wo.lineId,
       processId: wo.processId,
-      batchId: undefined,
+      batchId,
+      isBatchManaged: Boolean(wo.isBatchManaged),
       machineId: wo.machineId,
       workOrderId: wo.id,
       operatorId: operators[0]?.id ?? 'op-001',
@@ -151,7 +180,8 @@ export async function seedDemoHistory(
         product?.idealCycleTimeSeconds ??
         120,
     };
-  });
+    })
+  );
 
   return services.shopFloor.seedHistory({
     tenantId,

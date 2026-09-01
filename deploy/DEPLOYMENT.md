@@ -28,8 +28,16 @@ three front ends, and, for an internet-facing install only, a reverse proxy.
 ```bash
 cp deploy/.env.example deploy/.env
 # set POSTGRES_PASSWORD and APP_DB_PASSWORD; leave AUTH_REQUIRED=true
+docker compose -f deploy/docker-compose.yml up -d db
+# `migrate` sits in its own profile, so `up -d` alone never runs it. Besides
+# applying db/migrations it is what gives `factory_app` its password; skip it
+# and the API cannot authenticate and restarts forever with 28P01.
+docker compose -f deploy/docker-compose.yml --profile migrate run --rm migrate
 docker compose -f deploy/docker-compose.yml up -d
 ```
+
+A command-by-command walkthrough, including verification queries and the
+failures each step guards against, is in [RUNBOOK-DEPLOY.md](RUNBOOK-DEPLOY.md).
 
 That pulls the images CI publishes. Add `--build` to build them on the box
 instead, which needs roughly 2 GB of RAM for the Vite builds; a small VPS
