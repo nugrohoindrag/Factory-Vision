@@ -37,7 +37,7 @@ export const AdminLogin: React.FC = () => {
 
   const inputStyle: React.CSSProperties = {
     width: '100%',
-    padding: '12px 14px',
+    padding: `var(--space-3) var(--space-4)`,
     fontSize: '14px',
     fontFamily: 'var(--font-family)',
     color: 'var(--color-on-surface)',
@@ -54,21 +54,21 @@ export const AdminLogin: React.FC = () => {
         minHeight: '100vh',
         display: 'grid',
         placeItems: 'center',
-        padding: '24px',
+        padding: 'var(--space-6)',
         backgroundColor: 'var(--color-background)',
         color: 'var(--color-on-background)',
         fontFamily: 'var(--font-family)',
       }}
     >
       <SurfaceCard padding="lg" style={{ width: '100%', maxWidth: '400px' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
           <div>
             <span
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '6px',
-                padding: '4px 10px',
+                gap: 'var(--space-2)',
+                padding: `var(--space-1) var(--space-3)`,
                 borderRadius: 'var(--radius-full, 999px)',
                 backgroundColor: toneContainer.warning,
                 color: toneOnContainer.warning,
@@ -82,7 +82,7 @@ export const AdminLogin: React.FC = () => {
             </span>
             <h1
               style={{
-                margin: '12px 0 4px',
+                margin: `var(--space-3) 0 var(--space-1)`,
                 fontSize: '24px',
                 fontWeight: 800,
                 letterSpacing: '-0.02em',
@@ -104,7 +104,7 @@ export const AdminLogin: React.FC = () => {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
             <div>
               <label
                 htmlFor="admin-email"
@@ -113,7 +113,7 @@ export const AdminLogin: React.FC = () => {
                   fontSize: '12px',
                   fontWeight: 700,
                   color: 'var(--color-on-surface-variant)',
-                  marginBottom: '6px',
+                  marginBottom: 'var(--space-2)',
                 }}
               >
                 Email Internal
@@ -138,7 +138,7 @@ export const AdminLogin: React.FC = () => {
                   fontSize: '12px',
                   fontWeight: 700,
                   color: 'var(--color-on-surface-variant)',
-                  marginBottom: '6px',
+                  marginBottom: 'var(--space-2)',
                 }}
               >
                 Kata Sandi
@@ -152,7 +152,7 @@ export const AdminLogin: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  style={{ ...inputStyle, paddingRight: '44px' }}
+                  style={{ ...inputStyle, paddingRight: 'var(--space-12)' }}
                 />
                 <button
                   type="button"
@@ -166,7 +166,7 @@ export const AdminLogin: React.FC = () => {
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer',
-                    padding: '6px',
+                    padding: 'var(--space-2)',
                     color: 'var(--color-on-surface-variant)',
                     display: 'flex',
                   }}
@@ -181,8 +181,8 @@ export const AdminLogin: React.FC = () => {
                 role="alert"
                 style={{
                   display: 'flex',
-                  gap: '8px',
-                  padding: '10px 12px',
+                  gap: 'var(--space-2)',
+                  padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-sm, 8px)',
                   backgroundColor: 'var(--color-error-container)',
                   color: 'var(--color-on-error-container)',

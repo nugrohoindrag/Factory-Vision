@@ -69,7 +69,7 @@ const StatusPill: React.FC<{ status: string }> = ({ status }) => {
       style={{
         display: 'inline-flex',
         alignItems: 'center',
-        padding: '2px 10px',
+        padding: `var(--space-1) var(--space-3)`,
         borderRadius: 'var(--radius-pill)',
         fontSize: '11px',
         fontWeight: 700,
@@ -195,7 +195,7 @@ export const CustomerOrdersPage: React.FC = () => {
         header: 'Nomor Order',
         sortable: true,
         render: (row) => (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
             <span style={{ fontWeight: 700 }}>{row.orderNumber}</span>
             {isAtRisk(row) && (
               <span title="Berisiko terlambat: pengiriman kurang dari 7 hari dan produksi belum selesai.">
@@ -247,7 +247,7 @@ export const CustomerOrdersPage: React.FC = () => {
         <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
           Customer Order
         </h1>
-        <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
+        <p style={{ margin: `var(--space-1) 0 0`, fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
           Daftar order beserta status produksinya. Status Received sampai Produced diturunkan sistem
           dari fakta produksi, bukan diketik.
         </p>
@@ -259,7 +259,7 @@ export const CustomerOrdersPage: React.FC = () => {
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '12px',
+              gap: 'var(--space-3)',
             }}
           >
             <Select
@@ -344,12 +344,12 @@ export const CustomerOrdersPage: React.FC = () => {
           <p style={{ fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>Memuat detail…</p>
         )}
         {detail && (
-          <div style={{ display: 'grid', gap: '20px' }}>
+          <div style={{ display: 'grid', gap: 'var(--space-5)' }}>
             <div
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-                gap: '12px',
+                gap: 'var(--space-3)',
               }}
             >
               <Field label="Customer" value={customerName(detail.customerId)} />
@@ -361,7 +361,7 @@ export const CustomerOrdersPage: React.FC = () => {
               <Field label="PIC" value={detail.customerPic ?? '—'} />
               <div>
                 <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)' }}>Status</div>
-                <div style={{ marginTop: '4px' }}>
+                <div style={{ marginTop: 'var(--space-1)' }}>
                   <StatusPill status={detail.status} />
                 </div>
               </div>
@@ -376,25 +376,25 @@ export const CustomerOrdersPage: React.FC = () => {
             )}
 
             <div>
-              <h3 style={{ margin: '0 0 8px', fontSize: '14px', fontWeight: 700 }}>Order Line</h3>
+              <h3 style={{ margin: `0 0 var(--space-2)`, fontSize: '14px', fontWeight: 700 }}>Order Line</h3>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
                 <thead>
                   <tr style={{ textAlign: 'left', color: 'var(--color-on-surface-variant)' }}>
-                    <th style={{ padding: '6px 4px' }}>Product</th>
-                    <th style={{ padding: '6px 4px' }}>Ordered</th>
-                    <th style={{ padding: '6px 4px' }}>Planned</th>
-                    <th style={{ padding: '6px 4px' }}>Produced</th>
-                    <th style={{ padding: '6px 4px' }}>Kirim</th>
+                    <th style={{ padding: `var(--space-2) var(--space-1)` }}>Product</th>
+                    <th style={{ padding: `var(--space-2) var(--space-1)` }}>Ordered</th>
+                    <th style={{ padding: `var(--space-2) var(--space-1)` }}>Planned</th>
+                    <th style={{ padding: `var(--space-2) var(--space-1)` }}>Produced</th>
+                    <th style={{ padding: `var(--space-2) var(--space-1)` }}>Kirim</th>
                   </tr>
                 </thead>
                 <tbody>
                   {detail.lines.map((line) => (
                     <tr key={line.id} style={{ borderTop: '1px solid var(--color-outline-variant)' }}>
-                      <td style={{ padding: '6px 4px' }}>{productName(line.productId)}</td>
-                      <td style={{ padding: '6px 4px' }}>{line.orderedQuantity.toLocaleString('id-ID')}</td>
-                      <td style={{ padding: '6px 4px' }}>{line.plannedQuantity.toLocaleString('id-ID')}</td>
-                      <td style={{ padding: '6px 4px' }}>{line.producedQuantity.toLocaleString('id-ID')}</td>
-                      <td style={{ padding: '6px 4px' }}>
+                      <td style={{ padding: `var(--space-2) var(--space-1)` }}>{productName(line.productId)}</td>
+                      <td style={{ padding: `var(--space-2) var(--space-1)` }}>{line.orderedQuantity.toLocaleString('id-ID')}</td>
+                      <td style={{ padding: `var(--space-2) var(--space-1)` }}>{line.plannedQuantity.toLocaleString('id-ID')}</td>
+                      <td style={{ padding: `var(--space-2) var(--space-1)` }}>{line.producedQuantity.toLocaleString('id-ID')}</td>
+                      <td style={{ padding: `var(--space-2) var(--space-1)` }}>
                         {line.requestedDeliveryDate ?? detail.requestedDeliveryDate}
                       </td>
                     </tr>
@@ -406,16 +406,16 @@ export const CustomerOrdersPage: React.FC = () => {
             {canSeePlans && <OrderTraceability orderId={detail.id} />}
 
             <div>
-              <h3 style={{ margin: '0 0 8px', fontSize: '14px', fontWeight: 700 }}>Dokumen Sumber</h3>
+              <h3 style={{ margin: `0 0 var(--space-2)`, fontSize: '14px', fontWeight: 700 }}>Dokumen Sumber</h3>
               {detail.documents.length === 0 ? (
-                <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
+                <p style={{ margin: `0 0 var(--space-2)`, fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
                   Belum ada dokumen. Lampirkan PO, kartu kanban, atau email agar asal demand dapat
                   diverifikasi kemudian.
                 </p>
               ) : (
-                <ul style={{ margin: '0 0 8px', paddingLeft: '18px', fontSize: '12px' }}>
+                <ul style={{ margin: `0 0 var(--space-2)`, paddingLeft: 'var(--space-5)', fontSize: '12px' }}>
                   {detail.documents.map((doc) => (
-                    <li key={doc.id} style={{ marginBottom: '4px' }}>
+                    <li key={doc.id} style={{ marginBottom: 'var(--space-1)' }}>
                       <a
                         href={doc.storageUrl}
                         target="_blank"
@@ -436,7 +436,7 @@ export const CustomerOrdersPage: React.FC = () => {
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '6px',
+                  gap: 'var(--space-2)',
                   fontSize: '12px',
                   cursor: 'pointer',
                   color: 'var(--color-primary)',
@@ -455,13 +455,13 @@ export const CustomerOrdersPage: React.FC = () => {
                 />
               </label>
               {uploadError && (
-                <p style={{ margin: '6px 0 0', fontSize: '12px', color: 'var(--color-error)' }}>
+                <p style={{ margin: `var(--space-2) 0 0`, fontSize: '12px', color: 'var(--color-error)' }}>
                   {uploadError}
                 </p>
               )}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
               <Button variant="outlined" onClick={() => setShowCancel(true)}>
                 Batalkan Order
               </Button>
@@ -471,7 +471,7 @@ export const CustomerOrdersPage: React.FC = () => {
       </Dialog>
 
       <Dialog isOpen={showCancel} onClose={() => setShowCancel(false)} title="Batalkan Customer Order">
-        <p style={{ margin: '0 0 12px', fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
+        <p style={{ margin: `0 0 var(--space-3)`, fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
           Pembatalan ditolak bila ada Work Order yang sudah masuk produksi. Alasan wajib diisi dan
           tercatat di audit log.
         </p>
@@ -481,7 +481,7 @@ export const CustomerOrdersPage: React.FC = () => {
           onChange={(e) => setCancelReason(e.target.value)}
           error={cancelOrder.isError ? (cancelOrder.error as Error).message : undefined}
         />
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-4)' }}>
           <Button variant="text" onClick={() => setShowCancel(false)}>
             Batal
           </Button>
@@ -537,7 +537,7 @@ const OrderTraceability: React.FC<{ orderId: string }> = ({ orderId }) => {
 
   return (
     <div>
-      <h3 style={{ margin: '0 0 8px', fontSize: '14px', fontWeight: 700 }}>
+      <h3 style={{ margin: `0 0 var(--space-2)`, fontSize: '14px', fontWeight: 700 }}>
         Production Plan &amp; Work Order yang memenuhi
       </h3>
       {plansQuery.isLoading ? (
@@ -547,9 +547,9 @@ const OrderTraceability: React.FC<{ orderId: string }> = ({ orderId }) => {
           Order ini belum masuk Production Plan mana pun.
         </p>
       ) : (
-        <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '12px' }}>
+        <ul style={{ margin: 0, paddingLeft: 'var(--space-5)', fontSize: '12px' }}>
           {(plansQuery.data ?? []).map((match) => (
-            <li key={match.planId} style={{ marginBottom: '4px' }}>
+            <li key={match.planId} style={{ marginBottom: 'var(--space-1)' }}>
               <strong>{match.planNumber}</strong> — {statusLabel(match.status)} ({match.lineCount} plan
               line)
             </li>

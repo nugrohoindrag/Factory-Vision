@@ -10,7 +10,7 @@ const api = new FactoryVisionApiClient({ baseUrl: '' });
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  padding: '10px 12px',
+  padding: `var(--space-3) var(--space-3)`,
   borderRadius: 'var(--radius-md, 8px)',
   backgroundColor: 'var(--color-surface-container-high)',
   border: '1px solid var(--color-outline-variant)',
@@ -120,13 +120,13 @@ export const RolesTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
       <div
         style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          gap: '12px',
+          gap: 'var(--space-3)',
           flexWrap: 'wrap',
         }}
       >
@@ -153,7 +153,7 @@ export const RolesTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
         <div
           role="alert"
           style={{
-            padding: '10px 12px',
+            padding: `var(--space-3) var(--space-3)`,
             borderRadius: 'var(--radius-sm, 8px)',
             backgroundColor: 'var(--color-error-container)',
             color: 'var(--color-on-error-container)',
@@ -168,18 +168,18 @@ export const RolesTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
       {isLoading ? (
         <Empty label="Memuat peran…" />
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
           {roles.map((role) => (
             <SurfaceCard key={role.id} padding="md">
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                     <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
                       {role.name}
                     </span>
                     <span
                       style={{
-                        padding: '2px 8px',
+                        padding: `var(--space-1) var(--space-2)`,
                         borderRadius: 'var(--radius-full, 999px)',
                         fontSize: '10px',
                         fontWeight: 700,
@@ -199,15 +199,15 @@ export const RolesTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
                       </span>
                     )}
                   </div>
-                  <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
+                  <p style={{ margin: `var(--space-1) 0 0`, fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
                     {role.description}
                   </p>
-                  <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: '2px' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}>
                     {role.permissions.length} permission · landing <code>{role.landingPath}</code>
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '6px', alignItems: 'flex-start' }}>
+                <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'flex-start' }}>
                   <Button variant="text" onClick={() => setExpanded(expanded === role.id ? null : role.id)}>
                     {expanded === role.id ? 'Sembunyikan' : 'Lihat Permission'}
                   </Button>
@@ -225,7 +225,7 @@ export const RolesTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
               </div>
 
               {expanded === role.id && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '12px' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
                   {role.permissions.length === 0 && (
                     <span style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
                       Peran ini belum memiliki permission.
@@ -235,7 +235,7 @@ export const RolesTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
                     <code
                       key={permission}
                       style={{
-                        padding: '3px 8px',
+                        padding: `var(--space-1) var(--space-2)`,
                         borderRadius: 'var(--radius-xs, 4px)',
                         backgroundColor: 'var(--color-surface-container-high)',
                         color: 'var(--color-on-surface)',
@@ -262,7 +262,7 @@ export const RolesTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
             style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: '12px',
+              gap: 'var(--space-3)',
               maxHeight: '70vh',
               overflowY: 'auto',
             }}
@@ -311,13 +311,13 @@ export const RolesTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
                   fontSize: '12px',
                   fontWeight: 800,
                   color: 'var(--color-on-surface)',
-                  marginBottom: '6px',
+                  marginBottom: 'var(--space-2)',
                 }}
               >
                 Permission ({form.permissions.length} dipilih)
               </div>
               {grouped.map(([module, list]) => (
-                <div key={module} style={{ marginBottom: '10px' }}>
+                <div key={module} style={{ marginBottom: 'var(--space-3)' }}>
                   <div
                     style={{
                       fontSize: '11px',
@@ -325,12 +325,12 @@ export const RolesTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
                       color: 'var(--color-on-surface-variant)',
                       textTransform: 'uppercase',
                       letterSpacing: '0.04em',
-                      marginBottom: '4px',
+                      marginBottom: 'var(--space-1)',
                     }}
                   >
                     {module.replace(/_/g, ' ')}
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
                     {list.map((permission) => {
                       const held = principal?.permissions.includes(permission.id) ?? false;
                       const blocked = permission.privileged && !held;
@@ -343,7 +343,7 @@ export const RolesTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
                           style={{
                             display: 'flex',
                             alignItems: 'flex-start',
-                            gap: '8px',
+                            gap: 'var(--space-2)',
                             fontSize: '12px',
                             color: blocked ? 'var(--color-on-surface-variant)' : 'var(--color-on-surface)',
                             opacity: blocked ? 0.55 : 1,
@@ -360,8 +360,8 @@ export const RolesTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
                             {permission.privileged && (
                               <span
                                 style={{
-                                  marginLeft: '6px',
-                                  padding: '1px 6px',
+                                  marginLeft: 'var(--space-2)',
+                                  padding: `var(--space-1) var(--space-2)`,
                                   borderRadius: 'var(--radius-full, 999px)',
                                   fontSize: '9px',
                                   fontWeight: 700,
@@ -386,7 +386,7 @@ export const RolesTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
             </div>
 
             <div
-              style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', position: 'sticky', bottom: 0 }}
+              style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end', position: 'sticky', bottom: 0 }}
             >
               <Button variant="text" onClick={() => setForm(null)}>
                 Batal
@@ -409,7 +409,7 @@ export const RolesTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
 };
 
 const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
-  <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+  <label style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
     <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface-variant)' }}>{label}</span>
     {children}
   </label>
@@ -417,7 +417,7 @@ const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, 
 
 const Empty: React.FC<{ label: string }> = ({ label }) => (
   <div
-    style={{ padding: '28px', textAlign: 'center', color: 'var(--color-on-surface-variant)', fontSize: '12px' }}
+    style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-on-surface-variant)', fontSize: '12px' }}
   >
     {label}
   </div>

@@ -40,10 +40,10 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = ({
     : [];
 
   return (
-    <SurfaceCard padding="md" style={{ display: 'flex', flexDirection: 'column', gap: '11px' }}>
+    <SurfaceCard padding="md" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
       <div>
         <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 700 }}>Production Order Status</h3>
-        <div style={{ fontSize: '10.5px', color: 'var(--color-on-surface-variant)', marginTop: '2px' }}>
+        <div style={{ fontSize: '10.5px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}>
           {summary ? `${summary.total} order dalam pantauan` : 'Kesehatan jadwal produksi'}
         </div>
       </div>
@@ -53,7 +53,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = ({
       ) : (
         <>
           <div
-            style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(78px, 1fr))', gap: '7px' }}
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(78px, 1fr))', gap: 'var(--space-2)' }}
           >
             {tiles.map((tile) => {
               const isPriority = Boolean(tile.tone) && tile.value > 0;
@@ -64,7 +64,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = ({
                   onClick={onSelectStatus ? () => onSelectStatus(tile.key) : undefined}
                   style={{
                     textAlign: 'left',
-                    padding: '8px',
+                    padding: 'var(--space-2)',
                     borderRadius: 'var(--radius-sm)',
                     border: 'none',
                     cursor: onSelectStatus ? 'pointer' : 'default',
@@ -79,7 +79,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = ({
                     style={{
                       fontSize: '17px',
                       fontWeight: 800,
-                      marginTop: '2px',
+                      marginTop: 'var(--space-1)',
                       fontFeatureSettings: '"tnum" 1',
                       letterSpacing: '-0.02em',
                     }}
@@ -100,12 +100,12 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = ({
                   color: 'var(--color-on-surface-variant)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.04em',
-                  marginBottom: '6px',
+                  marginBottom: 'var(--space-2)',
                 }}
               >
                 Butuh perhatian
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
                 {summary.attentionOrders.map((order) => {
                   const tone = CLASSIFICATION_TONE[order.classification] ?? 'warning';
                   return (
@@ -116,8 +116,8 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = ({
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        gap: '10px',
-                        padding: '7px 9px',
+                        gap: 'var(--space-3)',
+                        padding: `var(--space-2) var(--space-3)`,
                         borderRadius: 'var(--radius-sm)',
                         backgroundColor: 'var(--color-surface-container)',
                         borderLeft: `3px solid ${toneColor[tone]}`,
@@ -135,7 +135,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = ({
                       </div>
                       <span
                         style={{
-                          padding: '2px 8px',
+                          padding: `var(--space-1) var(--space-2)`,
                           borderRadius: 'var(--radius-pill)',
                           fontSize: '10px',
                           fontWeight: 800,

@@ -116,7 +116,7 @@ export const ReportsPage: React.FC = () => {
       render: (r) => (
         <span
           style={{
-            padding: '2px 8px',
+            padding: `var(--space-1) var(--space-2)`,
             borderRadius: 'var(--radius-pill)',
             fontSize: '11px',
             fontWeight: 800,
@@ -149,7 +149,7 @@ export const ReportsPage: React.FC = () => {
       render: (r) => (
         <span
           style={{
-            padding: '2px 8px',
+            padding: `var(--space-1) var(--space-2)`,
             borderRadius: 'var(--radius-pill)',
             fontSize: '10.5px',
             fontWeight: 700,
@@ -206,7 +206,7 @@ export const ReportsPage: React.FC = () => {
       render: (r) => (
         <span
           style={{
-            padding: '2px 8px',
+            padding: `var(--space-1) var(--space-2)`,
             borderRadius: 'var(--radius-pill)',
             fontSize: '11px',
             fontWeight: 800,
@@ -274,7 +274,7 @@ export const ReportsPage: React.FC = () => {
       render: (r) => (
         <span
           style={{
-            padding: '2px 8px',
+            padding: `var(--space-1) var(--space-2)`,
             borderRadius: 'var(--radius-pill)',
             fontSize: '11px',
             fontWeight: 800,
@@ -315,7 +315,7 @@ export const ReportsPage: React.FC = () => {
   ];
 
   return (
-    <Page style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Page style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
       {/* Header with Date Range and CSV Export */}
       <Section style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
@@ -323,7 +323,7 @@ export const ReportsPage: React.FC = () => {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: 'var(--space-2)',
               fontSize: '11.5px',
               color: 'var(--color-on-surface-variant)',
               fontWeight: 600,
@@ -345,7 +345,7 @@ export const ReportsPage: React.FC = () => {
             style={{
               fontSize: '20px',
               fontWeight: 800,
-              margin: '4px 0 0',
+              margin: `var(--space-1) 0 0`,
               color: 'var(--color-on-surface)',
               letterSpacing: '-0.02em',
             }}
@@ -360,14 +360,14 @@ export const ReportsPage: React.FC = () => {
           </h1>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
           {/* Date Filter Chips */}
           <div
             style={{
               display: 'flex',
-              gap: '4px',
+              gap: 'var(--space-1)',
               backgroundColor: 'var(--color-surface-container)',
-              padding: '3px',
+              padding: 'var(--space-1)',
               borderRadius: 'var(--radius-pill)',
             }}
           >
@@ -397,7 +397,7 @@ export const ReportsPage: React.FC = () => {
       {/* KPI Cards Summary */}
       <Section
         stagger
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)' }}
       >
         <MetricCard
           label="Jumlah Good"

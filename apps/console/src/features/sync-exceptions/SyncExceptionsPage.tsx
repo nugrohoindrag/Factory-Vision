@@ -12,7 +12,7 @@ import { useSession } from '../../app/SessionContext.js';
 const api = new FactoryVisionApiClient({ baseUrl: '' });
 
 const inputStyle: React.CSSProperties = {
-  padding: '10px 12px',
+  padding: `var(--space-3) var(--space-3)`,
   borderRadius: 'var(--radius-md, 8px)',
   backgroundColor: 'var(--color-surface-container-high)',
   border: '1px solid var(--color-outline-variant)',
@@ -109,7 +109,7 @@ export const SyncExceptionsPage: React.FC = () => {
   );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '4px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', padding: 'var(--space-1)' }}>
       <div>
         <h1
           style={{
@@ -123,7 +123,7 @@ export const SyncExceptionsPage: React.FC = () => {
         </h1>
         <p
           style={{
-            margin: '4px 0 0',
+            margin: `var(--space-1) 0 0`,
             fontSize: '13px',
             color: 'var(--color-on-surface-variant)',
           }}
@@ -141,9 +141,9 @@ export const SyncExceptionsPage: React.FC = () => {
           <div
             style={{
               display: 'flex',
-              gap: '8px',
+              gap: 'var(--space-2)',
               flexWrap: 'wrap',
-              marginTop: '8px',
+              marginTop: 'var(--space-2)',
             }}
           >
             {summary.map((row) => (
@@ -168,8 +168,8 @@ export const SyncExceptionsPage: React.FC = () => {
         </SurfaceCard>
       )}
 
-      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', gap: '6px' }}>
+      <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
           {STATUS_FILTERS.map((option) => (
             <FilterChip
               key={option.key}
@@ -215,7 +215,7 @@ export const SyncExceptionsPage: React.FC = () => {
         <div
           role="alert"
           style={{
-            padding: '10px 12px',
+            padding: `var(--space-3) var(--space-3)`,
             borderRadius: 'var(--radius-sm, 8px)',
             backgroundColor: 'var(--color-error-container)',
             color: 'var(--color-on-error-container)',
@@ -238,7 +238,7 @@ export const SyncExceptionsPage: React.FC = () => {
           }
         />
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
           {exceptions.map((exception) => (
             <ExceptionRow
               key={exception.id}
@@ -275,16 +275,16 @@ const ExceptionRow: React.FC<{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'flex-start',
-          gap: '12px',
+          gap: 'var(--space-3)',
         }}
       >
         <div style={{ minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
             <span
               style={{
                 fontSize: '10px',
                 fontWeight: 800,
-                padding: '3px 8px',
+                padding: `var(--space-1) var(--space-2)`,
                 borderRadius: '999px',
                 backgroundColor: isVariance
                   ? 'var(--color-warning-container)'
@@ -308,7 +308,7 @@ const ExceptionRow: React.FC<{
 
           <p
             style={{
-              margin: '6px 0 0',
+              margin: `var(--space-2) 0 0`,
               fontSize: '12px',
               color: 'var(--color-on-surface)',
               lineHeight: 1.5,
@@ -319,7 +319,7 @@ const ExceptionRow: React.FC<{
 
           <div
             style={{
-              marginTop: '6px',
+              marginTop: 'var(--space-2)',
               fontSize: '11px',
               color: 'var(--color-on-surface-variant)',
             }}
@@ -331,7 +331,7 @@ const ExceptionRow: React.FC<{
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexShrink: 0 }}>
+        <div style={{ display: 'flex', gap: 'var(--space-1)', alignItems: 'center', flexShrink: 0 }}>
           <Button
             variant="text"
             icon={<Icon name={expanded ? 'expand_less' : 'expand_more'} size={16} />}
@@ -360,8 +360,8 @@ const ExceptionRow: React.FC<{
       {expanded && (
         <div
           style={{
-            marginTop: '12px',
-            paddingTop: '12px',
+            marginTop: 'var(--space-3)',
+            paddingTop: 'var(--space-3)',
             borderTop: '1px solid var(--color-outline-variant)',
             fontSize: '11px',
             color: 'var(--color-on-surface-variant)',
@@ -377,13 +377,13 @@ const ExceptionRow: React.FC<{
               value={`${exception.resolvedAt} oleh ${exception.resolvedBy ?? '—'}`}
             />
           )}
-          <div style={{ marginTop: '8px', fontWeight: 700, color: 'var(--color-on-surface)' }}>
+          <div style={{ marginTop: 'var(--space-2)', fontWeight: 700, color: 'var(--color-on-surface)' }}>
             Isi catatan operator
           </div>
           <pre
             style={{
-              margin: '4px 0 0',
-              padding: '8px 10px',
+              margin: `var(--space-1) 0 0`,
+              padding: `var(--space-2) var(--space-3)`,
               borderRadius: 'var(--radius-sm, 8px)',
               backgroundColor: 'var(--color-surface-container-high)',
               color: 'var(--color-on-surface)',
@@ -400,7 +400,7 @@ const ExceptionRow: React.FC<{
 };
 
 const Detail: React.FC<{ label: string; value: string }> = ({ label, value }) => (
-  <div style={{ display: 'flex', gap: '8px', padding: '2px 0' }}>
+  <div style={{ display: 'flex', gap: 'var(--space-2)', padding: `var(--space-1) 0` }}>
     <span style={{ minWidth: '120px', fontWeight: 700 }}>{label}</span>
     <span style={{ color: 'var(--color-on-surface)', wordBreak: 'break-all' }}>{value}</span>
   </div>
@@ -409,7 +409,7 @@ const Detail: React.FC<{ label: string; value: string }> = ({ label, value }) =>
 const Empty: React.FC<{ label: string }> = ({ label }) => (
   <div
     style={{
-      padding: '32px',
+      padding: 'var(--space-8)',
       textAlign: 'center',
       color: 'var(--color-on-surface-variant)',
       fontSize: '13px',

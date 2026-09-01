@@ -83,7 +83,7 @@ const Pill: React.FC<{ label: string; tone: Tone; title?: string }> = ({ label, 
     title={title}
     style={{
       display: 'inline-flex',
-      padding: '2px 10px',
+      padding: `var(--space-1) var(--space-3)`,
       borderRadius: 'var(--radius-pill)',
       fontSize: '11px',
       fontWeight: 700,
@@ -186,7 +186,7 @@ export const ProductionPlansPage: React.FC = () => {
       header: 'Nomor Plan',
       sortable: true,
       render: (row) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
           <span style={{ fontWeight: 700 }}>{row.planNumber}</span>
           {row.status === ProductionPlanStatus.DRAFT && daysOld(row.createdAt) >= AGEING_DAYS && (
             <span title={`Draft sudah ${daysOld(row.createdAt)} hari; demand ini belum menjadi komitmen.`}>
@@ -255,12 +255,12 @@ export const ProductionPlansPage: React.FC = () => {
   return (
     <Page>
       <Section>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
           <div>
             <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
               Production Plan
             </h1>
-            <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
+            <p style={{ margin: `var(--space-1) 0 0`, fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
               Rencana produksi per periode. Plan yang dikonfirmasi menjadi komitmen dan memindahkan
               Customer Order terkait ke status Planned.
             </p>
@@ -273,8 +273,8 @@ export const ProductionPlansPage: React.FC = () => {
 
       <Section>
         <SurfaceCard padding="md">
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'end' }}>
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-3)', alignItems: 'end' }}>
+            <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
               <FilterChip selected={statusFilter === 'ALL'} onClick={() => setStatusFilter('ALL')}>
                 Semua
               </FilterChip>
@@ -337,11 +337,11 @@ export const ProductionPlansPage: React.FC = () => {
       </Section>
 
       <Dialog isOpen={showCreate} onClose={() => setShowCreate(false)} title="Production Plan Baru">
-        <p style={{ margin: '0 0 12px', fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
+        <p style={{ margin: `0 0 var(--space-3)`, fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
           Plan dibuat dengan status Draft dan nomor PLAN-YYYYMM-NNN. Wizard dapat ditinggalkan dan
           dilanjutkan kapan saja.
         </p>
-        <div style={{ display: 'grid', gap: '12px' }}>
+        <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
           <DateField
             label="Periode mulai"
             type="date"
@@ -356,11 +356,11 @@ export const ProductionPlansPage: React.FC = () => {
           />
         </div>
         {createPlan.isError && (
-          <p style={{ margin: '10px 0 0', fontSize: '12px', color: 'var(--color-error)' }}>
+          <p style={{ margin: `var(--space-3) 0 0`, fontSize: '12px', color: 'var(--color-error)' }}>
             {(createPlan.error as Error).message}
           </p>
         )}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-4)' }}>
           <Button variant="text" onClick={() => setShowCreate(false)}>
             Batal
           </Button>

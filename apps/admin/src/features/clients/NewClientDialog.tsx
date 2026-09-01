@@ -78,7 +78,7 @@ export const NewClientDialog: React.FC<{ onClose: () => void; onCreated: () => v
         backgroundColor: 'color-mix(in srgb, var(--color-scrim) 55%, transparent)',
         display: 'grid',
         placeItems: 'center',
-        padding: '24px',
+        padding: 'var(--space-6)',
         zIndex: 50,
         overflowY: 'auto',
       }}
@@ -94,7 +94,7 @@ export const NewClientDialog: React.FC<{ onClose: () => void; onCreated: () => v
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            marginBottom: '16px',
+            marginBottom: 'var(--space-4)',
           }}
         >
           <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
@@ -117,7 +117,7 @@ export const NewClientDialog: React.FC<{ onClose: () => void; onCreated: () => v
         </div>
 
         <div
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'var(--space-3)' }}
         >
           <Field
             label="Nama Legal"
@@ -200,8 +200,8 @@ export const NewClientDialog: React.FC<{ onClose: () => void; onCreated: () => v
         {selectedPlan && (
           <div
             style={{
-              marginTop: '12px',
-              padding: '10px 12px',
+              marginTop: 'var(--space-3)',
+              padding: `var(--space-3) var(--space-3)`,
               borderRadius: 'var(--radius-sm)',
               backgroundColor: 'var(--color-surface-container)',
               fontSize: '11.5px',
@@ -219,8 +219,8 @@ export const NewClientDialog: React.FC<{ onClose: () => void; onCreated: () => v
           <div
             role="alert"
             style={{
-              marginTop: '12px',
-              padding: '10px 12px',
+              marginTop: 'var(--space-3)',
+              padding: `var(--space-3) var(--space-3)`,
               borderRadius: 'var(--radius-sm)',
               backgroundColor: 'var(--color-error-container)',
               color: 'var(--color-on-error-container)',
@@ -232,7 +232,7 @@ export const NewClientDialog: React.FC<{ onClose: () => void; onCreated: () => v
           </div>
         )}
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-4)' }}>
           <Button variant="text" onClick={onClose}>
             Batal
           </Button>
@@ -247,7 +247,7 @@ export const NewClientDialog: React.FC<{ onClose: () => void; onCreated: () => v
 
 const fieldStyle: React.CSSProperties = {
   width: '100%',
-  padding: '9px 12px',
+  padding: `var(--space-3) var(--space-3)`,
   fontSize: '13px',
   fontFamily: 'var(--font-family)',
   color: 'var(--color-on-surface)',
@@ -263,7 +263,7 @@ const labelStyle: React.CSSProperties = {
   fontSize: '11px',
   fontWeight: 700,
   color: 'var(--color-on-surface-variant)',
-  marginBottom: '5px',
+  marginBottom: 'var(--space-2)',
 };
 
 const Field: React.FC<{

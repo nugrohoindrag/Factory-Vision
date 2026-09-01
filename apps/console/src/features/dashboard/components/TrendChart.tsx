@@ -206,9 +206,9 @@ export const TrendChart: React.FC<TrendChartProps> = ({
       </svg>
 
       {/* Legend */}
-      <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', marginTop: '6px' }}>
+      <div style={{ display: 'flex', gap: 'var(--space-4)', flexWrap: 'wrap', marginTop: 'var(--space-2)' }}>
         {series.map((s) => (
-          <div key={s.key} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div key={s.key} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
             <span
               style={{
                 width: '14px',

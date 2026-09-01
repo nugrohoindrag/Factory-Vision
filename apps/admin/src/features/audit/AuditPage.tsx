@@ -30,7 +30,7 @@ export const AuditPage: React.FC = () => {
   const entries = useQuery({ queryKey: ['internal-audit'], queryFn: () => api.audit({ limit: 200 }) });
 
   return (
-    <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <div style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
       <div>
         <h1
           style={{
@@ -43,7 +43,7 @@ export const AuditPage: React.FC = () => {
         >
           Audit Internal
         </h1>
-        <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
+        <p style={{ margin: `var(--space-1) 0 0`, fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
           Setiap tindakan staf internal, termasuk akses ke data pelanggan
         </p>
       </div>
@@ -75,7 +75,7 @@ export const AuditPage: React.FC = () => {
                   <td style={cell}>
                     <span
                       style={{
-                        padding: '2px 8px',
+                        padding: `var(--space-1) var(--space-2)`,
                         borderRadius: 'var(--radius-full, 999px)',
                         fontSize: '11px',
                         fontWeight: 700,
@@ -101,7 +101,7 @@ export const AuditPage: React.FC = () => {
         {entries.data?.length === 0 && (
           <div
             style={{
-              padding: '24px',
+              padding: 'var(--space-6)',
               textAlign: 'center',
               fontSize: '13px',
               color: 'var(--color-on-surface-variant)',
@@ -122,4 +122,4 @@ function toneFor(action: string): Tone {
   return 'neutral';
 }
 
-const cell: React.CSSProperties = { padding: '9px 12px', whiteSpace: 'nowrap' };
+const cell: React.CSSProperties = { padding: `var(--space-3) var(--space-3)`, whiteSpace: 'nowrap' };

@@ -74,7 +74,7 @@ const RejectionBanner: React.FC = () => {
         style={{
           flexShrink: 0,
           minHeight: '36px',
-          padding: '0 16px',
+          padding: `0 var(--space-4)`,
           borderRadius: 'var(--radius-sm, 8px)',
           border: '1px solid var(--color-on-error)',
           backgroundColor: 'transparent',
@@ -422,7 +422,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0 20px',
+          padding: `0 var(--space-5)`,
           flexShrink: 0,
         }}
       >
@@ -522,7 +522,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
               onClick={handleResolveDowntime}
               style={{
                 minHeight: '38px',
-                padding: '0 18px',
+                padding: `0 var(--space-5)`,
                 borderRadius: 'var(--radius-pill)',
                 backgroundColor: 'var(--color-on-error)',
                 color: 'var(--color-error)',
@@ -1295,7 +1295,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
                 placeholder="Enter units, ..."
                 style={{
                   height: '46px',
-                  padding: '0 14px',
+                  padding: `0 var(--space-4)`,
                   borderRadius: 'var(--radius-md, 8px)',
                   border: '2px solid var(--color-primary)',
                   backgroundColor: 'var(--color-surface-container)',

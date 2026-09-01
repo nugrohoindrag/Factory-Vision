@@ -10,7 +10,7 @@ const api = new FactoryVisionApiClient({ baseUrl: '' });
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  padding: '10px 12px',
+  padding: `var(--space-3) var(--space-3)`,
   borderRadius: 'var(--radius-md, 8px)',
   backgroundColor: 'var(--color-surface-container-high)',
   border: '1px solid var(--color-outline-variant)',
@@ -183,15 +183,15 @@ export const MoldsTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
     machines.find((m) => m.id === id)?.code ?? 'belum terpasang';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+      <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap' }}>
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Cari kode atau nama mold…"
           style={{ ...inputStyle, width: '260px' }}
         />
-        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
           {STATUSES.map((status) => (
             <FilterChip
               key={status}
@@ -222,7 +222,7 @@ export const MoldsTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
         <div
           role="alert"
           style={{
-            padding: '10px 12px',
+            padding: `var(--space-3) var(--space-3)`,
             borderRadius: 'var(--radius-sm, 8px)',
             backgroundColor: 'var(--color-error-container)',
             color: 'var(--color-on-error-container)',
@@ -245,7 +245,7 @@ export const MoldsTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
           }
         />
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
           {visible.map((mold) => {
             const open = expandedId === mold.id;
             const compatibilities = open ? (detail?.compatibilities ?? []) : [];
@@ -258,7 +258,7 @@ export const MoldsTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'flex-start',
-                    gap: '10px',
+                    gap: 'var(--space-3)',
                   }}
                 >
                   <div>
@@ -268,13 +268,13 @@ export const MoldsTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
                       {mold.code} · {mold.name}
                     </div>
                     <div
-                      style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: '2px' }}
+                      style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}
                     >
                       {mold.cavityCount} cavity · mesin {machineName(mold.currentMachineId)}
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                     <StatusPill status={mold.status} />
                     <Button
                       variant="text"
@@ -312,8 +312,8 @@ export const MoldsTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
                 {open && (
                   <div
                     style={{
-                      marginTop: '12px',
-                      paddingTop: '12px',
+                      marginTop: 'var(--space-3)',
+                      paddingTop: 'var(--space-3)',
                       borderTop: '1px solid var(--color-outline-variant)',
                     }}
                   >
@@ -322,7 +322,7 @@ export const MoldsTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        marginBottom: '8px',
+                        marginBottom: 'var(--space-2)',
                       }}
                     >
                       <div
@@ -350,7 +350,7 @@ export const MoldsTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
 
                     <p
                       style={{
-                        margin: '0 0 10px',
+                        margin: `0 0 var(--space-3)`,
                         fontSize: '11px',
                         color: 'var(--color-on-surface-variant)',
                       }}
@@ -363,7 +363,7 @@ export const MoldsTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
                     {compatibilities.length === 0 ? (
                       <Empty label="Belum ada produk yang dikaitkan." />
                     ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
                         {compatibilities.map((compatibility) => (
                           <div
                             key={compatibility.id}
@@ -371,8 +371,8 @@ export const MoldsTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
                               display: 'flex',
                               justifyContent: 'space-between',
                               alignItems: 'center',
-                              gap: '10px',
-                              padding: '8px 10px',
+                              gap: 'var(--space-3)',
+                              padding: `var(--space-2) var(--space-3)`,
                               borderRadius: 'var(--radius-sm, 8px)',
                               border: '1px solid var(--color-outline-variant)',
                               backgroundColor: 'var(--color-surface-container)',
@@ -397,12 +397,12 @@ export const MoldsTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
                                 {compatibility.productName ?? '—'}
                               </div>
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                               <span
                                 style={{
                                   fontSize: '10px',
                                   fontWeight: 700,
-                                  padding: '3px 8px',
+                                  padding: `var(--space-1) var(--space-2)`,
                                   borderRadius: '999px',
                                   backgroundColor: compatibility.active
                                     ? 'var(--color-primary-container)'
@@ -448,7 +448,7 @@ export const MoldsTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
         title={form?.id ? 'Ubah Mold' : 'Tambah Mold'}
       >
         {form && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
             <Field label="Kode">
               <input
                 value={form.code}
@@ -506,7 +506,7 @@ export const MoldsTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
               </select>
             </Field>
 
-            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
               <Button variant="text" onClick={() => setForm(null)}>
                 Batal
               </Button>
@@ -533,7 +533,7 @@ export const MoldsTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
         onClose={() => setAddProductFor(null)}
         title="Tambah Produk Kompatibel"
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
           <p style={{ margin: 0, fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
             Setelah ditambahkan, Work Order untuk produk ini wajib memilih mold sebelum dapat
             dikonfirmasi.
@@ -551,7 +551,7 @@ export const MoldsTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
               ))}
             </select>
           </Field>
-          <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+          <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
             <Button variant="text" onClick={() => setAddProductFor(null)}>
               Batal
             </Button>
@@ -594,7 +594,7 @@ const StatusPill: React.FC<{ status: string }> = ({ status }) => {
       style={{
         fontSize: '10px',
         fontWeight: 800,
-        padding: '4px 10px',
+        padding: `var(--space-1) var(--space-3)`,
         borderRadius: '999px',
         backgroundColor: retired
           ? 'var(--color-surface-container-highest)'
@@ -614,7 +614,7 @@ const StatusPill: React.FC<{ status: string }> = ({ status }) => {
 };
 
 const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
-  <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+  <label style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
     <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface-variant)' }}>
       {label}
     </span>
@@ -625,7 +625,7 @@ const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, 
 const Empty: React.FC<{ label: string }> = ({ label }) => (
   <div
     style={{
-      padding: '20px',
+      padding: 'var(--space-5)',
       textAlign: 'center',
       color: 'var(--color-on-surface-variant)',
       fontSize: '12px',

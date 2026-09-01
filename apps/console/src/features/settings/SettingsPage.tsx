@@ -37,7 +37,7 @@ const api = new FactoryVisionApiClient({ baseUrl: '' });
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  padding: '10px 12px',
+  padding: `var(--space-3) var(--space-3)`,
   borderRadius: 'var(--radius-md)',
   backgroundColor: 'var(--color-surface-container-high)',
   border: '1px solid var(--color-outline-variant)',
@@ -97,8 +97,8 @@ const ProcessFormModal: React.FC<ProcessModalProps> = ({ isOpen, onClose, onSave
       onClose={onClose}
       title={initialData ? `EDIT PROCESS: ${initialData.code}` : 'ADD PRODUCTION PROCESS'}
     >
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
           <div>
             <label
               style={{
@@ -106,7 +106,7 @@ const ProcessFormModal: React.FC<ProcessModalProps> = ({ isOpen, onClose, onSave
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               PROCESS CODE
@@ -127,7 +127,7 @@ const ProcessFormModal: React.FC<ProcessModalProps> = ({ isOpen, onClose, onSave
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               DEFAULT SEQUENCE
@@ -149,7 +149,7 @@ const ProcessFormModal: React.FC<ProcessModalProps> = ({ isOpen, onClose, onSave
               fontSize: '11px',
               fontWeight: 700,
               color: 'var(--color-on-surface-variant)',
-              marginBottom: '4px',
+              marginBottom: 'var(--space-1)',
             }}
           >
             PROCESS NAME
@@ -170,7 +170,7 @@ const ProcessFormModal: React.FC<ProcessModalProps> = ({ isOpen, onClose, onSave
               fontSize: '11px',
               fontWeight: 700,
               color: 'var(--color-on-surface-variant)',
-              marginBottom: '4px',
+              marginBottom: 'var(--space-1)',
             }}
           >
             DESCRIPTION
@@ -191,7 +191,7 @@ const ProcessFormModal: React.FC<ProcessModalProps> = ({ isOpen, onClose, onSave
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               STATUS
@@ -202,7 +202,7 @@ const ProcessFormModal: React.FC<ProcessModalProps> = ({ isOpen, onClose, onSave
             </select>
           </div>
         )}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
           <Button variant="outlined" onClick={onClose}>
             Cancel
           </Button>
@@ -286,7 +286,7 @@ const RoutingFormModal: React.FC<RoutingModalProps> = ({
       onClose={onClose}
       title={initialData ? 'EDIT PRODUCT ROUTING STEP' : 'ADD PRODUCT ROUTING STEP'}
     >
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
         <div>
           <label
             style={{
@@ -294,7 +294,7 @@ const RoutingFormModal: React.FC<RoutingModalProps> = ({
               fontSize: '11px',
               fontWeight: 700,
               color: 'var(--color-on-surface-variant)',
-              marginBottom: '4px',
+              marginBottom: 'var(--space-1)',
             }}
           >
             KODE PRODUK
@@ -308,7 +308,7 @@ const RoutingFormModal: React.FC<RoutingModalProps> = ({
           </select>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '10px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 'var(--space-3)' }}>
           <div>
             <label
               style={{
@@ -316,7 +316,7 @@ const RoutingFormModal: React.FC<RoutingModalProps> = ({
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               PROCESS STAGE
@@ -341,7 +341,7 @@ const RoutingFormModal: React.FC<RoutingModalProps> = ({
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               SEQUENCE #
@@ -356,7 +356,7 @@ const RoutingFormModal: React.FC<RoutingModalProps> = ({
             />
           </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
           <div>
             <label
               style={{
@@ -364,7 +364,7 @@ const RoutingFormModal: React.FC<RoutingModalProps> = ({
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               DEFAULT MACHINE (OPTIONAL)
@@ -385,7 +385,7 @@ const RoutingFormModal: React.FC<RoutingModalProps> = ({
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               STD CYCLE TIME (SEC)
@@ -400,7 +400,7 @@ const RoutingFormModal: React.FC<RoutingModalProps> = ({
             />
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
           <input
             type="checkbox"
             id="routingActive"
@@ -414,7 +414,7 @@ const RoutingFormModal: React.FC<RoutingModalProps> = ({
             Active Routing Step
           </label>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
           <Button variant="outlined" onClick={onClose}>
             Cancel
           </Button>
@@ -477,7 +477,7 @@ const RateFormModal: React.FC<RateModalProps> = ({
       onClose={onClose}
       title={initialData ? 'EDIT MACHINE RATE' : 'ADD PRODUCT × MACHINE CYCLE RATE'}
     >
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
         <div>
           <label
             style={{
@@ -485,7 +485,7 @@ const RateFormModal: React.FC<RateModalProps> = ({
               fontSize: '11px',
               fontWeight: 700,
               color: 'var(--color-on-surface-variant)',
-              marginBottom: '4px',
+              marginBottom: 'var(--space-1)',
             }}
           >
             KODE PRODUK
@@ -505,7 +505,7 @@ const RateFormModal: React.FC<RateModalProps> = ({
               fontSize: '11px',
               fontWeight: 700,
               color: 'var(--color-on-surface-variant)',
-              marginBottom: '4px',
+              marginBottom: 'var(--space-1)',
             }}
           >
             MACHINE
@@ -525,7 +525,7 @@ const RateFormModal: React.FC<RateModalProps> = ({
               fontSize: '11px',
               fontWeight: 700,
               color: 'var(--color-on-surface-variant)',
-              marginBottom: '4px',
+              marginBottom: 'var(--space-1)',
             }}
           >
             IDEAL CYCLE TIME (SEC)
@@ -539,7 +539,7 @@ const RateFormModal: React.FC<RateModalProps> = ({
             style={inputStyle}
           />
         </div>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
           <Button variant="outlined" onClick={onClose}>
             Cancel
           </Button>
@@ -621,7 +621,7 @@ const BatchFormModal: React.FC<BatchModalProps> = ({
       onClose={onClose}
       title={initialData ? `EDIT BATCH: ${initialData.batchNumber}` : 'CREATE PRODUCTION BATCH / LOT'}
     >
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
         <div>
           <label
             style={{
@@ -629,7 +629,7 @@ const BatchFormModal: React.FC<BatchModalProps> = ({
               fontSize: '11px',
               fontWeight: 700,
               color: 'var(--color-on-surface-variant)',
-              marginBottom: '4px',
+              marginBottom: 'var(--space-1)',
             }}
           >
             BATCH / LOT NUMBER
@@ -649,7 +649,7 @@ const BatchFormModal: React.FC<BatchModalProps> = ({
               fontSize: '11px',
               fontWeight: 700,
               color: 'var(--color-on-surface-variant)',
-              marginBottom: '4px',
+              marginBottom: 'var(--space-1)',
             }}
           >
             KODE PRODUK
@@ -679,7 +679,7 @@ const BatchFormModal: React.FC<BatchModalProps> = ({
               fontSize: '11px',
               fontWeight: 700,
               color: 'var(--color-on-surface-variant)',
-              marginBottom: '4px',
+              marginBottom: 'var(--space-1)',
             }}
           >
             WORK ORDER
@@ -701,7 +701,7 @@ const BatchFormModal: React.FC<BatchModalProps> = ({
           </select>
           <p
             style={{
-              margin: '4px 0 0',
+              margin: `var(--space-1) 0 0`,
               fontSize: '10.5px',
               color: 'var(--color-on-surface-variant)',
             }}
@@ -710,7 +710,7 @@ const BatchFormModal: React.FC<BatchModalProps> = ({
             melekat pada work order tertentu.
           </p>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
           <div>
             <label
               style={{
@@ -718,7 +718,7 @@ const BatchFormModal: React.FC<BatchModalProps> = ({
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               PRODUCTION ORDER
@@ -739,7 +739,7 @@ const BatchFormModal: React.FC<BatchModalProps> = ({
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               PRODUCTION DATE
@@ -760,7 +760,7 @@ const BatchFormModal: React.FC<BatchModalProps> = ({
               fontSize: '11px',
               fontWeight: 700,
               color: 'var(--color-on-surface-variant)',
-              marginBottom: '4px',
+              marginBottom: 'var(--space-1)',
             }}
           >
             BATCH STATUS
@@ -772,7 +772,7 @@ const BatchFormModal: React.FC<BatchModalProps> = ({
             <option value="SCRAPPED">SCRAPPED</option>
           </select>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
           <Button variant="outlined" onClick={onClose}>
             Cancel
           </Button>
@@ -836,7 +836,7 @@ const ProductFormModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave
       onClose={onClose}
       title={initialData ? `Edit Produk: ${initialData.sku}` : 'Tambah Produk'}
     >
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
         <div>
           <label
             style={{
@@ -844,7 +844,7 @@ const ProductFormModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave
               fontSize: '11px',
               fontWeight: 700,
               color: 'var(--color-on-surface-variant)',
-              marginBottom: '4px',
+              marginBottom: 'var(--space-1)',
             }}
           >
             KODE PRODUK
@@ -865,7 +865,7 @@ const ProductFormModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave
               fontSize: '11px',
               fontWeight: 700,
               color: 'var(--color-on-surface-variant)',
-              marginBottom: '4px',
+              marginBottom: 'var(--space-1)',
             }}
           >
             PRODUCT NAME
@@ -879,7 +879,7 @@ const ProductFormModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave
             style={inputStyle}
           />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
           <div>
             <label
               style={{
@@ -887,7 +887,7 @@ const ProductFormModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               IDEAL CYCLE TIME (SEC / PCS)
@@ -909,7 +909,7 @@ const ProductFormModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               UNIT OF MEASURE
@@ -930,7 +930,7 @@ const ProductFormModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               STATUS
@@ -941,7 +941,7 @@ const ProductFormModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave
             </select>
           </div>
         )}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
           <Button variant="outlined" onClick={onClose}>
             Cancel
           </Button>
@@ -1005,7 +1005,7 @@ const MachineFormModal: React.FC<MachineModalProps> = ({ isOpen, onClose, onSave
       onClose={onClose}
       title={initialData ? `EDIT MACHINE: ${initialData.code}` : 'REGISTER PLANT MACHINERY'}
     >
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
         <div>
           <label
             style={{
@@ -1013,7 +1013,7 @@ const MachineFormModal: React.FC<MachineModalProps> = ({ isOpen, onClose, onSave
               fontSize: '11px',
               fontWeight: 700,
               color: 'var(--color-on-surface-variant)',
-              marginBottom: '4px',
+              marginBottom: 'var(--space-1)',
             }}
           >
             MACHINE CODE
@@ -1034,7 +1034,7 @@ const MachineFormModal: React.FC<MachineModalProps> = ({ isOpen, onClose, onSave
               fontSize: '11px',
               fontWeight: 700,
               color: 'var(--color-on-surface-variant)',
-              marginBottom: '4px',
+              marginBottom: 'var(--space-1)',
             }}
           >
             MACHINE NAME
@@ -1048,7 +1048,7 @@ const MachineFormModal: React.FC<MachineModalProps> = ({ isOpen, onClose, onSave
             style={inputStyle}
           />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
           <div>
             <label
               style={{
@@ -1056,7 +1056,7 @@ const MachineFormModal: React.FC<MachineModalProps> = ({ isOpen, onClose, onSave
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               WORK CENTER
@@ -1075,7 +1075,7 @@ const MachineFormModal: React.FC<MachineModalProps> = ({ isOpen, onClose, onSave
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               RATED CYCLE TIME (SEC)
@@ -1098,7 +1098,7 @@ const MachineFormModal: React.FC<MachineModalProps> = ({ isOpen, onClose, onSave
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               STATUS
@@ -1109,7 +1109,7 @@ const MachineFormModal: React.FC<MachineModalProps> = ({ isOpen, onClose, onSave
             </select>
           </div>
         )}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
           <Button variant="outlined" onClick={onClose}>
             Cancel
           </Button>
@@ -1169,7 +1169,7 @@ const LineFormModal: React.FC<LineModalProps> = ({ isOpen, onClose, onSave, isLo
       onClose={onClose}
       title={initialData ? `EDIT LINE: ${initialData.code}` : 'ADD PRODUCTION LINE'}
     >
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
         <div>
           <label
             style={{
@@ -1177,7 +1177,7 @@ const LineFormModal: React.FC<LineModalProps> = ({ isOpen, onClose, onSave, isLo
               fontSize: '11px',
               fontWeight: 700,
               color: 'var(--color-on-surface-variant)',
-              marginBottom: '4px',
+              marginBottom: 'var(--space-1)',
             }}
           >
             LINE CODE
@@ -1198,7 +1198,7 @@ const LineFormModal: React.FC<LineModalProps> = ({ isOpen, onClose, onSave, isLo
               fontSize: '11px',
               fontWeight: 700,
               color: 'var(--color-on-surface-variant)',
-              marginBottom: '4px',
+              marginBottom: 'var(--space-1)',
             }}
           >
             LINE NAME
@@ -1212,7 +1212,7 @@ const LineFormModal: React.FC<LineModalProps> = ({ isOpen, onClose, onSave, isLo
             style={inputStyle}
           />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
           <div>
             <label
               style={{
@@ -1220,7 +1220,7 @@ const LineFormModal: React.FC<LineModalProps> = ({ isOpen, onClose, onSave, isLo
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               PLANNED TIME / SHIFT (MINS)
@@ -1242,7 +1242,7 @@ const LineFormModal: React.FC<LineModalProps> = ({ isOpen, onClose, onSave, isLo
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               STATUS
@@ -1253,7 +1253,7 @@ const LineFormModal: React.FC<LineModalProps> = ({ isOpen, onClose, onSave, isLo
             </select>
           </div>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
           <Button variant="outlined" onClick={onClose}>
             Cancel
           </Button>
@@ -1321,7 +1321,7 @@ const OperatorFormModal: React.FC<OperatorModalProps> = ({
       onClose={onClose}
       title={initialData ? `EDIT OPERATOR: ${initialData.name}` : 'REGISTER SHOP FLOOR OPERATOR'}
     >
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
         <div>
           <label
             style={{
@@ -1329,7 +1329,7 @@ const OperatorFormModal: React.FC<OperatorModalProps> = ({
               fontSize: '11px',
               fontWeight: 700,
               color: 'var(--color-on-surface-variant)',
-              marginBottom: '4px',
+              marginBottom: 'var(--space-1)',
             }}
           >
             EMPLOYEE BADGE / ID
@@ -1350,7 +1350,7 @@ const OperatorFormModal: React.FC<OperatorModalProps> = ({
               fontSize: '11px',
               fontWeight: 700,
               color: 'var(--color-on-surface-variant)',
-              marginBottom: '4px',
+              marginBottom: 'var(--space-1)',
             }}
           >
             FULL NAME
@@ -1364,7 +1364,7 @@ const OperatorFormModal: React.FC<OperatorModalProps> = ({
             style={inputStyle}
           />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
           <div>
             <label
               style={{
@@ -1372,7 +1372,7 @@ const OperatorFormModal: React.FC<OperatorModalProps> = ({
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               DEFAULT LINE
@@ -1392,7 +1392,7 @@ const OperatorFormModal: React.FC<OperatorModalProps> = ({
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               STATUS
@@ -1403,7 +1403,7 @@ const OperatorFormModal: React.FC<OperatorModalProps> = ({
             </select>
           </div>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
           <Button variant="outlined" onClick={onClose}>
             Cancel
           </Button>
@@ -1477,8 +1477,8 @@ const DowntimeFormModal: React.FC<DowntimeModalProps> = ({
       onClose={onClose}
       title={initialData ? `EDIT DOWNTIME REASON: ${initialData.code}` : 'ADD DOWNTIME / LOSS REASON'}
     >
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
           <div>
             <label
               style={{
@@ -1486,7 +1486,7 @@ const DowntimeFormModal: React.FC<DowntimeModalProps> = ({
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               LOSS CODE
@@ -1507,7 +1507,7 @@ const DowntimeFormModal: React.FC<DowntimeModalProps> = ({
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               LOSS CATEGORY
@@ -1529,7 +1529,7 @@ const DowntimeFormModal: React.FC<DowntimeModalProps> = ({
               fontSize: '11px',
               fontWeight: 700,
               color: 'var(--color-on-surface-variant)',
-              marginBottom: '4px',
+              marginBottom: 'var(--space-1)',
             }}
           >
             REASON NAME
@@ -1550,7 +1550,7 @@ const DowntimeFormModal: React.FC<DowntimeModalProps> = ({
               fontSize: '11px',
               fontWeight: 700,
               color: 'var(--color-on-surface-variant)',
-              marginBottom: '4px',
+              marginBottom: 'var(--space-1)',
             }}
           >
             DESCRIPTION / ROOT CAUSE SCOPE
@@ -1562,7 +1562,7 @@ const DowntimeFormModal: React.FC<DowntimeModalProps> = ({
             style={{ ...inputStyle, resize: 'vertical' }}
           />
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
           <input
             type="checkbox"
             id="dtPlanned"
@@ -1576,7 +1576,7 @@ const DowntimeFormModal: React.FC<DowntimeModalProps> = ({
             Planned Downtime (e.g. Scheduled PM, Die Change, Warm-up)
           </label>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
           <Button variant="outlined" onClick={onClose}>
             Cancel
           </Button>
@@ -1640,8 +1640,8 @@ const RejectFormModal: React.FC<RejectModalProps> = ({ isOpen, onClose, onSave, 
       onClose={onClose}
       title={initialData ? `EDIT DEFECT CODE: ${initialData.code}` : 'ADD REJECT / DEFECT CODE'}
     >
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
           <div>
             <label
               style={{
@@ -1649,7 +1649,7 @@ const RejectFormModal: React.FC<RejectModalProps> = ({ isOpen, onClose, onSave, 
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               DEFECT CODE
@@ -1670,7 +1670,7 @@ const RejectFormModal: React.FC<RejectModalProps> = ({ isOpen, onClose, onSave, 
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               QC CATEGORY
@@ -1692,7 +1692,7 @@ const RejectFormModal: React.FC<RejectModalProps> = ({ isOpen, onClose, onSave, 
               fontSize: '11px',
               fontWeight: 700,
               color: 'var(--color-on-surface-variant)',
-              marginBottom: '4px',
+              marginBottom: 'var(--space-1)',
             }}
           >
             DEFECT NAME
@@ -1713,7 +1713,7 @@ const RejectFormModal: React.FC<RejectModalProps> = ({ isOpen, onClose, onSave, 
               fontSize: '11px',
               fontWeight: 700,
               color: 'var(--color-on-surface-variant)',
-              marginBottom: '4px',
+              marginBottom: 'var(--space-1)',
             }}
           >
             INSPECTION CRITERIA / DESCRIPTION
@@ -1725,7 +1725,7 @@ const RejectFormModal: React.FC<RejectModalProps> = ({ isOpen, onClose, onSave, 
             style={{ ...inputStyle, resize: 'vertical' }}
           />
         </div>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
           <Button variant="outlined" onClick={onClose}>
             Cancel
           </Button>
@@ -1802,7 +1802,7 @@ const UserFormModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, isLo
       onClose={onClose}
       title={initialData ? `EDIT USER: ${initialData.name}` : 'INVITE / CREATE APPLICATION USER'}
     >
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
         <div>
           <label
             style={{
@@ -1810,7 +1810,7 @@ const UserFormModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, isLo
               fontSize: '11px',
               fontWeight: 700,
               color: 'var(--color-on-surface-variant)',
-              marginBottom: '4px',
+              marginBottom: 'var(--space-1)',
             }}
           >
             FULL NAME
@@ -1831,7 +1831,7 @@ const UserFormModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, isLo
               fontSize: '11px',
               fontWeight: 700,
               color: 'var(--color-on-surface-variant)',
-              marginBottom: '4px',
+              marginBottom: 'var(--space-1)',
             }}
           >
             EMAIL ADDRESS
@@ -1845,7 +1845,7 @@ const UserFormModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, isLo
             style={inputStyle}
           />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
           <div>
             <label
               style={{
@@ -1853,7 +1853,7 @@ const UserFormModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, isLo
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               SYSTEM ROLE
@@ -1885,7 +1885,7 @@ const UserFormModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, isLo
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               DATA SCOPE LEVEL
@@ -1913,7 +1913,7 @@ const UserFormModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, isLo
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               ACCOUNT STATUS
@@ -1932,7 +1932,7 @@ const UserFormModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, isLo
             </select>
             {status !== 'ACTIVE' && (
               <div
-                style={{ fontSize: '10.5px', color: 'var(--color-warning)', marginTop: '4px', fontWeight: 600 }}
+                style={{ fontSize: '10.5px', color: 'var(--color-warning)', marginTop: 'var(--space-1)', fontWeight: 600 }}
               >
                 User tidak dapat masuk ke sistem selama status bukan ACTIVE.
               </div>
@@ -1940,7 +1940,7 @@ const UserFormModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, isLo
           </div>
         )}
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
           <Button variant="outlined" onClick={onClose}>
             Cancel
           </Button>
@@ -2012,7 +2012,7 @@ const DeviceFormModal: React.FC<DeviceModalProps> = ({
       onClose={onClose}
       title={initialData ? `EDIT TERMINAL: ${initialData.deviceCode}` : 'REGISTER SHOP FLOOR TABLET TERMINAL'}
     >
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
         <div>
           <label
             style={{
@@ -2020,7 +2020,7 @@ const DeviceFormModal: React.FC<DeviceModalProps> = ({
               fontSize: '11px',
               fontWeight: 700,
               color: 'var(--color-on-surface-variant)',
-              marginBottom: '4px',
+              marginBottom: 'var(--space-1)',
             }}
           >
             DEVICE CODE / ASSET TAG
@@ -2041,7 +2041,7 @@ const DeviceFormModal: React.FC<DeviceModalProps> = ({
               fontSize: '11px',
               fontWeight: 700,
               color: 'var(--color-on-surface-variant)',
-              marginBottom: '4px',
+              marginBottom: 'var(--space-1)',
             }}
           >
             TERMINAL NAME / LOCATION
@@ -2055,7 +2055,7 @@ const DeviceFormModal: React.FC<DeviceModalProps> = ({
             style={inputStyle}
           />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
           <div>
             <label
               style={{
@@ -2063,7 +2063,7 @@ const DeviceFormModal: React.FC<DeviceModalProps> = ({
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               ASSIGNED PRODUCTION LINE
@@ -2087,7 +2087,7 @@ const DeviceFormModal: React.FC<DeviceModalProps> = ({
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               STATIC IP ADDRESS
@@ -2109,7 +2109,7 @@ const DeviceFormModal: React.FC<DeviceModalProps> = ({
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               NETWORK STATUS
@@ -2121,7 +2121,7 @@ const DeviceFormModal: React.FC<DeviceModalProps> = ({
             </select>
           </div>
         )}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
           <Button variant="outlined" onClick={onClose}>
             Cancel
           </Button>
@@ -2705,7 +2705,7 @@ export const SettingsPage: React.FC = () => {
       render: (p) => (
         <span
           style={{
-            padding: '2px 8px',
+            padding: `var(--space-1) var(--space-2)`,
             borderRadius: 'var(--radius-pill)',
             fontSize: '11px',
             fontWeight: 700,
@@ -2723,7 +2723,7 @@ export const SettingsPage: React.FC = () => {
       key: 'actions',
       header: 'Aksi',
       render: (p) => (
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
           <Button
             variant="tonal"
             size="sm"
@@ -2802,7 +2802,7 @@ export const SettingsPage: React.FC = () => {
       render: (r) => (
         <span
           style={{
-            padding: '2px 8px',
+            padding: `var(--space-1) var(--space-2)`,
             borderRadius: 'var(--radius-pill)',
             fontSize: '11px',
             fontWeight: 700,
@@ -2818,7 +2818,7 @@ export const SettingsPage: React.FC = () => {
       key: 'actions',
       header: 'Aksi',
       render: (r) => (
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
           <Button
             variant="tonal"
             size="sm"
@@ -2880,7 +2880,7 @@ export const SettingsPage: React.FC = () => {
       key: 'actions',
       header: 'Aksi',
       render: (r) => (
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
           <Button
             variant="tonal"
             size="sm"
@@ -2935,7 +2935,7 @@ export const SettingsPage: React.FC = () => {
       render: (b) => (
         <span
           style={{
-            padding: '2px 8px',
+            padding: `var(--space-1) var(--space-2)`,
             borderRadius: 'var(--radius-pill)',
             fontSize: '11px',
             fontWeight: 700,
@@ -2961,7 +2961,7 @@ export const SettingsPage: React.FC = () => {
       key: 'actions',
       header: 'Aksi',
       render: (b) => (
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
           <Button
             variant="tonal"
             size="sm"
@@ -3000,7 +3000,7 @@ export const SettingsPage: React.FC = () => {
       render: (p) => (
         <span
           style={{
-            padding: '2px 8px',
+            padding: `var(--space-1) var(--space-2)`,
             borderRadius: 'var(--radius-pill)',
             fontSize: '11px',
             fontWeight: 700,
@@ -3018,7 +3018,7 @@ export const SettingsPage: React.FC = () => {
       key: 'actions',
       header: 'Aksi',
       render: (p) => (
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
           <Button
             variant="tonal"
             size="sm"
@@ -3064,7 +3064,7 @@ export const SettingsPage: React.FC = () => {
       render: (m) => (
         <span
           style={{
-            padding: '2px 8px',
+            padding: `var(--space-1) var(--space-2)`,
             borderRadius: 'var(--radius-pill)',
             fontSize: '11px',
             fontWeight: 700,
@@ -3082,7 +3082,7 @@ export const SettingsPage: React.FC = () => {
       key: 'actions',
       header: 'Aksi',
       render: (m) => (
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
           <Button
             variant="tonal"
             size="sm"
@@ -3127,7 +3127,7 @@ export const SettingsPage: React.FC = () => {
       render: (l) => (
         <span
           style={{
-            padding: '2px 8px',
+            padding: `var(--space-1) var(--space-2)`,
             borderRadius: 'var(--radius-pill)',
             fontSize: '11px',
             fontWeight: 700,
@@ -3145,7 +3145,7 @@ export const SettingsPage: React.FC = () => {
       key: 'actions',
       header: 'Aksi',
       render: (l) => (
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
           <Button
             variant="tonal"
             size="sm"
@@ -3221,7 +3221,7 @@ export const SettingsPage: React.FC = () => {
       render: (o) => (
         <span
           style={{
-            padding: '2px 8px',
+            padding: `var(--space-1) var(--space-2)`,
             borderRadius: 'var(--radius-pill)',
             fontSize: '11px',
             fontWeight: 700,
@@ -3239,7 +3239,7 @@ export const SettingsPage: React.FC = () => {
       key: 'actions',
       header: 'Aksi',
       render: (o) => (
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
           <Button
             variant="tonal"
             size="sm"
@@ -3294,7 +3294,7 @@ export const SettingsPage: React.FC = () => {
       render: (dt) => (
         <span
           style={{
-            padding: '2px 8px',
+            padding: `var(--space-1) var(--space-2)`,
             borderRadius: 'var(--radius-pill)',
             fontSize: '11px',
             fontWeight: 800,
@@ -3326,7 +3326,7 @@ export const SettingsPage: React.FC = () => {
       key: 'actions',
       header: 'Aksi',
       render: (dt) => (
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
           <Button
             variant="tonal"
             size="sm"
@@ -3367,7 +3367,7 @@ export const SettingsPage: React.FC = () => {
       render: (rej) => (
         <span
           style={{
-            padding: '2px 8px',
+            padding: `var(--space-1) var(--space-2)`,
             borderRadius: 'var(--radius-pill)',
             fontSize: '11px',
             fontWeight: 800,
@@ -3388,7 +3388,7 @@ export const SettingsPage: React.FC = () => {
       key: 'actions',
       header: 'Aksi',
       render: (rej) => (
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
           <Button
             variant="tonal"
             size="sm"
@@ -3429,7 +3429,7 @@ export const SettingsPage: React.FC = () => {
       render: (u) => (
         <span
           style={{
-            padding: '2px 8px',
+            padding: `var(--space-1) var(--space-2)`,
             borderRadius: 'var(--radius-pill)',
             fontSize: '11px',
             fontWeight: 800,
@@ -3452,7 +3452,7 @@ export const SettingsPage: React.FC = () => {
       render: (u) => (
         <span
           style={{
-            padding: '2px 8px',
+            padding: `var(--space-1) var(--space-2)`,
             borderRadius: 'var(--radius-pill)',
             fontSize: '11px',
             fontWeight: 700,
@@ -3470,7 +3470,7 @@ export const SettingsPage: React.FC = () => {
       key: 'actions',
       header: 'Aksi',
       render: (u) => (
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
           <Button
             variant="tonal"
             size="sm"
@@ -3524,7 +3524,7 @@ export const SettingsPage: React.FC = () => {
       key: 'actions',
       header: 'Aksi',
       render: (d) => (
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
           <Button
             variant="tonal"
             size="sm"
@@ -3602,7 +3602,7 @@ export const SettingsPage: React.FC = () => {
   };
 
   return (
-    <Page style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Page style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
       {/* Header with Direct Action Trigger */}
       <Section
         style={{
@@ -3610,7 +3610,7 @@ export const SettingsPage: React.FC = () => {
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: '12px',
+          gap: 'var(--space-3)',
         }}
       >
         <div>
@@ -3618,7 +3618,7 @@ export const SettingsPage: React.FC = () => {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: 'var(--space-2)',
               fontSize: '11.5px',
               color: 'var(--color-on-surface-variant)',
               fontWeight: 600,
@@ -3630,7 +3630,7 @@ export const SettingsPage: React.FC = () => {
             style={{
               fontSize: '20px',
               fontWeight: 800,
-              margin: '4px 0 0',
+              margin: `var(--space-1) 0 0`,
               color: 'var(--color-on-surface)',
               letterSpacing: '-0.02em',
             }}
@@ -3639,7 +3639,7 @@ export const SettingsPage: React.FC = () => {
           </h1>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
           {activeTab === 'processes' && (
             <Button
               variant="filled"
@@ -3892,7 +3892,7 @@ export const SettingsPage: React.FC = () => {
             zIndex: 9999,
             backgroundColor: 'var(--color-success-container)',
             color: 'var(--color-on-success-container)',
-            padding: '12px 20px',
+            padding: `var(--space-3) var(--space-5)`,
             borderRadius: 'var(--radius-md)',
             fontSize: '13px',
             fontWeight: 600,
@@ -3908,12 +3908,12 @@ export const SettingsPage: React.FC = () => {
         title={pinOperator ? `Setel PIN — ${pinOperator.name}` : 'Setel PIN'}
         maxWidth="440px"
       >
-        <p style={{ margin: '0 0 14px', fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
+        <p style={{ margin: `0 0 var(--space-4)`, fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
           PIN 4–8 digit untuk masuk ke terminal shop floor dengan nomor karyawan{' '}
           <strong>{pinOperator?.employeeNumber}</strong>. PIN lama langsung tidak berlaku, dan
           perubahan tercatat di audit log.
         </p>
-        <div style={{ display: 'grid', gap: '12px' }}>
+        <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
           <div>
             <label
               style={{
@@ -3921,7 +3921,7 @@ export const SettingsPage: React.FC = () => {
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               PIN BARU
@@ -3942,7 +3942,7 @@ export const SettingsPage: React.FC = () => {
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               ULANGI PIN
@@ -3958,14 +3958,14 @@ export const SettingsPage: React.FC = () => {
           </div>
         </div>
         {pinError && (
-          <p style={{ margin: '10px 0 0', fontSize: '12px', color: 'var(--color-error)' }}>{pinError}</p>
+          <p style={{ margin: `var(--space-3) 0 0`, fontSize: '12px', color: 'var(--color-error)' }}>{pinError}</p>
         )}
         {pinValue && pinConfirm && pinValue !== pinConfirm && (
-          <p style={{ margin: '10px 0 0', fontSize: '12px', color: 'var(--color-error)' }}>
+          <p style={{ margin: `var(--space-3) 0 0`, fontSize: '12px', color: 'var(--color-error)' }}>
             Kedua PIN belum sama.
           </p>
         )}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '18px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-5)' }}>
           <Button variant="text" onClick={() => setPinOperator(null)}>
             Batal
           </Button>
@@ -4315,12 +4315,12 @@ export const SettingsPage: React.FC = () => {
             zIndex: 9999,
             backgroundColor: 'var(--color-inverse-surface)',
             color: 'var(--color-inverse-on-surface)',
-            padding: '12px 20px',
+            padding: `var(--space-3) var(--space-5)`,
             borderRadius: 'var(--radius-md)',
             boxShadow: 'var(--elevation-3)',
             display: 'flex',
             alignItems: 'center',
-            gap: '10px',
+            gap: 'var(--space-3)',
             fontSize: '13px',
             fontWeight: 600,
             animation: 'fadeIn 0.2s ease',

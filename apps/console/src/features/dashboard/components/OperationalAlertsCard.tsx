@@ -41,20 +41,20 @@ export const OperationalAlertsCard: React.FC<OperationalAlertsCardProps> = ({
   const visible = alerts.slice(0, maxVisible);
 
   return (
-    <SurfaceCard padding="md" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
+    <SurfaceCard padding="md" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 'var(--space-3)' }}>
         <div>
           <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 700 }}>Operational Alerts</h3>
-          <div style={{ fontSize: '10.5px', color: 'var(--color-on-surface-variant)', marginTop: '2px' }}>
+          <div style={{ fontSize: '10.5px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}>
             Kondisi yang membutuhkan perhatian sekarang
           </div>
         </div>
         {!isLoading && alerts.length > 0 && (
-          <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', gap: 'var(--space-2)', flexShrink: 0 }}>
             {critical > 0 && (
               <span
                 style={{
-                  padding: '2px 8px',
+                  padding: `var(--space-1) var(--space-2)`,
                   borderRadius: 'var(--radius-pill)',
                   fontSize: '10px',
                   fontWeight: 800,
@@ -68,7 +68,7 @@ export const OperationalAlertsCard: React.FC<OperationalAlertsCardProps> = ({
             {warning > 0 && (
               <span
                 style={{
-                  padding: '2px 8px',
+                  padding: `var(--space-1) var(--space-2)`,
                   borderRadius: 'var(--radius-pill)',
                   fontSize: '10px',
                   fontWeight: 800,
@@ -90,8 +90,8 @@ export const OperationalAlertsCard: React.FC<OperationalAlertsCardProps> = ({
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
-            padding: '11px 10px',
+            gap: 'var(--space-2)',
+            padding: `var(--space-3) var(--space-3)`,
             borderRadius: 'var(--radius-sm, 6px)',
             backgroundColor: 'var(--color-surface-container)',
             fontSize: '12px',
@@ -103,7 +103,7 @@ export const OperationalAlertsCard: React.FC<OperationalAlertsCardProps> = ({
         </div>
       ) : (
         <>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
             {visible.map((alert) => {
               const tone = SEVERITY_TONE[alert.severity];
               return (
@@ -112,8 +112,8 @@ export const OperationalAlertsCard: React.FC<OperationalAlertsCardProps> = ({
                   style={{
                     display: 'flex',
                     alignItems: 'flex-start',
-                    gap: '10px',
-                    padding: '8px 10px',
+                    gap: 'var(--space-3)',
+                    padding: `var(--space-2) var(--space-3)`,
                     borderRadius: 'var(--radius-sm, 6px)',
                     backgroundColor: 'var(--color-surface-container)',
                     borderLeft: `3px solid ${toneColor[tone]}`,
@@ -126,7 +126,7 @@ export const OperationalAlertsCard: React.FC<OperationalAlertsCardProps> = ({
                       style={{
                         fontSize: '11px',
                         color: 'var(--color-on-surface-variant)',
-                        marginTop: '2px',
+                        marginTop: 'var(--space-1)',
                       }}
                     >
                       {alert.detail}
@@ -139,7 +139,7 @@ export const OperationalAlertsCard: React.FC<OperationalAlertsCardProps> = ({
                       style={{
                         display: 'inline-flex',
                         alignItems: 'center',
-                        gap: '2px',
+                        gap: 'var(--space-1)',
                         border: 'none',
                         backgroundColor: 'transparent',
                         color: 'var(--color-primary)',
@@ -148,7 +148,7 @@ export const OperationalAlertsCard: React.FC<OperationalAlertsCardProps> = ({
                         cursor: 'pointer',
                         whiteSpace: 'nowrap',
                         flexShrink: 0,
-                        padding: '2px 0',
+                        padding: `var(--space-1) 0`,
                       }}
                     >
                       Detail

@@ -126,7 +126,7 @@ export const CustomerMasterPage: React.FC = () => {
         <span
           style={{
             display: 'inline-flex',
-            padding: '2px 10px',
+            padding: `var(--space-1) var(--space-3)`,
             borderRadius: 'var(--radius-pill)',
             fontSize: '11px',
             fontWeight: 700,
@@ -142,7 +142,7 @@ export const CustomerMasterPage: React.FC = () => {
       key: 'actions',
       header: '',
       render: (row) => (
-        <div style={{ display: 'flex', gap: '4px' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
           <Button variant="text" size="sm" onClick={() => openEdit(row)}>
             Ubah
           </Button>
@@ -157,12 +157,12 @@ export const CustomerMasterPage: React.FC = () => {
   return (
     <Page>
       <Section>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
           <div>
             <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
               Master Customer
             </h1>
-            <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
+            <p style={{ margin: `var(--space-1) 0 0`, fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
               Kode unik per tenant. Customer nonaktif tidak muncul saat membuat order baru, tetapi tetap
               terbaca pada order lama.
             </p>
@@ -211,7 +211,7 @@ export const CustomerMasterPage: React.FC = () => {
         title={editing ? `Ubah ${editing.code}` : 'Customer Baru'}
         maxWidth="620px"
       >
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
           <FilledTextField
             label="Kode"
             value={form.code}
@@ -252,10 +252,10 @@ export const CustomerMasterPage: React.FC = () => {
         </div>
 
         {formError && (
-          <p style={{ margin: '12px 0 0', fontSize: '12px', color: 'var(--color-error)' }}>{formError}</p>
+          <p style={{ margin: `var(--space-3) 0 0`, fontSize: '12px', color: 'var(--color-error)' }}>{formError}</p>
         )}
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-4)' }}>
           <Button variant="text" onClick={() => setShowForm(false)}>
             Batal
           </Button>

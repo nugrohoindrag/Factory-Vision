@@ -10,7 +10,7 @@ const api = new FactoryVisionApiClient({ baseUrl: '' });
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  padding: '10px 12px',
+  padding: `var(--space-3) var(--space-3)`,
   borderRadius: 'var(--radius-md, 8px)',
   backgroundColor: 'var(--color-surface-container-high)',
   border: '1px solid var(--color-outline-variant)',
@@ -93,7 +93,7 @@ export const WorkCentersTab: React.FC<{ onToast: (message: string) => void }> = 
   const orphaned = machines.filter((m) => !workCenters.some((wc) => wc.id === m.workCenterId));
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
       {editable && (
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <Button
@@ -110,7 +110,7 @@ export const WorkCentersTab: React.FC<{ onToast: (message: string) => void }> = 
         <div
           role="alert"
           style={{
-            padding: '10px 12px',
+            padding: `var(--space-3) var(--space-3)`,
             borderRadius: 'var(--radius-sm, 8px)',
             backgroundColor: 'var(--color-error-container)',
             color: 'var(--color-on-error-container)',
@@ -127,7 +127,7 @@ export const WorkCentersTab: React.FC<{ onToast: (message: string) => void }> = 
           <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
             {orphaned.length} mesin tanpa work center valid
           </div>
-          <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
+          <p style={{ margin: `var(--space-1) 0 0`, fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
             {orphaned.map((m) => m.code).join(', ')}, mesin ini tidak akan muncul pada analitik per line karena
             tidak terhubung ke production line manapun.
           </p>
@@ -142,14 +142,14 @@ export const WorkCentersTab: React.FC<{ onToast: (message: string) => void }> = 
             <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
               {line.name}
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginBottom: '10px' }}>
+            <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginBottom: 'var(--space-3)' }}>
               {line.code} · {centers.length} work center
             </div>
 
             {centers.length === 0 ? (
               <Empty label="Belum ada work center pada line ini." />
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
                 {centers.map((center) => {
                   const centerMachines = machines.filter((m) => m.workCenterId === center.id);
                   return (
@@ -159,8 +159,8 @@ export const WorkCentersTab: React.FC<{ onToast: (message: string) => void }> = 
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'flex-start',
-                        gap: '10px',
-                        padding: '10px 12px',
+                        gap: 'var(--space-3)',
+                        padding: `var(--space-3) var(--space-3)`,
                         borderRadius: 'var(--radius-sm, 8px)',
                         border: '1px solid var(--color-outline-variant)',
                         backgroundColor: 'var(--color-surface-container)',
@@ -179,7 +179,7 @@ export const WorkCentersTab: React.FC<{ onToast: (message: string) => void }> = 
                       </div>
 
                       {editable && (
-                        <div style={{ display: 'flex', gap: '4px' }}>
+                        <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
                           <Button
                             variant="text"
                             onClick={() =>
@@ -214,7 +214,7 @@ export const WorkCentersTab: React.FC<{ onToast: (message: string) => void }> = 
         title={form?.id ? 'Ubah Work Center' : 'Tambah Work Center'}
       >
         {form && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
             <Field label="Production Line">
               <select
                 value={form.productionLineId}
@@ -257,7 +257,7 @@ export const WorkCentersTab: React.FC<{ onToast: (message: string) => void }> = 
               />
             </Field>
 
-            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
               <Button variant="text" onClick={() => setForm(null)}>
                 Batal
               </Button>
@@ -277,7 +277,7 @@ export const WorkCentersTab: React.FC<{ onToast: (message: string) => void }> = 
 };
 
 const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
-  <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+  <label style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
     <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface-variant)' }}>{label}</span>
     {children}
   </label>
@@ -285,7 +285,7 @@ const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, 
 
 const Empty: React.FC<{ label: string }> = ({ label }) => (
   <div
-    style={{ padding: '20px', textAlign: 'center', color: 'var(--color-on-surface-variant)', fontSize: '12px' }}
+    style={{ padding: 'var(--space-5)', textAlign: 'center', color: 'var(--color-on-surface-variant)', fontSize: '12px' }}
   >
     {label}
   </div>

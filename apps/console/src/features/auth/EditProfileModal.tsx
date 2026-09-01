@@ -58,7 +58,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '16px',
+          padding: 'var(--space-4)',
         }}
       >
         <motion.div
@@ -81,7 +81,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
           {/* Header */}
           <div
             style={{
-              padding: '16px 20px',
+              padding: `var(--space-4) var(--space-5)`,
               borderBottom: '1px solid var(--color-outline-variant)',
               display: 'flex',
               alignItems: 'center',
@@ -89,7 +89,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
               backgroundColor: 'var(--color-surface-container-low)',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
               <div
                 style={{
                   width: '32px',
@@ -108,7 +108,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                 <h2 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: 'var(--color-on-surface)' }}>
                   Update User Profile
                 </h2>
-                <p style={{ fontSize: '11px', margin: '2px 0 0', color: 'var(--color-on-surface-variant)' }}>
+                <p style={{ fontSize: '11px', margin: `var(--space-1) 0 0`, color: 'var(--color-on-surface-variant)' }}>
                   Modify your personal information, photo, and assigned plant
                 </p>
               </div>
@@ -136,7 +136,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
           {/* Body Form */}
           <form
             onSubmit={handleSubmit}
-            style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}
+            style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}
           >
             {/* Avatar Section */}
             <div>
@@ -147,13 +147,13 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                   fontWeight: 700,
                   color: 'var(--color-on-surface-variant)',
                   textTransform: 'uppercase',
-                  marginBottom: '8px',
+                  marginBottom: 'var(--space-2)',
                 }}
               >
                 Profile Photo (Select Open Source Preset or Custom URL)
               </label>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', marginBottom: 'var(--space-3)' }}>
                 <img
                   src={customAvatarInput.trim() || avatarUrl}
                   alt={name}
@@ -173,7 +173,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                 />
 
                 {/* Preset Avatars Gallery */}
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
                   {OPEN_SOURCE_AVATARS.map((av) => {
                     const isSelected = avatarUrl === av.url && !customAvatarInput.trim();
                     return (
@@ -186,7 +186,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                         }}
                         style={{
                           border: '2px solid transparent',
-                          padding: '2px',
+                          padding: 'var(--space-1)',
                           borderRadius: '50%',
                           backgroundColor: isSelected ? 'var(--color-primary)' : 'transparent',
                           cursor: 'pointer',
@@ -213,7 +213,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
               </div>
 
               {/* Custom Image URL Option */}
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                 <input
                   type="text"
                   placeholder="Or paste custom image URL (https://...)"
@@ -221,7 +221,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                   onChange={(e) => setCustomAvatarInput(e.target.value)}
                   style={{
                     flex: 1,
-                    padding: '6px 10px',
+                    padding: `var(--space-2) var(--space-3)`,
                     borderRadius: 'var(--radius-sm)',
                     border: '1px solid var(--color-outline-variant)',
                     backgroundColor: 'var(--color-surface-container)',
@@ -233,7 +233,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
             </div>
 
             {/* Grid Fields */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
               <div>
                 <label
                   style={{
@@ -241,7 +241,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                     fontSize: '11px',
                     fontWeight: 700,
                     color: 'var(--color-on-surface-variant)',
-                    marginBottom: '4px',
+                    marginBottom: 'var(--space-1)',
                   }}
                 >
                   Full Name
@@ -253,7 +253,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                   onChange={(e) => setName(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '8px 10px',
+                    padding: `var(--space-2) var(--space-3)`,
                     borderRadius: 'var(--radius-sm)',
                     border: '1px solid var(--color-outline-variant)',
                     backgroundColor: 'var(--color-surface-container)',
@@ -271,7 +271,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                     fontSize: '11px',
                     fontWeight: 700,
                     color: 'var(--color-on-surface-variant)',
-                    marginBottom: '4px',
+                    marginBottom: 'var(--space-1)',
                   }}
                 >
                   Email Address
@@ -283,7 +283,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                   onChange={(e) => setEmail(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '8px 10px',
+                    padding: `var(--space-2) var(--space-3)`,
                     borderRadius: 'var(--radius-sm)',
                     border: '1px solid var(--color-outline-variant)',
                     backgroundColor: 'var(--color-surface-container)',
@@ -301,7 +301,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                     fontSize: '11px',
                     fontWeight: 700,
                     color: 'var(--color-on-surface-variant)',
-                    marginBottom: '4px',
+                    marginBottom: 'var(--space-1)',
                   }}
                 >
                   Operational Role
@@ -311,7 +311,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                   onChange={(e) => setRole(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '8px 10px',
+                    padding: `var(--space-2) var(--space-3)`,
                     borderRadius: 'var(--radius-sm)',
                     border: '1px solid var(--color-outline-variant)',
                     backgroundColor: 'var(--color-surface-container)',
@@ -335,7 +335,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                     fontSize: '11px',
                     fontWeight: 700,
                     color: 'var(--color-on-surface-variant)',
-                    marginBottom: '4px',
+                    marginBottom: 'var(--space-1)',
                   }}
                 >
                   Assigned Plant
@@ -345,7 +345,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                   onChange={(e) => setPlantName(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '8px 10px',
+                    padding: `var(--space-2) var(--space-3)`,
                     borderRadius: 'var(--radius-sm)',
                     border: '1px solid var(--color-outline-variant)',
                     backgroundColor: 'var(--color-surface-container)',
@@ -368,7 +368,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                   fontSize: '11px',
                   fontWeight: 700,
                   color: 'var(--color-on-surface-variant)',
-                  marginBottom: '4px',
+                  marginBottom: 'var(--space-1)',
                 }}
               >
                 Phone / WhatsApp Contact
@@ -379,7 +379,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                 onChange={(e) => setPhone(e.target.value)}
                 style={{
                   width: '100%',
-                  padding: '8px 10px',
+                  padding: `var(--space-2) var(--space-3)`,
                   borderRadius: 'var(--radius-sm)',
                   border: '1px solid var(--color-outline-variant)',
                   backgroundColor: 'var(--color-surface-container)',
@@ -393,8 +393,8 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
             {/* Footer Actions */}
             <div
               style={{
-                marginTop: '8px',
-                paddingTop: '12px',
+                marginTop: 'var(--space-2)',
+                paddingTop: 'var(--space-3)',
                 borderTop: '1px solid var(--color-outline-variant)',
                 display: 'flex',
                 justifyContent: 'space-between',
@@ -409,7 +409,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                     fontWeight: 800,
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '4px',
+                    gap: 'var(--space-1)',
                   }}
                 >
                   <Icon name="check_circle" size={16} /> Profile Saved Successfully!
@@ -420,7 +420,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                 </span>
               )}
 
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                 <Button type="button" variant="text" onClick={onClose}>
                   Cancel
                 </Button>

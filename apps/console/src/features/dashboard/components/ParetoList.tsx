@@ -35,7 +35,7 @@ export const ParetoList: React.FC<ParetoListProps> = ({
 }) => {
   if (rows.length === 0) {
     return (
-      <div style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', padding: '8px 0' }}>
+      <div style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', padding: `var(--space-2) 0` }}>
         {emptyMessage}
       </div>
     );
@@ -44,7 +44,7 @@ export const ParetoList: React.FC<ParetoListProps> = ({
   const max = Math.max(...rows.map((r) => r.percentage), 1);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
       {rows.map((row, index) => (
         <div
           key={row.id}
@@ -56,8 +56,8 @@ export const ParetoList: React.FC<ParetoListProps> = ({
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'baseline',
-              gap: '10px',
-              marginBottom: '4px',
+              gap: 'var(--space-3)',
+              marginBottom: 'var(--space-1)',
             }}
           >
             <span style={{ fontSize: '12px', fontWeight: 600, minWidth: 0 }}>
@@ -110,7 +110,7 @@ export const ParetoList: React.FC<ParetoListProps> = ({
             style={{
               fontSize: '10px',
               color: 'var(--color-on-surface-variant)',
-              marginTop: '3px',
+              marginTop: 'var(--space-1)',
               fontFeatureSettings: '"tnum" 1',
             }}
           >

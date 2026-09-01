@@ -42,11 +42,11 @@ export const OeePerformanceCard: React.FC<OeePerformanceCardProps> = ({
   const latest = trend[trend.length - 1];
 
   return (
-    <SurfaceCard padding="md" style={{ display: 'flex', flexDirection: 'column', gap: '11px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
+    <SurfaceCard padding="md" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 'var(--space-3)' }}>
         <div>
           <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 700 }}>OEE Trend</h3>
-          <div style={{ fontSize: '10.5px', color: 'var(--color-on-surface-variant)', marginTop: '2px' }}>
+          <div style={{ fontSize: '10.5px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}>
             Actual • Target • Periode sebelumnya
           </div>
         </div>
@@ -57,8 +57,8 @@ export const OeePerformanceCard: React.FC<OeePerformanceCardProps> = ({
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '4px',
-              padding: '3px 9px',
+              gap: 'var(--space-1)',
+              padding: `var(--space-1) var(--space-3)`,
               borderRadius: 'var(--radius-pill)',
               border: '1px solid var(--color-outline-variant)',
               backgroundColor: 'transparent',
@@ -118,12 +118,12 @@ export const OeePerformanceCard: React.FC<OeePerformanceCardProps> = ({
         />
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-2)' }}>
         {pillars.map((pillar) => (
           <div
             key={pillar.metric}
             style={{
-              padding: '8px 6px',
+              padding: `var(--space-2) var(--space-2)`,
               borderRadius: 'var(--radius-sm, 6px)',
               backgroundColor: 'var(--color-surface-container)',
               textAlign: 'center',
@@ -136,7 +136,7 @@ export const OeePerformanceCard: React.FC<OeePerformanceCardProps> = ({
               style={{
                 fontSize: '14px',
                 fontWeight: 800,
-                marginTop: '3px',
+                marginTop: 'var(--space-1)',
                 color: PILLAR_TONE[pillar.metric as keyof typeof PILLAR_TONE],
                 fontFeatureSettings: '"tnum" 1',
               }}
@@ -144,7 +144,7 @@ export const OeePerformanceCard: React.FC<OeePerformanceCardProps> = ({
               {pillar.value}%
             </div>
             {pillar.target !== undefined && (
-              <div style={{ fontSize: '10px', color: 'var(--color-on-surface-variant)', marginTop: '1px' }}>
+              <div style={{ fontSize: '10px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}>
                 target {pillar.target}%
               </div>
             )}

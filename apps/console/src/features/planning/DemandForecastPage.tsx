@@ -43,12 +43,12 @@ const MonthlyBars: React.FC<{ demand: Record<string, number> }> = ({ demand }) =
   const max = Math.max(1, ...months.map((m) => demand[m]));
 
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: '64px' }}>
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 'var(--space-2)', height: '64px' }}>
       {months.map((month) => {
         const value = demand[month];
         const height = Math.max(2, Math.round((value / max) * 56));
         return (
-          <div key={month} style={{ display: 'grid', justifyItems: 'center', gap: '4px', flex: 1 }}>
+          <div key={month} style={{ display: 'grid', justifyItems: 'center', gap: 'var(--space-1)', flex: 1 }}>
             <span style={{ fontSize: '10px', color: 'var(--color-on-surface-variant)' }}>
               {value.toLocaleString('id-ID')}
             </span>
@@ -180,7 +180,7 @@ export const DemandForecastPage: React.FC = () => {
         <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
           Demand Forecast
         </h1>
-        <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
+        <p style={{ margin: `var(--space-1) 0 0`, fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
           Rata-rata historis dari Customer Order. Bulan berjalan tidak dihitung, bulan tanpa order
           dihitung sebagai nol, dan order Cancelled tidak ikut.
         </p>
@@ -192,7 +192,7 @@ export const DemandForecastPage: React.FC = () => {
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr)) auto',
-              gap: '12px',
+              gap: 'var(--space-3)',
               alignItems: 'end',
             }}
           >
@@ -210,11 +210,11 @@ export const DemandForecastPage: React.FC = () => {
             />
             <div>
               <div
-                style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginBottom: '6px' }}
+                style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginBottom: 'var(--space-2)' }}
               >
                 Lookback
               </div>
-              <div style={{ display: 'flex', gap: '6px' }}>
+              <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                 {LOOKBACKS.map((months) => (
                   <FilterChip
                     key={months}
@@ -235,7 +235,7 @@ export const DemandForecastPage: React.FC = () => {
             </Button>
           </div>
           {notice && (
-            <p style={{ margin: '12px 0 0', fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
+            <p style={{ margin: `var(--space-3) 0 0`, fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
               {notice}
             </p>
           )}
@@ -267,7 +267,7 @@ export const DemandForecastPage: React.FC = () => {
       {forecasts.length > 0 && (
         <Section>
           <SurfaceCard padding="md">
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
               {forecasts.map((forecast) => (
                 <FilterChip
                   key={forecast.id}
@@ -290,7 +290,7 @@ export const DemandForecastPage: React.FC = () => {
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '16px',
+                gap: 'var(--space-4)',
               }}
             >
               <MetricCard
@@ -335,7 +335,7 @@ export const DemandForecastPage: React.FC = () => {
           )}
 
           <Section>
-            <div style={{ display: 'grid', gap: '16px' }}>
+            <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
               {detail.lines.map((line) => {
                 const actual = actualByProduct.get(line.productId);
                 return (
@@ -349,8 +349,8 @@ export const DemandForecastPage: React.FC = () => {
                         display: 'flex',
                         flexWrap: 'wrap',
                         justifyContent: 'space-between',
-                        gap: '12px',
-                        marginBottom: '12px',
+                        gap: 'var(--space-3)',
+                        marginBottom: 'var(--space-3)',
                       }}
                     >
                       <div>
@@ -362,13 +362,13 @@ export const DemandForecastPage: React.FC = () => {
                             style={{
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '4px',
-                              marginTop: '4px',
+                              gap: 'var(--space-1)',
+                              marginTop: 'var(--space-1)',
                               fontSize: '11px',
                               fontWeight: 700,
                               color: 'var(--color-on-warning-container)',
                               backgroundColor: 'var(--color-warning-container)',
-                              padding: '2px 8px',
+                              padding: `var(--space-1) var(--space-2)`,
                               borderRadius: 'var(--radius-pill)',
                             }}
                           >
@@ -378,7 +378,7 @@ export const DemandForecastPage: React.FC = () => {
                           </div>
                         )}
                       </div>
-                      <div style={{ display: 'flex', gap: '24px' }}>
+                      <div style={{ display: 'flex', gap: 'var(--space-6)' }}>
                         <Figure label="Rata-rata / bulan" value={line.averageDemand.toLocaleString('id-ID')} />
                         <Figure
                           label="Forecast"
@@ -394,7 +394,7 @@ export const DemandForecastPage: React.FC = () => {
                     <MonthlyBars demand={line.historicalDemand} />
                     <p
                       style={{
-                        margin: '10px 0 0',
+                        margin: `var(--space-3) 0 0`,
                         fontSize: '11px',
                         color: 'var(--color-on-surface-variant)',
                       }}

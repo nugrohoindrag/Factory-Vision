@@ -112,7 +112,7 @@ const LAYOUT_CSS = `
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 32px;
+  padding: var(--space-10) var(--space-8);
   overflow-y: auto;
 }
 
@@ -123,7 +123,7 @@ const LAYOUT_CSS = `
 .fv-login__kpi-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 @media (min-width: 1080px) {
@@ -132,7 +132,7 @@ const LAYOUT_CSS = `
   }
   .fv-login__hero-col {
     display: block;
-    padding: 20px 20px 20px 0;
+    padding: var(--space-5) var(--space-5) var(--space-5) 0;
   }
   .fv-login__kpi-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -145,12 +145,12 @@ const labelStyle: React.CSSProperties = {
   fontSize: '12px',
   fontWeight: 700,
   color: 'var(--color-on-surface-variant)',
-  marginBottom: '6px',
+  marginBottom: 'var(--space-2)',
 };
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  padding: '12px 14px',
+  padding: `var(--space-3) var(--space-4)`,
   fontSize: '14px',
   fontFamily: 'var(--font-family)',
   color: 'var(--color-on-surface)',
@@ -216,14 +216,14 @@ export const ConsoleAuth: React.FC = () => {
       {/* ───────────────────────── Form column ───────────────────────── */}
       <div className="fv-login__form-col">
         <div
-          style={{ width: '100%', maxWidth: '460px', display: 'flex', flexDirection: 'column', gap: '20px' }}
+          style={{ width: '100%', maxWidth: '460px', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}
         >
           <FactoryVisionLogo size="md" variant="full" />
 
           <div>
             <h1
               style={{
-                margin: '0 0 6px',
+                margin: `0 0 var(--space-2)`,
                 fontSize: '30px',
                 fontWeight: 800,
                 letterSpacing: '-0.03em',
@@ -245,8 +245,8 @@ export const ConsoleAuth: React.FC = () => {
             style={{
               display: 'grid',
               gridTemplateColumns: '1fr 1fr',
-              gap: '4px',
-              padding: '4px',
+              gap: 'var(--space-1)',
+              padding: 'var(--space-1)',
               borderRadius: 'var(--radius-md, 12px)',
               backgroundColor: 'var(--color-surface-container)',
               border: '1px solid var(--color-outline-variant)',
@@ -265,7 +265,7 @@ export const ConsoleAuth: React.FC = () => {
                   aria-selected={selected}
                   onClick={() => setMode(tab.key)}
                   style={{
-                    padding: '9px 12px',
+                    padding: `var(--space-3) var(--space-3)`,
                     borderRadius: 'var(--radius-sm, 8px)',
                     border: 'none',
                     cursor: 'pointer',
@@ -285,7 +285,7 @@ export const ConsoleAuth: React.FC = () => {
 
           {mode === 'CONSOLE' ? (
             <>
-              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                 <div>
                   <label htmlFor="fv-email" style={labelStyle}>
                     Email
@@ -323,7 +323,7 @@ export const ConsoleAuth: React.FC = () => {
                       placeholder="••••••••"
                       style={{
                         ...inputStyle,
-                        paddingRight: '44px',
+                        paddingRight: 'var(--space-12)',
                         borderColor: fieldErrors.password
                           ? 'var(--color-error)'
                           : 'var(--color-outline-variant)',
@@ -341,7 +341,7 @@ export const ConsoleAuth: React.FC = () => {
                         background: 'none',
                         border: 'none',
                         cursor: 'pointer',
-                        padding: '6px',
+                        padding: 'var(--space-2)',
                         color: 'var(--color-on-surface-variant)',
                         display: 'flex',
                       }}
@@ -368,8 +368,8 @@ export const ConsoleAuth: React.FC = () => {
                     style={{
                       display: 'flex',
                       alignItems: 'flex-start',
-                      gap: '8px',
-                      padding: '10px 12px',
+                      gap: 'var(--space-2)',
+                      padding: `var(--space-3) var(--space-3)`,
                       borderRadius: 'var(--radius-sm, 8px)',
                       backgroundColor: 'var(--color-error-container)',
                       color: 'var(--color-on-error-container)',
@@ -407,9 +407,9 @@ export const ConsoleAuth: React.FC = () => {
           ) : (
             /* US-002, operators do not sign in here. Saying so is kinder than
  letting them fail against a form that has no PIN field. */
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
               <SurfaceCard padding="lg" railTone="primary">
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'flex-start' }}>
                   <Icon name="tablet_android" size={22} />
                   <div>
                     <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
@@ -417,7 +417,7 @@ export const ConsoleAuth: React.FC = () => {
                     </div>
                     <p
                       style={{
-                        margin: '6px 0 0',
+                        margin: `var(--space-2) 0 0`,
                         fontSize: '12.5px',
                         color: 'var(--color-on-surface-variant)',
                         lineHeight: 1.65,
@@ -437,7 +437,7 @@ export const ConsoleAuth: React.FC = () => {
                     fontSize: '12px',
                     fontWeight: 800,
                     color: 'var(--color-on-surface)',
-                    marginBottom: '8px',
+                    marginBottom: 'var(--space-2)',
                   }}
                 >
                   Alamat terminal
@@ -445,7 +445,7 @@ export const ConsoleAuth: React.FC = () => {
                 <code
                   style={{
                     display: 'block',
-                    padding: '10px 12px',
+                    padding: `var(--space-3) var(--space-3)`,
                     borderRadius: 'var(--radius-sm, 8px)',
                     backgroundColor: 'var(--color-surface-container-high)',
                     color: 'var(--color-on-surface)',
@@ -459,7 +459,7 @@ export const ConsoleAuth: React.FC = () => {
                 </code>
                 <p
                   style={{
-                    margin: '10px 0 0',
+                    margin: `var(--space-3) 0 0`,
                     fontSize: '11.5px',
                     color: 'var(--color-on-surface-variant)',
                     lineHeight: 1.6,
@@ -482,17 +482,17 @@ export const ConsoleAuth: React.FC = () => {
             borderRadius: 'var(--radius-xl)',
             backgroundColor: 'var(--color-primary)',
             color: 'var(--color-on-primary)',
-            padding: '36px 36px 0',
+            padding: `var(--space-10) var(--space-10) 0`,
             display: 'flex',
             flexDirection: 'column',
-            gap: '20px',
+            gap: 'var(--space-5)',
             overflow: 'hidden',
           }}
         >
           <div>
             <h2
               style={{
-                margin: '0 0 10px',
+                margin: `0 0 var(--space-3)`,
                 fontSize: '27px',
                 fontWeight: 800,
                 letterSpacing: '-0.025em',
@@ -503,7 +503,7 @@ export const ConsoleAuth: React.FC = () => {
             </h2>
             <p
               style={{
-                margin: '0 0 14px',
+                margin: `0 0 var(--space-4)`,
                 fontSize: '13.5px',
                 lineHeight: 1.6,
                 opacity: 0.92,
@@ -521,8 +521,8 @@ export const ConsoleAuth: React.FC = () => {
                 padding: 0,
                 display: 'grid',
                 gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-                columnGap: '18px',
-                rowGap: '8px',
+                columnGap: 'var(--space-5)',
+                rowGap: 'var(--space-2)',
               }}
             >
               {HERO_POINTS.map((point) => (
@@ -531,7 +531,7 @@ export const ConsoleAuth: React.FC = () => {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '9px',
+                    gap: 'var(--space-3)',
                     fontSize: '13px',
                     fontWeight: 600,
                   }}
@@ -559,8 +559,8 @@ export const ConsoleAuth: React.FC = () => {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'flex-start',
-                gap: '16px',
-                marginBottom: '14px',
+                gap: 'var(--space-4)',
+                marginBottom: 'var(--space-4)',
               }}
             >
               <div style={{ minWidth: 0 }}>
@@ -570,7 +570,7 @@ export const ConsoleAuth: React.FC = () => {
                     fontWeight: 800,
                     letterSpacing: '0.09em',
                     color: 'var(--color-primary)',
-                    marginBottom: '4px',
+                    marginBottom: 'var(--space-1)',
                   }}
                 >
                   CONTOH TAMPILAN
@@ -587,7 +587,7 @@ export const ConsoleAuth: React.FC = () => {
                 </div>
                 <p
                   style={{
-                    margin: '4px 0 0',
+                    margin: `var(--space-1) 0 0`,
                     fontSize: '11.5px',
                     color: 'var(--color-on-surface-variant)',
                     lineHeight: 1.55,
@@ -603,8 +603,8 @@ export const ConsoleAuth: React.FC = () => {
                   flexShrink: 0,
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '6px',
-                  padding: '7px 11px',
+                  gap: 'var(--space-2)',
+                  padding: `var(--space-2) var(--space-3)`,
                   borderRadius: 'var(--radius-sm, 8px)',
                   border: '1px solid var(--color-outline-variant)',
                   backgroundColor: 'var(--color-surface-container)',
@@ -626,7 +626,7 @@ export const ConsoleAuth: React.FC = () => {
                 <div
                   key={kpi.label}
                   style={{
-                    padding: '11px',
+                    padding: 'var(--space-3)',
                     borderRadius: 'var(--radius-md, 12px)',
                     backgroundColor: 'var(--color-surface-container)',
                     border: '1px solid var(--color-outline-variant)',
@@ -638,7 +638,7 @@ export const ConsoleAuth: React.FC = () => {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      gap: '6px',
+                      gap: 'var(--space-2)',
                     }}
                   >
                     <span
@@ -664,7 +664,7 @@ export const ConsoleAuth: React.FC = () => {
 
                   <div
                     style={{
-                      marginTop: '7px',
+                      marginTop: 'var(--space-2)',
                       fontSize: '19px',
                       fontWeight: 800,
                       letterSpacing: '-0.02em',
@@ -673,21 +673,21 @@ export const ConsoleAuth: React.FC = () => {
                   >
                     {kpi.value}
                   </div>
-                  <div style={{ fontSize: '10px', color: 'var(--color-on-surface-variant)', marginTop: '1px' }}>
+                  <div style={{ fontSize: '10px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}>
                     {kpi.caption}
                   </div>
                 </div>
               ))}
             </div>
 
-            <div style={{ marginTop: '16px' }}>
+            <div style={{ marginTop: 'var(--space-4)' }}>
               <div
                 style={{
                   fontSize: '10px',
                   fontWeight: 800,
                   letterSpacing: '0.09em',
                   color: 'var(--color-primary)',
-                  marginBottom: '3px',
+                  marginBottom: 'var(--space-1)',
                 }}
               >
                 ANALISIS BOTTLENECK
@@ -697,13 +697,13 @@ export const ConsoleAuth: React.FC = () => {
                   fontSize: '14.5px',
                   fontWeight: 800,
                   color: 'var(--color-on-surface)',
-                  marginBottom: '10px',
+                  marginBottom: 'var(--space-3)',
                 }}
               >
                 Mesin mana yang menahan output
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
                 {PREVIEW_BOTTLENECKS.map((row) => (
                   <div
                     key={row.machine}
@@ -711,7 +711,7 @@ export const ConsoleAuth: React.FC = () => {
                       display: 'grid',
                       gridTemplateColumns: 'minmax(120px, 1fr) minmax(0, 2fr) auto',
                       alignItems: 'center',
-                      gap: '10px',
+                      gap: 'var(--space-3)',
                     }}
                   >
                     <div style={{ minWidth: 0 }}>

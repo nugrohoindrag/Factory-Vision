@@ -63,7 +63,7 @@ const Guarded: React.FC<{ need: string; children: React.ReactNode }> = ({ need, 
         display: 'grid',
         placeItems: 'center',
         minHeight: '60vh',
-        padding: '24px',
+        padding: 'var(--space-6)',
         textAlign: 'center',
         color: 'var(--color-on-surface-variant)',
         fontFamily: 'var(--font-family)',
@@ -72,7 +72,7 @@ const Guarded: React.FC<{ need: string; children: React.ReactNode }> = ({ need, 
       <div style={{ maxWidth: '380px' }}>
         <Icon name="lock" size={32} />
         <h2
-          style={{ margin: '12px 0 6px', fontSize: '18px', fontWeight: 800, color: 'var(--color-on-surface)' }}
+          style={{ margin: `var(--space-3) 0 var(--space-2)`, fontSize: '18px', fontWeight: 800, color: 'var(--color-on-surface)' }}
         >
           Akses ditolak
         </h2>
@@ -567,7 +567,7 @@ export const App: React.FC = () => {
                 border: 'none',
                 backgroundColor: 'transparent',
                 cursor: 'pointer',
-                padding: '4px',
+                padding: 'var(--space-1)',
                 borderRadius: 'var(--radius-md)',
               }}
               title="Click to expand sidebar (Uncollapse)"
@@ -673,21 +673,21 @@ export const App: React.FC = () => {
                           borderRadius: 'var(--radius-md)',
                           border: '1px solid var(--color-outline-variant)',
                           boxShadow: 'var(--elevation-3)',
-                          padding: '8px',
+                          padding: 'var(--space-2)',
                           display: 'flex',
                           flexDirection: 'column',
-                          gap: '2px',
+                          gap: 'var(--space-1)',
                           zIndex: 100,
                         }}
                       >
                         <div
                           style={{
-                            padding: '4px 8px 6px',
+                            padding: `var(--space-1) var(--space-2) var(--space-2)`,
                             fontSize: '11px',
                             fontWeight: 800,
                             color: 'var(--color-primary)',
                             borderBottom: '1px solid var(--color-outline-variant)',
-                            marginBottom: '4px',
+                            marginBottom: 'var(--space-1)',
                             letterSpacing: '0.02em',
                           }}
                         >
@@ -707,8 +707,8 @@ export const App: React.FC = () => {
                               style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '8px',
-                                padding: '6px 8px',
+                                gap: 'var(--space-2)',
+                                padding: `var(--space-2) var(--space-2)`,
                                 borderRadius: 'var(--radius-sm)',
                                 textDecoration: 'none',
                                 fontSize: '11.5px',
@@ -749,7 +749,7 @@ export const App: React.FC = () => {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     width: '100%',
-                    padding: '8px 10px',
+                    padding: `var(--space-2) var(--space-3)`,
                     borderRadius: 'var(--radius-md)',
                     border: 'none',
                     backgroundColor: isGroupActive ? 'var(--color-surface-container)' : 'transparent',
@@ -761,7 +761,7 @@ export const App: React.FC = () => {
                     transition: 'all 0.15s ease',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                     <Icon
                       name={group.icon}
                       size={17}
@@ -791,11 +791,11 @@ export const App: React.FC = () => {
                         overflow: 'hidden',
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '2px',
-                        paddingLeft: '14px',
-                        marginTop: '2px',
+                        gap: 'var(--space-1)',
+                        paddingLeft: 'var(--space-4)',
+                        marginTop: 'var(--space-1)',
                         borderLeft: '2px solid var(--color-outline-variant)',
-                        marginLeft: '16px',
+                        marginLeft: 'var(--space-4)',
                       }}
                     >
                       {group.children.map((sub) => {
@@ -810,8 +810,8 @@ export const App: React.FC = () => {
                             style={{
                               display: 'flex',
                               alignItems: 'center',
-                              gap: '8px',
-                              padding: '6px 8px',
+                              gap: 'var(--space-2)',
+                              padding: `var(--space-2) var(--space-2)`,
                               borderRadius: 'var(--radius-sm)',
                               textDecoration: 'none',
                               fontSize: '11px',
@@ -853,7 +853,7 @@ export const App: React.FC = () => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: isCollapsed ? 'center' : 'stretch',
-            gap: '8px',
+            gap: 'var(--space-2)',
           }}
         >
           {isCollapsed ? (
@@ -862,7 +862,7 @@ export const App: React.FC = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '8px',
+                gap: 'var(--space-2)',
                 width: '100%',
               }}
             >
@@ -918,18 +918,18 @@ export const App: React.FC = () => {
               </button>
             </div>
           ) : (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-2)' }}>
               {/* Profile Card Trigger */}
               <div
                 onClick={() => setIsEditProfileOpen(true)}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '10px',
+                  gap: 'var(--space-3)',
                   overflow: 'hidden',
                   cursor: 'pointer',
                   flex: 1,
-                  padding: '2px 4px',
+                  padding: `var(--space-1) var(--space-1)`,
                   borderRadius: 'var(--radius-sm)',
                   transition: 'background-color 0.15s ease',
                 }}
@@ -979,7 +979,7 @@ export const App: React.FC = () => {
                     style={{
                       color: 'var(--color-on-surface-variant)',
                       fontSize: '10.5px',
-                      marginTop: '1px',
+                      marginTop: 'var(--space-1)',
                       fontWeight: 600,
                     }}
                   >
@@ -989,7 +989,7 @@ export const App: React.FC = () => {
               </div>
 
               {/* Actions: Edit + Switch */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
                 <button
                   onClick={() => setIsEditProfileOpen(true)}
                   style={{
@@ -1012,7 +1012,7 @@ export const App: React.FC = () => {
                 <button
                   onClick={handleLogout}
                   style={{
-                    padding: '4px 7px',
+                    padding: `var(--space-1) var(--space-2)`,
                     borderRadius: 'var(--radius-sm)',
                     backgroundColor: 'var(--color-surface-container)',
                     border: '1px solid var(--color-outline-variant)',
@@ -1040,7 +1040,7 @@ export const App: React.FC = () => {
             height: '52px',
             backgroundColor: 'var(--color-surface)',
             borderBottom: '1px solid var(--color-outline-variant)',
-            padding: '0 18px',
+            padding: `0 var(--space-5)`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -1048,7 +1048,7 @@ export const App: React.FC = () => {
           }}
         >
           {/* Left Context Info & Sidebar Toggle */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
             <button
               onClick={() => {
                 setIsCollapsed(!isCollapsed);
@@ -1073,7 +1073,7 @@ export const App: React.FC = () => {
             </button>
 
             {/* Sharp Vector Material Icon instead of raw emoji */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
               <Icon name="factory" size={17} color="var(--color-primary)" />
               <span style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--color-on-surface)' }}>
                 {session.plantName || 'Main Plant Cikarang'}
@@ -1092,7 +1092,7 @@ export const App: React.FC = () => {
           </div>
 
           {/* Right Controls: Telemetry + Theme Selector + Quick User Photo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
             {/* StatusBadge is a mirror component with no solid-fill prop,
  its default is a pale success-container pill. Overriding to
  a solid fill is scoped to this one instance, not global. */}
@@ -1126,11 +1126,11 @@ export const App: React.FC = () => {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
+                gap: 'var(--space-2)',
                 border: 'none',
                 backgroundColor: 'transparent',
                 cursor: 'pointer',
-                padding: '2px',
+                padding: 'var(--space-1)',
               }}
               title="Edit profile"
             >

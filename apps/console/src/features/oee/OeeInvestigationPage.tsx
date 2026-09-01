@@ -22,7 +22,7 @@ const StatusPill: React.FC<{ status: KpiStatus }> = ({ status }) => {
     <span
       style={{
         display: 'inline-block',
-        padding: '2px 10px',
+        padding: `var(--space-1) var(--space-3)`,
         borderRadius: 'var(--radius-full, 999px)',
         backgroundColor: tone.bg,
         color: tone.fg,
@@ -37,7 +37,7 @@ const StatusPill: React.FC<{ status: KpiStatus }> = ({ status }) => {
 
 /** A single OEE factor rendered as a labelled bar, so losses read at a glance. */
 const FactorBar: React.FC<{ label: string; value: number; tone: string }> = ({ label, value, tone }) => (
-  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
     <span
       style={{ fontSize: '11px', width: '26px', color: 'var(--color-on-surface-variant)', fontWeight: 700 }}
     >
@@ -129,14 +129,14 @@ export const OeeInvestigationPage: React.FC = () => {
   };
 
   return (
-    <Page style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Page style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
       <Section>
         <div
           style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'flex-end',
-            gap: '16px',
+            gap: 'var(--space-4)',
             flexWrap: 'wrap',
           }}
         >
@@ -152,12 +152,12 @@ export const OeeInvestigationPage: React.FC = () => {
             >
               Investigasi OEE
             </h1>
-            <p style={{ margin: '4px 0 0', color: 'var(--color-on-surface-variant)', fontSize: '12px' }}>
+            <p style={{ margin: `var(--space-1) 0 0`, color: 'var(--color-on-surface-variant)', fontSize: '12px' }}>
               Telusuri dari Proses Produksi ke Mesin untuk menemukan sumber kehilangan OEE
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
             {WINDOWS.map((option) => (
               <FilterChip key={option} selected={days === option} onClick={() => setDays(option)}>
                 {option} hari
@@ -171,7 +171,7 @@ export const OeeInvestigationPage: React.FC = () => {
       {(selectedProcessId || selectedMachineId) && (
         <Section>
           <div
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', flexWrap: 'wrap' }}
+            style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: '12px', flexWrap: 'wrap' }}
           >
             <button
               type="button"
@@ -224,7 +224,7 @@ export const OeeInvestigationPage: React.FC = () => {
 
       <Section
         stagger
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)' }}
       >
         <MetricCard
           label="OEE"
@@ -268,7 +268,7 @@ export const OeeInvestigationPage: React.FC = () => {
             style={{
               borderLeft: '3px solid var(--color-error)',
               display: 'flex',
-              gap: '10px',
+              gap: 'var(--space-3)',
               alignItems: 'flex-start',
             }}
           >
@@ -279,7 +279,7 @@ export const OeeInvestigationPage: React.FC = () => {
               </div>
               <p
                 style={{
-                  margin: '4px 0 0',
+                  margin: `var(--space-1) 0 0`,
                   fontSize: '12px',
                   color: 'var(--color-on-surface-variant)',
                   lineHeight: 1.6,
@@ -299,7 +299,7 @@ export const OeeInvestigationPage: React.FC = () => {
       {!selectedProcessId && (
         <Section>
           <SurfaceCard padding="md">
-            <div style={{ marginBottom: '10px' }}>
+            <div style={{ marginBottom: 'var(--space-3)' }}>
               <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
                 OEE per Proses Produksi
               </span>
@@ -313,16 +313,16 @@ export const OeeInvestigationPage: React.FC = () => {
             ) : processes.length === 0 ? (
               <EmptyState label="Belum ada data produksi pada periode ini." />
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
                 {processes.map((row) => (
                   <div
                     key={row.processId}
                     style={{
                       display: 'grid',
                       gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1.6fr) auto',
-                      gap: '14px',
+                      gap: 'var(--space-4)',
                       alignItems: 'center',
-                      padding: '12px 14px',
+                      padding: `var(--space-3) var(--space-4)`,
                       borderRadius: 'var(--radius-sm, 8px)',
                       border: '1px solid var(--color-outline-variant)',
                       backgroundColor: 'var(--color-surface)',
@@ -338,7 +338,7 @@ export const OeeInvestigationPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
                       <FactorBar label="A" value={row.availability} tone="var(--color-info)" />
                       <FactorBar label="P" value={row.performance} tone="var(--color-warning)" />
                       <FactorBar label="Q" value={row.quality} tone="var(--color-success)" />
@@ -349,7 +349,7 @@ export const OeeInvestigationPage: React.FC = () => {
                         textAlign: 'right',
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '4px',
+                        gap: 'var(--space-1)',
                         alignItems: 'flex-end',
                       }}
                     >
@@ -380,7 +380,7 @@ export const OeeInvestigationPage: React.FC = () => {
       {selectedProcessId && (
         <Section>
           <SurfaceCard padding="md">
-            <div style={{ marginBottom: '10px' }}>
+            <div style={{ marginBottom: 'var(--space-3)' }}>
               <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
                 OEE per Mesin{selectedProcess ? `, ${selectedProcess.processName}` : ''}
               </span>
@@ -394,16 +394,16 @@ export const OeeInvestigationPage: React.FC = () => {
             ) : machines.length === 0 ? (
               <EmptyState label="Tidak ada mesin dengan data pada proses dan periode ini." />
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
                 {machines.map((row) => (
                   <div
                     key={row.machineId}
                     style={{
                       display: 'grid',
                       gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1.6fr) auto',
-                      gap: '14px',
+                      gap: 'var(--space-4)',
                       alignItems: 'center',
-                      padding: '12px 14px',
+                      padding: `var(--space-3) var(--space-4)`,
                       borderRadius: 'var(--radius-sm, 8px)',
                       border: '1px solid var(--color-outline-variant)',
                       backgroundColor: 'var(--color-surface)',
@@ -417,7 +417,7 @@ export const OeeInvestigationPage: React.FC = () => {
                         {row.machineCode} · {row.workCenterName} · {row.lineName}
                       </div>
                       <div
-                        style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: '2px' }}
+                        style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}
                       >
                         {row.goodQuantity.toLocaleString('id-ID')} /{' '}
                         {row.targetQuantity.toLocaleString('id-ID')} unit · {row.runMinutes} menit jalan ·{' '}
@@ -425,7 +425,7 @@ export const OeeInvestigationPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
                       <FactorBar label="A" value={row.availability} tone="var(--color-info)" />
                       {row.idealCycleMissing ? (
                         <div style={{ fontSize: '11px', color: 'var(--color-error)', fontWeight: 700 }}>
@@ -442,7 +442,7 @@ export const OeeInvestigationPage: React.FC = () => {
                         textAlign: 'right',
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '4px',
+                        gap: 'var(--space-1)',
                         alignItems: 'flex-end',
                       }}
                     >
@@ -478,7 +478,7 @@ export const OeeInvestigationPage: React.FC = () => {
 const EmptyState: React.FC<{ label: string }> = ({ label }) => (
   <div
     style={{
-      padding: '28px',
+      padding: 'var(--space-8)',
       textAlign: 'center',
       color: 'var(--color-on-surface-variant)',
       fontSize: '12px',

@@ -63,12 +63,12 @@ export const SupportAccessPanel: React.FC<{ clientId: string }> = ({ clientId })
 
   return (
     <SurfaceCard padding="md">
-      <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--color-on-surface)', marginBottom: '4px' }}>
+      <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--color-on-surface)', marginBottom: 'var(--space-1)' }}>
         Akses Dukungan
       </div>
       <p
         style={{
-          margin: '0 0 12px',
+          margin: `0 0 var(--space-3)`,
           fontSize: '11.5px',
           color: 'var(--color-on-surface-variant)',
           lineHeight: 1.6,
@@ -81,8 +81,8 @@ export const SupportAccessPanel: React.FC<{ clientId: string }> = ({ clientId })
         <div
           role="alert"
           style={{
-            marginBottom: '10px',
-            padding: '9px 11px',
+            marginBottom: 'var(--space-3)',
+            padding: `var(--space-3) var(--space-3)`,
             borderRadius: 'var(--radius-sm, 8px)',
             backgroundColor: 'var(--color-error-container)',
             color: 'var(--color-on-error-container)',
@@ -97,8 +97,8 @@ export const SupportAccessPanel: React.FC<{ clientId: string }> = ({ clientId })
       {opened && (
         <div
           style={{
-            marginBottom: '10px',
-            padding: '9px 11px',
+            marginBottom: 'var(--space-3)',
+            padding: `var(--space-3) var(--space-3)`,
             borderRadius: 'var(--radius-sm, 8px)',
             backgroundColor: toneContainer.success,
             color: toneOnContainer.success,
@@ -114,10 +114,10 @@ export const SupportAccessPanel: React.FC<{ clientId: string }> = ({ clientId })
         <div
           style={{
             display: 'flex',
-            gap: '8px',
+            gap: 'var(--space-2)',
             flexWrap: 'wrap',
             alignItems: 'flex-end',
-            marginBottom: '14px',
+            marginBottom: 'var(--space-4)',
           }}
         >
           <div style={{ flex: '1 1 260px' }}>
@@ -162,17 +162,17 @@ export const SupportAccessPanel: React.FC<{ clientId: string }> = ({ clientId })
       )}
 
       {grants.data?.length ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
           {grants.data.map((g) => (
             <div
               key={g.id}
               style={{
                 display: 'flex',
                 justifyContent: 'space-between',
-                gap: '12px',
+                gap: 'var(--space-3)',
                 flexWrap: 'wrap',
                 alignItems: 'center',
-                padding: '9px 11px',
+                padding: `var(--space-3) var(--space-3)`,
                 borderRadius: 'var(--radius-sm, 8px)',
                 backgroundColor: 'var(--color-surface-container)',
                 border: '1px solid var(--color-outline-variant)',
@@ -183,8 +183,8 @@ export const SupportAccessPanel: React.FC<{ clientId: string }> = ({ clientId })
                   {g.grantedTo}
                   <span
                     style={{
-                      marginLeft: '8px',
-                      padding: '1px 8px',
+                      marginLeft: 'var(--space-2)',
+                      padding: `var(--space-1) var(--space-2)`,
                       borderRadius: 'var(--radius-full, 999px)',
                       fontSize: '10px',
                       backgroundColor: g.active ? toneContainer.success : toneContainer.neutral,
@@ -194,17 +194,17 @@ export const SupportAccessPanel: React.FC<{ clientId: string }> = ({ clientId })
                     {g.revokedAt ? 'Dicabut' : g.active ? 'Aktif' : 'Kedaluwarsa'}
                   </span>
                 </div>
-                <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: '2px' }}>
+                <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}>
                   {g.reason}
                 </div>
-                <div style={{ fontSize: '10.5px', color: 'var(--color-on-surface-variant)', marginTop: '2px' }}>
+                <div style={{ fontSize: '10.5px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}>
                   {g.accessLevel === 'READ_ONLY' ? 'Hanya baca' : 'Baca dan tulis'} · berakhir{' '}
                   {new Date(g.expiresAt).toLocaleString('id-ID')} · dipakai {g.useCount}x
                 </div>
               </div>
 
               {g.active && can('support:grant') && (
-                <div style={{ display: 'flex', gap: '6px' }}>
+                <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                   {g.grantedTo.toLowerCase() === principal?.email.toLowerCase() && (
                     <Button variant="outlined" onClick={() => use.mutate(g.id)} disabled={use.isPending}>
                       Buka
@@ -229,7 +229,7 @@ export const SupportAccessPanel: React.FC<{ clientId: string }> = ({ clientId })
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  padding: '8px 11px',
+  padding: `var(--space-2) var(--space-3)`,
   fontSize: '12px',
   fontFamily: 'var(--font-family)',
   color: 'var(--color-on-surface)',
@@ -245,5 +245,5 @@ const labelStyle: React.CSSProperties = {
   fontSize: '10.5px',
   fontWeight: 700,
   color: 'var(--color-on-surface-variant)',
-  marginBottom: '4px',
+  marginBottom: 'var(--space-1)',
 };

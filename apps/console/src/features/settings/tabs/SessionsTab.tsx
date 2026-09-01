@@ -38,7 +38,7 @@ export const SessionsTab: React.FC<{ onToast: (message: string) => void }> = ({ 
   });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
       <p style={{ margin: 0, fontSize: '12px', color: 'var(--color-on-surface-variant)', lineHeight: 1.6 }}>
         Sesi aplikasi berakhir setelah 12 jam atau 60 menit tanpa aktivitas. Sesi operator jauh lebih pendek, 8
         jam absolut dan 15 menit idle, karena terminal shop floor dipakai bergantian.
@@ -48,7 +48,7 @@ export const SessionsTab: React.FC<{ onToast: (message: string) => void }> = ({ 
         <div
           role="alert"
           style={{
-            padding: '10px 12px',
+            padding: `var(--space-3) var(--space-3)`,
             borderRadius: 'var(--radius-sm, 8px)',
             backgroundColor: 'var(--color-error-container)',
             color: 'var(--color-on-error-container)',
@@ -65,15 +65,15 @@ export const SessionsTab: React.FC<{ onToast: (message: string) => void }> = ({ 
       ) : sessions.length === 0 ? (
         <Empty label="Tidak ada sesi aktif." />
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
           {sessions.map((entry) => {
             const isSelf = entry.sessionId === principal?.sessionId;
             return (
               <SurfaceCard key={entry.sessionId} padding="md">
                 <div
-                  style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}
+                  style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-3)', flexWrap: 'wrap' }}
                 >
-                  <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                  <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'flex-start' }}>
                     <Icon name={entry.kind === 'OPERATOR' ? 'tablet_android' : 'computer'} size={20} />
                     <div>
                       <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
@@ -84,7 +84,7 @@ export const SessionsTab: React.FC<{ onToast: (message: string) => void }> = ({ 
                               fontSize: '10px',
                               fontWeight: 700,
                               color: 'var(--color-primary)',
-                              marginLeft: '6px',
+                              marginLeft: 'var(--space-2)',
                             }}
                           >
                             SESI ANDA
@@ -96,7 +96,7 @@ export const SessionsTab: React.FC<{ onToast: (message: string) => void }> = ({ 
                         {entry.ip ?? 'IP tidak diketahui'}
                       </div>
                       <div
-                        style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: '2px' }}
+                        style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}
                       >
                         Masuk {new Date(entry.issuedAt).toLocaleString('id-ID')} · aktivitas terakhir{' '}
                         {new Date(entry.lastSeenAt).toLocaleTimeString('id-ID')} · berakhir{' '}
@@ -126,7 +126,7 @@ export const SessionsTab: React.FC<{ onToast: (message: string) => void }> = ({ 
 
 const Empty: React.FC<{ label: string }> = ({ label }) => (
   <div
-    style={{ padding: '28px', textAlign: 'center', color: 'var(--color-on-surface-variant)', fontSize: '12px' }}
+    style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-on-surface-variant)', fontSize: '12px' }}
   >
     {label}
   </div>

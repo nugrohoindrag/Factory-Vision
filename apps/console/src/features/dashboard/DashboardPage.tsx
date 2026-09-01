@@ -117,13 +117,13 @@ export const DashboardPage: React.FC = () => {
   const activeLines = lines?.filter((l) => !l.hasActiveDowntime).length ?? 0;
 
   const periodFilter = (
-    <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', flexWrap: 'wrap' }}>
       <span
         style={{
           fontSize: '12px',
           fontWeight: 600,
           color: 'var(--color-on-surface-variant)',
-          marginRight: '4px',
+          marginRight: 'var(--space-1)',
         }}
       >
         Data Period:
@@ -141,7 +141,7 @@ export const DashboardPage: React.FC = () => {
   );
 
   return (
-    <Page style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+    <Page style={{ padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
       {/* Period selector & live sync */}
       <Section
         style={{
@@ -149,18 +149,18 @@ export const DashboardPage: React.FC = () => {
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: '12px',
+          gap: 'var(--space-3)',
         }}
       >
         {periodFilter}
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
-              padding: '4px 12px',
+              gap: 'var(--space-2)',
+              padding: `var(--space-1) var(--space-3)`,
               borderRadius: 'var(--radius-pill)',
               backgroundColor: 'var(--color-surface-container)',
               fontSize: '11px',
@@ -217,7 +217,7 @@ export const DashboardPage: React.FC = () => {
         question="Apakah produksi sesuai target, dan seberapa efisien operasinya?"
       />
       <Section
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '11px' }}
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 'var(--space-3)' }}
       >
         <ProductionPerformanceCard
           trend={productionTrend ?? []}
@@ -264,7 +264,7 @@ export const DashboardPage: React.FC = () => {
         question="Apa penyebab utama production loss dan quality loss?"
       />
       <Section
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '11px' }}
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 'var(--space-3)' }}
       >
         <DowntimeAnalysisCard
           summary={downtime}
@@ -291,7 +291,7 @@ export const DashboardPage: React.FC = () => {
         question="Apakah jadwal aman, dan apa yang butuh perhatian sekarang?"
       />
       <Section
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '11px' }}
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 'var(--space-3)' }}
       >
         <OrderStatusCard
           summary={orders}

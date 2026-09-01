@@ -66,7 +66,7 @@ export const TargetVsActualPage: React.FC = () => {
   };
 
   return (
-    <Page style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Page style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
       <Section>
         <h1
           style={{
@@ -79,13 +79,13 @@ export const TargetVsActualPage: React.FC = () => {
         >
           Target vs Produksi Aktual
         </h1>
-        <p style={{ margin: '4px 0 0', color: 'var(--color-on-surface-variant)', fontSize: '12px' }}>
+        <p style={{ margin: `var(--space-1) 0 0`, color: 'var(--color-on-surface-variant)', fontSize: '12px' }}>
           Perbandingan Target Produksi dan Produksi Aktual beserta variance dan proyeksi
         </p>
       </Section>
 
-      <Section style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+      <Section style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
           {DIMENSIONS.map((option) => (
             <FilterChip
               key={option.key}
@@ -96,7 +96,7 @@ export const TargetVsActualPage: React.FC = () => {
             </FilterChip>
           ))}
         </div>
-        <div style={{ display: 'flex', gap: '6px' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
           {WINDOWS.map((option) => (
             <FilterChip key={option} selected={days === option} onClick={() => setDays(option)}>
               {option} hari
@@ -107,7 +107,7 @@ export const TargetVsActualPage: React.FC = () => {
 
       <Section
         stagger
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)' }}
       >
         <MetricCard
           label="Total Target Produksi"
@@ -145,7 +145,7 @@ export const TargetVsActualPage: React.FC = () => {
 
       <Section>
         <SurfaceCard padding="md">
-          <div style={{ marginBottom: '12px' }}>
+          <div style={{ marginBottom: 'var(--space-3)' }}>
             <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
               Rincian {DIMENSIONS.find((d) => d.key === dimension)?.label}
             </span>
@@ -161,7 +161,7 @@ export const TargetVsActualPage: React.FC = () => {
           ) : rows.length === 0 ? (
             <Placeholder label="Belum ada data produksi pada periode ini." />
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
               {rows.map((row) => {
                 const drillable = dimension === 'LINE' || dimension === 'PROCESS';
                 return (
@@ -170,9 +170,9 @@ export const TargetVsActualPage: React.FC = () => {
                     style={{
                       display: 'grid',
                       gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.6fr) auto',
-                      gap: '14px',
+                      gap: 'var(--space-4)',
                       alignItems: 'center',
-                      padding: '12px 14px',
+                      padding: `var(--space-3) var(--space-4)`,
                       borderRadius: 'var(--radius-sm, 8px)',
                       border: '1px solid var(--color-outline-variant)',
                       backgroundColor: 'var(--color-surface)',
@@ -222,7 +222,7 @@ export const TargetVsActualPage: React.FC = () => {
                           justifyContent: 'space-between',
                           fontSize: '11px',
                           color: 'var(--color-on-surface-variant)',
-                          marginTop: '4px',
+                          marginTop: 'var(--space-1)',
                         }}
                       >
                         <span>
@@ -259,7 +259,7 @@ export const TargetVsActualPage: React.FC = () => {
                           icon={<Icon name="arrow_forward" size={15} />}
                           iconPosition="end"
                           onClick={() => navigate(drillDown(row.key))}
-                          style={{ marginTop: '2px', marginRight: '-12px' }}
+                          style={{ marginTop: 'var(--space-1)', marginRight: '-12px' }}
                         >
                           Telusuri
                         </Button>
@@ -279,7 +279,7 @@ export const TargetVsActualPage: React.FC = () => {
 const Placeholder: React.FC<{ label: string; tone?: 'error' }> = ({ label, tone }) => (
   <div
     style={{
-      padding: '28px',
+      padding: 'var(--space-8)',
       textAlign: 'center',
       fontSize: '12px',
       color: tone === 'error' ? 'var(--color-error)' : 'var(--color-on-surface-variant)',

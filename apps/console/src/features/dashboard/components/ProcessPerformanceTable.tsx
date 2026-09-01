@@ -15,7 +15,7 @@ export const ProcessPerformanceTable: React.FC<ProcessPerformanceTableProps> = (
           backgroundColor: 'var(--color-surface)',
           borderRadius: 'var(--radius-lg, 16px)',
           border: '1px solid var(--color-outline-variant)',
-          padding: '24px',
+          padding: 'var(--space-6)',
           textAlign: 'center',
           color: 'var(--color-on-surface-variant)',
           fontSize: '13px',
@@ -44,7 +44,7 @@ export const ProcessPerformanceTable: React.FC<ProcessPerformanceTableProps> = (
     >
       <div
         style={{
-          padding: '14px 20px',
+          padding: `var(--space-4) var(--space-5)`,
           borderBottom: '1px solid var(--color-outline-variant)',
           display: 'flex',
           justifyContent: 'space-between',
@@ -56,7 +56,7 @@ export const ProcessPerformanceTable: React.FC<ProcessPerformanceTableProps> = (
           <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
             Performa Efisiensi Berdasarkan Tahapan Proses ( &)
           </h3>
-          <p style={{ margin: '2px 0 0', fontSize: '11px', color: 'var(--color-on-surface-variant)' }}>
+          <p style={{ margin: `var(--space-1) 0 0`, fontSize: '11px', color: 'var(--color-on-surface-variant)' }}>
             Monitoring OEE, Availability, Performance, dan Quality terisolasi pada setiap stasiun manufaktur
           </p>
         </div>
@@ -64,7 +64,7 @@ export const ProcessPerformanceTable: React.FC<ProcessPerformanceTableProps> = (
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
+            gap: 'var(--space-2)',
             fontSize: '11.5px',
             color: 'var(--color-on-surface-variant)',
           }}
@@ -83,15 +83,15 @@ export const ProcessPerformanceTable: React.FC<ProcessPerformanceTableProps> = (
                 borderBottom: '1px solid var(--color-outline-variant)',
               }}
             >
-              <th style={{ padding: '10px 14px', fontWeight: 800 }}>Tahapan Proses</th>
-              <th style={{ padding: '10px 12px', fontWeight: 700 }}>Target vs Aktual</th>
-              <th style={{ padding: '10px 12px', fontWeight: 700 }}>Achievement</th>
-              <th style={{ padding: '10px 12px', fontWeight: 700 }}>Jumlah Reject</th>
-              <th style={{ padding: '10px 12px', fontWeight: 700 }}>Downtime</th>
-              <th style={{ padding: '10px 12px', fontWeight: 700 }}>Availability</th>
-              <th style={{ padding: '10px 12px', fontWeight: 700 }}>Performance</th>
-              <th style={{ padding: '10px 12px', fontWeight: 700 }}>Quality</th>
-              <th style={{ padding: '10px 14px', fontWeight: 800 }}>OEE Proses</th>
+              <th style={{ padding: `var(--space-3) var(--space-4)`, fontWeight: 800 }}>Tahapan Proses</th>
+              <th style={{ padding: `var(--space-3) var(--space-3)`, fontWeight: 700 }}>Target vs Aktual</th>
+              <th style={{ padding: `var(--space-3) var(--space-3)`, fontWeight: 700 }}>Achievement</th>
+              <th style={{ padding: `var(--space-3) var(--space-3)`, fontWeight: 700 }}>Jumlah Reject</th>
+              <th style={{ padding: `var(--space-3) var(--space-3)`, fontWeight: 700 }}>Downtime</th>
+              <th style={{ padding: `var(--space-3) var(--space-3)`, fontWeight: 700 }}>Availability</th>
+              <th style={{ padding: `var(--space-3) var(--space-3)`, fontWeight: 700 }}>Performance</th>
+              <th style={{ padding: `var(--space-3) var(--space-3)`, fontWeight: 700 }}>Quality</th>
+              <th style={{ padding: `var(--space-3) var(--space-4)`, fontWeight: 800 }}>OEE Proses</th>
             </tr>
           </thead>
           <tbody>
@@ -99,18 +99,18 @@ export const ProcessPerformanceTable: React.FC<ProcessPerformanceTableProps> = (
               const status = getOeeStatus(proc.oee);
               return (
                 <tr key={proc.processId} style={{ borderBottom: '1px solid var(--color-outline-variant)' }}>
-                  <td style={{ padding: '12px 14px' }}>
+                  <td style={{ padding: `var(--space-3) var(--space-4)` }}>
                     <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--color-on-surface)' }}>
                       {proc.processName}
                     </div>
                     <div
-                      style={{ fontSize: '10.5px', color: 'var(--color-on-surface-variant)', marginTop: '1px' }}
+                      style={{ fontSize: '10.5px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}
                     >
                       Kode: <strong>{proc.processCode}</strong>
                     </div>
                   </td>
 
-                  <td style={{ padding: '12px 12px' }}>
+                  <td style={{ padding: `var(--space-3) var(--space-3)` }}>
                     <div style={{ fontWeight: 700, color: 'var(--color-on-surface)' }}>
                       {proc.goodQuantity.toLocaleString('en-US')} PCS
                     </div>
@@ -119,8 +119,8 @@ export const ProcessPerformanceTable: React.FC<ProcessPerformanceTableProps> = (
                     </div>
                   </td>
 
-                  <td style={{ padding: '12px 12px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <td style={{ padding: `var(--space-3) var(--space-3)` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                       <span
                         style={{
                           fontWeight: 800,
@@ -137,7 +137,7 @@ export const ProcessPerformanceTable: React.FC<ProcessPerformanceTableProps> = (
                         backgroundColor: 'var(--color-surface-container-high)',
                         borderRadius: 'var(--radius-pill)',
                         overflow: 'hidden',
-                        marginTop: '4px',
+                        marginTop: 'var(--space-1)',
                       }}
                     >
                       <div
@@ -152,7 +152,7 @@ export const ProcessPerformanceTable: React.FC<ProcessPerformanceTableProps> = (
                     </div>
                   </td>
 
-                  <td style={{ padding: '12px 12px' }}>
+                  <td style={{ padding: `var(--space-3) var(--space-3)` }}>
                     <div
                       style={{
                         fontWeight: 700,
@@ -170,7 +170,7 @@ export const ProcessPerformanceTable: React.FC<ProcessPerformanceTableProps> = (
                     </div>
                   </td>
 
-                  <td style={{ padding: '12px 12px' }}>
+                  <td style={{ padding: `var(--space-3) var(--space-3)` }}>
                     <span
                       style={{
                         fontWeight: 700,
@@ -181,20 +181,20 @@ export const ProcessPerformanceTable: React.FC<ProcessPerformanceTableProps> = (
                     </span>
                   </td>
 
-                  <td style={{ padding: '12px 12px', fontWeight: 700 }}>{proc.availability}%</td>
+                  <td style={{ padding: `var(--space-3) var(--space-3)`, fontWeight: 700 }}>{proc.availability}%</td>
 
-                  <td style={{ padding: '12px 12px', fontWeight: 700 }}>{proc.performance}%</td>
+                  <td style={{ padding: `var(--space-3) var(--space-3)`, fontWeight: 700 }}>{proc.performance}%</td>
 
-                  <td style={{ padding: '12px 12px', fontWeight: 700 }}>{proc.quality}%</td>
+                  <td style={{ padding: `var(--space-3) var(--space-3)`, fontWeight: 700 }}>{proc.quality}%</td>
 
-                  <td style={{ padding: '12px 14px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <td style={{ padding: `var(--space-3) var(--space-4)` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                       <span style={{ fontWeight: 900, fontSize: '14px', color: status.color }}>
                         {proc.oee}%
                       </span>
                       <span
                         style={{
-                          padding: '2px 6px',
+                          padding: `var(--space-1) var(--space-2)`,
                           borderRadius: 'var(--radius-pill)',
                           fontSize: '9.5px',
                           fontWeight: 800,

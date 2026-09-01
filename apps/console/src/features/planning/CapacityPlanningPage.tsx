@@ -44,8 +44,8 @@ const CapacityBadge: React.FC<{ status: CapacityStatus }> = ({ status }) => (
     style={{
       display: 'inline-flex',
       alignItems: 'center',
-      gap: '4px',
-      padding: '3px 10px',
+      gap: 'var(--space-1)',
+      padding: `var(--space-1) var(--space-3)`,
       borderRadius: 'var(--radius-pill)',
       fontSize: '11px',
       fontWeight: 700,
@@ -135,17 +135,17 @@ export const CapacityPlanningPage: React.FC = () => {
   return (
     <Page>
       <Section>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
           <div>
             <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
               Capacity Planning
             </h1>
-            <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
+            <p style={{ margin: `var(--space-1) 0 0`, fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
               Kapasitas diturunkan dari shift, mesin yang compatible, dan ideal cycle time — bukan
               angka yang diketik.
             </p>
           </div>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
+          <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'flex-end' }}>
             <DateField
               label="Periode mulai"
               type="date"
@@ -173,7 +173,7 @@ export const CapacityPlanningPage: React.FC = () => {
           </div>
         </div>
         {notice && (
-          <p style={{ margin: '12px 0 0', fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
+          <p style={{ margin: `var(--space-3) 0 0`, fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
             {notice}
           </p>
         )}
@@ -208,7 +208,7 @@ export const CapacityPlanningPage: React.FC = () => {
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '16px',
+                gap: 'var(--space-4)',
               }}
             >
               <MetricCard
@@ -262,7 +262,7 @@ export const CapacityPlanningPage: React.FC = () => {
           {uncomputed.length > 0 && (
             <Section>
               <SurfaceCard padding="lg" railTone="warning">
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
+                <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
                   <Icon name="report" size={18} />
                   <h2 style={{ margin: 0, fontSize: '14px', fontWeight: 700 }}>
                     Kapasitas belum terhitung ({uncomputed.length} mesin)
@@ -270,7 +270,7 @@ export const CapacityPlanningPage: React.FC = () => {
                 </div>
                 <p
                   style={{
-                    margin: '0 0 10px',
+                    margin: `0 0 var(--space-3)`,
                     fontSize: '12px',
                     color: 'var(--color-on-surface-variant)',
                   }}
@@ -278,9 +278,9 @@ export const CapacityPlanningPage: React.FC = () => {
                   Mesin berikut tidak ikut dihitung dan <strong>tidak</strong> dianggap berkapasitas
                   nol. Lengkapi master data agar kapasitas mencerminkan kemampuan pabrik.
                 </p>
-                <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '12px' }}>
+                <ul style={{ margin: 0, paddingLeft: 'var(--space-5)', fontSize: '12px' }}>
                   {uncomputed.map((machine, index) => (
-                    <li key={`${machine.machineId}-${index}`} style={{ marginBottom: '4px' }}>
+                    <li key={`${machine.machineId}-${index}`} style={{ marginBottom: 'var(--space-1)' }}>
                       {machine.message} <em>({productName(machine.productId)})</em>
                     </li>
                   ))}
@@ -291,44 +291,44 @@ export const CapacityPlanningPage: React.FC = () => {
 
           <Section>
             <SurfaceCard padding="lg">
-              <h2 style={{ margin: '0 0 12px', fontSize: '15px', fontWeight: 700 }}>Kapasitas per Product</h2>
+              <h2 style={{ margin: `0 0 var(--space-3)`, fontSize: '15px', fontWeight: 700 }}>Kapasitas per Product</h2>
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
                   <thead>
                     <tr style={{ textAlign: 'left', color: 'var(--color-on-surface-variant)' }}>
-                      <th style={{ padding: '8px 6px' }}>Product</th>
-                      <th style={{ padding: '8px 6px' }}>Demand</th>
-                      <th style={{ padding: '8px 6px' }}>Total</th>
-                      <th style={{ padding: '8px 6px' }}>Planning</th>
-                      <th style={{ padding: '8px 6px' }}>Buffer</th>
-                      <th style={{ padding: '8px 6px' }}>Utilization</th>
-                      <th style={{ padding: '8px 6px' }}>Gap</th>
-                      <th style={{ padding: '8px 6px' }}>Status</th>
+                      <th style={{ padding: `var(--space-2) var(--space-2)` }}>Product</th>
+                      <th style={{ padding: `var(--space-2) var(--space-2)` }}>Demand</th>
+                      <th style={{ padding: `var(--space-2) var(--space-2)` }}>Total</th>
+                      <th style={{ padding: `var(--space-2) var(--space-2)` }}>Planning</th>
+                      <th style={{ padding: `var(--space-2) var(--space-2)` }}>Buffer</th>
+                      <th style={{ padding: `var(--space-2) var(--space-2)` }}>Utilization</th>
+                      <th style={{ padding: `var(--space-2) var(--space-2)` }}>Gap</th>
+                      <th style={{ padding: `var(--space-2) var(--space-2)` }}>Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {lines.map((line) => (
                       <tr key={line.id} style={{ borderTop: '1px solid var(--color-outline-variant)' }}>
-                        <td style={{ padding: '8px 6px' }}>{productName(line.productId)}</td>
-                        <td style={{ padding: '8px 6px' }}>{line.demandQuantity.toLocaleString('id-ID')}</td>
-                        <td style={{ padding: '8px 6px' }}>{line.totalCapacity.toLocaleString('id-ID')}</td>
-                        <td style={{ padding: '8px 6px' }}>
+                        <td style={{ padding: `var(--space-2) var(--space-2)` }}>{productName(line.productId)}</td>
+                        <td style={{ padding: `var(--space-2) var(--space-2)` }}>{line.demandQuantity.toLocaleString('id-ID')}</td>
+                        <td style={{ padding: `var(--space-2) var(--space-2)` }}>{line.totalCapacity.toLocaleString('id-ID')}</td>
+                        <td style={{ padding: `var(--space-2) var(--space-2)` }}>
                           {line.planningCapacity.toLocaleString('id-ID')}
                         </td>
-                        <td style={{ padding: '8px 6px' }}>{line.capacityBuffer.toLocaleString('id-ID')}</td>
-                        <td style={{ padding: '8px 6px' }}>
+                        <td style={{ padding: `var(--space-2) var(--space-2)` }}>{line.capacityBuffer.toLocaleString('id-ID')}</td>
+                        <td style={{ padding: `var(--space-2) var(--space-2)` }}>
                           {(line.capacityUtilization * 100).toFixed(1)}%
                         </td>
                         <td
                           style={{
-                            padding: '8px 6px',
+                            padding: `var(--space-2) var(--space-2)`,
                             fontWeight: line.capacityGap > 0 ? 700 : 400,
                             color: line.capacityGap > 0 ? 'var(--color-error)' : undefined,
                           }}
                         >
                           {line.capacityGap.toLocaleString('id-ID')}
                         </td>
-                        <td style={{ padding: '8px 6px' }}>
+                        <td style={{ padding: `var(--space-2) var(--space-2)` }}>
                           <CapacityBadge status={line.capacityStatus} />
                         </td>
                       </tr>
@@ -338,7 +338,7 @@ export const CapacityPlanningPage: React.FC = () => {
               </div>
               <p
                 style={{
-                  margin: '12px 0 0',
+                  margin: `var(--space-3) 0 0`,
                   fontSize: '11px',
                   color: 'var(--color-on-surface-variant)',
                 }}

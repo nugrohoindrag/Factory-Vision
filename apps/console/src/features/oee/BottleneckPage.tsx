@@ -54,7 +54,7 @@ export const BottleneckPage: React.FC = () => {
   const maxLost = Math.max(1, ...rows.map((r) => r.lostUnits));
 
   return (
-    <Page style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Page style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
       <Section>
         <h1
           style={{
@@ -67,13 +67,13 @@ export const BottleneckPage: React.FC = () => {
         >
           Analisis Bottleneck
         </h1>
-        <p style={{ margin: '4px 0 0', color: 'var(--color-on-surface-variant)', fontSize: '12px' }}>
+        <p style={{ margin: `var(--space-1) 0 0`, color: 'var(--color-on-surface-variant)', fontSize: '12px' }}>
           Peringkat kendala berdasarkan kehilangan produksi terhadap Target Produksi
         </p>
       </Section>
 
-      <Section style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
-        <div style={{ display: 'flex', gap: '6px' }}>
+      <Section style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
           <FilterChip selected={kind === 'MACHINE'} onClick={() => setKind('MACHINE')}>
             Per Mesin
           </FilterChip>
@@ -82,7 +82,7 @@ export const BottleneckPage: React.FC = () => {
           </FilterChip>
         </div>
 
-        <div style={{ display: 'flex', gap: '6px' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
           {WINDOWS.map((option) => (
             <FilterChip key={option} selected={days === option} onClick={() => setDays(option)}>
               {option} hari
@@ -95,7 +95,7 @@ export const BottleneckPage: React.FC = () => {
           onChange={(event) => setLineId(event.target.value)}
           aria-label="Filter production line"
           style={{
-            padding: '7px 10px',
+            padding: `var(--space-2) var(--space-3)`,
             fontSize: '12px',
             fontFamily: 'var(--font-family)',
             borderRadius: 'var(--radius-full, 999px)',
@@ -115,7 +115,7 @@ export const BottleneckPage: React.FC = () => {
 
       <Section
         stagger
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-3)' }}
       >
         <MetricCard
           label="Kendala Utama"
@@ -145,7 +145,7 @@ export const BottleneckPage: React.FC = () => {
 
       <Section>
         <SurfaceCard padding="md">
-          <div style={{ marginBottom: '12px' }}>
+          <div style={{ marginBottom: 'var(--space-3)' }}>
             <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
               Peringkat Bottleneck
             </span>
@@ -159,7 +159,7 @@ export const BottleneckPage: React.FC = () => {
           ) : rows.length === 0 ? (
             <Placeholder label="Belum ada data produksi pada filter ini." />
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
               {rows.map((row) => {
                 const loss = LOSS_LABEL[row.dominantLoss];
                 return (
@@ -168,9 +168,9 @@ export const BottleneckPage: React.FC = () => {
                     style={{
                       display: 'grid',
                       gridTemplateColumns: '36px minmax(0, 1.3fr) minmax(0, 1.4fr) auto',
-                      gap: '12px',
+                      gap: 'var(--space-3)',
                       alignItems: 'center',
-                      padding: '12px 14px',
+                      padding: `var(--space-3) var(--space-4)`,
                       borderRadius: 'var(--radius-sm, 8px)',
                       border: '1px solid var(--color-outline-variant)',
                       backgroundColor: 'var(--color-surface)',
@@ -201,7 +201,7 @@ export const BottleneckPage: React.FC = () => {
                         {row.contextLabel}
                       </div>
                       <div
-                        style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: '2px' }}
+                        style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}
                       >
                         OEE {row.oee.toFixed(1)}% · {row.downtimeMinutes} menit henti ·{' '}
                         {row.rejectQuantity.toLocaleString('id-ID')} reject
@@ -228,7 +228,7 @@ export const BottleneckPage: React.FC = () => {
                         />
                       </div>
                       <div
-                        style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: '4px' }}
+                        style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}
                       >
                         Faktor dominan: <strong style={{ color: loss.tone }}>{loss.label}</strong>, {loss.hint}
                       </div>
@@ -247,7 +247,7 @@ export const BottleneckPage: React.FC = () => {
                         icon={<Icon name="arrow_forward" size={15} />}
                         iconPosition="end"
                         onClick={() => navigate(row.drillDownPath)}
-                        style={{ marginTop: '2px', marginRight: '-12px' }}
+                        style={{ marginTop: 'var(--space-1)', marginRight: '-12px' }}
                       >
                         Telusuri
                       </Button>
@@ -265,7 +265,7 @@ export const BottleneckPage: React.FC = () => {
 
 const Placeholder: React.FC<{ label: string }> = ({ label }) => (
   <div
-    style={{ padding: '28px', textAlign: 'center', color: 'var(--color-on-surface-variant)', fontSize: '12px' }}
+    style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-on-surface-variant)', fontSize: '12px' }}
   >
     {label}
   </div>

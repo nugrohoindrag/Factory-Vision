@@ -40,7 +40,7 @@ export const LiveBoardPage: React.FC = () => {
   const downtimeLines = liveBoard?.filter((l) => l.hasActiveDowntime).length || 0;
 
   return (
-    <Page style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Page style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
       {/* Header */}
       <Section style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
@@ -55,12 +55,12 @@ export const LiveBoardPage: React.FC = () => {
           >
             Live Shop Floor Board (Andon Telemetry)
           </h1>
-          <p style={{ margin: '4px 0 0', color: 'var(--color-on-surface-variant)', fontSize: '12px' }}>
+          <p style={{ margin: `var(--space-1) 0 0`, color: 'var(--color-on-surface-variant)', fontSize: '12px' }}>
             Real-time machine status and assembly line telemetry monitoring
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
           <StatusBadge status="online" label="Socket Stream Active" />
         </div>
       </Section>
@@ -68,7 +68,7 @@ export const LiveBoardPage: React.FC = () => {
       {/* Top Status Cards */}
       <Section
         stagger
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)' }}
       >
         <MetricCard
           label="Total Monitored Lines"
@@ -99,13 +99,13 @@ export const LiveBoardPage: React.FC = () => {
       </Section>
 
       {/* Filter Chips Bar */}
-      <Section style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+      <Section style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
         <span
           style={{
             fontSize: '11px',
             fontWeight: 700,
             color: 'var(--color-on-surface-variant)',
-            marginRight: '4px',
+            marginRight: 'var(--space-1)',
           }}
         >
           Filter Area:
@@ -120,7 +120,7 @@ export const LiveBoardPage: React.FC = () => {
       {/* Production Lines Grid */}
       <Section
         stagger
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '14px' }}
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-4)' }}
       >
         {isLoading ? (
           <div style={{ color: 'var(--color-on-surface-variant)', fontSize: '13px' }}>
@@ -145,7 +145,7 @@ export const LiveBoardPage: React.FC = () => {
                 style={{
                   borderLeft: `4px solid ${accentColor}`,
                   boxShadow: 'var(--elevation-1)',
-                  padding: '16px 18px',
+                  padding: `var(--space-4) var(--space-5)`,
                   position: 'relative',
                   overflow: 'hidden',
                 }}
@@ -194,13 +194,13 @@ export const LiveBoardPage: React.FC = () => {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'flex-start',
-                    marginBottom: '12px',
+                    marginBottom: 'var(--space-3)',
                     position: 'relative',
                     zIndex: 1,
                   }}
                 >
                   <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                       <h2 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: accentColor }}>
                         {item.lineId.toUpperCase()}
                       </h2>
@@ -219,7 +219,7 @@ export const LiveBoardPage: React.FC = () => {
                       )}
                     </div>
                     <div
-                      style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: '2px' }}
+                      style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}
                     >
                       Machine: {item.workOrder.machineId || 'Mechanical Press'}
                     </div>
@@ -227,7 +227,7 @@ export const LiveBoardPage: React.FC = () => {
 
                   <span
                     style={{
-                      padding: '3px 10px',
+                      padding: `var(--space-1) var(--space-3)`,
                       borderRadius: 'var(--radius-pill)',
                       fontSize: '10px',
                       fontWeight: 800,
@@ -235,7 +235,7 @@ export const LiveBoardPage: React.FC = () => {
                       color: toneOnContainer[tone],
                       display: 'inline-flex',
                       alignItems: 'center',
-                      gap: '5px',
+                      gap: 'var(--space-2)',
                     }}
                   >
                     <span
@@ -255,9 +255,9 @@ export const LiveBoardPage: React.FC = () => {
                   style={{
                     display: 'grid',
                     gridTemplateColumns: '110px 1fr',
-                    gap: '12px',
+                    gap: 'var(--space-3)',
                     alignItems: 'center',
-                    marginBottom: '12px',
+                    marginBottom: 'var(--space-3)',
                     position: 'relative',
                     zIndex: 1,
                   }}
@@ -278,7 +278,7 @@ export const LiveBoardPage: React.FC = () => {
                     style={{
                       backgroundColor: 'var(--color-surface-container)',
                       borderRadius: 'var(--radius-md)',
-                      padding: '10px 12px',
+                      padding: `var(--space-3) var(--space-3)`,
                       border: '1px solid var(--color-outline-variant)',
                     }}
                   >
@@ -287,7 +287,7 @@ export const LiveBoardPage: React.FC = () => {
                         display: 'flex',
                         justifyContent: 'space-between',
                         fontSize: '11px',
-                        marginBottom: '4px',
+                        marginBottom: 'var(--space-1)',
                       }}
                     >
                       <span style={{ color: 'var(--color-on-surface-variant)' }}>WO:</span>
@@ -299,7 +299,7 @@ export const LiveBoardPage: React.FC = () => {
                         display: 'flex',
                         justifyContent: 'space-between',
                         fontSize: '11px',
-                        marginBottom: '4px',
+                        marginBottom: 'var(--space-1)',
                       }}
                     >
                       <span style={{ color: 'var(--color-on-surface-variant)' }}>Target Progress</span>
@@ -338,7 +338,7 @@ export const LiveBoardPage: React.FC = () => {
                   style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(4, 1fr)',
-                    gap: '6px',
+                    gap: 'var(--space-2)',
                     textAlign: 'center',
                     position: 'relative',
                     zIndex: 1,
@@ -347,7 +347,7 @@ export const LiveBoardPage: React.FC = () => {
                   <div
                     style={{
                       backgroundColor: 'var(--color-surface-container)',
-                      padding: '6px 4px',
+                      padding: `var(--space-2) var(--space-1)`,
                       borderRadius: 'var(--radius-sm)',
                       border: '1px solid var(--color-outline-variant)',
                     }}
@@ -367,7 +367,7 @@ export const LiveBoardPage: React.FC = () => {
                   <div
                     style={{
                       backgroundColor: 'var(--color-surface-container)',
-                      padding: '6px 4px',
+                      padding: `var(--space-2) var(--space-1)`,
                       borderRadius: 'var(--radius-sm)',
                       border: '1px solid var(--color-outline-variant)',
                     }}
@@ -387,7 +387,7 @@ export const LiveBoardPage: React.FC = () => {
                   <div
                     style={{
                       backgroundColor: 'var(--color-surface-container)',
-                      padding: '6px 4px',
+                      padding: `var(--space-2) var(--space-1)`,
                       borderRadius: 'var(--radius-sm)',
                       border: '1px solid var(--color-outline-variant)',
                     }}
@@ -407,7 +407,7 @@ export const LiveBoardPage: React.FC = () => {
                   <div
                     style={{
                       backgroundColor: 'var(--color-surface-container)',
-                      padding: '6px 4px',
+                      padding: `var(--space-2) var(--space-1)`,
                       borderRadius: 'var(--radius-sm)',
                       border: '1px solid var(--color-outline-variant)',
                     }}

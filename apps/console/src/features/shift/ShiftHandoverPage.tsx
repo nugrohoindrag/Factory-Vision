@@ -91,7 +91,7 @@ export const ShiftHandoverPage: React.FC = () => {
   const canHandover = can('shift:handover');
 
   return (
-    <Page style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Page style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
       <Section>
         <h1
           style={{
@@ -104,12 +104,12 @@ export const ShiftHandoverPage: React.FC = () => {
         >
           Performa & Serah Terima Shift
         </h1>
-        <p style={{ margin: '4px 0 0', color: 'var(--color-on-surface-variant)', fontSize: '12px' }}>
+        <p style={{ margin: `var(--space-1) 0 0`, color: 'var(--color-on-surface-variant)', fontSize: '12px' }}>
           Hasil Shift berjalan dan catatan untuk Shift berikutnya
         </p>
       </Section>
 
-      <Section style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+      <Section style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
         <SelectField label="Production Line" value={lineId} onChange={setLineId}>
           {lines.map((line) => (
             <option key={line.id} value={line.id}>
@@ -146,7 +146,7 @@ export const ShiftHandoverPage: React.FC = () => {
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '12px',
+              gap: 'var(--space-3)',
             }}
           >
             <MetricCard
@@ -184,10 +184,10 @@ export const ShiftHandoverPage: React.FC = () => {
           </Section>
 
           <Section
-            style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.1fr) minmax(0, 1fr)', gap: '14px' }}
+            style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.1fr) minmax(0, 1fr)', gap: 'var(--space-4)' }}
           >
             <SurfaceCard padding="md">
-              <div style={{ marginBottom: '10px' }}>
+              <div style={{ marginBottom: 'var(--space-3)' }}>
                 <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
                   Work Order Terbuka
                 </span>
@@ -205,7 +205,7 @@ export const ShiftHandoverPage: React.FC = () => {
               {context.openWorkOrders.length === 0 ? (
                 <Placeholder label="Tidak ada work order terbuka pada shift ini." />
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
                   {context.openWorkOrders.map((wo) => (
                     <div
                       key={wo.id}
@@ -213,8 +213,8 @@ export const ShiftHandoverPage: React.FC = () => {
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        gap: '10px',
-                        padding: '10px 12px',
+                        gap: 'var(--space-3)',
+                        padding: `var(--space-3) var(--space-3)`,
                         borderRadius: 'var(--radius-sm, 8px)',
                         border: '1px solid var(--color-outline-variant)',
                         backgroundColor: 'var(--color-surface-container)',
@@ -239,8 +239,8 @@ export const ShiftHandoverPage: React.FC = () => {
               {context.previousHandover && (
                 <div
                   style={{
-                    marginTop: '12px',
-                    padding: '10px 12px',
+                    marginTop: 'var(--space-3)',
+                    padding: `var(--space-3) var(--space-3)`,
                     borderRadius: 'var(--radius-sm, 8px)',
                     backgroundColor: 'var(--color-surface-container-high)',
                   }}
@@ -250,7 +250,7 @@ export const ShiftHandoverPage: React.FC = () => {
                   </div>
                   <p
                     style={{
-                      margin: '4px 0 0',
+                      margin: `var(--space-1) 0 0`,
                       fontSize: '12px',
                       color: 'var(--color-on-surface-variant)',
                       lineHeight: 1.6,
@@ -263,7 +263,7 @@ export const ShiftHandoverPage: React.FC = () => {
             </SurfaceCard>
 
             <SurfaceCard padding="md">
-              <div style={{ marginBottom: '10px' }}>
+              <div style={{ marginBottom: 'var(--space-3)' }}>
                 <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
                   Catatan Serah Terima
                 </span>
@@ -275,7 +275,7 @@ export const ShiftHandoverPage: React.FC = () => {
               {!canHandover ? (
                 <Placeholder label="Peran Anda tidak memiliki izin shift:handover." />
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                   <textarea
                     value={notes}
                     onChange={(event) => setNotes(event.target.value)}
@@ -283,7 +283,7 @@ export const ShiftHandoverPage: React.FC = () => {
                     placeholder="Kondisi mesin, pekerjaan tertunda, instruksi khusus untuk shift berikutnya…"
                     style={{
                       width: '100%',
-                      padding: '10px 12px',
+                      padding: `var(--space-3) var(--space-3)`,
                       fontSize: '13px',
                       fontFamily: 'var(--font-family)',
                       color: 'var(--color-on-surface)',
@@ -294,7 +294,7 @@ export const ShiftHandoverPage: React.FC = () => {
                     }}
                   />
 
-                  <div style={{ display: 'flex', gap: '6px' }}>
+                  <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                     <input
                       value={issueDraft}
                       onChange={(event) => setIssueDraft(event.target.value)}
@@ -307,7 +307,7 @@ export const ShiftHandoverPage: React.FC = () => {
                       placeholder="Tambah isu terbuka…"
                       style={{
                         flex: 1,
-                        padding: '9px 12px',
+                        padding: `var(--space-3) var(--space-3)`,
                         fontSize: '12px',
                         fontFamily: 'var(--font-family)',
                         color: 'var(--color-on-surface)',
@@ -325,13 +325,13 @@ export const ShiftHandoverPage: React.FC = () => {
                     <ul
                       style={{
                         margin: 0,
-                        paddingLeft: '18px',
+                        paddingLeft: 'var(--space-5)',
                         fontSize: '12px',
                         color: 'var(--color-on-surface-variant)',
                       }}
                     >
                       {openIssues.map((issue, index) => (
-                        <li key={`${issue}-${index}`} style={{ marginBottom: '4px' }}>
+                        <li key={`${issue}-${index}`} style={{ marginBottom: 'var(--space-1)' }}>
                           {issue}{' '}
                           <button
                             type="button"
@@ -356,7 +356,7 @@ export const ShiftHandoverPage: React.FC = () => {
                     <div
                       role="status"
                       style={{
-                        padding: '8px 10px',
+                        padding: `var(--space-2) var(--space-3)`,
                         borderRadius: 'var(--radius-sm, 8px)',
                         fontSize: '12px',
                         fontWeight: 600,
@@ -394,12 +394,12 @@ export const ShiftHandoverPage: React.FC = () => {
               {history.length === 0 ? (
                 <Placeholder label="Belum ada catatan serah terima untuk line ini." />
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
                   {history.map((record) => (
                     <div
                       key={record.id}
                       style={{
-                        padding: '10px 12px',
+                        padding: `var(--space-3) var(--space-3)`,
                         borderRadius: 'var(--radius-sm, 8px)',
                         border: '1px solid var(--color-outline-variant)',
                         backgroundColor: 'var(--color-surface-container)',
@@ -409,7 +409,7 @@ export const ShiftHandoverPage: React.FC = () => {
                         style={{
                           display: 'flex',
                           justifyContent: 'space-between',
-                          gap: '10px',
+                          gap: 'var(--space-3)',
                           flexWrap: 'wrap',
                         }}
                       >
@@ -422,7 +422,7 @@ export const ShiftHandoverPage: React.FC = () => {
                       </div>
                       <p
                         style={{
-                          margin: '6px 0 0',
+                          margin: `var(--space-2) 0 0`,
                           fontSize: '12px',
                           color: 'var(--color-on-surface-variant)',
                           lineHeight: 1.6,
@@ -433,8 +433,8 @@ export const ShiftHandoverPage: React.FC = () => {
                       {record.openIssues.length > 0 && (
                         <ul
                           style={{
-                            margin: '6px 0 0',
-                            paddingLeft: '18px',
+                            margin: `var(--space-2) 0 0`,
+                            paddingLeft: 'var(--space-5)',
                             fontSize: '11px',
                             color: 'var(--color-on-surface-variant)',
                           }}
@@ -462,13 +462,13 @@ const SelectField: React.FC<{
   onChange: (value: string) => void;
   children: React.ReactNode;
 }> = ({ label, value, onChange, children }) => (
-  <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+  <label style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
     <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface-variant)' }}>{label}</span>
     <select
       value={value}
       onChange={(event) => onChange(event.target.value)}
       style={{
-        padding: '8px 10px',
+        padding: `var(--space-2) var(--space-3)`,
         fontSize: '12px',
         fontFamily: 'var(--font-family)',
         borderRadius: 'var(--radius-sm, 8px)',
@@ -486,7 +486,7 @@ const SelectField: React.FC<{
 const Placeholder: React.FC<{ label: string; tone?: 'error' }> = ({ label, tone }) => (
   <div
     style={{
-      padding: '24px',
+      padding: 'var(--space-6)',
       textAlign: 'center',
       fontSize: '12px',
       fontWeight: tone === 'error' ? 600 : 400,

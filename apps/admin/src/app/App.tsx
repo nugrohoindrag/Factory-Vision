@@ -57,18 +57,18 @@ export const App: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '16px',
-          padding: '0 20px',
+          gap: 'var(--space-4)',
+          padding: `0 var(--space-5)`,
           height: '54px',
           backgroundColor: 'var(--color-surface)',
           borderBottom: '1px solid var(--color-outline-variant)',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-5)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
             <span
               style={{
-                padding: '3px 9px',
+                padding: `var(--space-1) var(--space-3)`,
                 borderRadius: 'var(--radius-full, 999px)',
                 backgroundColor: toneContainer.warning,
                 color: toneOnContainer.warning,
@@ -84,7 +84,7 @@ export const App: React.FC = () => {
             </span>
           </div>
 
-          <nav style={{ display: 'flex', gap: '4px' }}>
+          <nav style={{ display: 'flex', gap: 'var(--space-1)' }}>
             {NAV.map((item) => {
               const active = location.pathname === item.path;
               return (
@@ -94,8 +94,8 @@ export const App: React.FC = () => {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '6px',
-                    padding: '7px 12px',
+                    gap: 'var(--space-2)',
+                    padding: `var(--space-2) var(--space-3)`,
                     borderRadius: 'var(--radius-sm, 8px)',
                     textDecoration: 'none',
                     fontSize: '12.5px',
@@ -112,7 +112,7 @@ export const App: React.FC = () => {
           </nav>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-on-surface)' }}>
               {principal.name}
@@ -123,7 +123,7 @@ export const App: React.FC = () => {
             type="button"
             onClick={logout}
             style={{
-              padding: '7px 12px',
+              padding: `var(--space-2) var(--space-3)`,
               borderRadius: 'var(--radius-sm, 8px)',
               border: '1px solid var(--color-outline-variant)',
               backgroundColor: 'var(--color-surface-container)',

@@ -63,14 +63,14 @@ export const OeeConfigTab: React.FC<{ onToast: (message: string) => void }> = ({
     current.allowIdealCycleFallback !== config.allowIdealCycleFallback;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
       <SurfaceCard padding="md">
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
           <div>
             <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
               Versi Perhitungan Aktif
             </div>
-            <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
+            <p style={{ margin: `var(--space-1) 0 0`, fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
               Setiap hasil OEE menyimpan <code>calc_version</code>, sehingga angka historis selalu dapat
               ditelusuri ke definisi yang menghasilkannya.
             </p>
@@ -90,7 +90,7 @@ export const OeeConfigTab: React.FC<{ onToast: (message: string) => void }> = ({
         <div
           role="alert"
           style={{
-            padding: '10px 12px',
+            padding: `var(--space-3) var(--space-3)`,
             borderRadius: 'var(--radius-sm, 8px)',
             backgroundColor: 'var(--color-error-container)',
             color: 'var(--color-on-error-container)',
@@ -102,7 +102,7 @@ export const OeeConfigTab: React.FC<{ onToast: (message: string) => void }> = ({
         </div>
       )}
 
-      <SurfaceCard padding="md" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <SurfaceCard padding="md" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
         <Setting
           title="Planned downtime dikeluarkan dari Planned Production Time"
           description={
@@ -128,7 +128,7 @@ export const OeeConfigTab: React.FC<{ onToast: (message: string) => void }> = ({
               setDraft((d) => ({ ...d, idealCycleSource: e.target.value as Draft['idealCycleSource'] }))
             }
             style={{
-              padding: '8px 10px',
+              padding: `var(--space-2) var(--space-3)`,
               fontSize: '12px',
               fontFamily: 'var(--font-family)',
               borderRadius: 'var(--radius-sm, 8px)',
@@ -159,7 +159,7 @@ export const OeeConfigTab: React.FC<{ onToast: (message: string) => void }> = ({
         </Setting>
 
         {editable && (
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
             <Button variant="filled" disabled={!dirty || save.isPending} onClick={() => save.mutate()}>
               {save.isPending ? 'Menyimpan…' : 'Simpan & Recompute'}
             </Button>
@@ -170,7 +170,7 @@ export const OeeConfigTab: React.FC<{ onToast: (message: string) => void }> = ({
                   color: 'var(--color-warning)',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '4px',
+                  gap: 'var(--space-1)',
                 }}
               >
                 <Icon name="info" size={14} />
@@ -200,9 +200,9 @@ const Setting: React.FC<{
     style={{
       display: 'flex',
       justifyContent: 'space-between',
-      gap: '16px',
+      gap: 'var(--space-4)',
       alignItems: 'flex-start',
-      paddingBottom: '12px',
+      paddingBottom: 'var(--space-3)',
       borderBottom: '1px solid var(--color-outline-variant)',
     }}
   >
@@ -218,7 +218,7 @@ const Setting: React.FC<{
       </div>
       <p
         style={{
-          margin: '4px 0 0',
+          margin: `var(--space-1) 0 0`,
           fontSize: '12px',
           color: 'var(--color-on-surface-variant)',
           lineHeight: 1.6,
@@ -271,7 +271,7 @@ const Toggle: React.FC<{ checked: boolean; disabled?: boolean; onChange: (value:
 
 const Empty: React.FC<{ label: string }> = ({ label }) => (
   <div
-    style={{ padding: '28px', textAlign: 'center', color: 'var(--color-on-surface-variant)', fontSize: '12px' }}
+    style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-on-surface-variant)', fontSize: '12px' }}
   >
     {label}
   </div>

@@ -56,7 +56,7 @@ const Pill: React.FC<{ label: string; tone: Tone; title?: string }> = ({ label, 
     title={title}
     style={{
       display: 'inline-flex',
-      padding: '2px 10px',
+      padding: `var(--space-1) var(--space-3)`,
       borderRadius: 'var(--radius-pill)',
       fontSize: '11px',
       fontWeight: 700,
@@ -297,7 +297,7 @@ export const ProductionPlanWizardPage: React.FC = () => {
   return (
     <Page>
       <Section>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
           <div>
             <button
               type="button"
@@ -306,13 +306,13 @@ export const ProductionPlanWizardPage: React.FC = () => {
                 background: 'none',
                 border: 'none',
                 padding: 0,
-                marginBottom: '6px',
+                marginBottom: 'var(--space-2)',
                 cursor: 'pointer',
                 fontSize: '12px',
                 color: 'var(--color-primary)',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '4px',
+                gap: 'var(--space-1)',
               }}
             >
               <Icon name="arrow_back" size={14} /> Daftar Production Plan
@@ -320,7 +320,7 @@ export const ProductionPlanWizardPage: React.FC = () => {
             <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
               {plan.planNumber}
             </h1>
-            <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
+            <p style={{ margin: `var(--space-1) 0 0`, fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
               Periode {plan.periodStart} → {plan.periodEnd} ·{' '}
               {PRODUCTION_PLAN_STATUS_LABEL[plan.status] ?? plan.status} · versi {plan.version}
             </p>
@@ -352,7 +352,7 @@ export const ProductionPlanWizardPage: React.FC = () => {
 
       <Section>
         <SurfaceCard padding="md">
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
             {(wizard?.steps ?? []).map((entry) => {
               const isCurrent = entry.step === step;
               const locked = !entry.reachable && entry.step > step;
@@ -365,8 +365,8 @@ export const ProductionPlanWizardPage: React.FC = () => {
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 14px',
+                    gap: 'var(--space-2)',
+                    padding: `var(--space-2) var(--space-4)`,
                     borderRadius: 'var(--radius-pill)',
                     border: '1px solid var(--color-outline-variant)',
                     cursor: locked ? 'not-allowed' : 'pointer',
@@ -390,7 +390,7 @@ export const ProductionPlanWizardPage: React.FC = () => {
             })}
           </div>
           {wizard && (
-            <p style={{ margin: '10px 0 0', fontSize: '11px', color: 'var(--color-on-surface-variant)' }}>
+            <p style={{ margin: `var(--space-3) 0 0`, fontSize: '11px', color: 'var(--color-on-surface-variant)' }}>
               {wizard.steps.find((s) => s.step === step + 1)?.blockedBy ??
                 'Seluruh prasyarat step berikutnya sudah terpenuhi.'}
             </p>
@@ -402,28 +402,28 @@ export const ProductionPlanWizardPage: React.FC = () => {
       {step === 1 && (
         <Section>
           <SurfaceCard padding="lg">
-            <h2 style={{ margin: '0 0 4px', fontSize: '15px', fontWeight: 700 }}>Step 1 — Demand</h2>
-            <p style={{ margin: '0 0 16px', fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
+            <h2 style={{ margin: `0 0 var(--space-1)`, fontSize: '15px', fontWeight: 700 }}>Step 1 — Demand</h2>
+            <p style={{ margin: `0 0 var(--space-4)`, fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
               Pilih demand yang masuk ke plan ini. Demand untuk product yang sama digabung menjadi satu
               plan line tanpa kehilangan asal ordernya.
             </p>
 
-            <h3 style={{ margin: '0 0 8px', fontSize: '13px', fontWeight: 700 }}>Sudah masuk plan</h3>
+            <h3 style={{ margin: `0 0 var(--space-2)`, fontSize: '13px', fontWeight: 700 }}>Sudah masuk plan</h3>
             {(demandQuery.data ?? []).length === 0 ? (
-              <p style={{ margin: '0 0 16px', fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
+              <p style={{ margin: `0 0 var(--space-4)`, fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
                 Belum ada demand yang dipilih.
               </p>
             ) : (
-              <div style={{ overflowX: 'auto', marginBottom: '20px' }}>
+              <div style={{ overflowX: 'auto', marginBottom: 'var(--space-5)' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
                   <thead>
                     <tr style={{ textAlign: 'left', color: 'var(--color-on-surface-variant)' }}>
-                      <th style={{ padding: '6px 4px' }}>Customer</th>
-                      <th style={{ padding: '6px 4px' }}>Order</th>
-                      <th style={{ padding: '6px 4px' }}>Product</th>
-                      <th style={{ padding: '6px 4px' }}>Demand</th>
-                      <th style={{ padding: '6px 4px' }}>Kirim</th>
-                      <th style={{ padding: '6px 4px' }} />
+                      <th style={{ padding: `var(--space-2) var(--space-1)` }}>Customer</th>
+                      <th style={{ padding: `var(--space-2) var(--space-1)` }}>Order</th>
+                      <th style={{ padding: `var(--space-2) var(--space-1)` }}>Product</th>
+                      <th style={{ padding: `var(--space-2) var(--space-1)` }}>Demand</th>
+                      <th style={{ padding: `var(--space-2) var(--space-1)` }}>Kirim</th>
+                      <th style={{ padding: `var(--space-2) var(--space-1)` }} />
                     </tr>
                   </thead>
                   <tbody>
@@ -433,14 +433,14 @@ export const ProductionPlanWizardPage: React.FC = () => {
                           key={source.customerOrderLineId}
                           style={{ borderTop: '1px solid var(--color-outline-variant)' }}
                         >
-                          <td style={{ padding: '6px 4px' }}>{source.customerName}</td>
-                          <td style={{ padding: '6px 4px' }}>{source.orderNumber}</td>
-                          <td style={{ padding: '6px 4px' }}>{productName(line.productId)}</td>
-                          <td style={{ padding: '6px 4px' }}>
+                          <td style={{ padding: `var(--space-2) var(--space-1)` }}>{source.customerName}</td>
+                          <td style={{ padding: `var(--space-2) var(--space-1)` }}>{source.orderNumber}</td>
+                          <td style={{ padding: `var(--space-2) var(--space-1)` }}>{productName(line.productId)}</td>
+                          <td style={{ padding: `var(--space-2) var(--space-1)` }}>
                             {source.demandQuantity.toLocaleString('id-ID')}
                           </td>
-                          <td style={{ padding: '6px 4px' }}>{source.requestedDeliveryDate ?? '—'}</td>
-                          <td style={{ padding: '6px 4px' }}>
+                          <td style={{ padding: `var(--space-2) var(--space-1)` }}>{source.requestedDeliveryDate ?? '—'}</td>
+                          <td style={{ padding: `var(--space-2) var(--space-1)` }}>
                             {!readOnly && (
                               <Button
                                 variant="text"
@@ -464,7 +464,7 @@ export const ProductionPlanWizardPage: React.FC = () => {
               </div>
             )}
 
-            <h3 style={{ margin: '0 0 8px', fontSize: '13px', fontWeight: 700 }}>
+            <h3 style={{ margin: `0 0 var(--space-2)`, fontSize: '13px', fontWeight: 700 }}>
               Demand tersedia ({candidateLines.length})
             </h3>
             {candidateLines.length === 0 ? (
@@ -479,31 +479,31 @@ export const ProductionPlanWizardPage: React.FC = () => {
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
                   <thead>
                     <tr style={{ textAlign: 'left', color: 'var(--color-on-surface-variant)' }}>
-                      <th style={{ padding: '6px 4px' }}>Customer</th>
-                      <th style={{ padding: '6px 4px' }}>Order</th>
-                      <th style={{ padding: '6px 4px' }}>Product</th>
-                      <th style={{ padding: '6px 4px' }}>Order Qty</th>
-                      <th style={{ padding: '6px 4px' }}>Sisa</th>
-                      <th style={{ padding: '6px 4px' }}>Kirim</th>
-                      <th style={{ padding: '6px 4px' }} />
+                      <th style={{ padding: `var(--space-2) var(--space-1)` }}>Customer</th>
+                      <th style={{ padding: `var(--space-2) var(--space-1)` }}>Order</th>
+                      <th style={{ padding: `var(--space-2) var(--space-1)` }}>Product</th>
+                      <th style={{ padding: `var(--space-2) var(--space-1)` }}>Order Qty</th>
+                      <th style={{ padding: `var(--space-2) var(--space-1)` }}>Sisa</th>
+                      <th style={{ padding: `var(--space-2) var(--space-1)` }}>Kirim</th>
+                      <th style={{ padding: `var(--space-2) var(--space-1)` }} />
                     </tr>
                   </thead>
                   <tbody>
                     {candidateLines.map(({ order, line, outstanding }) => (
                       <tr key={line.id} style={{ borderTop: '1px solid var(--color-outline-variant)' }}>
-                        <td style={{ padding: '6px 4px' }}>{customerName(order.customerId)}</td>
-                        <td style={{ padding: '6px 4px' }}>{order.orderNumber}</td>
-                        <td style={{ padding: '6px 4px' }}>{productName(line.productId)}</td>
-                        <td style={{ padding: '6px 4px' }}>
+                        <td style={{ padding: `var(--space-2) var(--space-1)` }}>{customerName(order.customerId)}</td>
+                        <td style={{ padding: `var(--space-2) var(--space-1)` }}>{order.orderNumber}</td>
+                        <td style={{ padding: `var(--space-2) var(--space-1)` }}>{productName(line.productId)}</td>
+                        <td style={{ padding: `var(--space-2) var(--space-1)` }}>
                           {line.orderedQuantity.toLocaleString('id-ID')}
                         </td>
-                        <td style={{ padding: '6px 4px', fontWeight: 700 }}>
+                        <td style={{ padding: `var(--space-2) var(--space-1)`, fontWeight: 700 }}>
                           {outstanding.toLocaleString('id-ID')}
                         </td>
-                        <td style={{ padding: '6px 4px' }}>
+                        <td style={{ padding: `var(--space-2) var(--space-1)` }}>
                           {line.requestedDeliveryDate ?? order.requestedDeliveryDate}
                         </td>
-                        <td style={{ padding: '6px 4px' }}>
+                        <td style={{ padding: `var(--space-2) var(--space-1)` }}>
                           <Button
                             variant="outlined"
                             size="sm"
@@ -527,14 +527,14 @@ export const ProductionPlanWizardPage: React.FC = () => {
       {step === 2 && (
         <Section>
           <SurfaceCard padding="lg">
-            <h2 style={{ margin: '0 0 4px', fontSize: '15px', fontWeight: 700 }}>
+            <h2 style={{ margin: `0 0 var(--space-1)`, fontSize: '15px', fontWeight: 700 }}>
               Step 2 — Production Plan
             </h2>
-            <p style={{ margin: '0 0 16px', fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
+            <p style={{ margin: `0 0 var(--space-4)`, fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
               Tentukan planned quantity dan prioritas. Demand dan planned dipisah agar keputusan
               memproduksi kurang dari yang dipesan tetap terlihat. Capacity status dihitung sistem.
             </p>
-            <div style={{ display: 'grid', gap: '12px' }}>
+            <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
               {plan.lines.map((line) => (
                 <PlanLineEditor
                   key={line.id}
@@ -559,9 +559,9 @@ export const ProductionPlanWizardPage: React.FC = () => {
       {step === 3 && (
         <Section>
           <SurfaceCard padding="lg">
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
               <div>
-                <h2 style={{ margin: '0 0 4px', fontSize: '15px', fontWeight: 700 }}>Step 3 — Work Order</h2>
+                <h2 style={{ margin: `0 0 var(--space-1)`, fontSize: '15px', fontWeight: 700 }}>Step 3 — Work Order</h2>
                 <p style={{ margin: 0, fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
                   Satu Work Order per process routing, dengan sequence dan predecessor terbentuk.
                   Generate ulang tidak membuat duplikat.
@@ -576,7 +576,7 @@ export const ProductionPlanWizardPage: React.FC = () => {
               </Button>
             </div>
 
-            <div style={{ marginTop: '16px' }}>
+            <div style={{ marginTop: 'var(--space-4)' }}>
               {planWorkOrders.length === 0 ? (
                 <EmptyState
                   icon="assignment"
@@ -589,12 +589,12 @@ export const ProductionPlanWizardPage: React.FC = () => {
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
                     <thead>
                       <tr style={{ textAlign: 'left', color: 'var(--color-on-surface-variant)' }}>
-                        <th style={{ padding: '6px 4px' }}>WO</th>
-                        <th style={{ padding: '6px 4px' }}>Product</th>
-                        <th style={{ padding: '6px 4px' }}>Seq</th>
-                        <th style={{ padding: '6px 4px' }}>Planned</th>
-                        <th style={{ padding: '6px 4px' }}>Predecessor</th>
-                        <th style={{ padding: '6px 4px' }}>Status</th>
+                        <th style={{ padding: `var(--space-2) var(--space-1)` }}>WO</th>
+                        <th style={{ padding: `var(--space-2) var(--space-1)` }}>Product</th>
+                        <th style={{ padding: `var(--space-2) var(--space-1)` }}>Seq</th>
+                        <th style={{ padding: `var(--space-2) var(--space-1)` }}>Planned</th>
+                        <th style={{ padding: `var(--space-2) var(--space-1)` }}>Predecessor</th>
+                        <th style={{ padding: `var(--space-2) var(--space-1)` }}>Status</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -603,19 +603,19 @@ export const ProductionPlanWizardPage: React.FC = () => {
                         .sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0))
                         .map((wo) => (
                           <tr key={wo.id} style={{ borderTop: '1px solid var(--color-outline-variant)' }}>
-                            <td style={{ padding: '6px 4px', fontWeight: 700 }}>{wo.woNumber}</td>
-                            <td style={{ padding: '6px 4px' }}>{productName(wo.productId)}</td>
-                            <td style={{ padding: '6px 4px' }}>{wo.sequence ?? '—'}</td>
-                            <td style={{ padding: '6px 4px' }}>
+                            <td style={{ padding: `var(--space-2) var(--space-1)`, fontWeight: 700 }}>{wo.woNumber}</td>
+                            <td style={{ padding: `var(--space-2) var(--space-1)` }}>{productName(wo.productId)}</td>
+                            <td style={{ padding: `var(--space-2) var(--space-1)` }}>{wo.sequence ?? '—'}</td>
+                            <td style={{ padding: `var(--space-2) var(--space-1)` }}>
                               {wo.plannedQuantity.toLocaleString('id-ID')}
                             </td>
-                            <td style={{ padding: '6px 4px' }}>
+                            <td style={{ padding: `var(--space-2) var(--space-1)` }}>
                               {wo.predecessorWorkOrderId
                                 ? (planWorkOrders.find((p) => p.id === wo.predecessorWorkOrderId)?.woNumber ??
                                   '—')
                                 : 'process pertama'}
                             </td>
-                            <td style={{ padding: '6px 4px' }}>{statusLabel(wo.status)}</td>
+                            <td style={{ padding: `var(--space-2) var(--space-1)` }}>{statusLabel(wo.status)}</td>
                           </tr>
                         ))}
                     </tbody>
@@ -631,8 +631,8 @@ export const ProductionPlanWizardPage: React.FC = () => {
       {step === 4 && (
         <Section>
           <SurfaceCard padding="lg">
-            <h2 style={{ margin: '0 0 4px', fontSize: '15px', fontWeight: 700 }}>Step 4 — Scheduling</h2>
-            <p style={{ margin: '0 0 16px', fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
+            <h2 style={{ margin: `0 0 var(--space-1)`, fontSize: '15px', fontWeight: 700 }}>Step 4 — Scheduling</h2>
+            <p style={{ margin: `0 0 var(--space-4)`, fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
               Start, estimated finish, shift, dan sequence per Work Order. Nilai awal diisi dari
               periode plan dan tanggal kirim plan line.
             </p>
@@ -645,8 +645,8 @@ export const ProductionPlanWizardPage: React.FC = () => {
       {step === 5 && (
         <Section>
           <SurfaceCard padding="lg">
-            <h2 style={{ margin: '0 0 4px', fontSize: '15px', fontWeight: 700 }}>Step 5 — Resource</h2>
-            <p style={{ margin: '0 0 16px', fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
+            <h2 style={{ margin: `0 0 var(--space-1)`, fontSize: '15px', fontWeight: 700 }}>Step 5 — Resource</h2>
+            <p style={{ margin: `0 0 var(--space-4)`, fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
               Hanya machine dan mold yang compatible dengan product yang ditampilkan. Assignment yang
               tidak compatible ditolak backend.
             </p>
@@ -659,8 +659,8 @@ export const ProductionPlanWizardPage: React.FC = () => {
       {step === 6 && (
         <Section>
           <SurfaceCard padding="lg">
-            <h2 style={{ margin: '0 0 4px', fontSize: '15px', fontWeight: 700 }}>Step 6 — Confirmation</h2>
-            <p style={{ margin: '0 0 16px', fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
+            <h2 style={{ margin: `0 0 var(--space-1)`, fontSize: '15px', fontWeight: 700 }}>Step 6 — Confirmation</h2>
+            <p style={{ margin: `0 0 var(--space-4)`, fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
               Ringkasan lengkap plan. Konfirmasi ditolak bila masih ada plan line Capacity Up Required
               atau Work Order yang belum dikonfirmasi.
             </p>
@@ -669,8 +669,8 @@ export const ProductionPlanWizardPage: React.FC = () => {
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                gap: '12px',
-                marginBottom: '16px',
+                gap: 'var(--space-3)',
+                marginBottom: 'var(--space-4)',
               }}
             >
               <Summary label="Plan line" value={String(plan.lines.length)} />
@@ -690,7 +690,7 @@ export const ProductionPlanWizardPage: React.FC = () => {
             </div>
 
             {(wizard?.capacityUpRequiredLines ?? 0) > 0 && (
-              <SurfaceCard padding="md" railTone="error" style={{ marginBottom: '12px' }}>
+              <SurfaceCard padding="md" railTone="error" style={{ marginBottom: 'var(--space-3)' }}>
                 <span style={{ fontSize: '12px', color: 'var(--color-on-surface)' }}>
                   {wizard?.capacityUpRequiredLines} plan line berstatus Capacity Up Required. Turunkan
                   planned quantity atau ajukan Capacity Up sebelum konfirmasi.
@@ -699,7 +699,7 @@ export const ProductionPlanWizardPage: React.FC = () => {
             )}
 
             {planWorkOrders.some((wo) => wo.status === 'DRAFT' || wo.status === 'SCHEDULED') && (
-              <SurfaceCard padding="md" railTone="warning" style={{ marginBottom: '12px' }}>
+              <SurfaceCard padding="md" railTone="warning" style={{ marginBottom: 'var(--space-3)' }}>
                 <span style={{ fontSize: '12px', color: 'var(--color-on-surface)' }}>
                   Masih ada Work Order yang belum dikonfirmasi. Konfirmasi seluruh Work Order sebelum
                   plan dapat dikonfirmasi.
@@ -737,7 +737,7 @@ export const ProductionPlanWizardPage: React.FC = () => {
 const Summary: React.FC<{ label: string; value: string }> = ({ label, value }) => (
   <div
     style={{
-      padding: '12px',
+      padding: 'var(--space-3)',
       borderRadius: 'var(--radius-md)',
       backgroundColor: 'var(--color-surface-container)',
     }}
@@ -785,9 +785,9 @@ const PlanLineEditor: React.FC<{
       style={{
         display: 'grid',
         gridTemplateColumns: 'minmax(200px, 2fr) repeat(3, minmax(110px, 1fr)) auto',
-        gap: '12px',
+        gap: 'var(--space-3)',
         alignItems: 'center',
-        padding: '12px',
+        padding: 'var(--space-3)',
         borderRadius: 'var(--radius-md)',
         backgroundColor: 'var(--color-surface-container)',
       }}
@@ -796,7 +796,7 @@ const PlanLineEditor: React.FC<{
         <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-on-surface)' }}>
           {productLabel}
         </div>
-        <div style={{ marginTop: '4px', display: 'flex', gap: '6px', alignItems: 'center' }}>
+        <div style={{ marginTop: 'var(--space-1)', display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
           <Pill
             label={CAPACITY_STATUS_LABEL[capacityStatus]}
             tone={CAPACITY_TONE[capacityStatus]}
@@ -855,23 +855,23 @@ const ScheduleReview: React.FC<{
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
         <thead>
           <tr style={{ textAlign: 'left', color: 'var(--color-on-surface-variant)' }}>
-            <th style={{ padding: '6px 4px' }}>WO</th>
-            <th style={{ padding: '6px 4px' }}>Product</th>
-            <th style={{ padding: '6px 4px' }}>Seq</th>
-            <th style={{ padding: '6px 4px' }}>Planned Start</th>
-            <th style={{ padding: '6px 4px' }}>Planned End</th>
-            <th style={{ padding: '6px 4px' }}>Shift</th>
+            <th style={{ padding: `var(--space-2) var(--space-1)` }}>WO</th>
+            <th style={{ padding: `var(--space-2) var(--space-1)` }}>Product</th>
+            <th style={{ padding: `var(--space-2) var(--space-1)` }}>Seq</th>
+            <th style={{ padding: `var(--space-2) var(--space-1)` }}>Planned Start</th>
+            <th style={{ padding: `var(--space-2) var(--space-1)` }}>Planned End</th>
+            <th style={{ padding: `var(--space-2) var(--space-1)` }}>Shift</th>
           </tr>
         </thead>
         <tbody>
           {workOrders.map((wo) => (
             <tr key={wo.id} style={{ borderTop: '1px solid var(--color-outline-variant)' }}>
-              <td style={{ padding: '6px 4px', fontWeight: 700 }}>{wo.woNumber}</td>
-              <td style={{ padding: '6px 4px' }}>{productName(wo.productId)}</td>
-              <td style={{ padding: '6px 4px' }}>{wo.sequence ?? '—'}</td>
-              <td style={{ padding: '6px 4px' }}>{wo.plannedStart?.slice(0, 16).replace('T', ' ')}</td>
-              <td style={{ padding: '6px 4px' }}>{wo.plannedEnd?.slice(0, 16).replace('T', ' ')}</td>
-              <td style={{ padding: '6px 4px' }}>{wo.shiftId ?? 'belum ditetapkan'}</td>
+              <td style={{ padding: `var(--space-2) var(--space-1)`, fontWeight: 700 }}>{wo.woNumber}</td>
+              <td style={{ padding: `var(--space-2) var(--space-1)` }}>{productName(wo.productId)}</td>
+              <td style={{ padding: `var(--space-2) var(--space-1)` }}>{wo.sequence ?? '—'}</td>
+              <td style={{ padding: `var(--space-2) var(--space-1)` }}>{wo.plannedStart?.slice(0, 16).replace('T', ' ')}</td>
+              <td style={{ padding: `var(--space-2) var(--space-1)` }}>{wo.plannedEnd?.slice(0, 16).replace('T', ' ')}</td>
+              <td style={{ padding: `var(--space-2) var(--space-1)` }}>{wo.shiftId ?? 'belum ditetapkan'}</td>
             </tr>
           ))}
         </tbody>
@@ -898,7 +898,7 @@ const ResourceReview: React.FC<{
   return (
     <>
       {missing.length > 0 && (
-        <SurfaceCard padding="md" railTone="warning" style={{ marginBottom: '12px' }}>
+        <SurfaceCard padding="md" railTone="warning" style={{ marginBottom: 'var(--space-3)' }}>
           <span style={{ fontSize: '12px', color: 'var(--color-on-surface)' }}>
             {missing.length} Work Order belum memiliki mesin dan/atau mold. Step Confirmation terkunci
             sampai seluruhnya terisi.
@@ -909,19 +909,19 @@ const ResourceReview: React.FC<{
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
           <thead>
             <tr style={{ textAlign: 'left', color: 'var(--color-on-surface-variant)' }}>
-              <th style={{ padding: '6px 4px' }}>WO</th>
-              <th style={{ padding: '6px 4px' }}>Product</th>
-              <th style={{ padding: '6px 4px' }}>Machine</th>
-              <th style={{ padding: '6px 4px' }}>Mold</th>
+              <th style={{ padding: `var(--space-2) var(--space-1)` }}>WO</th>
+              <th style={{ padding: `var(--space-2) var(--space-1)` }}>Product</th>
+              <th style={{ padding: `var(--space-2) var(--space-1)` }}>Machine</th>
+              <th style={{ padding: `var(--space-2) var(--space-1)` }}>Mold</th>
             </tr>
           </thead>
           <tbody>
             {workOrders.map((wo) => (
               <tr key={wo.id} style={{ borderTop: '1px solid var(--color-outline-variant)' }}>
-                <td style={{ padding: '6px 4px', fontWeight: 700 }}>{wo.woNumber}</td>
-                <td style={{ padding: '6px 4px' }}>{productName(wo.productId)}</td>
-                <td style={{ padding: '6px 4px' }}>{wo.machineId ?? 'belum ditetapkan'}</td>
-                <td style={{ padding: '6px 4px' }}>{wo.moldId ?? 'belum ditetapkan'}</td>
+                <td style={{ padding: `var(--space-2) var(--space-1)`, fontWeight: 700 }}>{wo.woNumber}</td>
+                <td style={{ padding: `var(--space-2) var(--space-1)` }}>{productName(wo.productId)}</td>
+                <td style={{ padding: `var(--space-2) var(--space-1)` }}>{wo.machineId ?? 'belum ditetapkan'}</td>
+                <td style={{ padding: `var(--space-2) var(--space-1)` }}>{wo.moldId ?? 'belum ditetapkan'}</td>
               </tr>
             ))}
           </tbody>

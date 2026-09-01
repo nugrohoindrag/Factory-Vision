@@ -66,7 +66,7 @@ export const AuditLogPage: React.FC = () => {
         return (
           <span
             style={{
-              padding: '3px 8px',
+              padding: `var(--space-1) var(--space-2)`,
               borderRadius: 'var(--radius-pill)',
               fontSize: '11px',
               fontWeight: 800,
@@ -110,7 +110,7 @@ export const AuditLogPage: React.FC = () => {
   ];
 
   return (
-    <Page style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Page style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
       {/* Header */}
       <Section>
         <h1
@@ -124,19 +124,19 @@ export const AuditLogPage: React.FC = () => {
         >
           Immutable Audit Trail Logs
         </h1>
-        <p style={{ margin: '4px 0 0', color: 'var(--color-on-surface-variant)', fontSize: '12px' }}>
+        <p style={{ margin: `var(--space-1) 0 0`, color: 'var(--color-on-surface-variant)', fontSize: '12px' }}>
           Append-only audit trail that cannot be modified or deleted for compliance and transparency
         </p>
       </Section>
 
       {/* Filter Chips Toolbar */}
-      <Section style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+      <Section style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
         <span
           style={{
             fontSize: '11px',
             fontWeight: 700,
             color: 'var(--color-on-surface-variant)',
-            marginRight: '4px',
+            marginRight: 'var(--space-1)',
           }}
         >
           Category Filter:
@@ -149,7 +149,7 @@ export const AuditLogPage: React.FC = () => {
       </Section>
 
       {/* Table first at full width, then the timeline underneath it. */}
-      <Section style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <Section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
         <AdvancedDataTable
           columns={columns}
           data={filteredLogs}
@@ -159,11 +159,11 @@ export const AuditLogPage: React.FC = () => {
           selectable={false}
           expandable={true}
           renderExpandedRow={(log) => (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '11px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)', fontSize: '11px' }}>
               <div
                 style={{
                   backgroundColor: 'var(--color-surface-container-low)',
-                  padding: '10px',
+                  padding: 'var(--space-3)',
                   borderRadius: 'var(--radius-md, 8px)',
                 }}
               >
@@ -172,7 +172,7 @@ export const AuditLogPage: React.FC = () => {
                     color: 'var(--color-error)',
                     fontWeight: 700,
                     display: 'block',
-                    marginBottom: '3px',
+                    marginBottom: 'var(--space-1)',
                   }}
                 >
                   - Previous State (Before):
@@ -191,7 +191,7 @@ export const AuditLogPage: React.FC = () => {
               <div
                 style={{
                   backgroundColor: 'var(--color-surface-container-low)',
-                  padding: '10px',
+                  padding: 'var(--space-3)',
                   borderRadius: 'var(--radius-md, 8px)',
                 }}
               >
@@ -200,7 +200,7 @@ export const AuditLogPage: React.FC = () => {
                     color: 'var(--color-success)',
                     fontWeight: 700,
                     display: 'block',
-                    marginBottom: '3px',
+                    marginBottom: 'var(--space-1)',
                   }}
                 >
                   + Updated State (After):
@@ -221,12 +221,12 @@ export const AuditLogPage: React.FC = () => {
             backgroundColor: 'var(--color-surface)',
             borderRadius: 'var(--radius-lg, 16px)',
             border: '1px solid var(--color-outline-variant)',
-            padding: '18px',
+            padding: 'var(--space-5)',
             height: 'fit-content',
           }}
         >
           <h3
-            style={{ margin: '0 0 12px', fontSize: '14px', fontWeight: 800, color: 'var(--color-on-surface)' }}
+            style={{ margin: `0 0 var(--space-3)`, fontSize: '14px', fontWeight: 800, color: 'var(--color-on-surface)' }}
           >
             Real-time Event Stream
           </h3>

@@ -138,7 +138,7 @@ export const AclMatrixTab: React.FC<{ onToast: (message: string) => void }> = ({
   }
 
   const headCell: React.CSSProperties = {
-    padding: '10px 12px',
+    padding: `var(--space-3) var(--space-3)`,
     fontSize: '11px',
     fontWeight: 700,
     textAlign: 'center',
@@ -147,13 +147,13 @@ export const AclMatrixTab: React.FC<{ onToast: (message: string) => void }> = ({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
       <div
         style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'flex-start',
-          gap: '12px',
+          gap: 'var(--space-3)',
           flexWrap: 'wrap',
         }}
       >
@@ -173,7 +173,7 @@ export const AclMatrixTab: React.FC<{ onToast: (message: string) => void }> = ({
         </p>
 
         {editable && (
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
             <Button
               variant="text"
               disabled={dirtyRoleIds.length === 0 || save.isPending}
@@ -203,7 +203,7 @@ export const AclMatrixTab: React.FC<{ onToast: (message: string) => void }> = ({
       {!editable && (
         <div
           style={{
-            padding: '10px 12px',
+            padding: `var(--space-3) var(--space-3)`,
             borderRadius: 'var(--radius-sm, 8px)',
             backgroundColor: 'var(--color-surface-container-high)',
             color: 'var(--color-on-surface-variant)',
@@ -219,7 +219,7 @@ export const AclMatrixTab: React.FC<{ onToast: (message: string) => void }> = ({
         <div
           role="alert"
           style={{
-            padding: '10px 12px',
+            padding: `var(--space-3) var(--space-3)`,
             borderRadius: 'var(--radius-sm, 8px)',
             backgroundColor: 'var(--color-error-container)',
             color: 'var(--color-on-error-container)',
@@ -240,7 +240,7 @@ export const AclMatrixTab: React.FC<{ onToast: (message: string) => void }> = ({
                   style={{
                     ...headCell,
                     textAlign: 'left',
-                    padding: '10px 20px',
+                    padding: `var(--space-3) var(--space-5)`,
                     position: 'sticky',
                     left: 0,
                     zIndex: 2,
@@ -252,8 +252,8 @@ export const AclMatrixTab: React.FC<{ onToast: (message: string) => void }> = ({
                 </th>
                 {roles.map((role) => (
                   <th key={role.id} style={headCell}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-1)' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
                         {role.name}
                         {role.key === LOCKED_ROLE_KEY && <Icon name="lock" size={13} />}
                       </span>
@@ -273,7 +273,7 @@ export const AclMatrixTab: React.FC<{ onToast: (message: string) => void }> = ({
                     <td
                       colSpan={roles.length + 1}
                       style={{
-                        padding: '8px 20px',
+                        padding: `var(--space-2) var(--space-5)`,
                         fontSize: '11px',
                         fontWeight: 800,
                         letterSpacing: '0.04em',
@@ -292,21 +292,21 @@ export const AclMatrixTab: React.FC<{ onToast: (message: string) => void }> = ({
                     >
                       <td
                         style={{
-                          padding: '10px 20px',
+                          padding: `var(--space-3) var(--space-5)`,
                           position: 'sticky',
                           left: 0,
                           zIndex: 1,
                           backgroundColor: 'var(--color-surface)',
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                           <code style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)' }}>
                             {permission.id}
                           </code>
                           {permission.privileged && (
                             <span
                               style={{
-                                padding: '1px 6px',
+                                padding: `var(--space-1) var(--space-2)`,
                                 borderRadius: 'var(--radius-full, 999px)',
                                 fontSize: '9px',
                                 fontWeight: 700,
@@ -326,7 +326,7 @@ export const AclMatrixTab: React.FC<{ onToast: (message: string) => void }> = ({
                       {roles.map((role) => {
                         const locked = lockReason(role, permission);
                         return (
-                          <td key={role.id} style={{ padding: '10px 12px' }}>
+                          <td key={role.id} style={{ padding: `var(--space-3) var(--space-3)` }}>
                             <div
                               title={locked ?? `${role.name}, ${permission.description}`}
                               style={{ display: 'flex', justifyContent: 'center' }}
@@ -354,7 +354,7 @@ export const AclMatrixTab: React.FC<{ onToast: (message: string) => void }> = ({
 
 const Empty: React.FC<{ label: string }> = ({ label }) => (
   <div
-    style={{ padding: '28px', textAlign: 'center', color: 'var(--color-on-surface-variant)', fontSize: '12px' }}
+    style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-on-surface-variant)', fontSize: '12px' }}
   >
     {label}
   </div>

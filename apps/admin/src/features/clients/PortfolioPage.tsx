@@ -71,13 +71,13 @@ export const PortfolioPage: React.FC = () => {
   const s = summary.data;
 
   return (
-    <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <div style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
       <div
         style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'flex-start',
-          gap: '16px',
+          gap: 'var(--space-4)',
           flexWrap: 'wrap',
         }}
       >
@@ -93,11 +93,11 @@ export const PortfolioPage: React.FC = () => {
           >
             Portofolio Klien
           </h1>
-          <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
+          <p style={{ margin: `var(--space-1) 0 0`, fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
             Status langganan, pemakaian, dan hal yang perlu ditindaklanjuti
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
           <Button
             variant="outlined"
             onClick={() => capture.mutate()}
@@ -115,7 +115,7 @@ export const PortfolioPage: React.FC = () => {
       </div>
 
       <div
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)' }}
       >
         <MetricCard
           label="Total Klien"
@@ -168,14 +168,14 @@ export const PortfolioPage: React.FC = () => {
       </div>
 
       <SurfaceCard padding="md">
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap', alignItems: 'center' }}>
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Cari nama klien…"
             style={{
               flex: '1 1 220px',
-              padding: '9px 12px',
+              padding: `var(--space-3) var(--space-3)`,
               fontSize: '13px',
               fontFamily: 'var(--font-family)',
               color: 'var(--color-on-surface)',
@@ -193,7 +193,7 @@ export const PortfolioPage: React.FC = () => {
                 type="button"
                 onClick={() => setStatusFilter(value)}
                 style={{
-                  padding: '8px 14px',
+                  padding: `var(--space-2) var(--space-4)`,
                   borderRadius: 'var(--radius-full, 999px)',
                   border: '1px solid var(--color-outline-variant)',
                   cursor: 'pointer',
@@ -214,7 +214,7 @@ export const PortfolioPage: React.FC = () => {
       {clients.isLoading && <Placeholder label="Memuat daftar klien…" />}
       {clients.data?.length === 0 && <Placeholder label="Belum ada klien yang cocok dengan filter ini." />}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
         {clients.data?.map((overview) => (
           <ClientRow
             key={overview.client.id}
@@ -249,22 +249,22 @@ const ClientRow: React.FC<{ overview: ClientOverview; onOpen: () => void }> = ({
       onClick={onOpen}
       railTone={worst ? SEVERITY_TONE[worst.severity] : undefined}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
         <div style={{ minWidth: '220px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
             <span style={{ fontSize: '15px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
               {client.displayName}
             </span>
             <Pill tone={STATUS_TONE[client.lifecycleStatus]}>{STATUS_LABEL[client.lifecycleStatus]}</Pill>
           </div>
-          <div style={{ fontSize: '11.5px', color: 'var(--color-on-surface-variant)', marginTop: '3px' }}>
+          <div style={{ fontSize: '11.5px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}>
             {client.legalName}
             {client.city ? ` · ${client.city}` : ''}
             {client.accountManager ? ` · AM ${client.accountManager}` : ''}
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '22px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-6)', flexWrap: 'wrap', alignItems: 'center' }}>
           <Stat label="Paket" value={subscription?.planName ?? '—'} />
           <Stat
             label="Perpanjangan"
@@ -304,7 +304,7 @@ const ClientRow: React.FC<{ overview: ClientOverview; onOpen: () => void }> = ({
       </div>
 
       {attention.length > 0 && (
-        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '10px' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap', marginTop: 'var(--space-3)' }}>
           {attention.map((item) => (
             <Pill key={item.kind} tone={SEVERITY_TONE[item.severity]}>
               {item.message}
@@ -342,7 +342,7 @@ const Stat: React.FC<{ label: string; value: string; tone?: Tone }> = ({ label, 
 export const Pill: React.FC<{ tone: Tone; children: React.ReactNode }> = ({ tone, children }) => (
   <span
     style={{
-      padding: '2px 9px',
+      padding: `var(--space-1) var(--space-3)`,
       borderRadius: 'var(--radius-full, 999px)',
       backgroundColor: toneContainer[tone],
       color: toneOnContainer[tone],

@@ -23,12 +23,12 @@ export const SectionHeading: React.FC<SectionHeadingProps> = ({ icon, title, que
       display: 'flex',
       alignItems: 'baseline',
       justifyContent: 'space-between',
-      gap: '12px',
+      gap: 'var(--space-3)',
       flexWrap: 'wrap',
-      marginTop: '4px',
+      marginTop: 'var(--space-1)',
     }}
   >
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
       <Icon name={icon} size={14} color="var(--color-on-surface-variant)" />
       <span
         style={{

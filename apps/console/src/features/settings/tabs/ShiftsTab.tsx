@@ -10,7 +10,7 @@ const api = new FactoryVisionApiClient({ baseUrl: '' });
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  padding: '10px 12px',
+  padding: `var(--space-3) var(--space-3)`,
   borderRadius: 'var(--radius-md, 8px)',
   backgroundColor: 'var(--color-surface-container-high)',
   border: '1px solid var(--color-outline-variant)',
@@ -123,7 +123,7 @@ export const ShiftsTab: React.FC<{ onToast: (message: string) => void }> = ({ on
   const crosses = form ? form.endTime <= form.startTime : false;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
       {editable && (
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <Button variant="filled" icon={<Icon name="add" size={16} />} onClick={openCreate}>
@@ -136,7 +136,7 @@ export const ShiftsTab: React.FC<{ onToast: (message: string) => void }> = ({ on
         <div
           role="alert"
           style={{
-            padding: '10px 12px',
+            padding: `var(--space-3) var(--space-3)`,
             borderRadius: 'var(--radius-sm, 8px)',
             backgroundColor: 'var(--color-error-container)',
             color: 'var(--color-on-error-container)',
@@ -154,7 +154,7 @@ export const ShiftsTab: React.FC<{ onToast: (message: string) => void }> = ({ on
         <Empty label="Belum ada shift yang dikonfigurasi." />
       ) : (
         <div
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '12px' }}
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 'var(--space-3)' }}
         >
           {shifts.map((shift) => (
             <SurfaceCard key={shift.id} padding="md">
@@ -163,20 +163,20 @@ export const ShiftsTab: React.FC<{ onToast: (message: string) => void }> = ({ on
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'flex-start',
-                  gap: '10px',
+                  gap: 'var(--space-3)',
                 }}
               >
                 <div>
                   <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
                     {shift.name}
                   </div>
-                  <div style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', marginTop: '2px' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}>
                     {shift.startTime}, {shift.endTime} · istirahat {shift.breakMinutes} menit
                   </div>
                 </div>
                 <span
                   style={{
-                    padding: '2px 10px',
+                    padding: `var(--space-1) var(--space-3)`,
                     borderRadius: 'var(--radius-full, 999px)',
                     fontSize: '11px',
                     fontWeight: 700,
@@ -194,8 +194,8 @@ export const ShiftsTab: React.FC<{ onToast: (message: string) => void }> = ({ on
 
               <div
                 style={{
-                  marginTop: '10px',
-                  padding: '8px 10px',
+                  marginTop: 'var(--space-3)',
+                  padding: `var(--space-2) var(--space-3)`,
                   borderRadius: 'var(--radius-sm, 8px)',
                   backgroundColor: 'var(--color-surface-container)',
                   fontSize: '11px',
@@ -214,7 +214,7 @@ export const ShiftsTab: React.FC<{ onToast: (message: string) => void }> = ({ on
               </div>
 
               {editable && (
-                <div style={{ display: 'flex', gap: '6px', marginTop: '10px' }}>
+                <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
                   <Button variant="tonal" onClick={() => openEdit(shift)}>
                     Ubah
                   </Button>
@@ -234,7 +234,7 @@ export const ShiftsTab: React.FC<{ onToast: (message: string) => void }> = ({ on
         title={form?.id ? 'Ubah Shift' : 'Tambah Shift'}
       >
         {form && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
             <Field label="Nama Shift">
               <input
                 value={form.name}
@@ -260,7 +260,7 @@ export const ShiftsTab: React.FC<{ onToast: (message: string) => void }> = ({ on
               </Field>
             )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-3)' }}>
               <Field label="Jam Mulai">
                 <input
                   type="time"
@@ -290,7 +290,7 @@ export const ShiftsTab: React.FC<{ onToast: (message: string) => void }> = ({ on
 
             <div
               style={{
-                padding: '10px 12px',
+                padding: `var(--space-3) var(--space-3)`,
                 borderRadius: 'var(--radius-sm, 8px)',
                 backgroundColor: 'var(--color-surface-container-high)',
                 fontSize: '12px',
@@ -309,7 +309,7 @@ export const ShiftsTab: React.FC<{ onToast: (message: string) => void }> = ({ on
               )}
             </div>
 
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: '12px' }}>
               <input
                 type="checkbox"
                 checked={form.active}
@@ -318,7 +318,7 @@ export const ShiftsTab: React.FC<{ onToast: (message: string) => void }> = ({ on
               Shift aktif dan dapat dipilih pada transaksi shop floor
             </label>
 
-            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
               <Button variant="text" onClick={() => setForm(null)}>
                 Batal
               </Button>
@@ -338,7 +338,7 @@ export const ShiftsTab: React.FC<{ onToast: (message: string) => void }> = ({ on
 };
 
 const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
-  <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+  <label style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
     <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface-variant)' }}>{label}</span>
     {children}
   </label>
@@ -346,7 +346,7 @@ const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, 
 
 const Empty: React.FC<{ label: string }> = ({ label }) => (
   <div
-    style={{ padding: '28px', textAlign: 'center', color: 'var(--color-on-surface-variant)', fontSize: '12px' }}
+    style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-on-surface-variant)', fontSize: '12px' }}
   >
     {label}
   </div>

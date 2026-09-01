@@ -180,14 +180,14 @@ export const OrderReceivingPage: React.FC = () => {
   return (
     <Page>
       <Section>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 'var(--space-4)' }}>
           <div>
             <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
               Penerimaan Order
             </h1>
             <p
               style={{
-                margin: '4px 0 0',
+                margin: `var(--space-1) 0 0`,
                 fontSize: '13px',
                 color: 'var(--color-on-surface-variant)',
                 maxWidth: '640px',
@@ -206,7 +206,7 @@ export const OrderReceivingPage: React.FC = () => {
       {banner && (
         <Section>
           <SurfaceCard padding="md" railTone={banner.tone === 'success' ? 'success' : 'error'}>
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
               <Icon name={banner.tone === 'success' ? 'check_circle' : 'error'} size={20} />
               <span style={{ fontSize: '13px', color: 'var(--color-on-surface)' }}>{banner.text}</span>
             </div>
@@ -220,7 +220,7 @@ export const OrderReceivingPage: React.FC = () => {
             <p style={{ margin: 0, fontSize: '13px', color: 'var(--color-on-surface)' }}>
               Master data customer atau product gagal dimuat, sehingga order belum dapat dibuat.
             </p>
-            <div style={{ marginTop: '12px' }}>
+            <div style={{ marginTop: 'var(--space-3)' }}>
               <Button
                 variant="outlined"
                 size="sm"
@@ -238,14 +238,14 @@ export const OrderReceivingPage: React.FC = () => {
 
       <Section>
         <SurfaceCard padding="lg">
-          <h2 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: 700, color: 'var(--color-on-surface)' }}>
+          <h2 style={{ margin: `0 0 var(--space-4)`, fontSize: '15px', fontWeight: 700, color: 'var(--color-on-surface)' }}>
             Informasi Order
           </h2>
           <div
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-              gap: '16px',
+              gap: 'var(--space-4)',
             }}
           >
             <Select
@@ -339,7 +339,7 @@ export const OrderReceivingPage: React.FC = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              marginBottom: '16px',
+              marginBottom: 'var(--space-4)',
             }}
           >
             <h2 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: 'var(--color-on-surface)' }}>
@@ -351,7 +351,7 @@ export const OrderReceivingPage: React.FC = () => {
           </div>
 
           {errorFor('lines') && (
-            <p style={{ margin: '0 0 12px', fontSize: '12px', color: 'var(--color-error)' }}>
+            <p style={{ margin: `0 0 var(--space-3)`, fontSize: '12px', color: 'var(--color-error)' }}>
               {errorFor('lines')}
             </p>
           )}
@@ -365,16 +365,16 @@ export const OrderReceivingPage: React.FC = () => {
               onAction={() => setLines([emptyLine()])}
             />
           ) : (
-            <div style={{ display: 'grid', gap: '16px' }}>
+            <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
               {lines.map((line, index) => (
                 <div
                   key={line.key}
                   style={{
                     display: 'grid',
                     gridTemplateColumns: 'minmax(200px, 2fr) minmax(120px, 1fr) minmax(120px, 1fr) minmax(160px, 1fr) auto',
-                    gap: '12px',
+                    gap: 'var(--space-3)',
                     alignItems: 'start',
-                    padding: '12px',
+                    padding: 'var(--space-3)',
                     borderRadius: 'var(--radius-md)',
                     backgroundColor: 'var(--color-surface-container)',
                   }}
@@ -408,7 +408,7 @@ export const OrderReceivingPage: React.FC = () => {
                     onChange={(e) => updateLine(line.key, { requestedDeliveryDate: e.target.value })}
                     supportingText="Kosongkan untuk mengikuti tanggal order."
                   />
-                  <div style={{ paddingTop: '18px' }}>
+                  <div style={{ paddingTop: 'var(--space-5)' }}>
                     <Button
                       variant="text"
                       size="sm"

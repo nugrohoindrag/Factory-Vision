@@ -67,7 +67,7 @@ export const ClientDetailPage: React.FC = () => {
   const { client: c, subscription, limitReport, daysToRenewal, daysSinceActivity, attention } = client.data;
 
   return (
-    <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <div style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
       <button
         type="button"
         onClick={() => navigate('/')}
@@ -75,7 +75,7 @@ export const ClientDetailPage: React.FC = () => {
           alignSelf: 'flex-start',
           display: 'flex',
           alignItems: 'center',
-          gap: '5px',
+          gap: 'var(--space-2)',
           background: 'none',
           border: 'none',
           cursor: 'pointer',
@@ -90,9 +90,9 @@ export const ClientDetailPage: React.FC = () => {
         Portofolio
       </button>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
             <h1
               style={{
                 margin: 0,
@@ -106,19 +106,19 @@ export const ClientDetailPage: React.FC = () => {
             </h1>
             <Pill tone={STATUS_TONE[c.lifecycleStatus]}>{STATUS_LABEL[c.lifecycleStatus]}</Pill>
           </div>
-          <div style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', marginTop: '4px' }}>
+          <div style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}>
             {c.legalName} · tenant <code>{c.tenantId}</code>
           </div>
         </div>
 
         {can('client:manage') && (
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
             <select
               value={c.lifecycleStatus}
               onChange={(e) => setStatus.mutate(e.target.value)}
               disabled={setStatus.isPending}
               style={{
-                padding: '8px 10px',
+                padding: `var(--space-2) var(--space-3)`,
                 fontSize: '12px',
                 fontFamily: 'var(--font-family)',
                 borderRadius: 'var(--radius-sm, 8px)',
@@ -141,7 +141,7 @@ export const ClientDetailPage: React.FC = () => {
         <div
           role="alert"
           style={{
-            padding: '10px 12px',
+            padding: `var(--space-3) var(--space-3)`,
             borderRadius: 'var(--radius-sm, 8px)',
             backgroundColor: 'var(--color-error-container)',
             color: 'var(--color-on-error-container)',
@@ -159,11 +159,11 @@ export const ClientDetailPage: React.FC = () => {
           railTone={attention.some((a) => a.severity === 'CRITICAL') ? 'error' : 'warning'}
         >
           <div
-            style={{ fontSize: '12px', fontWeight: 800, color: 'var(--color-on-surface)', marginBottom: '8px' }}
+            style={{ fontSize: '12px', fontWeight: 800, color: 'var(--color-on-surface)', marginBottom: 'var(--space-2)' }}
           >
             Perlu Ditindaklanjuti
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
             {attention.map((item) => (
               <div key={item.kind} style={{ fontSize: '12.5px', color: 'var(--color-on-surface-variant)' }}>
                 • {item.message}
@@ -174,7 +174,7 @@ export const ClientDetailPage: React.FC = () => {
       )}
 
       <div
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '12px' }}
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: 'var(--space-3)' }}
       >
         <SurfaceCard padding="md">
           <SectionTitle>Kontak</SectionTitle>
@@ -210,7 +210,7 @@ export const ClientDetailPage: React.FC = () => {
           />
 
           {can('subscription:manage') && (
-            <div style={{ marginTop: '10px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+            <div style={{ marginTop: 'var(--space-3)', display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
               {plans.data
                 ?.filter((p) => p.id !== subscription?.planId)
                 .map((p) => (
@@ -231,7 +231,7 @@ export const ClientDetailPage: React.FC = () => {
         <SurfaceCard padding="md">
           <SectionTitle>Pemakaian vs Batas Paket</SectionTitle>
           {limitReport ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '9px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
               <LimitBar label="Plant" limit={limitReport.plants} />
               <LimitBar label="Production Line" limit={limitReport.productionLines} />
               <LimitBar label="Mesin" limit={limitReport.machines} />
@@ -287,11 +287,11 @@ export const ClientDetailPage: React.FC = () => {
       <SurfaceCard padding="md">
         <SectionTitle>Riwayat Langganan</SectionTitle>
         {history.data?.length ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
             {history.data.map((s) => (
               <div
                 key={s.id}
-                style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', gap: '10px' }}
+                style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', gap: 'var(--space-3)' }}
               >
                 <span style={{ color: 'var(--color-on-surface)' }}>
                   {s.planName} · {s.startedAt} sampai {s.endedAt ?? 'sekarang'}
@@ -308,10 +308,10 @@ export const ClientDetailPage: React.FC = () => {
   );
 };
 
-const cellStyle: React.CSSProperties = { padding: '7px 10px', whiteSpace: 'nowrap' };
+const cellStyle: React.CSSProperties = { padding: `var(--space-2) var(--space-3)`, whiteSpace: 'nowrap' };
 
 const SectionTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--color-on-surface)', marginBottom: '10px' }}>
+  <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--color-on-surface)', marginBottom: 'var(--space-3)' }}>
     {children}
   </div>
 );
@@ -321,9 +321,9 @@ const Row: React.FC<{ label: string; value: string; tone?: Tone }> = ({ label, v
     style={{
       display: 'flex',
       justifyContent: 'space-between',
-      gap: '12px',
+      gap: 'var(--space-3)',
       fontSize: '12.5px',
-      padding: '3px 0',
+      padding: `var(--space-1) 0`,
     }}
   >
     <span style={{ color: 'var(--color-on-surface-variant)' }}>{label}</span>
@@ -343,7 +343,7 @@ const LimitBar: React.FC<{ label: string; limit: LimitUsage }> = ({ label, limit
   return (
     <div>
       <div
-        style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11.5px', marginBottom: '3px' }}
+        style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11.5px', marginBottom: 'var(--space-1)' }}
       >
         <span style={{ color: 'var(--color-on-surface-variant)' }}>{label}</span>
         <span style={{ fontWeight: 700, color: limit.exceeded ? toneColor.error : 'var(--color-on-surface)' }}>

@@ -13,7 +13,7 @@ export interface DowntimeAnalysisCardProps {
 const Stat: React.FC<{ label: string; value: string; tone?: string }> = ({ label, value, tone }) => (
   <div
     style={{
-      padding: '7px 9px',
+      padding: `var(--space-2) var(--space-3)`,
       borderRadius: 'var(--radius-sm, 6px)',
       backgroundColor: 'var(--color-surface-container)',
     }}
@@ -23,7 +23,7 @@ const Stat: React.FC<{ label: string; value: string; tone?: string }> = ({ label
       style={{
         fontSize: '13.5px',
         fontWeight: 800,
-        marginTop: '2px',
+        marginTop: 'var(--space-1)',
         color: tone ?? 'var(--color-on-surface)',
         fontFeatureSettings: '"tnum" 1',
       }}
@@ -44,11 +44,11 @@ export const DowntimeAnalysisCard: React.FC<DowntimeAnalysisCardProps> = ({
   isLoading,
   onDrillDown,
 }) => (
-  <SurfaceCard padding="md" style={{ display: 'flex', flexDirection: 'column', gap: '11px' }}>
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
+  <SurfaceCard padding="md" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 'var(--space-3)' }}>
       <div>
         <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 700 }}>Downtime Pareto, Top 5</h3>
-        <div style={{ fontSize: '10.5px', color: 'var(--color-on-surface-variant)', marginTop: '2px' }}>
+        <div style={{ fontSize: '10.5px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}>
           Penyebab utama production loss pada periode terpilih
         </div>
       </div>
@@ -59,8 +59,8 @@ export const DowntimeAnalysisCard: React.FC<DowntimeAnalysisCardProps> = ({
           style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '4px',
-            padding: '3px 9px',
+            gap: 'var(--space-1)',
+            padding: `var(--space-1) var(--space-3)`,
             borderRadius: 'var(--radius-pill)',
             border: '1px solid var(--color-outline-variant)',
             backgroundColor: 'transparent',
@@ -84,7 +84,7 @@ export const DowntimeAnalysisCard: React.FC<DowntimeAnalysisCardProps> = ({
     ) : (
       <>
         <div
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))', gap: '8px' }}
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))', gap: 'var(--space-2)' }}
         >
           <Stat label="Total" value={`${summary.totalDowntimeMinutes.toLocaleString('en-US')} min`} />
           <Stat
@@ -120,12 +120,12 @@ export const DowntimeAnalysisCard: React.FC<DowntimeAnalysisCardProps> = ({
                 color: 'var(--color-on-surface-variant)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.04em',
-                marginBottom: '6px',
+                marginBottom: 'var(--space-2)',
               }}
             >
               Mesin paling bermasalah
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
               {summary.topMachines.slice(0, 3).map((machine) => (
                 <div
                   key={machine.machineId}
@@ -133,7 +133,7 @@ export const DowntimeAnalysisCard: React.FC<DowntimeAnalysisCardProps> = ({
                     display: 'flex',
                     justifyContent: 'space-between',
                     fontSize: '11px',
-                    padding: '5px 9px',
+                    padding: `var(--space-2) var(--space-3)`,
                     borderRadius: 'var(--radius-sm, 6px)',
                     backgroundColor: 'var(--color-surface-container)',
                   }}

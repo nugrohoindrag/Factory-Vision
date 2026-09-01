@@ -22,7 +22,7 @@ const StatusPill: React.FC<{ status: LinePerformanceRow['status'] }> = ({ status
     <span
       style={{
         display: 'inline-block',
-        padding: '2px 10px',
+        padding: `var(--space-1) var(--space-3)`,
         borderRadius: 'var(--radius-pill)',
         fontSize: '10px',
         fontWeight: 800,
@@ -37,7 +37,7 @@ const StatusPill: React.FC<{ status: LinePerformanceRow['status'] }> = ({ status
 };
 
 const HEAD: React.CSSProperties = {
-  padding: '6px 8px',
+  padding: `var(--space-2) var(--space-2)`,
   fontSize: '10px',
   fontWeight: 700,
   textTransform: 'uppercase',
@@ -48,7 +48,7 @@ const HEAD: React.CSSProperties = {
 };
 
 const CELL: React.CSSProperties = {
-  padding: '7px 8px',
+  padding: `var(--space-2) var(--space-2)`,
   fontSize: '11.5px',
   textAlign: 'right',
   fontFeatureSettings: '"tnum" 1',
@@ -68,24 +68,24 @@ export const LinePerformanceTable: React.FC<LinePerformanceTableProps> = ({
   isLoading,
   onSelectLine,
 }) => (
-  <SurfaceCard padding="md" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+  <SurfaceCard padding="md" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
     <div>
       <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 700 }}>Plant / Line Performance</h3>
-      <div style={{ fontSize: '10.5px', color: 'var(--color-on-surface-variant)', marginTop: '2px' }}>
+      <div style={{ fontSize: '10.5px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}>
         Diurutkan dari OEE terendah, masalah terbesar tampil paling atas
       </div>
     </div>
 
     {plants.length > 1 && (
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
         {plants.map((plant) => (
           <div
             key={plant.plantId}
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              padding: '5px 10px',
+              gap: 'var(--space-2)',
+              padding: `var(--space-2) var(--space-3)`,
               borderRadius: 'var(--radius-pill)',
               backgroundColor: 'var(--color-surface-container)',
               fontSize: '11.5px',
@@ -102,11 +102,11 @@ export const LinePerformanceTable: React.FC<LinePerformanceTableProps> = ({
     )}
 
     {isLoading ? (
-      <div style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', padding: '12px 0' }}>
+      <div style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', padding: `var(--space-3) 0` }}>
         Memuat performa lini…
       </div>
     ) : lines.length === 0 ? (
-      <div style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', padding: '12px 0' }}>
+      <div style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', padding: `var(--space-3) 0` }}>
         Belum ada data performa lini untuk periode ini.
       </div>
     ) : (
@@ -134,7 +134,7 @@ export const LinePerformanceTable: React.FC<LinePerformanceTableProps> = ({
                 }}
               >
                 <td style={{ ...CELL, textAlign: 'left', whiteSpace: 'normal' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                     {line.hasActiveDowntime && (
                       <Icon name="warning" size={14} color="var(--color-error)" label="Sedang downtime" />
                     )}

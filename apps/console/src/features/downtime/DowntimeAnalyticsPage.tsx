@@ -46,7 +46,7 @@ export const DowntimeAnalyticsPage: React.FC = () => {
   ];
 
   return (
-    <Page style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Page style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
       {/* Header */}
       <Section>
         <h1
@@ -60,7 +60,7 @@ export const DowntimeAnalyticsPage: React.FC = () => {
         >
           Pareto Alasan Downtime
         </h1>
-        <p style={{ margin: '4px 0 0', color: 'var(--color-on-surface-variant)', fontSize: '12px' }}>
+        <p style={{ margin: `var(--space-1) 0 0`, color: 'var(--color-on-surface-variant)', fontSize: '12px' }}>
           Prioritas akar masalah dan kehilangan kapasitas produksi
         </p>
       </Section>
@@ -68,7 +68,7 @@ export const DowntimeAnalyticsPage: React.FC = () => {
       {/* KPI Filled Cards */}
       <Section
         stagger
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)' }}
       >
         <MetricCard
           label="Downtime"
@@ -102,7 +102,7 @@ export const DowntimeAnalyticsPage: React.FC = () => {
       </Section>
 
       {/* Visual Analytics Grid */}
-      <Section stagger style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '14px' }}>
+      <Section stagger style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 'var(--space-4)' }}>
         {/* Horizontal Pareto Chart */}
         <div>
           <HorizontalBarChart
@@ -120,7 +120,7 @@ export const DowntimeAnalyticsPage: React.FC = () => {
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              marginBottom: '12px',
+              marginBottom: 'var(--space-3)',
             }}
           >
             <div>
@@ -133,16 +133,16 @@ export const DowntimeAnalyticsPage: React.FC = () => {
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
             {heatmapData.map((row, rIdx) => (
               <div
                 key={rIdx}
-                style={{ display: 'grid', gridTemplateColumns: '50px 1fr', alignItems: 'center', gap: '6px' }}
+                style={{ display: 'grid', gridTemplateColumns: '50px 1fr', alignItems: 'center', gap: 'var(--space-2)' }}
               >
                 <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>
                   {row.day}
                 </span>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '4px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 'var(--space-1)' }}>
                   {row.hours.map((val, hIdx) => {
                     const step = intensity(val);
                     return (
@@ -174,25 +174,25 @@ export const DowntimeAnalyticsPage: React.FC = () => {
             style={{
               display: 'flex',
               justifyContent: 'flex-end',
-              gap: '10px',
-              marginTop: '12px',
+              gap: 'var(--space-3)',
+              marginTop: 'var(--space-3)',
               fontSize: '10px',
               color: 'var(--color-on-surface-variant)',
             }}
           >
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
               <span
                 style={{ width: '8px', height: '8px', backgroundColor: INTENSITY.idle.bg, borderRadius: '2px' }}
               />{' '}
               0 min
             </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
               <span
                 style={{ width: '8px', height: '8px', backgroundColor: INTENSITY.low.bg, borderRadius: '2px' }}
               />{' '}
               &lt;20 min
             </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
               <span
                 style={{ width: '8px', height: '8px', backgroundColor: INTENSITY.high.bg, borderRadius: '2px' }}
               />{' '}

@@ -126,7 +126,7 @@ export const CorrectionsPage: React.FC<CorrectionsPageProps> = ({
         return (
           <span
             style={{
-              padding: '3px 8px',
+              padding: `var(--space-1) var(--space-2)`,
               borderRadius: 'var(--radius-pill)',
               fontSize: '11px',
               fontWeight: 800,
@@ -152,7 +152,7 @@ export const CorrectionsPage: React.FC<CorrectionsPageProps> = ({
         }
 
         return (
-          <div style={{ display: 'flex', gap: '6px' }}>
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
             <Button
               variant="filled"
               size="sm"
@@ -182,7 +182,7 @@ export const CorrectionsPage: React.FC<CorrectionsPageProps> = ({
   ];
 
   return (
-    <Page style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Page style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
       {/* Header */}
       <Section>
         <h1
@@ -196,7 +196,7 @@ export const CorrectionsPage: React.FC<CorrectionsPageProps> = ({
         >
           Governance & Data Correction Approvals
         </h1>
-        <p style={{ margin: '4px 0 0', color: 'var(--color-on-surface-variant)', fontSize: '12px' }}>
+        <p style={{ margin: `var(--space-1) 0 0`, color: 'var(--color-on-surface-variant)', fontSize: '12px' }}>
           Verification workflow for production and downtime revisions with 24-hour audit window
         </p>
       </Section>
@@ -208,7 +208,7 @@ export const CorrectionsPage: React.FC<CorrectionsPageProps> = ({
       />
 
       {/* Table first at full width, then the timeline underneath it. */}
-      <Section style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <Section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
         <AdvancedDataTable
           columns={columns}
           data={corrections || []}
@@ -224,12 +224,12 @@ export const CorrectionsPage: React.FC<CorrectionsPageProps> = ({
             backgroundColor: 'var(--color-surface)',
             borderRadius: 'var(--radius-lg, 16px)',
             border: '1px solid var(--color-outline-variant)',
-            padding: '18px',
+            padding: 'var(--space-5)',
             height: 'fit-content',
           }}
         >
           <h3
-            style={{ margin: '0 0 12px', fontSize: '14px', fontWeight: 800, color: 'var(--color-on-surface)' }}
+            style={{ margin: `0 0 var(--space-3)`, fontSize: '14px', fontWeight: 800, color: 'var(--color-on-surface)' }}
           >
             Recent Approval Audit Trail
           </h3>
@@ -244,11 +244,11 @@ export const CorrectionsPage: React.FC<CorrectionsPageProps> = ({
           onClose={() => setSelectedCorrection(null)}
           title={`CONFIRM CORRECTION ${actionType === 'APPROVE' ? 'APPROVAL' : 'REJECTION'}`}
         >
-          <Section style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <Section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
             <div
               style={{
                 backgroundColor: 'var(--color-surface-container-high)',
-                padding: '12px 14px',
+                padding: `var(--space-3) var(--space-4)`,
                 borderRadius: 'var(--radius-md, 8px)',
                 fontSize: '12px',
               }}
@@ -256,10 +256,10 @@ export const CorrectionsPage: React.FC<CorrectionsPageProps> = ({
               <div>
                 <strong>Target Entity:</strong> {selectedCorrection.entityType} ({selectedCorrection.entityId})
               </div>
-              <div style={{ marginTop: '3px' }}>
+              <div style={{ marginTop: 'var(--space-1)' }}>
                 <strong>Submitted By:</strong> {selectedCorrection.requestedBy}
               </div>
-              <div style={{ marginTop: '3px' }}>
+              <div style={{ marginTop: 'var(--space-1)' }}>
                 <strong>Reason:</strong> {selectedCorrection.reason}
               </div>
             </div>
@@ -271,7 +271,7 @@ export const CorrectionsPage: React.FC<CorrectionsPageProps> = ({
                   fontSize: '11px',
                   fontWeight: 700,
                   color: 'var(--color-on-surface-variant)',
-                  marginBottom: '4px',
+                  marginBottom: 'var(--space-1)',
                 }}
               >
                 REVIEW NOTES & COMMENTS ({userRole})
@@ -283,7 +283,7 @@ export const CorrectionsPage: React.FC<CorrectionsPageProps> = ({
                 rows={3}
                 style={{
                   width: '100%',
-                  padding: '10px 12px',
+                  padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md, 8px)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
@@ -295,7 +295,7 @@ export const CorrectionsPage: React.FC<CorrectionsPageProps> = ({
               />
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
               <Button variant="outlined" onClick={() => setSelectedCorrection(null)}>
                 Cancel
               </Button>

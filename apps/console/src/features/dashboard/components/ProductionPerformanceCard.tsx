@@ -26,7 +26,7 @@ const Figure: React.FC<{ label: string; value: string; tone?: string }> = ({ lab
         letterSpacing: '-0.02em',
         color: tone ?? 'var(--color-on-surface)',
         fontFeatureSettings: '"tnum" 1',
-        marginTop: '2px',
+        marginTop: 'var(--space-1)',
       }}
     >
       {value}
@@ -52,10 +52,10 @@ export const ProductionPerformanceCard: React.FC<ProductionPerformanceCardProps>
   const achievement = target > 0 ? Math.round((actual / target) * 100) : 0;
 
   return (
-    <SurfaceCard padding="md" style={{ display: 'flex', flexDirection: 'column', gap: '11px' }}>
+    <SurfaceCard padding="md" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
       <div>
         <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 700 }}>Target vs Actual Production</h3>
-        <div style={{ fontSize: '10.5px', color: 'var(--color-on-surface-variant)', marginTop: '2px' }}>
+        <div style={{ fontSize: '10.5px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}>
           Akumulasi periode terpilih, dibandingkan periode sebelumnya
         </div>
       </div>
@@ -64,8 +64,8 @@ export const ProductionPerformanceCard: React.FC<ProductionPerformanceCardProps>
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))',
-          gap: '10px',
-          paddingBottom: '4px',
+          gap: 'var(--space-3)',
+          paddingBottom: 'var(--space-1)',
           borderBottom: '1px solid var(--color-outline-variant)',
         }}
       >
@@ -135,12 +135,12 @@ export const ProductionPerformanceCard: React.FC<ProductionPerformanceCardProps>
               color: 'var(--color-on-surface-variant)',
               textTransform: 'uppercase',
               letterSpacing: '0.04em',
-              marginBottom: '6px',
+              marginBottom: 'var(--space-2)',
             }}
           >
             Produksi per Plant
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
             {plants.map((plant) => (
               <div
                 key={plant.plantId}
@@ -148,8 +148,8 @@ export const ProductionPerformanceCard: React.FC<ProductionPerformanceCardProps>
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  gap: '10px',
-                  padding: '8px 10px',
+                  gap: 'var(--space-3)',
+                  padding: `var(--space-2) var(--space-3)`,
                   borderRadius: 'var(--radius-sm, 6px)',
                   backgroundColor: 'var(--color-surface-container)',
                 }}

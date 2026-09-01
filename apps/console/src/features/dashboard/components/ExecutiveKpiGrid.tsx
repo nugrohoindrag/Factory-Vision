@@ -63,7 +63,7 @@ export const ExecutiveKpiGrid: React.FC<ExecutiveKpiGridProps> = ({ kpis, daily,
  value from pushing the track wider than its share. Below desktop the grid
  steps down to 2-up and then 1-up, so the page never scrolls sideways.
  */}
-      <style>{`.fv-kpi-grid { display: grid; gap: 10px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      <style>{`.fv-kpi-grid { display: grid; gap: var(--space-3); grid-template-columns: repeat(4, minmax(0, 1fr)); }
  @media (max-width: 1180px) {.fv-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
  @media (max-width: 560px) {.fv-kpi-grid { grid-template-columns: minmax(0, 1fr); } }
  `}</style>

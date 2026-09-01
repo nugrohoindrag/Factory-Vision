@@ -75,7 +75,7 @@ export const OeeValidationPage: React.FC = () => {
   const config = data?.config;
 
   return (
-    <Page style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Page style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
       <Section>
         <h1
           style={{
@@ -88,14 +88,14 @@ export const OeeValidationPage: React.FC = () => {
         >
           Validasi Definisi OEE (V1-V6)
         </h1>
-        <p style={{ margin: '4px 0 0', color: 'var(--color-on-surface-variant)', fontSize: '12px' }}>
+        <p style={{ margin: `var(--space-1) 0 0`, color: 'var(--color-on-surface-variant)', fontSize: '12px' }}>
           Perbandingan perhitungan MES dengan perhitungan pabrik dan log gap definisi
         </p>
       </Section>
 
       <Section
         stagger
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-3)' }}
       >
         <MetricCard
           label="Status Gate"
@@ -132,7 +132,7 @@ export const OeeValidationPage: React.FC = () => {
           <div
             role="alert"
             style={{
-              padding: '10px 12px',
+              padding: `var(--space-3) var(--space-3)`,
               borderRadius: 'var(--radius-sm, 8px)',
               backgroundColor: 'var(--color-error-container)',
               color: 'var(--color-on-error-container)',
@@ -145,7 +145,7 @@ export const OeeValidationPage: React.FC = () => {
         </Section>
       )}
 
-      <Section style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <Section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
         {isLoading && <Placeholder label="Memuat log validasi…" />}
 
         {entries.map((entry) => {
@@ -155,8 +155,8 @@ export const OeeValidationPage: React.FC = () => {
 
           return (
             <SurfaceCard key={entry.id} padding="md">
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'flex-start' }}>
                   <span
                     style={{
                       display: 'grid',
@@ -183,10 +183,10 @@ export const OeeValidationPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
                   <span
                     style={{
-                      padding: '2px 10px',
+                      padding: `var(--space-1) var(--space-3)`,
                       borderRadius: 'var(--radius-full, 999px)',
                       backgroundColor: tone.bg,
                       color: tone.fg,
@@ -215,8 +215,8 @@ export const OeeValidationPage: React.FC = () => {
                 style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-                  gap: '10px',
-                  marginTop: '12px',
+                  gap: 'var(--space-3)',
+                  marginTop: 'var(--space-3)',
                   fontSize: '12px',
                 }}
               >
@@ -236,7 +236,7 @@ export const OeeValidationPage: React.FC = () => {
               {entry.resolution && (
                 <p
                   style={{
-                    margin: '10px 0 0',
+                    margin: `var(--space-3) 0 0`,
                     fontSize: '12px',
                     color: 'var(--color-on-surface-variant)',
                     lineHeight: 1.6,
@@ -250,12 +250,12 @@ export const OeeValidationPage: React.FC = () => {
               {isEditing && (
                 <div
                   style={{
-                    marginTop: '14px',
-                    paddingTop: '14px',
+                    marginTop: 'var(--space-4)',
+                    paddingTop: 'var(--space-4)',
                     borderTop: '1px solid var(--color-outline-variant)',
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                    gap: '10px',
+                    gap: 'var(--space-3)',
                   }}
                 >
                   <Field label="Area validasi">
@@ -344,7 +344,7 @@ export const OeeValidationPage: React.FC = () => {
                       gridColumn: '1 / -1',
                       display: 'flex',
                       alignItems: 'flex-start',
-                      gap: '8px',
+                      gap: 'var(--space-2)',
                       fontSize: '12px',
                       color: 'var(--color-on-surface-variant)',
                     }}
@@ -360,7 +360,7 @@ export const OeeValidationPage: React.FC = () => {
                     </span>
                   </label>
 
-                  <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '8px' }}>
+                  <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 'var(--space-2)' }}>
                     <Button
                       variant="filled"
                       disabled={save.isPending}
@@ -381,7 +381,7 @@ export const OeeValidationPage: React.FC = () => {
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  padding: '8px 10px',
+  padding: `var(--space-2) var(--space-3)`,
   fontSize: '12px',
   fontFamily: 'var(--font-family)',
   color: 'var(--color-on-surface)',
@@ -396,7 +396,7 @@ const Field: React.FC<{ label: string; children: React.ReactNode; span?: boolean
   span,
 }) => (
   <label
-    style={{ display: 'flex', flexDirection: 'column', gap: '4px', gridColumn: span ? '1 / -1' : undefined }}
+    style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)', gridColumn: span ? '1 / -1' : undefined }}
   >
     <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface-variant)' }}>{label}</span>
     {children}
@@ -406,7 +406,7 @@ const Field: React.FC<{ label: string; children: React.ReactNode; span?: boolean
 const Readout: React.FC<{ label: string; value: string; tone?: 'error' }> = ({ label, value, tone }) => (
   <div
     style={{
-      padding: '8px 10px',
+      padding: `var(--space-2) var(--space-3)`,
       borderRadius: 'var(--radius-sm, 8px)',
       backgroundColor: 'var(--color-surface-container)',
     }}
@@ -426,7 +426,7 @@ const Readout: React.FC<{ label: string; value: string; tone?: 'error' }> = ({ l
 
 const Placeholder: React.FC<{ label: string }> = ({ label }) => (
   <div
-    style={{ padding: '24px', textAlign: 'center', color: 'var(--color-on-surface-variant)', fontSize: '12px' }}
+    style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--color-on-surface-variant)', fontSize: '12px' }}
   >
     {label}
   </div>

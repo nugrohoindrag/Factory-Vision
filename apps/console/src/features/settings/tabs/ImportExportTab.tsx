@@ -84,8 +84,8 @@ export const ImportExportTab: React.FC<{ onToast: (message: string) => void }> =
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+      <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
         {entities.map((option) => (
           <FilterChip
             key={option.entity}
@@ -101,9 +101,9 @@ export const ImportExportTab: React.FC<{ onToast: (message: string) => void }> =
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '14px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 'var(--space-4)' }}>
         <SurfaceCard padding="md">
-          <div style={{ marginBottom: '10px' }}>
+          <div style={{ marginBottom: 'var(--space-3)' }}>
             <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
               Import CSV
             </span>
@@ -112,7 +112,7 @@ export const ImportExportTab: React.FC<{ onToast: (message: string) => void }> =
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
             <Button
               variant="tonal"
               icon={<Icon name="download" size={16} />}
@@ -134,7 +134,7 @@ export const ImportExportTab: React.FC<{ onToast: (message: string) => void }> =
               onClick={() => fileInput.current?.click()}
               disabled={!canImport}
               style={{
-                padding: '20px',
+                padding: 'var(--space-5)',
                 borderRadius: 'var(--radius-md, 8px)',
                 border: '1px dashed var(--color-outline)',
                 backgroundColor: 'var(--color-surface-container)',
@@ -147,15 +147,15 @@ export const ImportExportTab: React.FC<{ onToast: (message: string) => void }> =
               }}
             >
               <Icon name="upload_file" size={22} />
-              <div style={{ marginTop: '6px' }}>
+              <div style={{ marginTop: 'var(--space-2)' }}>
                 {fileName ? `Berkas dipilih: ${fileName}` : 'Klik untuk memilih berkas CSV'}
               </div>
               {!canImport && (
-                <div style={{ marginTop: '4px' }}>Peran Anda tidak memiliki izin master_data:import.</div>
+                <div style={{ marginTop: 'var(--space-1)' }}>Peran Anda tidak memiliki izin master_data:import.</div>
               )}
             </button>
 
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
               <Button
                 variant="tonal"
                 disabled={!content || runImport.isPending || !canImport}
@@ -174,13 +174,13 @@ export const ImportExportTab: React.FC<{ onToast: (message: string) => void }> =
           </div>
 
           {template && (
-            <div style={{ marginTop: '14px' }}>
+            <div style={{ marginTop: 'var(--space-4)' }}>
               <div
                 style={{
                   fontSize: '11px',
                   fontWeight: 800,
                   color: 'var(--color-on-surface)',
-                  marginBottom: '6px',
+                  marginBottom: 'var(--space-2)',
                 }}
               >
                 Kolom yang diharapkan
@@ -189,19 +189,19 @@ export const ImportExportTab: React.FC<{ onToast: (message: string) => void }> =
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
                   <thead>
                     <tr style={{ textAlign: 'left', color: 'var(--color-on-surface-variant)' }}>
-                      <th style={{ padding: '4px 6px' }}>Kolom</th>
-                      <th style={{ padding: '4px 6px' }}>Wajib</th>
-                      <th style={{ padding: '4px 6px' }}>Keterangan</th>
+                      <th style={{ padding: `var(--space-1) var(--space-2)` }}>Kolom</th>
+                      <th style={{ padding: `var(--space-1) var(--space-2)` }}>Wajib</th>
+                      <th style={{ padding: `var(--space-1) var(--space-2)` }}>Keterangan</th>
                     </tr>
                   </thead>
                   <tbody>
                     {template.columns.map((column) => (
                       <tr key={column.name} style={{ borderTop: '1px solid var(--color-outline-variant)' }}>
-                        <td style={{ padding: '4px 6px', fontWeight: 700 }}>
+                        <td style={{ padding: `var(--space-1) var(--space-2)`, fontWeight: 700 }}>
                           <code>{column.name}</code>
                         </td>
-                        <td style={{ padding: '4px 6px' }}>{column.required ? 'Ya' : 'Tidak'}</td>
-                        <td style={{ padding: '4px 6px', color: 'var(--color-on-surface-variant)' }}>
+                        <td style={{ padding: `var(--space-1) var(--space-2)` }}>{column.required ? 'Ya' : 'Tidak'}</td>
+                        <td style={{ padding: `var(--space-1) var(--space-2)`, color: 'var(--color-on-surface-variant)' }}>
                           {column.description}
                         </td>
                       </tr>
@@ -214,7 +214,7 @@ export const ImportExportTab: React.FC<{ onToast: (message: string) => void }> =
         </SurfaceCard>
 
         <SurfaceCard padding="md">
-          <div style={{ marginBottom: '10px' }}>
+          <div style={{ marginBottom: 'var(--space-3)' }}>
             <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
               Export CSV
             </span>
@@ -236,8 +236,8 @@ export const ImportExportTab: React.FC<{ onToast: (message: string) => void }> =
             <div
               role="alert"
               style={{
-                marginTop: '12px',
-                padding: '10px 12px',
+                marginTop: 'var(--space-3)',
+                padding: `var(--space-3) var(--space-3)`,
                 borderRadius: 'var(--radius-sm, 8px)',
                 backgroundColor: 'var(--color-error-container)',
                 color: 'var(--color-on-error-container)',
@@ -250,13 +250,13 @@ export const ImportExportTab: React.FC<{ onToast: (message: string) => void }> =
           )}
 
           {result && (
-            <div style={{ marginTop: '14px' }}>
+            <div style={{ marginTop: 'var(--space-4)' }}>
               <div
                 style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(4, 1fr)',
-                  gap: '8px',
-                  marginBottom: '10px',
+                  gap: 'var(--space-2)',
+                  marginBottom: 'var(--space-3)',
                 }}
               >
                 <Stat label="Total baris" value={result.totalRows} />
@@ -268,13 +268,13 @@ export const ImportExportTab: React.FC<{ onToast: (message: string) => void }> =
               {result.rejectedWholeFile && (
                 <div
                   style={{
-                    padding: '10px 12px',
+                    padding: `var(--space-3) var(--space-3)`,
                     borderRadius: 'var(--radius-sm, 8px)',
                     backgroundColor: 'var(--color-error-container)',
                     color: 'var(--color-on-error-container)',
                     fontSize: '12px',
                     fontWeight: 600,
-                    marginBottom: '10px',
+                    marginBottom: 'var(--space-3)',
                   }}
                 >
                   Seluruh berkas ditolak, struktur kolom tidak sesuai. Tidak ada data yang disimpan.
@@ -293,19 +293,19 @@ export const ImportExportTab: React.FC<{ onToast: (message: string) => void }> =
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
                     <thead>
                       <tr style={{ textAlign: 'left', backgroundColor: 'var(--color-surface-container)' }}>
-                        <th style={{ padding: '6px 8px' }}>Baris</th>
-                        <th style={{ padding: '6px 8px' }}>Kolom</th>
-                        <th style={{ padding: '6px 8px' }}>Masalah</th>
+                        <th style={{ padding: `var(--space-2) var(--space-2)` }}>Baris</th>
+                        <th style={{ padding: `var(--space-2) var(--space-2)` }}>Kolom</th>
+                        <th style={{ padding: `var(--space-2) var(--space-2)` }}>Masalah</th>
                       </tr>
                     </thead>
                     <tbody>
                       {result.errors.map((rowError, index) => (
                         <tr key={index} style={{ borderTop: '1px solid var(--color-outline-variant)' }}>
-                          <td style={{ padding: '6px 8px', fontWeight: 700 }}>{rowError.row || ', '}</td>
-                          <td style={{ padding: '6px 8px' }}>
+                          <td style={{ padding: `var(--space-2) var(--space-2)`, fontWeight: 700 }}>{rowError.row || ', '}</td>
+                          <td style={{ padding: `var(--space-2) var(--space-2)` }}>
                             <code>{rowError.column ?? ', '}</code>
                           </td>
-                          <td style={{ padding: '6px 8px', color: 'var(--color-error)' }}>
+                          <td style={{ padding: `var(--space-2) var(--space-2)`, color: 'var(--color-error)' }}>
                             {rowError.message}
                           </td>
                         </tr>
@@ -318,7 +318,7 @@ export const ImportExportTab: React.FC<{ onToast: (message: string) => void }> =
               {result.errors.length === 0 && !result.rejectedWholeFile && (
                 <div
                   style={{
-                    padding: '10px 12px',
+                    padding: `var(--space-3) var(--space-3)`,
                     borderRadius: 'var(--radius-sm, 8px)',
                     backgroundColor: 'var(--color-success-container)',
                     color: 'var(--color-on-success-container)',
@@ -353,7 +353,7 @@ const Stat: React.FC<{ label: string; value: number; tone?: 'success' | 'error' 
   return (
     <div
       style={{
-        padding: '8px 10px',
+        padding: `var(--space-2) var(--space-3)`,
         borderRadius: 'var(--radius-sm, 8px)',
         backgroundColor: 'var(--color-surface-container)',
       }}

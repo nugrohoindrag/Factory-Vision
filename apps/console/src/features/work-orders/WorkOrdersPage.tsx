@@ -293,7 +293,7 @@ export const WorkOrdersPage: React.FC = () => {
             <div style={{ fontWeight: 800, fontSize: '13.5px', color: 'var(--color-on-surface)' }}>
               {wo.woNumber}
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: '2px' }}>
+            <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}>
               {prod ? `${prod.sku}, ${prod.name}` : wo.productId}
             </div>
           </div>
@@ -310,10 +310,10 @@ export const WorkOrdersPage: React.FC = () => {
         const batch = batches?.find((b) => b.workOrderId === wo.id);
         return (
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
               <span
                 style={{
-                  padding: '2px 8px',
+                  padding: `var(--space-1) var(--space-2)`,
                   borderRadius: 'var(--radius-pill)',
                   fontSize: '11px',
                   fontWeight: 800,
@@ -325,7 +325,7 @@ export const WorkOrdersPage: React.FC = () => {
                 {proc ? proc.code : wo.processId || 'Tahap Umum'}
               </span>
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: '2px' }}>
+            <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}>
               {proc ? proc.name : ''} {batch ? `• Lot: ${batch.batchNumber}` : ''}
             </div>
           </div>
@@ -344,7 +344,7 @@ export const WorkOrdersPage: React.FC = () => {
             <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--color-on-surface)' }}>
               {line ? line.name : wo.lineId.toUpperCase()}
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: '2px' }}>
+            <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}>
               {mc ? mc.name : wo.machineId || 'Semua Mesin'}
             </div>
           </div>
@@ -364,7 +364,7 @@ export const WorkOrdersPage: React.FC = () => {
                 display: 'flex',
                 justifyContent: 'space-between',
                 fontSize: '11.5px',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               <span style={{ fontWeight: 800, color: 'var(--color-success)' }}>
@@ -401,7 +401,7 @@ export const WorkOrdersPage: React.FC = () => {
               style={{
                 fontSize: '10px',
                 color: 'var(--color-on-surface-variant)',
-                marginTop: '2px',
+                marginTop: 'var(--space-1)',
                 textAlign: 'right',
               }}
             >
@@ -437,7 +437,7 @@ export const WorkOrdersPage: React.FC = () => {
         return (
           <span
             style={{
-              padding: '3px 9px',
+              padding: `var(--space-1) var(--space-3)`,
               borderRadius: 'var(--radius-pill)',
               fontSize: '11px',
               fontWeight: 800,
@@ -446,7 +446,7 @@ export const WorkOrdersPage: React.FC = () => {
               border: `1px solid ${color}35`,
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '4px',
+              gap: 'var(--space-1)',
             }}
           >
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: color }} />
@@ -459,14 +459,14 @@ export const WorkOrdersPage: React.FC = () => {
       key: 'actions',
       header: 'Aksi',
       render: (wo) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
           {/* Detail Button */}
           <Button
             variant="tonal"
             size="sm"
             onClick={() => handleOpenDetailWo(wo)}
             title="Lihat Detail Work Order"
-            style={{ padding: '0 8px' }}
+            style={{ padding: `0 var(--space-2)` }}
           >
             <Icon name="visibility" size={16} />
           </Button>
@@ -477,7 +477,7 @@ export const WorkOrdersPage: React.FC = () => {
             size="sm"
             onClick={() => handleOpenEditWo(wo)}
             title="Edit Work Order"
-            style={{ padding: '0 8px' }}
+            style={{ padding: `0 var(--space-2)` }}
           >
             <Icon name="edit" size={16} />
           </Button>
@@ -488,7 +488,7 @@ export const WorkOrdersPage: React.FC = () => {
               variant="filled"
               size="sm"
               onClick={() => releaseMutation.mutate(wo.id)}
-              style={{ fontSize: '11.5px', padding: '0 10px' }}
+              style={{ fontSize: '11.5px', padding: `0 var(--space-3)` }}
             >
               Release
             </Button>
@@ -498,7 +498,7 @@ export const WorkOrdersPage: React.FC = () => {
           <Button
             variant="text"
             size="sm"
-            style={{ color: 'var(--color-error)', padding: '0 8px' }}
+            style={{ color: 'var(--color-error)', padding: `0 var(--space-2)` }}
             onClick={() => handleOpenDeleteWo(wo)}
             title="Hapus Work Order"
           >
@@ -510,7 +510,7 @@ export const WorkOrdersPage: React.FC = () => {
   ];
 
   return (
-    <Page style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Page style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
       {/* Toast Notification Alert */}
       {toastMessage && (
         <div
@@ -529,14 +529,14 @@ export const WorkOrdersPage: React.FC = () => {
             // matching on-container token. A hardcoded white was legible on the
             // dark theme and washed out on the light one.
             color: 'var(--color-on-primary)',
-            padding: '10px 18px',
+            padding: `var(--space-3) var(--space-5)`,
             borderRadius: 'var(--radius-md)',
             fontWeight: 700,
             fontSize: '13px',
             boxShadow: 'var(--elevation-3)',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
+            gap: 'var(--space-2)',
           }}
         >
           <Icon name={toastMessage.type === 'success' ? 'check_circle' : 'info'} size={18} />
@@ -551,7 +551,7 @@ export const WorkOrdersPage: React.FC = () => {
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: '12px',
+          gap: 'var(--space-3)',
         }}
       >
         <div>
@@ -566,12 +566,12 @@ export const WorkOrdersPage: React.FC = () => {
           >
             Work Order
           </h1>
-          <p style={{ margin: '4px 0 0', color: 'var(--color-on-surface-variant)', fontSize: '12px' }}>
+          <p style={{ margin: `var(--space-1) 0 0`, color: 'var(--color-on-surface-variant)', fontSize: '12px' }}>
             Manajemen lengkap pembuatan, penjadwalan, rilis, pengeditan, dan pelacakan Work Order produksi.
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
           {activeTab === 'WO' ? (
             <Button
               variant="filled"
@@ -608,7 +608,7 @@ export const WorkOrdersPage: React.FC = () => {
       {/* KPI Metric Summary Cards */}
       <Section
         stagger
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)' }}
       >
         <MetricCard
           label="Total Work Orders"
@@ -645,11 +645,11 @@ export const WorkOrdersPage: React.FC = () => {
       </Section>
 
       {/* Navigation Tabs (WO vs PO) */}
-      <Section style={{ display: 'flex', borderBottom: '1px solid var(--color-outline-variant)', gap: '16px' }}>
+      <Section style={{ display: 'flex', borderBottom: '1px solid var(--color-outline-variant)', gap: 'var(--space-4)' }}>
         <button
           onClick={() => setActiveTab('WO')}
           style={{
-            padding: '10px 16px',
+            padding: `var(--space-3) var(--space-4)`,
             fontWeight: 800,
             fontSize: '13px',
             backgroundColor: 'transparent',
@@ -659,7 +659,7 @@ export const WorkOrdersPage: React.FC = () => {
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
+            gap: 'var(--space-2)',
           }}
         >
           <Icon name="precision_manufacturing" size={18} />
@@ -667,7 +667,7 @@ export const WorkOrdersPage: React.FC = () => {
           <span
             style={{
               fontSize: '11px',
-              padding: '1px 6px',
+              padding: `var(--space-1) var(--space-2)`,
               borderRadius: 'var(--radius-pill)',
               backgroundColor: 'var(--color-surface-container-high)',
             }}
@@ -679,7 +679,7 @@ export const WorkOrdersPage: React.FC = () => {
         <button
           onClick={() => setActiveTab('PO')}
           style={{
-            padding: '10px 16px',
+            padding: `var(--space-3) var(--space-4)`,
             fontWeight: 800,
             fontSize: '13px',
             backgroundColor: 'transparent',
@@ -689,7 +689,7 @@ export const WorkOrdersPage: React.FC = () => {
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
+            gap: 'var(--space-2)',
           }}
         >
           <Icon name="inventory" size={18} />
@@ -697,7 +697,7 @@ export const WorkOrdersPage: React.FC = () => {
           <span
             style={{
               fontSize: '11px',
-              padding: '1px 6px',
+              padding: `var(--space-1) var(--space-2)`,
               borderRadius: 'var(--radius-pill)',
               backgroundColor: 'var(--color-surface-container-high)',
             }}
@@ -716,16 +716,16 @@ export const WorkOrdersPage: React.FC = () => {
               justifyContent: 'space-between',
               alignItems: 'center',
               flexWrap: 'wrap',
-              gap: '12px',
+              gap: 'var(--space-3)',
             }}
           >
-            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', flexWrap: 'wrap' }}>
               <span
                 style={{
                   fontSize: '11px',
                   fontWeight: 700,
                   color: 'var(--color-on-surface-variant)',
-                  marginRight: '4px',
+                  marginRight: 'var(--space-1)',
                 }}
               >
                 Status:
@@ -737,12 +737,12 @@ export const WorkOrdersPage: React.FC = () => {
               ))}
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
               <select
                 value={selectedLineFilter}
                 onChange={(e) => setSelectedLineFilter(e.target.value)}
                 style={{
-                  padding: '6px 12px',
+                  padding: `var(--space-2) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
@@ -766,7 +766,7 @@ export const WorkOrdersPage: React.FC = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={{
-                  padding: '6px 12px',
+                  padding: `var(--space-2) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
@@ -794,9 +794,9 @@ export const WorkOrdersPage: React.FC = () => {
                 style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(4, 1fr)',
-                  gap: '14px',
+                  gap: 'var(--space-4)',
                   fontSize: '11.5px',
-                  padding: '10px 0',
+                  padding: `var(--space-3) 0`,
                 }}
               >
                 <div>
@@ -833,7 +833,7 @@ export const WorkOrdersPage: React.FC = () => {
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              marginBottom: '12px',
+              marginBottom: 'var(--space-3)',
             }}
           >
             <h2 style={{ fontSize: '16px', fontWeight: 800, margin: 0, color: 'var(--color-on-surface)' }}>
@@ -841,7 +841,7 @@ export const WorkOrdersPage: React.FC = () => {
             </h2>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--space-3)' }}>
             {productionOrders?.map((po) => {
               const prod = products?.find((p) => p.id === po.productId);
               const relatedWos = workOrders?.filter((w) => w.productionOrderId === po.id) || [];
@@ -858,10 +858,10 @@ export const WorkOrdersPage: React.FC = () => {
                     backgroundColor: 'var(--color-surface)',
                     border: '1px solid var(--color-outline-variant)',
                     borderRadius: 'var(--radius-lg)',
-                    padding: '18px 20px',
+                    padding: `var(--space-5) var(--space-5)`,
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '14px',
+                    gap: 'var(--space-4)',
                   }}
                 >
                   <div
@@ -870,17 +870,17 @@ export const WorkOrdersPage: React.FC = () => {
                       justifyContent: 'space-between',
                       alignItems: 'center',
                       flexWrap: 'wrap',
-                      gap: '12px',
+                      gap: 'var(--space-3)',
                     }}
                   >
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
                         <span style={{ fontWeight: 800, fontSize: '15px', color: 'var(--color-on-surface)' }}>
                           {po.orderNumber}
                         </span>
                         <span
                           style={{
-                            padding: '2px 8px',
+                            padding: `var(--space-1) var(--space-2)`,
                             borderRadius: 'var(--radius-pill)',
                             fontSize: '10.5px',
                             fontWeight: 800,
@@ -906,7 +906,7 @@ export const WorkOrdersPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-5)' }}>
                       <div style={{ textAlign: 'right', minWidth: '140px' }}>
                         <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)' }}>
                           Progress Eksekusi WO:
@@ -917,7 +917,7 @@ export const WorkOrdersPage: React.FC = () => {
                         </div>
                       </div>
 
-                      <div style={{ display: 'flex', gap: '8px' }}>
+                      <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                         {po.status !== 'RELEASED' && po.status !== 'COMPLETED' && (
                           <Button
                             variant="filled"
@@ -972,10 +972,10 @@ export const WorkOrdersPage: React.FC = () => {
                     style={{
                       backgroundColor: 'var(--color-surface-container)',
                       borderRadius: 'var(--radius-md)',
-                      padding: '10px 14px',
+                      padding: `var(--space-3) var(--space-4)`,
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '8px',
+                      gap: 'var(--space-2)',
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -993,9 +993,9 @@ export const WorkOrdersPage: React.FC = () => {
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '8px',
+                        gap: 'var(--space-2)',
                         overflowX: 'auto',
-                        paddingBottom: '4px',
+                        paddingBottom: 'var(--space-1)',
                       }}
                     >
                       {poRoutings.length > 0 ? (
@@ -1008,7 +1008,7 @@ export const WorkOrdersPage: React.FC = () => {
                             <React.Fragment key={rt.id}>
                               <div
                                 style={{
-                                  padding: '6px 10px',
+                                  padding: `var(--space-2) var(--space-3)`,
                                   borderRadius: 'var(--radius-md)',
                                   backgroundColor: stepWo
                                     ? 'var(--color-surface)'
@@ -1016,7 +1016,7 @@ export const WorkOrdersPage: React.FC = () => {
                                   border: `1px solid ${stepWo ? 'var(--color-primary)' : 'var(--color-outline-variant)'}`,
                                   display: 'flex',
                                   flexDirection: 'column',
-                                  gap: '2px',
+                                  gap: 'var(--space-1)',
                                   minWidth: '120px',
                                 }}
                               >
@@ -1095,7 +1095,7 @@ export const WorkOrdersPage: React.FC = () => {
             e.preventDefault();
             createWoMutation.mutate(formData);
           }}
-          style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}
+          style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}
         >
           {/* Linked PO */}
           <div>
@@ -1105,7 +1105,7 @@ export const WorkOrdersPage: React.FC = () => {
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               REFERENSI PRODUCTION ORDER (PO / SPK)
@@ -1123,7 +1123,7 @@ export const WorkOrdersPage: React.FC = () => {
               }}
               style={{
                 width: '100%',
-                padding: '9px 12px',
+                padding: `var(--space-3) var(--space-3)`,
                 borderRadius: 'var(--radius-md)',
                 backgroundColor: 'var(--color-surface-container-high)',
                 border: '1px solid var(--color-outline-variant)',
@@ -1147,7 +1147,7 @@ export const WorkOrdersPage: React.FC = () => {
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               PRODUK
@@ -1157,7 +1157,7 @@ export const WorkOrdersPage: React.FC = () => {
               onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
               style={{
                 width: '100%',
-                padding: '9px 12px',
+                padding: `var(--space-3) var(--space-3)`,
                 borderRadius: 'var(--radius-md)',
                 backgroundColor: 'var(--color-surface-container-high)',
                 border: '1px solid var(--color-outline-variant)',
@@ -1174,7 +1174,7 @@ export const WorkOrdersPage: React.FC = () => {
           </div>
 
           {/* Line and Machine Selectors in 2 Columns */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
             <div>
               <label
                 style={{
@@ -1182,7 +1182,7 @@ export const WorkOrdersPage: React.FC = () => {
                   fontSize: '11px',
                   fontWeight: 700,
                   color: 'var(--color-on-surface-variant)',
-                  marginBottom: '4px',
+                  marginBottom: 'var(--space-1)',
                 }}
               >
                 LINI PRODUKSI
@@ -1192,7 +1192,7 @@ export const WorkOrdersPage: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, lineId: e.target.value })}
                 style={{
                   width: '100%',
-                  padding: '9px 12px',
+                  padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
@@ -1215,7 +1215,7 @@ export const WorkOrdersPage: React.FC = () => {
                   fontSize: '11px',
                   fontWeight: 700,
                   color: 'var(--color-on-surface-variant)',
-                  marginBottom: '4px',
+                  marginBottom: 'var(--space-1)',
                 }}
               >
                 MESIN UTAMA
@@ -1225,7 +1225,7 @@ export const WorkOrdersPage: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, machineId: e.target.value })}
                 style={{
                   width: '100%',
-                  padding: '9px 12px',
+                  padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
@@ -1243,7 +1243,7 @@ export const WorkOrdersPage: React.FC = () => {
           </div>
 
           {/* Target Quantity & Unit */}
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 'var(--space-3)' }}>
             <div>
               <label
                 style={{
@@ -1251,7 +1251,7 @@ export const WorkOrdersPage: React.FC = () => {
                   fontSize: '11px',
                   fontWeight: 700,
                   color: 'var(--color-on-surface-variant)',
-                  marginBottom: '4px',
+                  marginBottom: 'var(--space-1)',
                 }}
               >
                 TARGET KUANTITAS
@@ -1264,7 +1264,7 @@ export const WorkOrdersPage: React.FC = () => {
                 required
                 style={{
                   width: '100%',
-                  padding: '9px 12px',
+                  padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
@@ -1283,7 +1283,7 @@ export const WorkOrdersPage: React.FC = () => {
                   fontSize: '11px',
                   fontWeight: 700,
                   color: 'var(--color-on-surface-variant)',
-                  marginBottom: '4px',
+                  marginBottom: 'var(--space-1)',
                 }}
               >
                 SATUAN
@@ -1293,7 +1293,7 @@ export const WorkOrdersPage: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
                 style={{
                   width: '100%',
-                  padding: '9px 12px',
+                  padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
@@ -1310,7 +1310,7 @@ export const WorkOrdersPage: React.FC = () => {
           </div>
 
           {/* Planned Schedule (Start & End) */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
             <div>
               <label
                 style={{
@@ -1318,7 +1318,7 @@ export const WorkOrdersPage: React.FC = () => {
                   fontSize: '11px',
                   fontWeight: 700,
                   color: 'var(--color-on-surface-variant)',
-                  marginBottom: '4px',
+                  marginBottom: 'var(--space-1)',
                 }}
               >
                 RENCANA MULAI (START)
@@ -1330,7 +1330,7 @@ export const WorkOrdersPage: React.FC = () => {
                 required
                 style={{
                   width: '100%',
-                  padding: '9px 12px',
+                  padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
@@ -1348,7 +1348,7 @@ export const WorkOrdersPage: React.FC = () => {
                   fontSize: '11px',
                   fontWeight: 700,
                   color: 'var(--color-on-surface-variant)',
-                  marginBottom: '4px',
+                  marginBottom: 'var(--space-1)',
                 }}
               >
                 RENCANA SELESAI (END)
@@ -1360,7 +1360,7 @@ export const WorkOrdersPage: React.FC = () => {
                 required
                 style={{
                   width: '100%',
-                  padding: '9px 12px',
+                  padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
@@ -1372,7 +1372,7 @@ export const WorkOrdersPage: React.FC = () => {
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-3)' }}>
             <Button variant="outlined" type="button" onClick={() => setShowCreateModal(false)}>
               Batal
             </Button>
@@ -1409,7 +1409,7 @@ export const WorkOrdersPage: React.FC = () => {
               });
             }
           }}
-          style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}
+          style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}
         >
           <div>
             <label
@@ -1418,7 +1418,7 @@ export const WorkOrdersPage: React.FC = () => {
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               PRODUK
@@ -1428,7 +1428,7 @@ export const WorkOrdersPage: React.FC = () => {
               onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
               style={{
                 width: '100%',
-                padding: '9px 12px',
+                padding: `var(--space-3) var(--space-3)`,
                 borderRadius: 'var(--radius-md)',
                 backgroundColor: 'var(--color-surface-container-high)',
                 border: '1px solid var(--color-outline-variant)',
@@ -1444,7 +1444,7 @@ export const WorkOrdersPage: React.FC = () => {
             </select>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
             <div>
               <label
                 style={{
@@ -1452,7 +1452,7 @@ export const WorkOrdersPage: React.FC = () => {
                   fontSize: '11px',
                   fontWeight: 700,
                   color: 'var(--color-on-surface-variant)',
-                  marginBottom: '4px',
+                  marginBottom: 'var(--space-1)',
                 }}
               >
                 LINI PRODUKSI
@@ -1462,7 +1462,7 @@ export const WorkOrdersPage: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, lineId: e.target.value })}
                 style={{
                   width: '100%',
-                  padding: '9px 12px',
+                  padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
@@ -1485,7 +1485,7 @@ export const WorkOrdersPage: React.FC = () => {
                   fontSize: '11px',
                   fontWeight: 700,
                   color: 'var(--color-on-surface-variant)',
-                  marginBottom: '4px',
+                  marginBottom: 'var(--space-1)',
                 }}
               >
                 MESIN UTAMA
@@ -1495,7 +1495,7 @@ export const WorkOrdersPage: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, machineId: e.target.value })}
                 style={{
                   width: '100%',
-                  padding: '9px 12px',
+                  padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
@@ -1512,7 +1512,7 @@ export const WorkOrdersPage: React.FC = () => {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 'var(--space-3)' }}>
             <div>
               <label
                 style={{
@@ -1520,7 +1520,7 @@ export const WorkOrdersPage: React.FC = () => {
                   fontSize: '11px',
                   fontWeight: 700,
                   color: 'var(--color-on-surface-variant)',
-                  marginBottom: '4px',
+                  marginBottom: 'var(--space-1)',
                 }}
               >
                 TARGET KUANTITAS
@@ -1533,7 +1533,7 @@ export const WorkOrdersPage: React.FC = () => {
                 required
                 style={{
                   width: '100%',
-                  padding: '9px 12px',
+                  padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
@@ -1552,7 +1552,7 @@ export const WorkOrdersPage: React.FC = () => {
                   fontSize: '11px',
                   fontWeight: 700,
                   color: 'var(--color-on-surface-variant)',
-                  marginBottom: '4px',
+                  marginBottom: 'var(--space-1)',
                 }}
               >
                 SATUAN
@@ -1563,7 +1563,7 @@ export const WorkOrdersPage: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
                 style={{
                   width: '100%',
-                  padding: '9px 12px',
+                  padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
@@ -1574,7 +1574,7 @@ export const WorkOrdersPage: React.FC = () => {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
             <div>
               <label
                 style={{
@@ -1582,7 +1582,7 @@ export const WorkOrdersPage: React.FC = () => {
                   fontSize: '11px',
                   fontWeight: 700,
                   color: 'var(--color-on-surface-variant)',
-                  marginBottom: '4px',
+                  marginBottom: 'var(--space-1)',
                 }}
               >
                 RENCANA MULAI
@@ -1594,7 +1594,7 @@ export const WorkOrdersPage: React.FC = () => {
                 required
                 style={{
                   width: '100%',
-                  padding: '9px 12px',
+                  padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
@@ -1612,7 +1612,7 @@ export const WorkOrdersPage: React.FC = () => {
                   fontSize: '11px',
                   fontWeight: 700,
                   color: 'var(--color-on-surface-variant)',
-                  marginBottom: '4px',
+                  marginBottom: 'var(--space-1)',
                 }}
               >
                 RENCANA SELESAI
@@ -1624,7 +1624,7 @@ export const WorkOrdersPage: React.FC = () => {
                 required
                 style={{
                   width: '100%',
-                  padding: '9px 12px',
+                  padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
@@ -1636,7 +1636,7 @@ export const WorkOrdersPage: React.FC = () => {
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-3)' }}>
             <Button variant="outlined" type="button" onClick={() => setShowEditModal(false)}>
               Batal
             </Button>
@@ -1655,13 +1655,13 @@ export const WorkOrdersPage: React.FC = () => {
           title={`DETAIL WORK ORDER: ${selectedWo.woNumber}`}
           maxWidth="640px"
         >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
             {/* Status and Summary Header */}
             <div
               style={{
                 backgroundColor: 'var(--color-surface-container-high)',
                 borderRadius: 'var(--radius-md)',
-                padding: '16px',
+                padding: 'var(--space-4)',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
@@ -1676,7 +1676,7 @@ export const WorkOrdersPage: React.FC = () => {
                     fontSize: '18px',
                     fontWeight: 900,
                     color: getStatusColor(selectedWo.status),
-                    marginTop: '2px',
+                    marginTop: 'var(--space-1)',
                   }}
                 >
                   {selectedWo.status}
@@ -1692,7 +1692,7 @@ export const WorkOrdersPage: React.FC = () => {
                     fontSize: '18px',
                     fontWeight: 900,
                     color: 'var(--color-on-surface)',
-                    marginTop: '2px',
+                    marginTop: 'var(--space-1)',
                   }}
                 >
                   {selectedWo.plannedQuantity > 0
@@ -1708,7 +1708,7 @@ export const WorkOrdersPage: React.FC = () => {
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(2, 1fr)',
-                gap: '12px',
+                gap: 'var(--space-3)',
                 fontSize: '12.5px',
               }}
             >
@@ -1777,8 +1777,8 @@ export const WorkOrdersPage: React.FC = () => {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                marginTop: '10px',
-                paddingTop: '14px',
+                marginTop: 'var(--space-3)',
+                paddingTop: 'var(--space-4)',
                 borderTop: '1px solid var(--color-outline-variant)',
               }}
             >
@@ -1793,7 +1793,7 @@ export const WorkOrdersPage: React.FC = () => {
                 Hapus WO
               </Button>
 
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                 <Button
                   variant="tonal"
                   onClick={() => {
@@ -1860,7 +1860,7 @@ export const WorkOrdersPage: React.FC = () => {
             e.preventDefault();
             createPoMutation.mutate(poFormData);
           }}
-          style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}
+          style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}
         >
           <div>
             <label
@@ -1869,7 +1869,7 @@ export const WorkOrdersPage: React.FC = () => {
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               NOMOR PO / SPK
@@ -1881,7 +1881,7 @@ export const WorkOrdersPage: React.FC = () => {
               required
               style={{
                 width: '100%',
-                padding: '9px 12px',
+                padding: `var(--space-3) var(--space-3)`,
                 borderRadius: 'var(--radius-md)',
                 backgroundColor: 'var(--color-surface-container-high)',
                 border: '1px solid var(--color-outline-variant)',
@@ -1900,7 +1900,7 @@ export const WorkOrdersPage: React.FC = () => {
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--color-on-surface-variant)',
-                marginBottom: '4px',
+                marginBottom: 'var(--space-1)',
               }}
             >
               PRODUK
@@ -1910,7 +1910,7 @@ export const WorkOrdersPage: React.FC = () => {
               onChange={(e) => setPoFormData({ ...poFormData, productId: e.target.value })}
               style={{
                 width: '100%',
-                padding: '9px 12px',
+                padding: `var(--space-3) var(--space-3)`,
                 borderRadius: 'var(--radius-md)',
                 backgroundColor: 'var(--color-surface-container-high)',
                 border: '1px solid var(--color-outline-variant)',
@@ -1926,7 +1926,7 @@ export const WorkOrdersPage: React.FC = () => {
             </select>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
             <div>
               <label
                 style={{
@@ -1934,7 +1934,7 @@ export const WorkOrdersPage: React.FC = () => {
                   fontSize: '11px',
                   fontWeight: 700,
                   color: 'var(--color-on-surface-variant)',
-                  marginBottom: '4px',
+                  marginBottom: 'var(--space-1)',
                 }}
               >
                 TOTAL TARGET (PCS)
@@ -1947,7 +1947,7 @@ export const WorkOrdersPage: React.FC = () => {
                 required
                 style={{
                   width: '100%',
-                  padding: '9px 12px',
+                  padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
@@ -1966,7 +1966,7 @@ export const WorkOrdersPage: React.FC = () => {
                   fontSize: '11px',
                   fontWeight: 700,
                   color: 'var(--color-on-surface-variant)',
-                  marginBottom: '4px',
+                  marginBottom: 'var(--space-1)',
                 }}
               >
                 TENGGAT WAKTU (DUE DATE)
@@ -1978,7 +1978,7 @@ export const WorkOrdersPage: React.FC = () => {
                 required
                 style={{
                   width: '100%',
-                  padding: '9px 12px',
+                  padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
                   border: '1px solid var(--color-outline-variant)',
@@ -1990,7 +1990,7 @@ export const WorkOrdersPage: React.FC = () => {
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-3)' }}>
             <Button variant="outlined" type="button" onClick={() => setShowCreatePoModal(false)}>
               Batal
             </Button>
