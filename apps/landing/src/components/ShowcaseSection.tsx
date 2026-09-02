@@ -166,21 +166,7 @@ export const ShowcaseSection: React.FC = () => {
               }}
             >
               <div>
-                <span
-                  style={{
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    color: 'var(--color-on-info-container)',
-                    backgroundColor: 'var(--color-info-container)',
-                    border: '1px solid var(--color-info-container)',
-                    padding: `var(--space-1) var(--space-3)`,
-                    borderRadius: '9999px',
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  Screen {current.id} of 09
-                </span>
-                <h3 style={{ fontSize: '26px', fontWeight: 800, margin: `var(--space-2) 0 var(--space-1)`, color: 'var(--color-primary)' }}>
+                <h3 style={{ fontSize: '26px', fontWeight: 800, margin: `0 0 var(--space-1)`, color: 'var(--color-primary)' }}>
                   {current.title}
                 </h3>
                 <p style={{ fontSize: '15px', color: 'var(--color-on-surface)', maxWidth: '640px' }}>

@@ -114,16 +114,7 @@ export const ShowcaseSection = () => {
                                     flexWrap: 'wrap',
                                     gap: 'var(--space-4)',
                                     marginBottom: 'var(--space-6)',
-                                }, children: [_jsxs("div", { children: [_jsxs("span", { style: {
-                                                    fontSize: '12px',
-                                                    fontWeight: 700,
-                                                    color: 'var(--color-on-info-container)',
-                                                    backgroundColor: 'var(--color-info-container)',
-                                                    border: '1px solid var(--color-info-container)',
-                                                    padding: `var(--space-1) var(--space-3)`,
-                                                    borderRadius: '9999px',
-                                                    textTransform: 'uppercase',
-                                                }, children: ["Screen ", current.id, " of 09"] }), _jsx("h3", { style: { fontSize: '26px', fontWeight: 800, margin: `var(--space-2) 0 var(--space-1)`, color: 'var(--color-primary)' }, children: current.title }), _jsx("p", { style: { fontSize: '15px', color: 'var(--color-on-surface)', maxWidth: '640px' }, children: current.description })] }), _jsx("div", { style: { display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }, children: current.highlights.map((hl) => (_jsxs("span", { style: {
+                                }, children: [_jsxs("div", { children: [_jsx("h3", { style: { fontSize: '26px', fontWeight: 800, margin: `0 0 var(--space-1)`, color: 'var(--color-primary)' }, children: current.title }), _jsx("p", { style: { fontSize: '15px', color: 'var(--color-on-surface)', maxWidth: '640px' }, children: current.description })] }), _jsx("div", { style: { display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }, children: current.highlights.map((hl) => (_jsxs("span", { style: {
                                                 backgroundColor: 'var(--color-surface-container-low)',
                                                 border: '1px solid var(--color-outline-variant)',
                                                 color: 'var(--color-on-surface)',
