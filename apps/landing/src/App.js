@@ -18,11 +18,15 @@ import { BusinessImpactSection } from './components/BusinessImpactSection';
 import { CtaSection } from './components/CtaSection';
 import { Footer } from './components/Footer';
 import { BookDemoModal } from './components/BookDemoModal';
+import { TrialSignupModal } from './components/TrialSignupModal';
 export const App = () => {
     const [demoModalOpen, setDemoModalOpen] = useState(false);
+    const [trialModalOpen, setTrialModalOpen] = useState(false);
     const handleOpenDemo = () => setDemoModalOpen(true);
     const handleCloseDemo = () => setDemoModalOpen(false);
-    return (_jsxs("div", { style: { minHeight: '100vh', display: 'flex', flexDirection: 'column' }, children: [_jsx(Navbar, { onOpenDemo: handleOpenDemo }), _jsxs("main", { style: { flex: 1 }, children: [_jsx(HeroSection, { onOpenDemo: handleOpenDemo }), _jsx(VisibilitySection, {}), _jsx(OverviewSection, {}), _jsx(ModulesSection, {}), _jsx(LiveProductionSection, {}), _jsx(MonitoringSection, {}), _jsx(OeePerformanceSection, {}), _jsx(QualityTraceabilitySection, {}), _jsx(JourneySection, {}), _jsx(UsersInterfacesSection, {}), _jsx(DataDecisionSection, {}), _jsx(ShowcaseSection, {}), _jsx(DeploymentSection, {}), _jsx(BusinessImpactSection, {}), _jsx(CtaSection, { onOpenDemo: handleOpenDemo })] }), _jsx(Footer, {}), _jsx(BookDemoModal, { isOpen: demoModalOpen, onClose: handleCloseDemo })] }));
+    const handleOpenTrial = () => setTrialModalOpen(true);
+    const handleCloseTrial = () => setTrialModalOpen(false);
+    return (_jsxs("div", { style: { minHeight: '100vh', display: 'flex', flexDirection: 'column' }, children: [_jsx(Navbar, { onOpenDemo: handleOpenDemo, onOpenTrial: handleOpenTrial }), _jsxs("main", { style: { flex: 1 }, children: [_jsx(HeroSection, { onOpenDemo: handleOpenDemo, onOpenTrial: handleOpenTrial }), _jsx(VisibilitySection, {}), _jsx(OverviewSection, {}), _jsx(ModulesSection, {}), _jsx(LiveProductionSection, {}), _jsx(MonitoringSection, {}), _jsx(OeePerformanceSection, {}), _jsx(QualityTraceabilitySection, {}), _jsx(JourneySection, {}), _jsx(UsersInterfacesSection, {}), _jsx(DataDecisionSection, {}), _jsx(ShowcaseSection, {}), _jsx(DeploymentSection, {}), _jsx(BusinessImpactSection, {}), _jsx(CtaSection, { onOpenDemo: handleOpenDemo, onOpenTrial: handleOpenTrial })] }), _jsx(Footer, {}), _jsx(BookDemoModal, { isOpen: demoModalOpen, onClose: handleCloseDemo }), _jsx(TrialSignupModal, { isOpen: trialModalOpen, onClose: handleCloseTrial })] }));
 };
 export default App;
 //# sourceMappingURL=App.js.map

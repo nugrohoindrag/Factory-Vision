@@ -34,10 +34,26 @@ interface SessionContextValue extends SessionState {
 const SessionContext = createContext<SessionContextValue | null>(null);
 
 export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Check if token was passed in query parameter (e.g. from Landing Trial Signup redirect)
+  const [initialToken] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const urlParams = new URLSearchParams(window.location.search);
+    const tokenParam = urlParams.get('token');
+    if (tokenParam) {
+      setAuthToken(tokenParam);
+      urlParams.delete('token');
+      const newSearch = urlParams.toString();
+      const newUrl = window.location.pathname + (newSearch ? `?${newSearch}` : '') + window.location.hash;
+      window.history.replaceState({}, document.title, newUrl);
+      return tokenParam;
+    }
+    return getAuthToken();
+  });
+
   const [state, setState] = useState<SessionState>({
     principal: null,
     user: null,
-    restoring: Boolean(getAuthToken()),
+    restoring: Boolean(initialToken || getAuthToken()),
   });
 
   // A token in localStorage is a claim, not proof. Validate it before showing

@@ -4,9 +4,10 @@ import { Icon } from '@factory-vision/ui';
 
 interface NavbarProps {
   onOpenDemo: () => void;
+  onOpenTrial?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo }) => {
+export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onOpenTrial }) => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -129,17 +130,30 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo }) => {
             <Icon name={theme === 'light' ? 'dark_mode' : 'light_mode'} size={18} />
           </button>
 
-          {/* Primary CTA */}
+          {/* Secondary Demo CTA */}
           <button
             onClick={onOpenDemo}
-            className="fv-btn-primary"
+            className="fv-btn-secondary"
             style={{
-              padding: `var(--space-3) var(--space-6)`,
-              fontSize: '14px',
+              padding: `var(--space-2) var(--space-4)`,
+              fontSize: '13.5px',
             }}
           >
-            Book a Demo
-            <Icon name="arrow_forward" size={16} />
+            Demo
+          </button>
+
+          {/* Primary Trial CTA */}
+          <button
+            onClick={onOpenTrial || onOpenDemo}
+            className="fv-btn-primary"
+            style={{
+              padding: `var(--space-2) var(--space-5)`,
+              fontSize: '13.5px',
+              gap: 'var(--space-2)',
+            }}
+          >
+            <Icon name="rocket_launch" size={16} />
+            Coba Gratis
           </button>
 
           {/* Mobile Menu Toggle */}
@@ -194,6 +208,31 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo }) => {
               {link.label}
             </a>
           ))}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                if (onOpenTrial) onOpenTrial();
+                else onOpenDemo();
+              }}
+              className="fv-btn-primary"
+              style={{ width: '100%', justifyContent: 'center', padding: 'var(--space-3)' }}
+            >
+              <Icon name="rocket_launch" size={16} />
+              Coba Gratis 14 Hari
+            </button>
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onOpenDemo();
+              }}
+              className="fv-btn-secondary"
+              style={{ width: '100%', justifyContent: 'center', padding: 'var(--space-3)' }}
+            >
+              Jadwalkan Live Demo
+            </button>
+          </div>
         </div>
       )}
 

@@ -4,9 +4,10 @@ import { Icon } from '@factory-vision/ui';
 
 interface HeroSectionProps {
   onOpenDemo: () => void;
+  onOpenTrial?: () => void;
 }
 
-export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenDemo }) => {
+export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenDemo, onOpenTrial }) => {
   return (
     <section
       style={{
@@ -75,20 +76,36 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenDemo }) => {
             }}
           >
             <button
-              onClick={onOpenDemo}
+              onClick={onOpenTrial || onOpenDemo}
               className="fv-btn-primary"
-              style={{ padding: `var(--space-4) var(--space-8)`, fontSize: '16px' }}
+              style={{ padding: `var(--space-4) var(--space-8)`, fontSize: '16px', gap: 'var(--space-2)' }}
             >
-              Book a Demo
+              <Icon name="rocket_launch" size={18} />
+              Coba Gratis 14 Hari
+            </button>
+            <button
+              onClick={onOpenDemo}
+              className="fv-btn-secondary"
+              style={{ padding: `var(--space-4) var(--space-8)`, fontSize: '16px', gap: 'var(--space-2)' }}
+            >
               <Icon name="calendar_today" size={18} />
+              Jadwalkan Demo
             </button>
             <a
               href="#showcase"
-              className="fv-btn-secondary"
-              style={{ padding: `var(--space-4) var(--space-8)`, fontSize: '16px' }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 'var(--space-1)',
+                padding: `var(--space-4) var(--space-6)`,
+                fontSize: '15px',
+                fontWeight: 600,
+                color: 'var(--color-on-surface-variant)',
+                textDecoration: 'none',
+              }}
             >
-              Explore the Platform
-              <Icon name="visibility" size={18} />
+              Jelajahi Platform
+              <Icon name="arrow_downward" size={16} />
             </a>
           </motion.div>
         </div>

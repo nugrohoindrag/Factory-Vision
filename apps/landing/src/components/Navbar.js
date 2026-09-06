@@ -2,7 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useState, useEffect } from 'react';
 import { FactoryVisionLogo } from '@factory-vision/ui/fv';
 import { Icon } from '@factory-vision/ui';
-export const Navbar = ({ onOpenDemo }) => {
+export const Navbar = ({ onOpenDemo, onOpenTrial }) => {
     const [theme, setTheme] = useState('light');
     const [scrolled, setScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -76,10 +76,14 @@ export const Navbar = ({ onOpenDemo }) => {
                                     cursor: 'pointer',
                                     boxShadow: 'var(--elevation-1)',
                                     transition: 'all 0.15s ease',
-                                }, children: _jsx(Icon, { name: theme === 'light' ? 'dark_mode' : 'light_mode', size: 18 }) }), _jsxs("button", { onClick: onOpenDemo, className: "fv-btn-primary", style: {
-                                    padding: `var(--space-3) var(--space-6)`,
-                                    fontSize: '14px',
-                                }, children: ["Book a Demo", _jsx(Icon, { name: "arrow_forward", size: 16 })] }), _jsx("button", { onClick: () => setMobileMenuOpen(!mobileMenuOpen), className: "fv-mobile-toggle", "aria-label": "Toggle Menu", style: {
+                                }, children: _jsx(Icon, { name: theme === 'light' ? 'dark_mode' : 'light_mode', size: 18 }) }), _jsx("button", { onClick: onOpenDemo, className: "fv-btn-secondary", style: {
+                                    padding: `var(--space-2) var(--space-4)`,
+                                    fontSize: '13.5px',
+                                }, children: "Demo" }), _jsxs("button", { onClick: onOpenTrial || onOpenDemo, className: "fv-btn-primary", style: {
+                                    padding: `var(--space-2) var(--space-5)`,
+                                    fontSize: '13.5px',
+                                    gap: 'var(--space-2)',
+                                }, children: [_jsx(Icon, { name: "rocket_launch", size: 16 }), "Coba Gratis"] }), _jsx("button", { onClick: () => setMobileMenuOpen(!mobileMenuOpen), className: "fv-mobile-toggle", "aria-label": "Toggle Menu", style: {
                                     display: 'none',
                                     alignItems: 'center',
                                     justifyContent: 'center',
@@ -90,7 +94,7 @@ export const Navbar = ({ onOpenDemo }) => {
                                     backgroundColor: 'var(--color-surface)',
                                     color: 'var(--color-on-surface)',
                                     cursor: 'pointer',
-                                }, children: _jsx(Icon, { name: mobileMenuOpen ? 'close' : 'menu', size: 20 }) })] })] }), mobileMenuOpen && (_jsx("div", { style: {
+                                }, children: _jsx(Icon, { name: mobileMenuOpen ? 'close' : 'menu', size: 20 }) })] })] }), mobileMenuOpen && (_jsxs("div", { style: {
                     backgroundColor: 'var(--color-surface)',
                     borderBottom: '1px solid var(--color-outline-variant)',
                     padding: `var(--space-4) var(--space-6)`,
@@ -98,13 +102,22 @@ export const Navbar = ({ onOpenDemo }) => {
                     flexDirection: 'column',
                     gap: 'var(--space-3)',
                     boxShadow: 'var(--elevation-2)',
-                }, children: navLinks.map((link) => (_jsx("a", { href: link.href, onClick: () => setMobileMenuOpen(false), style: {
-                        fontSize: '15px',
-                        fontWeight: 600,
-                        color: 'var(--color-on-surface)',
-                        textDecoration: 'none',
-                        padding: `var(--space-2) 0`,
-                    }, children: link.label }, link.label))) })), _jsx("style", { children: `
+                }, children: [navLinks.map((link) => (_jsx("a", { href: link.href, onClick: () => setMobileMenuOpen(false), style: {
+                            fontSize: '15px',
+                            fontWeight: 600,
+                            color: 'var(--color-on-surface)',
+                            textDecoration: 'none',
+                            padding: `var(--space-2) 0`,
+                        }, children: link.label }, link.label))), _jsxs("div", { style: { display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }, children: [_jsxs("button", { onClick: () => {
+                                    setMobileMenuOpen(false);
+                                    if (onOpenTrial)
+                                        onOpenTrial();
+                                    else
+                                        onOpenDemo();
+                                }, className: "fv-btn-primary", style: { width: '100%', justifyContent: 'center', padding: 'var(--space-3)' }, children: [_jsx(Icon, { name: "rocket_launch", size: 16 }), "Coba Gratis 14 Hari"] }), _jsx("button", { onClick: () => {
+                                    setMobileMenuOpen(false);
+                                    onOpenDemo();
+                                }, className: "fv-btn-secondary", style: { width: '100%', justifyContent: 'center', padding: 'var(--space-3)' }, children: "Jadwalkan Live Demo" })] })] })), _jsx("style", { children: `
         @media (min-width: 860px) {
           .fv-desktop-nav {
             display: flex !important;

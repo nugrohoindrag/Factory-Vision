@@ -28,6 +28,7 @@ import { CapacityPlanningPage } from '../features/planning/CapacityPlanningPage.
 import { ProductionPlansPage } from '../features/planning/ProductionPlansPage.js';
 import { ProductionPlanWizardPage } from '../features/planning/ProductionPlanWizardPage.js';
 import { useSession } from './SessionContext.js';
+import { OnboardingProvider, OnboardingLayers, OnboardingHeaderTrigger } from '../features/onboarding/index.js';
 
 interface NavSubItem {
   label: string;
@@ -40,7 +41,7 @@ interface NavSubItem {
    * Classification heading this entry sits under.
    *
    * Master Data had grown to twenty-one destinations in one flat list, which is
-   * a list nobody reads â€” they scan it for the word they want and give up. The
+   * a list nobody reads — they scan it for the word they want and give up. The
    * heading is emitted whenever it changes between two *visible* entries, so a
    * section whose every item is filtered out by permission leaves no orphan
    * label behind. Entries sharing a section must therefore be adjacent.
@@ -591,15 +592,16 @@ export const App: React.FC = () => {
   const currentFullUrl = `${location.pathname}${location.search}`;
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        minHeight: '100vh',
-        backgroundColor: 'var(--color-background)',
-        color: 'var(--color-on-background)',
-        fontFamily: 'var(--font-family)',
-      }}
-    >
+    <OnboardingProvider>
+      <div
+        style={{
+          display: 'flex',
+          minHeight: '100vh',
+          backgroundColor: 'var(--color-background)',
+          color: 'var(--color-on-background)',
+          fontFamily: 'var(--font-family)',
+        }}
+      >
       {/* Morphic Collapsible Sidebar */}
       <aside
         style={{
@@ -1176,8 +1178,9 @@ export const App: React.FC = () => {
             </span>
           </div>
 
-          {/* Right Controls: Telemetry + Theme Selector + Quick User Photo */}
+          {/* Right Controls: Telemetry + Onboarding Guide + Theme Selector + Quick User Photo */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+            <OnboardingHeaderTrigger />
             {/* StatusBadge is a mirror component with no solid-fill prop,
  its default is a pale success-container pill. Overriding to
  a solid fill is scoped to this one instance, not global. */}
@@ -1233,6 +1236,9 @@ export const App: React.FC = () => {
             </button>
           </div>
         </header>
+
+        {/* Onboarding Trial Command Center Banner & Overlays */}
+        <OnboardingLayers />
 
         {/* Page View Body */}
         <main style={{ flex: 1, overflowY: 'auto' }}>
@@ -1423,6 +1429,7 @@ export const App: React.FC = () => {
         onSave={handleSaveProfile}
       />
     </div>
+    </OnboardingProvider>
   );
 };
 

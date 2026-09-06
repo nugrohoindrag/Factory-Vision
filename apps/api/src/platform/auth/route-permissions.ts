@@ -188,6 +188,7 @@ export function permissionForRoute(method: string, path: string): PermissionId |
 export const PUBLIC_API_PATHS = new Set([
   '/health',
   '/api/v1/auth/login',
+  '/api/v1/auth/trial-register',
   '/api/v1/auth/operator-login',
   '/api/v1/auth/session',
   '/api/v1/auth/logout',

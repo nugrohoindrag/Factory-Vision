@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { motion } from 'motion/react';
 import { Icon } from '@factory-vision/ui';
-export const CtaSection = ({ onOpenDemo }) => {
+export const CtaSection = ({ onOpenDemo, onOpenTrial }) => {
     return (_jsx("section", { className: "fv-section-py", style: { backgroundColor: 'var(--color-surface)' }, children: _jsx("div", { className: "fv-landing-container", children: _jsxs(motion.div, { initial: { opacity: 0, scale: 0.98 }, whileInView: { opacity: 1, scale: 1 }, viewport: { once: true }, style: {
                     background: 'var(--color-primary)',
                     color: 'var(--color-on-primary)',
@@ -55,12 +55,24 @@ export const CtaSection = ({ onOpenDemo }) => {
                                     justifyContent: 'center',
                                     gap: 'var(--space-4)',
                                     flexWrap: 'wrap',
-                                }, children: [_jsxs("button", { onClick: onOpenDemo, className: "fv-btn-primary", style: {
-                                            padding: `var(--space-4) var(--space-10)`,
-                                            fontSize: '16px',
-                                        }, children: ["Book a Live Demo", _jsx(Icon, { name: "arrow_forward", size: 18 })] }), _jsxs("a", { href: "#overview", className: "fv-btn-secondary", style: {
+                                }, children: [_jsxs("button", { onClick: onOpenTrial || onOpenDemo, className: "fv-btn-primary", style: {
                                             padding: `var(--space-4) var(--space-8)`,
                                             fontSize: '16px',
-                                        }, children: ["Explore Modules", _jsx(Icon, { name: "visibility", size: 18 })] })] })] })] }) }) }));
+                                            gap: 'var(--space-2)',
+                                        }, children: [_jsx(Icon, { name: "rocket_launch", size: 18 }), "Coba Gratis 14 Hari"] }), _jsxs("button", { onClick: onOpenDemo, className: "fv-btn-secondary", style: {
+                                            padding: `var(--space-4) var(--space-8)`,
+                                            fontSize: '16px',
+                                            gap: 'var(--space-2)',
+                                        }, children: [_jsx(Icon, { name: "calendar_today", size: 18 }), "Jadwalkan Live Demo"] }), _jsxs("a", { href: "#overview", style: {
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: 'var(--space-1)',
+                                            padding: `var(--space-4) var(--space-6)`,
+                                            fontSize: '15px',
+                                            fontWeight: 600,
+                                            color: 'var(--color-on-primary)',
+                                            textDecoration: 'none',
+                                            opacity: 0.9,
+                                        }, children: ["Jelajahi Modul", _jsx(Icon, { name: "arrow_upward", size: 16 })] })] })] })] }) }) }));
 };
 //# sourceMappingURL=CtaSection.js.map

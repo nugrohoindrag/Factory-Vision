@@ -52,6 +52,8 @@ import { workOrderRoutes } from './routes/work-order.routes.js';
 import { ProcessChainService } from './modules/production/process-chain.service.js';
 import { WorkOrderGenerationService } from './modules/production/work-order-generation.service.js';
 import { PlanningFacade, planningRoutes } from './modules/planning/public/index.js';
+import { OnboardingService } from './modules/onboarding/onboarding.service.js';
+import { onboardingRoutes } from './routes/onboarding.routes.js';
 import { SEED_DEMO_DATA } from './platform/config/demo-seed.js';
 
 const app = express();
@@ -96,6 +98,12 @@ const authService = new AuthService(masterDataService, rbacService, auditService
 const oeeService = new OeeService(masterDataService, productionService, shopFloorService);
 const csvService = new CsvService(masterDataService);
 const shiftHandoverService = new ShiftHandoverService(masterDataService, productionService, shopFloorService);
+const onboardingService = new OnboardingService(
+  masterDataService,
+  productionService,
+  shopFloorService,
+  authService
+);
 
 // Demand and planning (MES Improvement v1.0). The planning module is reached
 // only through its public surface: `main.ts` mounts a router and holds a
@@ -1110,15 +1118,15 @@ app.post('/api/v1/work-orders/:id/cancel', async (req, res, next) => {
 });
 
 /**
- * Dynamic Work Order Split (Â§25.7).
+ * Dynamic Work Order Split (§25.7).
  *
  * A supervisor divides a running process across machines to finish it sooner.
  * The split is an operational decision made on the day, so it is an action
  * here rather than anything the seed could have planted.
  *
- * Every rule that keeps the result honest â€” the parts summing exactly to the
+ * Every rule that keeps the result honest — the parts summing exactly to the
  * parent, the parent holding no production of its own, the machine and mould
- * being released to the children â€” lives in `WorkOrderSplitService`, where it
+ * being released to the children — lives in `WorkOrderSplitService`, where it
  * can be tested without an HTTP request.
  */
 app.post(
@@ -1725,6 +1733,7 @@ app.use(
     recordAudit(req, 'mold', entityId, action, previousValue, newValue)
   )
 );
+app.use('/api/v1', onboardingRoutes(onboardingService));
 app.use('/api/v1', metaRoutes());
 app.use('/api/internal/v1', internalRoutes(internalAuthService, clientManagementService, clientAdminService));
 

@@ -80,6 +80,16 @@ import {
   PlanningJobView,
   ProcessChainView,
   WorkOrderDemandTrace,
+  FactoryProfileInput,
+  FirstWorkflowResult,
+  GuidanceState,
+  IndustryTemplateInfo,
+  IndustryType,
+  OnboardingProgress,
+  OnboardingStepId,
+  OnboardingStepStatus,
+  TrialRegistrationPayload,
+  TrialRegistrationResponse,
 } from '@factory-vision/domain-types';
 import { ApiRequestError } from './api-error.js';
 import { getAuthToken, getTenantId } from './auth-store.js';
@@ -557,7 +567,7 @@ export class FactoryVisionApiClient {
       }),
     cancel: (id: string) => this.request<WorkOrder>(`/api/v1/work-orders/${id}/cancel`, { method: 'POST' }),
     /**
-     * Dynamic split (Â§25.7): divides one Work Order into two or more children
+     * Dynamic split (§25.7): divides one Work Order into two or more children
      * that run in parallel. The parts must sum exactly to the parent's planned
      * quantity; the API refuses the split otherwise.
      */
@@ -1267,6 +1277,88 @@ export class FactoryVisionApiClient {
     return this.request<SyncBatchResult>('/api/v1/shop-floor/sync-batch', {
       method: 'POST',
       body: JSON.stringify({ commands }),
+    });
+  }
+
+  // =========================================================================
+  // Onboarding & Free Trial (PRD MES 2.0)
+  // =========================================================================
+
+  registerTrial(payload: TrialRegistrationPayload): Promise<TrialRegistrationResponse> {
+    return this.request<TrialRegistrationResponse>('/api/v1/auth/trial-register', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  getOnboardingTemplates(): Promise<IndustryTemplateInfo[]> {
+    return this.request<IndustryTemplateInfo[]>('/api/v1/onboarding/templates');
+  }
+
+  applyIndustryTemplate(payload: {
+    industry: IndustryType;
+    factoryName?: string;
+    city?: string;
+    timezone?: string;
+  }): Promise<{ success: boolean; progress: OnboardingProgress }> {
+    return this.request<{ success: boolean; progress: OnboardingProgress }>('/api/v1/onboarding/apply-template', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  createBlankFactory(payload: FactoryProfileInput): Promise<{ success: boolean; progress: OnboardingProgress }> {
+    return this.request<{ success: boolean; progress: OnboardingProgress }>('/api/v1/onboarding/create-blank', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  getOnboardingStatus(): Promise<OnboardingProgress> {
+    return this.request<OnboardingProgress>('/api/v1/onboarding/status');
+  }
+
+  updateOnboardingStep(stepId: OnboardingStepId, status: OnboardingStepStatus): Promise<OnboardingProgress> {
+    return this.request<OnboardingProgress>('/api/v1/onboarding/step', {
+      method: 'PUT',
+      body: JSON.stringify({ stepId, status }),
+    });
+  }
+
+  getGuidanceState(): Promise<GuidanceState> {
+    return this.request<GuidanceState>('/api/v1/onboarding/guidance');
+  }
+
+  updateGuidanceState(patch: Partial<GuidanceState>): Promise<GuidanceState> {
+    return this.request<GuidanceState>('/api/v1/onboarding/guidance', {
+      method: 'PUT',
+      body: JSON.stringify(patch),
+    });
+  }
+
+  executeFirstWorkflow(payload?: {
+    productId?: string;
+    quantity?: number;
+    goodQty?: number;
+    rejectQty?: number;
+  }): Promise<FirstWorkflowResult> {
+    return this.request<FirstWorkflowResult>('/api/v1/onboarding/first-workflow', {
+      method: 'POST',
+      body: JSON.stringify(payload ?? {}),
+    });
+  }
+
+  logOnboardingEvent(eventName: string, metadata?: Record<string, unknown>): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>('/api/v1/onboarding/events', {
+      method: 'POST',
+      body: JSON.stringify({ eventName, metadata }),
+    });
+  }
+
+  requestUpgrade(planCode: string): Promise<{ success: boolean; message: string }> {
+    return this.request<{ success: boolean; message: string }>('/api/v1/onboarding/upgrade', {
+      method: 'POST',
+      body: JSON.stringify({ planCode }),
     });
   }
 }

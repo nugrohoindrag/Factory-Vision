@@ -4,9 +4,10 @@ import { Icon } from '@factory-vision/ui';
 
 interface CtaSectionProps {
   onOpenDemo: () => void;
+  onOpenTrial?: () => void;
 }
 
-export const CtaSection: React.FC<CtaSectionProps> = ({ onOpenDemo }) => {
+export const CtaSection: React.FC<CtaSectionProps> = ({ onOpenDemo, onOpenTrial }) => {
   return (
     <section className="fv-section-py" style={{ backgroundColor: 'var(--color-surface)' }}>
       <div className="fv-landing-container">
@@ -99,27 +100,47 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ onOpenDemo }) => {
               }}
             >
               <button
-                onClick={onOpenDemo}
+                onClick={onOpenTrial || onOpenDemo}
                 className="fv-btn-primary"
                 style={{
-                  padding: `var(--space-4) var(--space-10)`,
+                  padding: `var(--space-4) var(--space-8)`,
                   fontSize: '16px',
+                  gap: 'var(--space-2)',
                 }}
               >
-                Book a Live Demo
-                <Icon name="arrow_forward" size={18} />
+                <Icon name="rocket_launch" size={18} />
+                Coba Gratis 14 Hari
               </button>
 
-              <a
-                href="#overview"
+              <button
+                onClick={onOpenDemo}
                 className="fv-btn-secondary"
                 style={{
                   padding: `var(--space-4) var(--space-8)`,
                   fontSize: '16px',
+                  gap: 'var(--space-2)',
                 }}
               >
-                Explore Modules
-                <Icon name="visibility" size={18} />
+                <Icon name="calendar_today" size={18} />
+                Jadwalkan Live Demo
+              </button>
+
+              <a
+                href="#overview"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 'var(--space-1)',
+                  padding: `var(--space-4) var(--space-6)`,
+                  fontSize: '15px',
+                  fontWeight: 600,
+                  color: 'var(--color-on-primary)',
+                  textDecoration: 'none',
+                  opacity: 0.9,
+                }}
+              >
+                Jelajahi Modul
+                <Icon name="arrow_upward" size={16} />
               </a>
             </div>
           </div>

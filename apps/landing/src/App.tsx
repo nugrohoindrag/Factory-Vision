@@ -17,21 +17,26 @@ import { BusinessImpactSection } from './components/BusinessImpactSection';
 import { CtaSection } from './components/CtaSection';
 import { Footer } from './components/Footer';
 import { BookDemoModal } from './components/BookDemoModal';
+import { TrialSignupModal } from './components/TrialSignupModal';
 
 export const App: React.FC = () => {
   const [demoModalOpen, setDemoModalOpen] = useState(false);
+  const [trialModalOpen, setTrialModalOpen] = useState(false);
 
   const handleOpenDemo = () => setDemoModalOpen(true);
   const handleCloseDemo = () => setDemoModalOpen(false);
 
+  const handleOpenTrial = () => setTrialModalOpen(true);
+  const handleCloseTrial = () => setTrialModalOpen(false);
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Navigation Header */}
-      <Navbar onOpenDemo={handleOpenDemo} />
+      <Navbar onOpenDemo={handleOpenDemo} onOpenTrial={handleOpenTrial} />
 
       <main style={{ flex: 1 }}>
         {/* 01 HERO */}
-        <HeroSection onOpenDemo={handleOpenDemo} />
+        <HeroSection onOpenDemo={handleOpenDemo} onOpenTrial={handleOpenTrial} />
 
         {/* 02 MANUFACTURING VISIBILITY */}
         <VisibilitySection />
@@ -73,7 +78,7 @@ export const App: React.FC = () => {
         <BusinessImpactSection />
 
         {/* 15 FINAL CTA */}
-        <CtaSection onOpenDemo={handleOpenDemo} />
+        <CtaSection onOpenDemo={handleOpenDemo} onOpenTrial={handleOpenTrial} />
       </main>
 
       {/* 16 FOOTER */}
@@ -81,6 +86,9 @@ export const App: React.FC = () => {
 
       {/* Interactive Book a Demo Modal */}
       <BookDemoModal isOpen={demoModalOpen} onClose={handleCloseDemo} />
+
+      {/* Self-Service 14-Day Trial Registration Modal */}
+      <TrialSignupModal isOpen={trialModalOpen} onClose={handleCloseTrial} />
     </div>
   );
 };
