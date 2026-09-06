@@ -377,24 +377,24 @@ export const CustomerOrdersPage: React.FC = () => {
 
             <div>
               <h3 style={{ margin: `0 0 var(--space-2)`, fontSize: '14px', fontWeight: 700 }}>Order Line</h3>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+              <table className="fv-table">
                 <thead>
-                  <tr style={{ textAlign: 'left', color: 'var(--color-on-surface-variant)' }}>
-                    <th style={{ padding: `var(--space-2) var(--space-1)` }}>Product</th>
-                    <th style={{ padding: `var(--space-2) var(--space-1)` }}>Ordered</th>
-                    <th style={{ padding: `var(--space-2) var(--space-1)` }}>Planned</th>
-                    <th style={{ padding: `var(--space-2) var(--space-1)` }}>Produced</th>
-                    <th style={{ padding: `var(--space-2) var(--space-1)` }}>Kirim</th>
+                  <tr>
+                    <th>Product</th>
+                    <th>Ordered</th>
+                    <th>Planned</th>
+                    <th>Produced</th>
+                    <th>Kirim</th>
                   </tr>
                 </thead>
                 <tbody>
                   {detail.lines.map((line) => (
-                    <tr key={line.id} style={{ borderTop: '1px solid var(--color-outline-variant)' }}>
-                      <td style={{ padding: `var(--space-2) var(--space-1)` }}>{productName(line.productId)}</td>
-                      <td style={{ padding: `var(--space-2) var(--space-1)` }}>{line.orderedQuantity.toLocaleString('id-ID')}</td>
-                      <td style={{ padding: `var(--space-2) var(--space-1)` }}>{line.plannedQuantity.toLocaleString('id-ID')}</td>
-                      <td style={{ padding: `var(--space-2) var(--space-1)` }}>{line.producedQuantity.toLocaleString('id-ID')}</td>
-                      <td style={{ padding: `var(--space-2) var(--space-1)` }}>
+                    <tr key={line.id}>
+                      <td>{productName(line.productId)}</td>
+                      <td>{line.orderedQuantity.toLocaleString('id-ID')}</td>
+                      <td>{line.plannedQuantity.toLocaleString('id-ID')}</td>
+                      <td>{line.producedQuantity.toLocaleString('id-ID')}</td>
+                      <td>
                         {line.requestedDeliveryDate ?? detail.requestedDeliveryDate}
                       </td>
                     </tr>

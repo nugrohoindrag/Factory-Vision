@@ -125,7 +125,6 @@ export const AdminLogin: React.FC = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="nama@stechoq.com"
                 style={inputStyle}
               />
             </div>

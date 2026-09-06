@@ -293,42 +293,41 @@ export const CapacityPlanningPage: React.FC = () => {
             <SurfaceCard padding="lg">
               <h2 style={{ margin: `0 0 var(--space-3)`, fontSize: '15px', fontWeight: 700 }}>Kapasitas per Product</h2>
               <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                <table className="fv-table">
                   <thead>
-                    <tr style={{ textAlign: 'left', color: 'var(--color-on-surface-variant)' }}>
-                      <th style={{ padding: `var(--space-2) var(--space-2)` }}>Product</th>
-                      <th style={{ padding: `var(--space-2) var(--space-2)` }}>Demand</th>
-                      <th style={{ padding: `var(--space-2) var(--space-2)` }}>Total</th>
-                      <th style={{ padding: `var(--space-2) var(--space-2)` }}>Planning</th>
-                      <th style={{ padding: `var(--space-2) var(--space-2)` }}>Buffer</th>
-                      <th style={{ padding: `var(--space-2) var(--space-2)` }}>Utilization</th>
-                      <th style={{ padding: `var(--space-2) var(--space-2)` }}>Gap</th>
-                      <th style={{ padding: `var(--space-2) var(--space-2)` }}>Status</th>
+                    <tr>
+                      <th>Product</th>
+                      <th>Demand</th>
+                      <th>Total</th>
+                      <th>Planning</th>
+                      <th>Buffer</th>
+                      <th>Utilization</th>
+                      <th>Gap</th>
+                      <th>Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {lines.map((line) => (
-                      <tr key={line.id} style={{ borderTop: '1px solid var(--color-outline-variant)' }}>
-                        <td style={{ padding: `var(--space-2) var(--space-2)` }}>{productName(line.productId)}</td>
-                        <td style={{ padding: `var(--space-2) var(--space-2)` }}>{line.demandQuantity.toLocaleString('id-ID')}</td>
-                        <td style={{ padding: `var(--space-2) var(--space-2)` }}>{line.totalCapacity.toLocaleString('id-ID')}</td>
-                        <td style={{ padding: `var(--space-2) var(--space-2)` }}>
+                      <tr key={line.id}>
+                        <td>{productName(line.productId)}</td>
+                        <td>{line.demandQuantity.toLocaleString('id-ID')}</td>
+                        <td>{line.totalCapacity.toLocaleString('id-ID')}</td>
+                        <td>
                           {line.planningCapacity.toLocaleString('id-ID')}
                         </td>
-                        <td style={{ padding: `var(--space-2) var(--space-2)` }}>{line.capacityBuffer.toLocaleString('id-ID')}</td>
-                        <td style={{ padding: `var(--space-2) var(--space-2)` }}>
+                        <td>{line.capacityBuffer.toLocaleString('id-ID')}</td>
+                        <td>
                           {(line.capacityUtilization * 100).toFixed(1)}%
                         </td>
                         <td
                           style={{
-                            padding: `var(--space-2) var(--space-2)`,
                             fontWeight: line.capacityGap > 0 ? 700 : 400,
                             color: line.capacityGap > 0 ? 'var(--color-error)' : undefined,
                           }}
                         >
                           {line.capacityGap.toLocaleString('id-ID')}
                         </td>
-                        <td style={{ padding: `var(--space-2) var(--space-2)` }}>
+                        <td>
                           <CapacityBadge status={line.capacityStatus} />
                         </td>
                       </tr>

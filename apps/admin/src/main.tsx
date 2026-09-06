@@ -8,6 +8,7 @@ import '@factory-vision/ui/fv/fonts.css';
 import '@factory-vision/ui/tokens.css';
 import '@factory-vision/ui/fv/palette.css';
 import '@factory-vision/ui/fv/mirror-fixes.css';
+import '@factory-vision/ui/fv/layout.css';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false, staleTime: 10_000 } },

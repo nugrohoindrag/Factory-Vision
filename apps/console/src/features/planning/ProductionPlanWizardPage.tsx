@@ -415,15 +415,15 @@ export const ProductionPlanWizardPage: React.FC = () => {
               </p>
             ) : (
               <div style={{ overflowX: 'auto', marginBottom: 'var(--space-5)' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                <table className="fv-table">
                   <thead>
-                    <tr style={{ textAlign: 'left', color: 'var(--color-on-surface-variant)' }}>
-                      <th style={{ padding: `var(--space-2) var(--space-1)` }}>Customer</th>
-                      <th style={{ padding: `var(--space-2) var(--space-1)` }}>Order</th>
-                      <th style={{ padding: `var(--space-2) var(--space-1)` }}>Product</th>
-                      <th style={{ padding: `var(--space-2) var(--space-1)` }}>Demand</th>
-                      <th style={{ padding: `var(--space-2) var(--space-1)` }}>Kirim</th>
-                      <th style={{ padding: `var(--space-2) var(--space-1)` }} />
+                    <tr>
+                      <th>Customer</th>
+                      <th>Order</th>
+                      <th>Product</th>
+                      <th>Demand</th>
+                      <th>Kirim</th>
+                      <th />
                     </tr>
                   </thead>
                   <tbody>
@@ -431,16 +431,16 @@ export const ProductionPlanWizardPage: React.FC = () => {
                       line.sources.map((source) => (
                         <tr
                           key={source.customerOrderLineId}
-                          style={{ borderTop: '1px solid var(--color-outline-variant)' }}
+                         
                         >
-                          <td style={{ padding: `var(--space-2) var(--space-1)` }}>{source.customerName}</td>
-                          <td style={{ padding: `var(--space-2) var(--space-1)` }}>{source.orderNumber}</td>
-                          <td style={{ padding: `var(--space-2) var(--space-1)` }}>{productName(line.productId)}</td>
-                          <td style={{ padding: `var(--space-2) var(--space-1)` }}>
+                          <td>{source.customerName}</td>
+                          <td>{source.orderNumber}</td>
+                          <td>{productName(line.productId)}</td>
+                          <td>
                             {source.demandQuantity.toLocaleString('id-ID')}
                           </td>
-                          <td style={{ padding: `var(--space-2) var(--space-1)` }}>{source.requestedDeliveryDate ?? '—'}</td>
-                          <td style={{ padding: `var(--space-2) var(--space-1)` }}>
+                          <td>{source.requestedDeliveryDate ?? '—'}</td>
+                          <td>
                             {!readOnly && (
                               <Button
                                 variant="text"
@@ -476,34 +476,34 @@ export const ProductionPlanWizardPage: React.FC = () => {
               />
             ) : (
               <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                <table className="fv-table">
                   <thead>
-                    <tr style={{ textAlign: 'left', color: 'var(--color-on-surface-variant)' }}>
-                      <th style={{ padding: `var(--space-2) var(--space-1)` }}>Customer</th>
-                      <th style={{ padding: `var(--space-2) var(--space-1)` }}>Order</th>
-                      <th style={{ padding: `var(--space-2) var(--space-1)` }}>Product</th>
-                      <th style={{ padding: `var(--space-2) var(--space-1)` }}>Order Qty</th>
-                      <th style={{ padding: `var(--space-2) var(--space-1)` }}>Sisa</th>
-                      <th style={{ padding: `var(--space-2) var(--space-1)` }}>Kirim</th>
-                      <th style={{ padding: `var(--space-2) var(--space-1)` }} />
+                    <tr>
+                      <th>Customer</th>
+                      <th>Order</th>
+                      <th>Product</th>
+                      <th>Order Qty</th>
+                      <th>Sisa</th>
+                      <th>Kirim</th>
+                      <th />
                     </tr>
                   </thead>
                   <tbody>
                     {candidateLines.map(({ order, line, outstanding }) => (
-                      <tr key={line.id} style={{ borderTop: '1px solid var(--color-outline-variant)' }}>
-                        <td style={{ padding: `var(--space-2) var(--space-1)` }}>{customerName(order.customerId)}</td>
-                        <td style={{ padding: `var(--space-2) var(--space-1)` }}>{order.orderNumber}</td>
-                        <td style={{ padding: `var(--space-2) var(--space-1)` }}>{productName(line.productId)}</td>
-                        <td style={{ padding: `var(--space-2) var(--space-1)` }}>
+                      <tr key={line.id}>
+                        <td>{customerName(order.customerId)}</td>
+                        <td>{order.orderNumber}</td>
+                        <td>{productName(line.productId)}</td>
+                        <td>
                           {line.orderedQuantity.toLocaleString('id-ID')}
                         </td>
-                        <td style={{ padding: `var(--space-2) var(--space-1)`, fontWeight: 700 }}>
+                        <td style={{ fontWeight: 700 }}>
                           {outstanding.toLocaleString('id-ID')}
                         </td>
-                        <td style={{ padding: `var(--space-2) var(--space-1)` }}>
+                        <td>
                           {line.requestedDeliveryDate ?? order.requestedDeliveryDate}
                         </td>
-                        <td style={{ padding: `var(--space-2) var(--space-1)` }}>
+                        <td>
                           <Button
                             variant="outlined"
                             size="sm"
@@ -586,15 +586,15 @@ export const ProductionPlanWizardPage: React.FC = () => {
                 />
               ) : (
                 <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                  <table className="fv-table">
                     <thead>
-                      <tr style={{ textAlign: 'left', color: 'var(--color-on-surface-variant)' }}>
-                        <th style={{ padding: `var(--space-2) var(--space-1)` }}>WO</th>
-                        <th style={{ padding: `var(--space-2) var(--space-1)` }}>Product</th>
-                        <th style={{ padding: `var(--space-2) var(--space-1)` }}>Seq</th>
-                        <th style={{ padding: `var(--space-2) var(--space-1)` }}>Planned</th>
-                        <th style={{ padding: `var(--space-2) var(--space-1)` }}>Predecessor</th>
-                        <th style={{ padding: `var(--space-2) var(--space-1)` }}>Status</th>
+                      <tr>
+                        <th>WO</th>
+                        <th>Product</th>
+                        <th>Seq</th>
+                        <th>Planned</th>
+                        <th>Predecessor</th>
+                        <th>Status</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -602,20 +602,20 @@ export const ProductionPlanWizardPage: React.FC = () => {
                         .slice()
                         .sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0))
                         .map((wo) => (
-                          <tr key={wo.id} style={{ borderTop: '1px solid var(--color-outline-variant)' }}>
-                            <td style={{ padding: `var(--space-2) var(--space-1)`, fontWeight: 700 }}>{wo.woNumber}</td>
-                            <td style={{ padding: `var(--space-2) var(--space-1)` }}>{productName(wo.productId)}</td>
-                            <td style={{ padding: `var(--space-2) var(--space-1)` }}>{wo.sequence ?? '—'}</td>
-                            <td style={{ padding: `var(--space-2) var(--space-1)` }}>
+                          <tr key={wo.id}>
+                            <td style={{ fontWeight: 700 }}>{wo.woNumber}</td>
+                            <td>{productName(wo.productId)}</td>
+                            <td>{wo.sequence ?? '—'}</td>
+                            <td>
                               {wo.plannedQuantity.toLocaleString('id-ID')}
                             </td>
-                            <td style={{ padding: `var(--space-2) var(--space-1)` }}>
+                            <td>
                               {wo.predecessorWorkOrderId
                                 ? (planWorkOrders.find((p) => p.id === wo.predecessorWorkOrderId)?.woNumber ??
                                   '—')
                                 : 'process pertama'}
                             </td>
-                            <td style={{ padding: `var(--space-2) var(--space-1)` }}>{statusLabel(wo.status)}</td>
+                            <td>{statusLabel(wo.status)}</td>
                           </tr>
                         ))}
                     </tbody>
@@ -852,26 +852,26 @@ const ScheduleReview: React.FC<{
   }
   return (
     <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+      <table className="fv-table">
         <thead>
-          <tr style={{ textAlign: 'left', color: 'var(--color-on-surface-variant)' }}>
-            <th style={{ padding: `var(--space-2) var(--space-1)` }}>WO</th>
-            <th style={{ padding: `var(--space-2) var(--space-1)` }}>Product</th>
-            <th style={{ padding: `var(--space-2) var(--space-1)` }}>Seq</th>
-            <th style={{ padding: `var(--space-2) var(--space-1)` }}>Planned Start</th>
-            <th style={{ padding: `var(--space-2) var(--space-1)` }}>Planned End</th>
-            <th style={{ padding: `var(--space-2) var(--space-1)` }}>Shift</th>
+          <tr>
+            <th>WO</th>
+            <th>Product</th>
+            <th>Seq</th>
+            <th>Planned Start</th>
+            <th>Planned End</th>
+            <th>Shift</th>
           </tr>
         </thead>
         <tbody>
           {workOrders.map((wo) => (
-            <tr key={wo.id} style={{ borderTop: '1px solid var(--color-outline-variant)' }}>
-              <td style={{ padding: `var(--space-2) var(--space-1)`, fontWeight: 700 }}>{wo.woNumber}</td>
-              <td style={{ padding: `var(--space-2) var(--space-1)` }}>{productName(wo.productId)}</td>
-              <td style={{ padding: `var(--space-2) var(--space-1)` }}>{wo.sequence ?? '—'}</td>
-              <td style={{ padding: `var(--space-2) var(--space-1)` }}>{wo.plannedStart?.slice(0, 16).replace('T', ' ')}</td>
-              <td style={{ padding: `var(--space-2) var(--space-1)` }}>{wo.plannedEnd?.slice(0, 16).replace('T', ' ')}</td>
-              <td style={{ padding: `var(--space-2) var(--space-1)` }}>{wo.shiftId ?? 'belum ditetapkan'}</td>
+            <tr key={wo.id}>
+              <td style={{ fontWeight: 700 }}>{wo.woNumber}</td>
+              <td>{productName(wo.productId)}</td>
+              <td>{wo.sequence ?? '—'}</td>
+              <td>{wo.plannedStart?.slice(0, 16).replace('T', ' ')}</td>
+              <td>{wo.plannedEnd?.slice(0, 16).replace('T', ' ')}</td>
+              <td>{wo.shiftId ?? 'belum ditetapkan'}</td>
             </tr>
           ))}
         </tbody>
@@ -906,22 +906,22 @@ const ResourceReview: React.FC<{
         </SurfaceCard>
       )}
       <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+        <table className="fv-table">
           <thead>
-            <tr style={{ textAlign: 'left', color: 'var(--color-on-surface-variant)' }}>
-              <th style={{ padding: `var(--space-2) var(--space-1)` }}>WO</th>
-              <th style={{ padding: `var(--space-2) var(--space-1)` }}>Product</th>
-              <th style={{ padding: `var(--space-2) var(--space-1)` }}>Machine</th>
-              <th style={{ padding: `var(--space-2) var(--space-1)` }}>Mold</th>
+            <tr>
+              <th>WO</th>
+              <th>Product</th>
+              <th>Machine</th>
+              <th>Mold</th>
             </tr>
           </thead>
           <tbody>
             {workOrders.map((wo) => (
-              <tr key={wo.id} style={{ borderTop: '1px solid var(--color-outline-variant)' }}>
-                <td style={{ padding: `var(--space-2) var(--space-1)`, fontWeight: 700 }}>{wo.woNumber}</td>
-                <td style={{ padding: `var(--space-2) var(--space-1)` }}>{productName(wo.productId)}</td>
-                <td style={{ padding: `var(--space-2) var(--space-1)` }}>{wo.machineId ?? 'belum ditetapkan'}</td>
-                <td style={{ padding: `var(--space-2) var(--space-1)` }}>{wo.moldId ?? 'belum ditetapkan'}</td>
+              <tr key={wo.id}>
+                <td style={{ fontWeight: 700 }}>{wo.woNumber}</td>
+                <td>{productName(wo.productId)}</td>
+                <td>{wo.machineId ?? 'belum ditetapkan'}</td>
+                <td>{wo.moldId ?? 'belum ditetapkan'}</td>
               </tr>
             ))}
           </tbody>

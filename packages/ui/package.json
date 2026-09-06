@@ -76,6 +76,7 @@
     "./fv/palette.css": "./src/fv/palette.css",
     "./fv/table-header.css": "./src/fv/table-header.css",
     "./fv/mirror-fixes.css": "./src/fv/mirror-fixes.css",
+    "./fv/layout.css": "./src/fv/layout.css",
     "./tokens/*": "./src/tokens/*",
     "./src/*": "./src/*",
     "./package.json": "./package.json",

@@ -39,3 +39,61 @@
 }.morphic-advanced-table thead th [class*='material-symbols-'] {
  color: var(--color-on-primary)!important;
 }
+
+/**
+ * Plain `<table>` blocks, matched to `AdvancedDataTable`.
+ *
+ * A handful of planning screens render a bare `<table>` rather than the mirror
+ * component — a capacity breakdown, an order's lines, the wizard's previews.
+ * They fell outside the rule above, so their headers stayed unfilled grey text
+ * while every other table in the console carried a solid primary header, and
+ * their cells sat on 8px of padding, tight enough to read as one block.
+ *
+ * `.fv-table` gives them the same header fill and the same rhythm, from the
+ * same tokens, so the two kinds of table are indistinguishable to a planner.
+ */
+.fv-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+
+.fv-table thead th {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: left;
+  white-space: nowrap;
+  padding: var(--space-3) var(--space-4);
+}
+
+.fv-table thead th:first-child {
+  border-start-start-radius: var(--radius-md, 10px);
+}
+
+.fv-table thead th:last-child {
+  border-start-end-radius: var(--radius-md, 10px);
+}
+
+.fv-table tbody td {
+  padding: var(--space-3) var(--space-4);
+  border-block-start: 1px solid var(--color-outline-variant);
+  color: var(--color-on-surface);
+  vertical-align: middle;
+}
+
+/* Figures line up on the decimal, which is most of what these tables carry. */
+.fv-table td.fv-num,
+.fv-table th.fv-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* A wide table scrolls inside its own box rather than widening the page. */
+.fv-table-scroll {
+  overflow-x: auto;
+}

@@ -5,6 +5,7 @@ import App from './app/App';
 import '@factory-vision/ui/fv/fonts.css';
 import '@factory-vision/ui/tokens.css';
 import '@factory-vision/ui/fv/palette.css';
+import '@factory-vision/ui/fv/layout.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {

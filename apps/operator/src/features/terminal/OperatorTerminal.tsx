@@ -491,6 +491,8 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
   return (
     <Page
       style={{
+        // Opts out of the .fv-page page rhythm: this is a kiosk, edge to edge.
+        padding: 0,
         display: 'flex',
         flexDirection: 'column',
         height: '100vh',

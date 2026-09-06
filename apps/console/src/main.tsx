@@ -9,6 +9,7 @@ import '@factory-vision/ui/tokens.css';
 import '@factory-vision/ui/fv/palette.css';
 import '@factory-vision/ui/fv/table-header.css';
 import '@factory-vision/ui/fv/mirror-fixes.css';
+import '@factory-vision/ui/fv/layout.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {
