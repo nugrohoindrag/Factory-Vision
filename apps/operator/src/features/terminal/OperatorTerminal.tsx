@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'motion/react';
 import { FactoryVisionApiClient } from '@factory-vision/api-client';
-import { WorkOrderStatus, Operator, statusLabel } from '@factory-vision/domain-types';
-import { Icon, Button, M3_EASE, M3_TRANSITIONS } from '@factory-vision/ui';
+import { Operator } from '@factory-vision/domain-types';
+import { Icon, M3_EASE, M3_TRANSITIONS } from '@factory-vision/ui';
 import { enqueueCommand, syncQueue } from '../../offline/queue.js';
-import { SyncStatusBar } from './SyncStatusBar.js';
-import { ThemeToggle } from '../../app/ThemeToggle.js';
+import { TerminalDashboard } from './TerminalDashboard.js';
+import { WorkOrderPicker } from './WorkOrderPicker.js';
 import type { ThemeMode } from '../../app/theme.js';
 import {
   acknowledgeRejections,
@@ -14,16 +14,12 @@ import {
   subscribeSyncStatus,
   type SyncStatus,
 } from '../../offline/queue.js';
-import {
-  Page,
-  Section,
-  FactoryVisionIcon,
-  toneContainer,
-  toneOnContainer,
-  type Tone,
-} from '@factory-vision/ui/fv';
+import { Page, toneContainer, toneOnContainer, type Tone } from '@factory-vision/ui/fv';
 
 const api = new FactoryVisionApiClient({ baseUrl: '' });
+
+/** Survives a tablet reload so the operator does not re-pick mid-shift. */
+const WO_STORAGE_KEY = 'fv.operator.workOrderId';
 
 interface OperatorTerminalProps {
   operator: Operator;
@@ -99,7 +95,23 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
 }) => {
   const queryClient = useQueryClient();
 
-  const [selectedWoId, setSelectedWoId] = useState<string>('wo-101');
+  /*
+   * Which work order this terminal is bound to.
+   *
+   * Null means "not chosen yet", which sends the operator to the picker rather
+   * than to a board bound to a guess. It is remembered across a reload for the
+   * same reason the session is: a dropped browser must not cost an operator
+   * their place mid-shift.
+   */
+  const [selectedWoId, setSelectedWoId] = useState<string | null>(() => {
+    try {
+      return window.localStorage.getItem(WO_STORAGE_KEY);
+    } catch {
+      return null;
+    }
+  });
+  // Set while the operator is deliberately switching away from a bound order.
+  const [changingWo, setChangingWo] = useState<boolean>(false);
   const [showDowntimeModal, setShowDowntimeModal] = useState<boolean>(false);
   const [showRejectModal, setShowRejectModal] = useState<boolean>(false);
   const [showCustomQtyModal, setShowCustomQtyModal] = useState<boolean>(false);
@@ -169,7 +181,82 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
     queryFn: () => api.master.getRejectReasons(),
   });
 
-  const activeWo = workOrders?.find((w) => w.id === selectedWoId) || workOrders?.[0];
+  /*
+   * Context the board reads and never writes.
+   *
+   * Every one of these is allowed to fail: the terminal has to keep counting
+   * production on a tablet that cannot reach the server, so a panel with no
+   * data renders an empty state rather than taking the screen down with it.
+   */
+  const { data: machines } = useQuery({
+    queryKey: ['machines'],
+    queryFn: () => api.master.getMachines(),
+    retry: false,
+  });
+
+  const { data: shifts } = useQuery({
+    queryKey: ['shifts'],
+    queryFn: () => api.master.getShifts(),
+    retry: false,
+  });
+
+  const { data: products } = useQuery({
+    queryKey: ['products'],
+    queryFn: () => api.master.getProducts(),
+    retry: false,
+  });
+
+  const { data: liveBoard } = useQuery({
+    queryKey: ['live-board'],
+    queryFn: () => api.analytics.getLiveProductionBoard(),
+    refetchInterval: 15000,
+    retry: false,
+  });
+
+  const { data: downtimeRecords } = useQuery({
+    queryKey: ['downtimes'],
+    queryFn: () => api.shopFloor.getDowntimes(),
+    refetchInterval: 20000,
+    retry: false,
+  });
+
+  const { data: alerts } = useQuery({
+    queryKey: ['operational-alerts'],
+    queryFn: () => api.analytics.getAlerts({ days: 1 }),
+    refetchInterval: 60000,
+    retry: false,
+  });
+
+  // No fallback on purpose: an unrecognised id (the order finished, or this
+  // tablet was bound to another line's work) has to send the operator back to
+  // the picker, not quietly re-point their counts at a different order.
+  const activeWo = workOrders?.find((w) => w.id === selectedWoId);
+
+  // Everything below narrows the fetched context to the selected work order,
+  // so each panel receives one object rather than searching a list itself.
+  const activeMachine = machines?.find((m) => m.id === activeWo?.machineId);
+  const activeShift = shifts?.find((s) => s.id === activeWo?.shiftId) || shifts?.[0];
+  const activeProduct = products?.find((p) => p.id === activeWo?.productId);
+  const activeProcess = processes?.find((p) => p.id === activeWo?.processId);
+  const activeBatch = batches?.find((b) => b.workOrderId === activeWo?.id);
+  const activeBoard = liveBoard?.find((row) => row.workOrder?.id === activeWo?.id);
+
+  // The timeline shows this machine's shift, not the whole plant's.
+  const activeDowntimes = (downtimeRecords || []).filter(
+    (record) => record.machineId === activeWo?.machineId || record.lineId === activeWo?.lineId,
+  );
+
+  // The reason the operator picked is what the downtime card should name,
+  // because the server's own record has not come back yet while offline.
+  const activeDowntimeReasonName = downtimeReasons?.find((r) => r.id === selectedDowntimeReasonId)?.name;
+
+  // A line's alerts are the operator's business; the plant's are not.
+  const activeAlerts = (alerts || []).filter(
+    (alert) =>
+      (alert.entityType === 'LINE' && alert.entityId === activeWo?.lineId) ||
+      (alert.entityType === 'MACHINE' && alert.entityId === activeWo?.machineId) ||
+      (alert.entityType === 'WORK_ORDER' && alert.entityId === activeWo?.id),
+  );
 
   const triggerTapFeedback = (text: string, tone: Tone) => {
     setLastTapBadge({ id: Date.now(), text, tone });
@@ -360,11 +447,46 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
     queryClient.invalidateQueries({ queryKey: ['work-orders'] });
   };
 
+  const bindWorkOrder = (workOrderId: string) => {
+    setSelectedWoId(workOrderId);
+    setChangingWo(false);
+    try {
+      window.localStorage.setItem(WO_STORAGE_KEY, workOrderId);
+    } catch {
+      /* a terminal with storage disabled still works, it just re-asks on reload */
+    }
+  };
+
   const formatDowntimeTime = (secs: number) => {
     const mins = Math.floor(secs / 60);
     const rem = secs % 60;
     return `${String(mins).padStart(2, '0')}:${String(rem).padStart(2, '0')}`;
   };
+
+  /*
+   * US-001 — a terminal binds to a work order the operator chose.
+   *
+   * The picker stands in front of the board whenever nothing is bound, and
+   * whenever the operator asks to switch. It is not a modal: choosing what the
+   * next hour of counting belongs to deserves the whole screen.
+   */
+  if (!activeWo || changingWo) {
+    return (
+      <WorkOrderPicker
+        operator={operator}
+        workOrders={workOrders || []}
+        products={products || []}
+        machines={machines || []}
+        currentWoId={activeWo?.id ?? null}
+        loading={!workOrders}
+        onConfirm={bindWorkOrder}
+        onCancel={activeWo ? () => setChangingWo(false) : undefined}
+        onLogout={onLogout}
+        themeMode={themeMode}
+        onToggleTheme={onToggleTheme}
+      />
+    );
+  }
 
   return (
     <Page
@@ -413,57 +535,6 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Top Touch Bar Header */}
-      <Section
-        style={{
-          height: '52px',
-          backgroundColor: 'var(--color-surface)',
-          borderBottom: '1px solid var(--color-outline-variant)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: `0 var(--space-5)`,
-          flexShrink: 0,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-          <FactoryVisionIcon size={32} />
-          <div>
-            <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--color-on-surface)' }}>
-              OPERATOR TERMINAL
-            </div>
-            <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)' }}>
-              {operator.name} ({operator.employeeNumber})
-            </div>
-          </div>
-        </div>
-
-        {/* Sync & Logout Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-          <SyncStatusBar />
-
-          <ThemeToggle mode={themeMode} onToggle={onToggleTheme} />
-
-          <motion.button
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.96 }}
-            onClick={onLogout}
-            style={{
-              padding: `var(--space-2) var(--space-4)`,
-              borderRadius: 'var(--radius-sm, 6px)',
-              backgroundColor: 'var(--color-surface-container-high)',
-              border: '1px solid var(--color-outline-variant)',
-              color: 'var(--color-on-surface-variant)',
-              fontSize: '12px',
-              fontWeight: 700,
-              cursor: 'pointer',
-            }}
-          >
-            Logout
-          </motion.button>
-        </div>
-      </Section>
-
       {/*
         MES-082-4 — the operator is told when the server refused a record.
         A banner they have to dismiss, not a chip they might tap: an operator
@@ -472,577 +543,42 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
       */}
       <RejectionBanner />
 
-      {/* Active Downtime Emergency Alert Banner */}
-      <AnimatePresence>
-        {activeDowntimeId && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={M3_TRANSITIONS.enter}
-            style={{
-              backgroundColor: 'var(--color-error)',
-              color: 'var(--color-on-error)',
-              padding: `var(--space-3) var(--space-5)`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              fontWeight: 800,
-              fontSize: '14px',
-              boxShadow: 'var(--elevation-2)',
-              overflow: 'hidden',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-              <motion.div
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 1, repeat: Infinity, ease: 'easeInOut' }}
-              >
-                <Icon name="warning" size={20} />
-              </motion.div>
-              <span>MACHINE DOWNTIME ACTIVE:</span>
-              <span
-                style={{
-                  fontSize: '18px',
-                  fontFamily: 'monospace',
-                  backgroundColor: 'var(--color-scrim)',
-                  color: 'var(--color-on-error)',
-                  padding: `var(--space-1) var(--space-2)`,
-                  borderRadius: 'var(--radius-xs, 4px)',
-                  fontWeight: 900,
-                }}
-              >
-                {formatDowntimeTime(downtimeSeconds)}
-              </span>
-            </div>
-
-            <motion.button
-              whileHover={{ scale: 1.04, y: -1 }}
-              whileTap={{ scale: 0.96 }}
-              onClick={handleResolveDowntime}
-              style={{
-                minHeight: '38px',
-                padding: `0 var(--space-5)`,
-                borderRadius: 'var(--radius-pill)',
-                backgroundColor: 'var(--color-on-error)',
-                color: 'var(--color-error)',
-                fontWeight: 900,
-                fontSize: '12px',
-                border: 'none',
-                cursor: 'pointer',
-                boxShadow: 'var(--elevation-1)',
-              }}
-            >
-              RESOLVE DOWNTIME & RESUME
-            </motion.button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Main Touch Grid */}
-      <Section
-        stagger
-        style={{
-          flex: 1,
-          display: 'grid',
-          gridTemplateColumns: '270px 1fr',
-          padding: 'var(--space-4)',
-          gap: 'var(--space-4)',
-          overflow: 'hidden',
+      {/*
+        The board. Header, status, counters, OEE, downtime, alerts, the shift
+        timeline and the quick-action row all live here; every callback below
+        is a handler this component already had, so the operator's flow is
+        unchanged and only its presentation moved.
+      */}
+      <TerminalDashboard
+        operator={operator}
+        activeWo={activeWo}
+        onChangeWo={() => setChangingWo(true)}
+        machine={activeMachine}
+        shift={activeShift}
+        product={activeProduct}
+        process={activeProcess}
+        batch={activeBatch}
+        board={activeBoard}
+        downtimes={activeDowntimes}
+        downtimeReasonName={activeDowntimeReasonName}
+        alerts={activeAlerts}
+        activeDowntimeId={activeDowntimeId}
+        downtimeSeconds={downtimeSeconds}
+        onQuickGood={handleQuickGoodOutput}
+        onOpenReject={() => setShowRejectModal(true)}
+        onOpenCustomQty={(type) => {
+          setCustomQtyType(type);
+          setShowCustomQtyModal(true);
         }}
-      >
-        {/* Left Column: Work Order Selector */}
-        <div
-          style={{
-            backgroundColor: 'var(--color-surface)',
-            borderRadius: 'var(--radius-lg, 16px)',
-            border: '1px solid var(--color-outline-variant)',
-            padding: 'var(--space-4)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'var(--space-2)',
-            overflowY: 'auto',
-            boxShadow: 'var(--elevation-1)',
-          }}
-        >
-          <div
-            style={{
-              fontSize: '11px',
-              fontWeight: 800,
-              color: 'var(--color-on-surface-variant)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.04em',
-            }}
-          >
-            Work Order Queue
-          </div>
-
-          {workOrders?.map((wo) => {
-            const isSelected = wo.id === activeWo?.id;
-            return (
-              <motion.button
-                key={wo.id}
-                whileHover={{ scale: 1.02, x: 2 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setSelectedWoId(wo.id)}
-                style={{
-                  minHeight: '60px',
-                  padding: `var(--space-3) var(--space-3)`,
-                  borderRadius: 'var(--radius-md, 10px)',
-                  border: isSelected ? 'none' : '1px solid var(--color-outline-variant)',
-                  backgroundColor: isSelected ? 'var(--color-primary)' : 'var(--color-surface-container-low)',
-                  color: isSelected ? 'var(--color-on-primary)' : 'var(--color-on-surface)',
-                  textAlign: 'left',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 'var(--space-1)',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.15s ease',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontWeight: 800, fontSize: '13px' }}>{wo.woNumber}</span>
-                  <span
-                    style={{
-                      fontSize: '10px',
-                      fontWeight: 800,
-                      padding: `var(--space-1) var(--space-2)`,
-                      borderRadius: 'var(--radius-pill)',
-                      backgroundColor: isSelected
-                        ? 'var(--color-on-primary)'
-                        : wo.status === WorkOrderStatus.IN_PRODUCTION
-                          ? 'var(--color-primary-container)'
-                          : 'var(--color-surface-container)',
-                      color: isSelected
-                        ? 'var(--color-primary)'
-                        : wo.status === WorkOrderStatus.IN_PRODUCTION
-                          ? 'var(--color-primary)'
-                          : 'var(--color-on-surface-variant)',
-                    }}
-                  >
-                    {statusLabel(wo.status)}
-                  </span>
-                </div>
-                <div
-                  style={{
-                    fontSize: '11px',
-                    color: isSelected ? 'var(--color-on-primary)' : 'var(--color-on-surface-variant)',
-                    opacity: isSelected ? 0.85 : 1,
-                  }}
-                >
-                  {wo.lineId} • Target: {(wo.plannedQuantity ?? 0).toLocaleString('en-US')} {wo.unit}
-                </div>
-              </motion.button>
-            );
-          })}
-        </div>
-
-        {/* Right Column: Execution Workspace */}
-        {activeWo ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', overflow: 'hidden' }}>
-            {/* Header Telemetry Card with Multi-Process and Lot Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={M3_TRANSITIONS.enter}
-              style={{
-                backgroundColor: 'var(--color-surface)',
-                borderRadius: 'var(--radius-lg, 16px)',
-                border: '1px solid var(--color-outline-variant)',
-                padding: `var(--space-4) var(--space-5)`,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 'var(--space-3)',
-                boxShadow: 'var(--elevation-1)',
-              }}
-            >
-              {/* Process & Batch Info Row */}
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                  gap: 'var(--space-2)',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                  <span style={{ fontWeight: 800, fontSize: '14px', color: 'var(--color-on-surface)' }}>
-                    {activeWo.woNumber}
-                  </span>
-                  {(() => {
-                    const proc = processes?.find((p) => p.id === activeWo.processId);
-                    return (
-                      <span
-                        style={{
-                          padding: `var(--space-1) var(--space-2)`,
-                          borderRadius: 'var(--radius-pill)',
-                          fontSize: '11px',
-                          fontWeight: 800,
-                          backgroundColor: 'var(--color-primary-container)',
-                          color: 'var(--color-on-primary-container)',
-                        }}
-                      >
-                        {activeWo.sequence ? `Seq ${activeWo.sequence}: ` : ''}
-                        {proc ? proc.name : activeWo.processId || 'Tahap Umum'}
-                      </span>
-                    );
-                  })()}
-                  {(() => {
-                    // ADR-29: a batch names its work order, not the other way
-                    // round. Operator batch selection arrives with MES-075
-                    // (Sprint 11); until then the chip shows the batch that
-                    // names this work order, if any.
-                    const batch = batches?.find((b) => b.workOrderId === activeWo.id);
-                    if (!batch) return null;
-                    return (
-                      <span
-                        style={{
-                          padding: `var(--space-1) var(--space-2)`,
-                          borderRadius: 'var(--radius-pill)',
-                          fontSize: '11px',
-                          fontWeight: 800,
-                          backgroundColor: 'var(--color-surface-container)',
-                          color: 'var(--color-on-surface-variant)',
-                          border: '1px solid var(--color-outline-variant)',
-                        }}
-                      >
-                        Lot: {batch.batchNumber}
-                      </span>
-                    );
-                  })()}
-                </div>
-                <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>
-                  Production Line: <strong>{activeWo.lineId}</strong> • Mesin:{' '}
-                  <strong>{activeWo.machineId || 'Semua'}</strong>
-                </div>
-              </div>
-
-              {/* Telemetry Metrics */}
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(4, 1fr)',
-                  gap: 'var(--space-3)',
-                  borderTop: '1px solid var(--color-outline-variant)',
-                  paddingTop: 'var(--space-2)',
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: '10px', color: 'var(--color-on-surface-variant)', fontWeight: 700 }}>
-                    TARGET
-                  </div>
-                  <div
-                    style={{
-                      fontSize: '20px',
-                      fontWeight: 800,
-                      color: 'var(--color-on-surface)',
-                      fontFeatureSettings: '"tnum" 1',
-                    }}
-                  >
-                    {(activeWo.plannedQuantity ?? 0).toLocaleString('en-US')}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '10px', color: 'var(--color-on-surface-variant)', fontWeight: 700 }}>
-                    JUMLAH GOOD
-                  </div>
-                  <div
-                    style={{
-                      fontSize: '20px',
-                      fontWeight: 800,
-                      color: 'var(--color-primary)',
-                      fontFeatureSettings: '"tnum" 1',
-                    }}
-                  >
-                    {(activeWo.outputQuantity ?? 0).toLocaleString('en-US')}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '10px', color: 'var(--color-on-surface-variant)', fontWeight: 700 }}>
-                    JUMLAH REJECT
-                  </div>
-                  <div
-                    style={{
-                      fontSize: '20px',
-                      fontWeight: 800,
-                      color:
-                        activeWo.rejectQuantity > 0 ? 'var(--color-error)' : 'var(--color-on-surface-variant)',
-                      fontFeatureSettings: '"tnum" 1',
-                    }}
-                  >
-                    {(activeWo.rejectQuantity ?? 0).toLocaleString('en-US')}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '10px', color: 'var(--color-on-surface-variant)', fontWeight: 700 }}>
-                    PENCAPAIAN
-                  </div>
-                  <div
-                    style={{
-                      fontSize: '20px',
-                      fontWeight: 800,
-                      color: 'var(--color-primary)',
-                      fontFeatureSettings: '"tnum" 1',
-                    }}
-                  >
-                    {activeWo.plannedQuantity > 0
-                      ? Math.round((activeWo.outputQuantity / activeWo.plannedQuantity) * 100)
-                      : 0}
-                    %
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* State Actions & Production Entry Panel */}
-            <div
-              style={{
-                flex: 1,
-                backgroundColor: 'var(--color-surface)',
-                borderRadius: 'var(--radius-lg, 16px)',
-                border: '1px solid var(--color-outline-variant)',
-                padding: `var(--space-4) var(--space-5)`,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                boxShadow: 'var(--elevation-1)',
-              }}
-            >
-              {/* Work Order State Action Bar */}
-              <div
-                style={{
-                  display: 'flex',
-                  gap: 'var(--space-3)',
-                  paddingBottom: 'var(--space-3)',
-                  borderBottom: '1px solid var(--color-outline-variant)',
-                }}
-              >
-                {activeWo.status === WorkOrderStatus.CONFIRMED && (
-                  <motion.button
-                    whileHover={{ scale: 1.02, y: -1 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleStartWo}
-                    style={{
-                      flex: 1,
-                      minHeight: '44px',
-                      borderRadius: 'var(--radius-md, 10px)',
-                      backgroundColor: 'var(--color-primary)',
-                      color: 'var(--color-on-primary)',
-                      fontWeight: 800,
-                      fontSize: '13px',
-                      border: 'none',
-                      cursor: 'pointer',
-                      boxShadow: 'var(--elevation-1)',
-                    }}
-                  >
-                    ▶ MULAI PRODUKSI (START)
-                  </motion.button>
-                )}
-
-                {activeWo.status === WorkOrderStatus.IN_PRODUCTION && (
-                  <motion.button
-                    whileHover={{ scale: 1.02, y: -1 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleCompleteWo}
-                    style={{
-                      flex: 1,
-                      minHeight: '44px',
-                      borderRadius: 'var(--radius-md, 10px)',
-                      backgroundColor: 'var(--color-primary)',
-                      color: 'var(--color-on-primary)',
-                      fontWeight: 800,
-                      fontSize: '13px',
-                      border: 'none',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    ✓ SELESAIKAN WO (COMPLETE)
-                  </motion.button>
-                )}
-              </div>
-
-              {/* 1-Touch Quick Good Entry Buttons */}
-              <div style={{ margin: 'var(--space-2) 0' }}>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: 'var(--space-2)',
-                  }}
-                >
-                  <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-on-surface-variant)' }}>
-                    INPUT CEPAT JUMLAH GOOD
-                  </span>
-                  <motion.button
-                    whileHover={{ scale: 1.04 }}
-                    whileTap={{ scale: 0.96 }}
-                    onClick={() => {
-                      setCustomQtyType('GOOD');
-                      setShowCustomQtyModal(true);
-                    }}
-                    style={{
-                      padding: `var(--space-1) var(--space-3)`,
-                      borderRadius: 'var(--radius-sm, 6px)',
-                      backgroundColor: 'var(--color-surface-container)',
-                      border: '1px solid var(--color-outline-variant)',
-                      color: 'var(--color-primary)',
-                      fontWeight: 700,
-                      fontSize: '11px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    + Jumlah Lain
-                  </motion.button>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--space-3)' }}>
-                  {[1, 5, 10, 50].map((qty) => (
-                    <motion.button
-                      key={qty}
-                      whileHover={activeWo.status === WorkOrderStatus.IN_PRODUCTION ? { scale: 1.03, y: -1 } : {}}
-                      whileTap={activeWo.status === WorkOrderStatus.IN_PRODUCTION ? { scale: 0.95 } : {}}
-                      onClick={() => handleQuickGoodOutput(qty)}
-                      disabled={activeWo.status !== WorkOrderStatus.IN_PRODUCTION}
-                      style={{
-                        minHeight: '58px',
-                        borderRadius: 'var(--radius-md, 12px)',
-                        backgroundColor:
-                          activeWo.status === WorkOrderStatus.IN_PRODUCTION
-                            ? 'var(--color-primary)'
-                            : 'var(--color-surface-container)',
-                        color:
-                          activeWo.status === WorkOrderStatus.IN_PRODUCTION
-                            ? 'var(--color-on-primary)'
-                            : 'var(--color-on-surface-variant)',
-                        fontWeight: 800,
-                        fontSize: '22px',
-                        border: 'none',
-                        cursor: activeWo.status === WorkOrderStatus.IN_PRODUCTION ? 'pointer' : 'not-allowed',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        boxShadow:
-                          activeWo.status === WorkOrderStatus.IN_PRODUCTION ? 'var(--elevation-1)' : 'none',
-                      }}
-                    >
-                      +{qty}
-                      <span style={{ fontSize: '10px', fontWeight: 700 }}>GOOD</span>
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-
-              {/* 1-Touch Quick Reject Defect Buttons ( &) */}
-              <div style={{ margin: 'var(--space-2) 0' }}>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: 'var(--space-2)',
-                  }}
-                >
-                  <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-error)' }}>
-                    INPUT CEPAT JUMLAH REJECT
-                  </span>
-                  <motion.button
-                    whileHover={{ scale: 1.04 }}
-                    whileTap={{ scale: 0.96 }}
-                    onClick={() => setShowRejectModal(true)}
-                    disabled={activeWo.status !== WorkOrderStatus.IN_PRODUCTION}
-                    style={{
-                      padding: `var(--space-1) var(--space-3)`,
-                      borderRadius: 'var(--radius-sm, 6px)',
-                      backgroundColor: 'var(--color-error-container)',
-                      border: '1px solid var(--color-error)',
-                      color: 'var(--color-on-error-container)',
-                      fontWeight: 700,
-                      fontSize: '11px',
-                      cursor: activeWo.status === WorkOrderStatus.IN_PRODUCTION ? 'pointer' : 'not-allowed',
-                    }}
-                  >
-                    + Alasan Reject Lainnya
-                  </motion.button>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--space-2)' }}>
-                  {(
-                    rejectReasons?.slice(0, 4) || [
-                      { id: 'rej-tire-blister', code: 'REJ-BLISTER', name: 'Blister / Gelembung' },
-                      { id: 'rej-tire-ply-straight', code: 'REJ-PLY', name: 'Ply Distortion' },
-                      { id: 'rej-tire-flash', code: 'REJ-FLASH', name: 'Rubber Flash' },
-                      { id: 'rej-tire-dimension', code: 'REJ-DIM', name: 'Dimension Out' },
-                    ]
-                  ).map((rej) => (
-                    <motion.button
-                      key={rej.id}
-                      whileHover={activeWo.status === WorkOrderStatus.IN_PRODUCTION ? { scale: 1.02, y: -1 } : {}}
-                      whileTap={activeWo.status === WorkOrderStatus.IN_PRODUCTION ? { scale: 0.96 } : {}}
-                      onClick={() => handleRecordReject(rej.id)}
-                      disabled={activeWo.status !== WorkOrderStatus.IN_PRODUCTION}
-                      style={{
-                        minHeight: '44px',
-                        borderRadius: 'var(--radius-sm, 8px)',
-                        backgroundColor: 'var(--color-surface-container-high)',
-                        border: '1px solid var(--color-error)',
-                        color: 'var(--color-error)',
-                        fontWeight: 700,
-                        fontSize: '11px',
-                        cursor: activeWo.status === WorkOrderStatus.IN_PRODUCTION ? 'pointer' : 'not-allowed',
-                        opacity: activeWo.status === WorkOrderStatus.IN_PRODUCTION ? 1 : 0.5,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: 'var(--space-1)',
-                        textAlign: 'center',
-                      }}
-                    >
-                      <span>+1 REJECT</span>
-                      <span
-                        style={{
-                          fontSize: '9.5px',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          maxWidth: '100%',
-                        }}
-                      >
-                        {rej.name}
-                      </span>
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Bottom Downtime Trigger */}
-              <div style={{ display: 'flex', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
-                <motion.button
-                  whileHover={{ scale: 1.02, y: -1 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setShowDowntimeModal(true)}
-                  style={{
-                    flex: 1,
-                    minHeight: '44px',
-                    borderRadius: 'var(--radius-md, 10px)',
-                    backgroundColor: 'var(--color-surface-container-high)',
-                    border: '1px solid var(--color-warning)',
-                    color: 'var(--color-warning)',
-                    fontWeight: 800,
-                    fontSize: '13px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  ⏱ LAPORKAN DOWNTIME
-                </motion.button>
-              </div>
-            </div>
-          </div>
-        ) : null}
-      </Section>
+        onOpenDowntime={() => setShowDowntimeModal(true)}
+        onResolveDowntime={handleResolveDowntime}
+        onStartWo={handleStartWo}
+        onPauseWo={handlePauseWo}
+        onCompleteWo={handleCompleteWo}
+        onLogout={onLogout}
+        themeMode={themeMode}
+        onToggleTheme={onToggleTheme}
+      />
 
       {/* Reject Reason Modal */}
       <AnimatePresence>

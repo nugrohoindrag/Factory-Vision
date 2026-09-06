@@ -15,10 +15,15 @@ import type { OfflineCommand } from '@factory-vision/domain-types';
  * US-046, "Sync status dapat diketahui operator."
  *
  * An operator recording production over a dropped connection needs to know
- * three things without leaving the screen they are working on: whether the
- * terminal is online, how much is still waiting to be sent, and whether
- * anything was rejected. Anything less and the honest question, "did my count
- * actually save?", has no answer, which is how paper backups creep back in.
+ * three things: whether the terminal is online, how much is still waiting to
+ * be sent, and whether anything was rejected. Without them the honest
+ * question, "did my count actually save?", has no answer, which is how paper
+ * backups creep back in.
+ *
+ * The chip answers only the first, because that is the one worth a permanent
+ * slot in the header. Tapping it opens the queue depth, the failure count and
+ * the last successful sync; a rejected command additionally raises its own
+ * banner, which is louder than a chip could ever be.
  */
 export const SyncStatusBar: React.FC = () => {
   const [status, setStatus] = useState<SyncStatus>(getSyncStatus());
@@ -32,40 +37,28 @@ export const SyncStatusBar: React.FC = () => {
     void listFailedCommands().then(setFailed);
   }, [showDetail, status.failed]);
 
-  const tone = !status.online
+  /*
+   * The chip says one thing: is this terminal online.
+   *
+   * It used to also carry the queue depth and the rejected count, which made a
+   * single control answer three questions at a glance and none of them
+   * quickly. Those two still have homes — the popover below lists them, and a
+   * rejected command raises its own banner across the top of the terminal —
+   * so the chip is free to answer the question an operator actually asks it.
+   */
+  const tone = status.online
     ? {
+        bg: 'var(--color-success-container)',
+        fg: 'var(--color-on-success-container)',
+        icon: 'cloud_done',
+        label: 'ONLINE',
+      }
+    : {
         bg: 'var(--color-error-container)',
         fg: 'var(--color-on-error-container)',
         icon: 'cloud_off',
         label: 'OFFLINE',
-      }
-    : status.failed > 0
-      ? {
-          bg: 'var(--color-error-container)',
-          fg: 'var(--color-on-error-container)',
-          icon: 'error',
-          label: `${status.failed} GAGAL`,
-        }
-      : status.syncing
-        ? {
-            bg: 'var(--color-warning-container)',
-            fg: 'var(--color-on-warning-container)',
-            icon: 'sync',
-            label: 'MENGIRIM…',
-          }
-        : status.pending > 0
-          ? {
-              bg: 'var(--color-warning-container)',
-              fg: 'var(--color-on-warning-container)',
-              icon: 'schedule',
-              label: `${status.pending} ANTRE`,
-            }
-          : {
-              bg: 'var(--color-success-container)',
-              fg: 'var(--color-on-success-container)',
-              icon: 'cloud_done',
-              label: 'TERSINKRON',
-            };
+      };
 
   return (
     <div style={{ position: 'relative' }}>
