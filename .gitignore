@@ -63,3 +63,9 @@ qa-evidence/
 
 # Vite writes this beside the config while it loads a TypeScript config file.
 *.timestamp-*.mjs
+
+# The PowerPoint product deck and the script that generates it. The deck is a
+# ~3 MB binary regenerated from landing copy, screenshots and the palette, so
+# every regeneration would add another copy to the history of a clone.
+/Factory_Vision_Product_Deck.pptx
+/scripts/generate_product_deck.py
