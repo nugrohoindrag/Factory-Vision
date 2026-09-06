@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Operator } from '@factory-vision/domain-types';
 import { ApiRequestError } from '@factory-vision/api-client';
-import { Button, M3_TRANSITIONS } from '@factory-vision/ui';
+import { Button, Icon, M3_TRANSITIONS } from '@factory-vision/ui';
 import { FactoryVisionLogo } from '@factory-vision/ui/fv';
 import { ThemeToggle } from '../../app/ThemeToggle.js';
 import type { ThemeMode } from '../../app/theme.js';
@@ -30,7 +30,14 @@ export const OperatorAuth: React.FC<OperatorAuthProps> = ({
   onToggleTheme,
 }) => {
   const [pin, setPin] = useState<string>('');
-  const [selectedOperator, setSelectedOperator] = useState<Operator | null>(operators[0] || null);
+  /*
+   * Deliberately empty, not `operators[0]`.
+   *
+   * BOOTSTRAP_OPERATOR_PIN issues one starting PIN to every operator who has
+   * none, so a pre-filled name plus a shared PIN signs somebody in as the
+   * wrong person and records their shift's production under that name.
+   */
+  const [selectedOperator, setSelectedOperator] = useState<Operator | null>(null);
   // Used when the roster is not readable, which is the normal case before a
   // session exists.
   const [typedEmployeeNumber, setTypedEmployeeNumber] = useState<string>('');
@@ -179,78 +186,104 @@ export const OperatorAuth: React.FC<OperatorAuthProps> = ({
               }}
             />
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
-              {operators.map((op) => {
-                const isSelected = selectedOperator?.id === op.id;
-                return (
-                  <motion.button
-                    key={op.id}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => setSelectedOperator(op)}
-                    style={{
-                      minHeight: '48px',
-                      padding: `var(--space-2) var(--space-3)`,
-                      borderRadius: 'var(--radius-md, 8px)',
-                      backgroundColor: isSelected
-                        ? 'var(--color-primary)'
-                        : 'var(--color-surface-container-low)',
-                      border: isSelected ? 'none' : '1px solid var(--color-outline-variant)',
-                      color: isSelected ? 'var(--color-on-primary)' : 'var(--color-on-surface)',
-                      fontWeight: 700,
-                      fontSize: '13px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      transition: 'border-color 0.15s ease, background-color 0.15s ease',
-                    }}
-                  >
-                    <span>{op.name}</span>
-                    <span
-                      style={{
-                        fontSize: '10px',
-                        color: isSelected ? 'var(--color-on-primary)' : 'var(--color-on-surface-variant)',
-                        opacity: isSelected ? 0.85 : 1,
-                        fontWeight: 500,
-                      }}
-                    >
-                      {op.employeeNumber}
-                    </span>
-                  </motion.button>
-                );
-              })}
+            /*
+             * A dropdown, not a grid of faces.
+             *
+             * The roster grows with the plant: a dozen buttons stopped fitting
+             * the card long before a real shift's worth of operators would.
+             * The native control also opens the platform's own picker, which
+             * is already sized for a gloved finger on a tablet.
+             */
+            <div style={{ position: 'relative' }}>
+              <select
+                value={selectedOperator?.id ?? ''}
+                onChange={(e) => {
+                  setSelectedOperator(operators.find((op) => op.id === e.target.value) ?? null);
+                  setError('');
+                }}
+                style={{
+                  width: '100%',
+                  minHeight: '52px',
+                  padding: `var(--space-3) var(--space-7, 44px) var(--space-3) var(--space-4)`,
+                  fontSize: '16px',
+                  fontWeight: 700,
+                  fontFamily: 'var(--font-family)',
+                  color: selectedOperator ? 'var(--color-on-surface)' : 'var(--color-on-surface-variant)',
+                  backgroundColor: 'var(--color-surface-container)',
+                  border: '1px solid var(--color-outline-variant)',
+                  borderRadius: 'var(--radius-sm, 8px)',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  appearance: 'none',
+                  WebkitAppearance: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                <option value="">Pilih nomor karyawan…</option>
+                {operators.map((op) => (
+                  <option key={op.id} value={op.id}>
+                    {op.employeeNumber} · {op.name}
+                  </option>
+                ))}
+              </select>
+              <Icon
+                name="expand_more"
+                size={22}
+                style={{
+                  position: 'absolute',
+                  right: 'var(--space-3)',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: 'var(--color-on-surface-variant)',
+                  pointerEvents: 'none',
+                }}
+              />
             </div>
           )}
         </div>
 
-        {/* PIN Indicator */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: 'var(--space-4)',
-            padding: 'var(--space-2) 0',
-          }}
-        >
-          {[0, 1, 2, 3].map((idx) => (
-            <motion.div
-              key={idx}
-              animate={{
-                scale: pin.length > idx ? [1, 1.2, 1] : 1,
-                backgroundColor:
-                  pin.length > idx ? 'var(--color-primary)' : 'var(--color-surface-container-high)',
-              }}
-              transition={{ duration: 0.15 }}
-              style={{
-                width: '14px',
-                height: '14px',
-                borderRadius: '50%',
-                boxShadow: pin.length > idx ? '0 0 8px var(--color-primary)' : 'none',
-              }}
-            />
-          ))}
+        {/* PIN field — a labelled box, matching the employee-number field above */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+          <label
+            style={{
+              fontSize: '11px',
+              fontWeight: 700,
+              color: 'var(--color-on-surface-variant)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+            }}
+          >
+            Masukkan PIN Anda
+          </label>
+          <div
+            style={{
+              minHeight: '52px',
+              padding: 'var(--space-3) var(--space-4)',
+              backgroundColor: 'var(--color-surface-container)',
+              border: `1px solid ${error ? 'var(--color-error)' : 'var(--color-outline-variant)'}`,
+              borderRadius: 'var(--radius-sm, 8px)',
+              boxSizing: 'border-box',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 'var(--space-4)',
+            }}
+          >
+            {/* Four slots, not a free-text box: the field has to say how many
+                digits are expected, and how many are already in. */}
+            {[0, 1, 2, 3].map((idx) => (
+              <motion.div
+                key={idx}
+                animate={{
+                  scale: pin.length > idx ? [1, 1.2, 1] : 1,
+                  backgroundColor:
+                    pin.length > idx ? 'var(--color-primary)' : 'var(--color-surface-container-highest)',
+                }}
+                transition={{ duration: 0.15 }}
+                style={{ width: '14px', height: '14px', borderRadius: '50%' }}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Error Notification */}
@@ -275,14 +308,19 @@ export const OperatorAuth: React.FC<OperatorAuthProps> = ({
               whileHover={{ scale: 1.04, y: -1 }}
               whileTap={{ scale: 0.94 }}
               onClick={() => {
-                if (btn === 'C') handleClear;
-                else if (btn === '⌫') handleBackspace;
+                // These two were written without their call parentheses, so
+                // the keys rendered, animated, and did nothing at all.
+                if (btn === 'C') handleClear();
+                else if (btn === '⌫') handleBackspace();
                 else handleDigit(btn);
               }}
               style={{
-                minHeight: '50px',
+                minHeight: '52px',
                 borderRadius: 'var(--radius-md, 8px)',
-                backgroundColor: 'var(--color-surface-container-high)',
+                // The lightest surface step: white under the light theme, and
+                // its near-black counterpart under the dark one, so a night
+                // shift is not staring at twelve white tiles.
+                backgroundColor: 'var(--color-surface-container-lowest)',
                 border: '1px solid var(--color-outline-variant)',
                 color: 'var(--color-on-surface)',
                 fontWeight: 800,
