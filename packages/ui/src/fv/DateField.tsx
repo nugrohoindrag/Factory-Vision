@@ -10,10 +10,18 @@ import React, { useState } from 'react';
  * resting label written over that placeholder — two overlapping strings in
  * every date filter on the planning screens.
  *
- * The label here is therefore always floated. Everything else follows the same
- * recipe as the filled text field — 56px, `surface-container-highest`, the
- * hairline that thickens to the accent on focus — so the two sit side by side
- * in a filter row without looking like different controls.
+ * The label here is therefore always floated, and the box follows `Select`:
+ * 56px, `surface-container`, a hairline all the way round at `radius-md` that
+ * turns `primary` on focus. A filter row is where these two meet — a status
+ * `Select` beside a date range — and the M3 filled recipe (a grey slab open on
+ * three sides) read as a different, half-disabled control next to it. One
+ * field shape, so a row of filters reads as one row. `fv/mirror-fixes.css`
+ * gives `FilledTextField` the same box for the same reason.
+ *
+ * The native picker is left to inherit `color-scheme` from the theme rather
+ * than declaring `light dark`: that keyword resolves against the *operating
+ * system's* preference, so a console in dark mode on a light desktop opened a
+ * white calendar and painted `dd/mm/yyyy` in near-black on a dark field.
  *
  * It lives in `fv/` rather than being fixed in place because
  * `packages/ui/src/components` is a byte-for-byte mirror of the upstream design
@@ -47,6 +55,12 @@ export const DateField: React.FC<DateFieldProps> = ({
     : isFocused
       ? 'var(--color-primary)'
       : 'var(--color-on-surface-variant)';
+  // The box states are `Select`'s: a resting hairline, the accent on focus.
+  const border = isError
+    ? 'var(--color-error)'
+    : isFocused
+      ? 'var(--color-primary)'
+      : 'var(--color-border)';
 
   return (
     <div
@@ -57,9 +71,9 @@ export const DateField: React.FC<DateFieldProps> = ({
         style={{
           position: 'relative',
           height: '56px',
-          borderRadius: 'var(--radius-xs) var(--radius-xs) 0 0',
-          backgroundColor: 'var(--color-surface-container-highest)',
-          borderBottom: `${isFocused || isError ? '2px' : '1px'} solid ${accent}`,
+          borderRadius: 'var(--radius-md)',
+          backgroundColor: 'var(--color-surface-container)',
+          border: `1px solid ${border}`,
           display: 'flex',
           alignItems: 'flex-end',
           opacity: disabled ? 0.38 : 1,
@@ -100,7 +114,6 @@ export const DateField: React.FC<DateFieldProps> = ({
             fontSize: '14px',
             fontFamily: 'var(--font-family)',
             color: 'var(--color-on-surface)',
-            colorScheme: 'light dark',
           }}
         />
       </div>

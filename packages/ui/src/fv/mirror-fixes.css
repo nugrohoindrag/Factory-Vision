@@ -54,3 +54,46 @@
   padding-left: 20px !important;
   padding-right: 12px !important;
 }
+
+/* ---------------------------------------------------------------------------
+ * FilledTextField, one field shape beside Select
+ *
+ * The mirror ships M3's filled recipe: a `surface-container-highest` slab,
+ * square at the bottom, open on three sides with a single hairline underneath.
+ * `Select` — the control it stands next to in every filter row and every form
+ * on the planning screens — is a box instead: `surface-container`, a hairline
+ * all the way round, `radius-md`. Side by side the two read as different kinds
+ * of control, and the grey slab reads as the disabled one.
+ *
+ * The box wins because it is what the rest of the console is made of (cards,
+ * tables, chips all carry a border and a radius), so the fill matches
+ * `Select`'s here, and `fv/DateField.tsx` carries the same recipe in its own
+ * markup. `!important` is required throughout: the mirror sets all of this as
+ * inline `style`.
+ *
+ * Two consequences of boxing a filled field, both handled here:
+ *
+ * (a) The active indicator — M3's 2px line that grows from the centre on focus
+ *     — is meaningless once the field has four sides, and it paints across the
+ *     bottom border. The focused state moves to the border, as on `Select`.
+ * (b) That indicator also carried the error state, so the error colour has to
+ *     move with it. `aria-invalid` is on the input the mirror already sets it
+ *     on, which is why the rule reaches for `:has()` rather than a class.
+ * ------------------------------------------------------------------------- */
+.m3-filled-textfield > div {
+  background-color: var(--color-surface-container) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-md) !important;
+}
+
+.m3-filled-textfield:focus-within > div {
+  border-color: var(--color-primary) !important;
+}
+
+.m3-filled-textfield > div:has(input[aria-invalid='true']) {
+  border-color: var(--color-error) !important;
+}
+
+.m3-filled-textfield > div > span:first-child {
+  display: none !important;
+}
