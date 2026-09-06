@@ -313,9 +313,9 @@ docker compose -f deploy/docker-compose.yml logs api | grep -i 'SECURITY'
 # → no output. Any "[db] SECURITY: connected as ..." line is a stop.
 
 # 2. Migrations applied, including the SALES role and the planning tables.
-docker compose -f deploy/docker-compose.yml exec -T postgres \
-  psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c \
-  "select count(*) from schema_migrations"
+docker compose -f deploy/docker-compose.yml exec -T db \
+  sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
+     -c "select count(*) from schema_migrations"'
 # → 19 or more.
 
 # 3. An administrator can sign in.
@@ -325,10 +325,10 @@ curl -s -X POST http://<host>:4000/api/v1/auth/login \
 
 # 4. Every operator who will use a terminal has a PIN. Without one they cannot
 #    sign in, and the terminal gives no clue why.
-docker compose -f deploy/docker-compose.yml exec -T postgres \
-  psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c \
-  "select o.employee_number, (c.operator_id is not null) as has_pin
-     from operator o left join operator_credential c on c.operator_id = o.id"
+docker compose -f deploy/docker-compose.yml exec -T db \
+  sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
+     -c "select o.employee_number, (c.operator_id is not null) as has_pin
+           from operator o left join operator_credential c on c.operator_id = o.id"'
 # → every row true. Issue the missing ones in Settings → Operator → PIN.
 
 # 5. Master data survives a restart, i.e. it is really in PostgreSQL.
@@ -339,7 +339,7 @@ curl -s -H "Authorization: Bearer $TOKEN" http://<host>:4000/api/v1/master/produ
 
 ## Rollback
 
-Migrations `005`–`019` each ship a matching file in `db/rollbacks/`, applied one
+Migrations `005`–`021` each ship a matching file in `db/rollbacks/`, applied one
 step at a time in reverse order. Three things to know before using them:
 
 - **Take a dump first.** `pg_dump` is the only thing that makes a rollback
@@ -353,8 +353,8 @@ step at a time in reverse order. Three things to know before using them:
 
 ```bash
 # Snapshot before anything.
-docker compose -f deploy/docker-compose.yml exec -T postgres \
-  pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB" > backup-$(date +%F-%H%M).sql
+docker compose -f deploy/docker-compose.yml exec -T db \
+  sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' > backup-$(date +%F-%H%M).sql
 
 # One step back at a time; the runner rolls back the most recent migration.
 pnpm exec tsx db/migrate.ts rollback
@@ -367,9 +367,9 @@ To restore wholesale instead:
 
 ```bash
 docker compose -f deploy/docker-compose.yml down
-docker compose -f deploy/docker-compose.yml up -d postgres
-docker compose -f deploy/docker-compose.yml exec -T postgres \
-  psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" < backup-<stamp>.sql
+docker compose -f deploy/docker-compose.yml up -d db
+docker compose -f deploy/docker-compose.yml exec -T db \
+  sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < backup-<stamp>.sql
 IMAGE_TAG=<previous> docker compose -f deploy/docker-compose.yml up -d
 ```
 
