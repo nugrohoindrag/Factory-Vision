@@ -40,7 +40,7 @@ export const LiveBoardPage: React.FC = () => {
   const downtimeLines = liveBoard?.filter((l) => l.hasActiveDowntime).length || 0;
 
   return (
-    <Page style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+    <Page>
       {/* Header */}
       <Section style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>

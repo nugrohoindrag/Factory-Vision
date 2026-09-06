@@ -182,7 +182,7 @@ export const CorrectionsPage: React.FC<CorrectionsPageProps> = ({
   ];
 
   return (
-    <Page style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+    <Page>
       {/* Header */}
       <Section>
         <h1

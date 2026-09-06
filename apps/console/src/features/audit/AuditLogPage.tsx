@@ -110,7 +110,7 @@ export const AuditLogPage: React.FC = () => {
   ];
 
   return (
-    <Page style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+    <Page>
       {/* Header */}
       <Section>
         <h1

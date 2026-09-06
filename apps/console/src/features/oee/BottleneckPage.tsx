@@ -54,7 +54,7 @@ export const BottleneckPage: React.FC = () => {
   const maxLost = Math.max(1, ...rows.map((r) => r.lostUnits));
 
   return (
-    <Page style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+    <Page>
       <Section>
         <h1
           style={{

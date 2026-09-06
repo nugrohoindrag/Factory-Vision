@@ -141,7 +141,7 @@ export const DashboardPage: React.FC = () => {
   );
 
   return (
-    <Page style={{ padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+    <Page>
       {/* Period selector & live sync */}
       <Section
         style={{

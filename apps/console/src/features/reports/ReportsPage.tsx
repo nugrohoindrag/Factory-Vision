@@ -315,7 +315,7 @@ export const ReportsPage: React.FC = () => {
   ];
 
   return (
-    <Page style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+    <Page>
       {/* Header with Date Range and CSV Export */}
       <Section style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
