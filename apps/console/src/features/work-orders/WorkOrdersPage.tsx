@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FactoryVisionApiClient } from '@factory-vision/api-client';
 import { AdvancedDataTable, ColumnDef, Button, Icon, Modal } from '@factory-vision/ui';
 import { MetricCard, Page, Section, Dialog, FilterChip } from '@factory-vision/ui/fv';
+import { SplitWorkOrderDialog, isSplittable } from './SplitWorkOrderDialog.js';
 import {
   WorkOrder,
   WorkOrderStatus,
@@ -23,6 +24,8 @@ export const WorkOrdersPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Modal States
+  const [splitTarget, setSplitTarget] = useState<WorkOrder | null>(null);
+  const [splitError, setSplitError] = useState<string>('');
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [showDetailModal, setShowDetailModal] = useState<boolean>(false);
@@ -97,6 +100,11 @@ export const WorkOrdersPage: React.FC = () => {
     queryFn: () => api.master.getMachines(),
   });
 
+  const { data: shifts } = useQuery({
+    queryKey: ['shifts'],
+    queryFn: () => api.master.getShifts(),
+  });
+
   const { data: processes } = useQuery({
     queryKey: ['master-processes'],
     queryFn: () => api.master.getProcesses(),
@@ -169,6 +177,31 @@ export const WorkOrdersPage: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['work-orders'] });
       showToast('Work Order dirilis dan siap dieksekusi di shop floor');
+    },
+  });
+
+  /**
+   * Dynamic split (§25.7).
+   *
+   * Every work order on screen is invalidated, not just the parent: the split
+   * creates rows the table has never seen, and the parent's own numbers change
+   * as its children report.
+   */
+  const splitMutation = useMutation({
+    mutationFn: ({
+      id,
+      parts,
+    }: {
+      id: string;
+      parts: Array<{ plannedQuantity: number; machineId?: string; shiftId?: string }>;
+    }) => api.workOrders.split(id, { parts }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['work-orders'] });
+      setSplitTarget(null);
+      setSplitError('');
+    },
+    onError: (error: unknown) => {
+      setSplitError(error instanceof Error ? error.message : 'Split gagal. Coba lagi.');
     },
   });
 
@@ -491,6 +524,22 @@ export const WorkOrdersPage: React.FC = () => {
               style={{ fontSize: '11.5px', padding: `0 var(--space-3)` }}
             >
               Release
+            </Button>
+          )}
+
+          {/* Split — only where the API would accept one, so the button never lies */}
+          {isSplittable(wo) && (
+            <Button
+              variant="tonal"
+              size="sm"
+              onClick={() => {
+                setSplitError('');
+                setSplitTarget(wo);
+              }}
+              title="Split Work Order menjadi beberapa child yang berjalan paralel"
+              style={{ padding: `0 var(--space-2)` }}
+            >
+              <Icon name="call_split" size={16} />
             </Button>
           )}
 
@@ -1832,6 +1881,22 @@ export const WorkOrdersPage: React.FC = () => {
             </div>
           </div>
         </Modal>
+      )}
+
+      {/* SPLIT WO */}
+      {splitTarget && (
+        <SplitWorkOrderDialog
+          workOrder={splitTarget}
+          machines={machines || []}
+          shifts={shifts || []}
+          submitting={splitMutation.isPending}
+          errorMessage={splitError}
+          onClose={() => {
+            setSplitTarget(null);
+            setSplitError('');
+          }}
+          onSubmit={(parts) => splitMutation.mutate({ id: splitTarget.id, parts })}
+        />
       )}
 
       {/* DELETE WO CONFIRMATION DIALOG */}

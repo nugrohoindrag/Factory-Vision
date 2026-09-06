@@ -1110,6 +1110,60 @@ app.post('/api/v1/work-orders/:id/cancel', async (req, res, next) => {
 });
 
 /**
+ * Dynamic Work Order Split (Â§25.7).
+ *
+ * A supervisor divides a running process across machines to finish it sooner.
+ * The split is an operational decision made on the day, so it is an action
+ * here rather than anything the seed could have planted.
+ *
+ * Every rule that keeps the result honest â€” the parts summing exactly to the
+ * parent, the parent holding no production of its own, the machine and mould
+ * being released to the children â€” lives in `WorkOrderSplitService`, where it
+ * can be tested without an HTTP request.
+ */
+app.post(
+  '/api/v1/work-orders/:id/split',
+  route(async (req, res) => {
+    const tenantId = req.context!.tenantId;
+    const existing = await productionService.getWorkOrderById(tenantId, req.params.id);
+    if (!existing) throw ApiError.notFound('Work order tidak ditemukan.');
+    scope.assertLine(req.principal, existing.lineId);
+
+    const parts = Array.isArray(req.body?.parts) ? req.body.parts : [];
+    const result = await productionService.splitWorkOrder(
+      tenantId,
+      req.params.id,
+      parts,
+      req.principal?.name
+    );
+
+    recordAudit(
+      req,
+      'work_order',
+      result.parent.id,
+      'SPLIT',
+      { plannedQuantity: existing.plannedQuantity, hasChildWorkOrder: false },
+      {
+        plannedQuantity: result.parent.plannedQuantity,
+        hasChildWorkOrder: true,
+        children: result.children.map((child) => ({
+          id: child.id,
+          woNumber: child.woNumber,
+          plannedQuantity: child.plannedQuantity,
+          machineId: child.machineId,
+        })),
+      }
+    );
+
+    realtimeGateway.emitTenantEvent(tenantId, 'work-order:updated', result.parent);
+    for (const child of result.children) {
+      realtimeGateway.emitTenantEvent(tenantId, 'work-order:updated', child);
+    }
+    res.status(201).json(result);
+  })
+);
+
+/**
  * US-020, Complete Work Order.
  *
  * An open downtime is refused rather than silently closed: leaving a stoppage

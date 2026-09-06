@@ -101,6 +101,8 @@ const RULES: Rule[] = [
   { method: 'POST', pattern: '/api/v1/work-orders/:id/confirm', permission: 'work_order:confirm' },
   { method: 'POST', pattern: '/api/v1/work-orders/:id/release', permission: 'work_order:confirm' },
   { method: 'POST', pattern: '/api/v1/work-orders/:id/cancel', permission: 'work_order:cancel' },
+  // Splitting divides planned work; it is a planning act, not shop-floor execution.
+  { method: 'POST', pattern: '/api/v1/work-orders/:id/split', permission: 'work_order:create' },
   { method: 'POST', pattern: '/api/v1/work-orders/:id/start', permission: 'shopfloor:execute' },
   { method: 'POST', pattern: '/api/v1/work-orders/:id/pause', permission: 'shopfloor:execute' },
   { method: 'POST', pattern: '/api/v1/work-orders/:id/resume', permission: 'shopfloor:execute' },

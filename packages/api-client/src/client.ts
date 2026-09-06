@@ -556,6 +556,29 @@ export class FactoryVisionApiClient {
         body: JSON.stringify(body),
       }),
     cancel: (id: string) => this.request<WorkOrder>(`/api/v1/work-orders/${id}/cancel`, { method: 'POST' }),
+    /**
+     * Dynamic split (Â§25.7): divides one Work Order into two or more children
+     * that run in parallel. The parts must sum exactly to the parent's planned
+     * quantity; the API refuses the split otherwise.
+     */
+    split: (
+      id: string,
+      body: {
+        parts: Array<{
+          plannedQuantity: number;
+          machineId?: string;
+          workCenterId?: string;
+          moldId?: string;
+          shiftId?: string;
+          plannedStart?: string;
+          plannedEnd?: string;
+        }>;
+      }
+    ) =>
+      this.request<{ parent: WorkOrder; children: WorkOrder[] }>(`/api/v1/work-orders/${id}/split`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
   };
 
   // Shop Floor Execution API

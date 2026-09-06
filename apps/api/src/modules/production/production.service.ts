@@ -9,6 +9,7 @@ import {
   type WorkOrderTransitionContext,
 } from './work-order.state-machine.js';
 import { WorkOrderRepository } from './work-order.repository.js';
+import { WorkOrderSplitService, type SplitPartInput } from './work-order-split.service.js';
 import { ProductionOrderRepository } from './production-order.repository.js';
 import { BatchRepository } from './batch.repository.js';
 import { MachineStateRepository } from '../shopfloor/machine-state.repository.js';
@@ -30,6 +31,7 @@ import { demoProductionOrders, demoWorkOrders } from './production.demo.js';
  */
 export class ProductionService {
   private readonly workOrders = new WorkOrderRepository();
+  private readonly splits = new WorkOrderSplitService();
   private readonly productionOrders = new ProductionOrderRepository();
   private readonly batches = new BatchRepository();
   // §11's side effects include driving the machine: a work order that starts
@@ -629,6 +631,14 @@ export class ProductionService {
         }
       }
 
+      // A split child feeds its parent (§25.7). The parent's counters are the
+      // sum of its children and it completes when the last one does, which is
+      // what lets the next routing process start. Idempotent, so running it on
+      // every transition of a child costs nothing and cannot drift.
+      if (updated.parentWorkOrderId) {
+        await this.splits.rollUp(client, tenantId, updated.parentWorkOrderId);
+      }
+
       this.notifyPlanning(tenantId, updated);
       return updated;
     });
@@ -701,9 +711,10 @@ export class ProductionService {
     reject: number,
     extra: { scrap?: number; rework?: number; input?: number; transferred?: number } = {}
   ): Promise<void> {
-    await withTenant(tenantId, (client) =>
-      this.workOrders.incrementQuantities(client, tenantId, id, good, reject, extra)
-    );
+    await withTenant(tenantId, async (client) => {
+      await this.workOrders.incrementQuantities(client, tenantId, id, good, reject, extra);
+      await this.rollUpIfChild(client, tenantId, id);
+    });
   }
 
   /**
@@ -722,6 +733,29 @@ export class ProductionService {
     extra: { scrap?: number; rework?: number; input?: number; transferred?: number } = {}
   ): Promise<void> {
     await this.workOrders.incrementQuantities(exec, tenantId, id, good, reject, extra);
+    await this.rollUpIfChild(exec, tenantId, id);
+  }
+
+  /** Keeps a split parent's totals equal to the sum of its children. */
+  private async rollUpIfChild(exec: Executor, tenantId: string, workOrderId: string): Promise<void> {
+    const wo = await this.workOrders.findById(exec, tenantId, workOrderId);
+    if (wo?.parentWorkOrderId) {
+      await this.splits.rollUp(exec, tenantId, wo.parentWorkOrderId);
+    }
+  }
+
+  /**
+   * Dynamic split (§25.7), the supervisor-facing entry point.
+   *
+   * One transaction: children inserted and parent flagged together, or neither.
+   */
+  async splitWorkOrder(
+    tenantId: string,
+    id: string,
+    parts: SplitPartInput[],
+    actor?: string
+  ) {
+    return withTenant(tenantId, (client) => this.splits.split(client, tenantId, id, parts, actor));
   }
 
   async counts(tenantId: string): Promise<{ productionOrders: number; workOrders: number }> {
