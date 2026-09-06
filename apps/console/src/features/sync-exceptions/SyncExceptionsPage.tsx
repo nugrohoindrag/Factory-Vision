@@ -5,13 +5,14 @@ import {
   ApiRequestError,
   type SyncExceptionRecord,
 } from '@factory-vision/api-client';
-import { Button, Icon } from '@factory-vision/ui';
-import { SurfaceCard, FilterChip } from '@factory-vision/ui/fv';
+import { Button, Icon, Select } from '@factory-vision/ui';
+import { DateField, Page, Section, SurfaceCard, FilterChip } from '@factory-vision/ui/fv';
 import { useSession } from '../../app/SessionContext.js';
 
 const api = new FactoryVisionApiClient({ baseUrl: '' });
 
-const inputStyle: React.CSSProperties = {
+/** The summary counters, which read as buttons shaped like the filter chips. */
+const summaryPillStyle: React.CSSProperties = {
   padding: `var(--space-3) var(--space-3)`,
   borderRadius: 'var(--radius-md, 8px)',
   backgroundColor: 'var(--color-surface-container-high)',
@@ -109,8 +110,8 @@ export const SyncExceptionsPage: React.FC = () => {
   );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', padding: 'var(--space-1)' }}>
-      <div>
+    <Page>
+      <Section>
         <h1
           style={{
             margin: 0,
@@ -131,7 +132,7 @@ export const SyncExceptionsPage: React.FC = () => {
           Catatan produksi dari terminal yang tidak diterima server. Catatan tidak dibuang, setiap
           baris di bawah menunggu keputusan Anda.
         </p>
-      </div>
+      </Section>
 
       {totalOpen > 0 && (
         <SurfaceCard padding="md">
@@ -155,7 +156,7 @@ export const SyncExceptionsPage: React.FC = () => {
                   setStatus('OPEN');
                 }}
                 style={{
-                  ...inputStyle,
+                  ...summaryPillStyle,
                   cursor: 'pointer',
                   fontWeight: 700,
                   backgroundColor: 'var(--color-surface-container)',
@@ -168,48 +169,60 @@ export const SyncExceptionsPage: React.FC = () => {
         </SurfaceCard>
       )}
 
-      <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          {STATUS_FILTERS.map((option) => (
-            <FilterChip
-              key={option.key}
-              selected={status === option.key}
-              onClick={() => setStatus(option.key)}
+      <Section>
+        <SurfaceCard padding="md">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+            <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+              {STATUS_FILTERS.map((option) => (
+                <FilterChip
+                  key={option.key}
+                  selected={status === option.key}
+                  onClick={() => setStatus(option.key)}
+                >
+                  {option.label}
+                </FilterChip>
+              ))}
+            </div>
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: 'var(--space-3)',
+                alignItems: 'center',
+              }}
             >
-              {option.label}
-            </FilterChip>
-          ))}
-        </div>
+              <Select
+                label="Line"
+                options={[
+                  { value: '', label: 'Semua line' },
+                  ...lines.map((line) => ({ value: line.id, label: line.name })),
+                ]}
+                value={lineId}
+                onChange={setLineId}
+              />
 
-        <select value={lineId} onChange={(e) => setLineId(e.target.value)} style={inputStyle}>
-          <option value="">Semua line</option>
-          {lines.map((line) => (
-            <option key={line.id} value={line.id}>
-              {line.name}
-            </option>
-          ))}
-        </select>
+              <DateField
+                label="Tanggal shift"
+                value={shiftDate}
+                onChange={(e) => setShiftDate(e.target.value)}
+              />
 
-        <input
-          type="date"
-          value={shiftDate}
-          onChange={(e) => setShiftDate(e.target.value)}
-          style={inputStyle}
-          aria-label="Tanggal shift"
-        />
-
-        {(lineId || shiftDate) && (
-          <Button
-            variant="text"
-            onClick={() => {
-              setLineId('');
-              setShiftDate('');
-            }}
-          >
-            Bersihkan filter
-          </Button>
-        )}
-      </div>
+              {(lineId || shiftDate) && (
+                <Button
+                  variant="text"
+                  onClick={() => {
+                    setLineId('');
+                    setShiftDate('');
+                  }}
+                >
+                  Bersihkan filter
+                </Button>
+              )}
+            </div>
+          </div>
+        </SurfaceCard>
+      </Section>
 
       {error && (
         <div
@@ -252,7 +265,7 @@ export const SyncExceptionsPage: React.FC = () => {
           ))}
         </div>
       )}
-    </div>
+    </Page>
   );
 };
 
