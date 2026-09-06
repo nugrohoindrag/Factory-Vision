@@ -132,9 +132,14 @@ export const App: React.FC = () => {
               fontWeight: 700,
               cursor: 'pointer',
               fontFamily: 'var(--font-family)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--space-1)',
             }}
+            title="Keluar dari sesi Internal Admin"
           >
-            Keluar
+            <Icon name="logout" size={15} />
+            <span>Keluar</span>
           </button>
         </div>
       </header>

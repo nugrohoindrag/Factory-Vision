@@ -14,6 +14,7 @@ import {
 } from '@factory-vision/ui';
 import { DateField, Page, Section, SurfaceCard, Dialog, toneContainer, toneOnContainer, type Tone } from '@factory-vision/ui/fv';
 import { useSession } from '../../app/SessionContext.js';
+import { useNewlyCreated } from '../common/useNewlyCreated.js';
 import {
   CustomerOrderStatus,
   CUSTOMER_ORDER_STATUS_LABEL,
@@ -98,6 +99,8 @@ function readAsBase64(file: File): Promise<string> {
 export const CustomerOrdersPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { can } = useSession();
+  const { isNewlyCreated, sortWithNewlyCreated, NewlyCreatedBadge } =
+    useNewlyCreated<CustomerOrderDetailView & { id: string }>('fv_new_customer_order');
 
   // The traceability panel reads Production Plans. Sales owns the order but not
   // planning (Improvement PRD §5), so for them the panel is simply absent —
@@ -185,7 +188,8 @@ export const CustomerOrdersPage: React.FC = () => {
     },
   });
 
-  const orders = ordersQuery.data ?? [];
+  const rawOrders = (ordersQuery.data ?? []) as (CustomerOrderDetailView & { id: string })[];
+  const orders = sortWithNewlyCreated(rawOrders);
   const detail = detailQuery.data;
 
   const columns: ColumnDef<CustomerOrderDetailView & { id: string }>[] = useMemo(
@@ -197,6 +201,7 @@ export const CustomerOrdersPage: React.FC = () => {
         render: (row) => (
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
             <span style={{ fontWeight: 700 }}>{row.orderNumber}</span>
+            {isNewlyCreated(row.id) && <NewlyCreatedBadge />}
             {isAtRisk(row) && (
               <span title="Berisiko terlambat: pengiriman kurang dari 7 hari dan produksi belum selesai.">
                 <Icon name="schedule" size={16} />

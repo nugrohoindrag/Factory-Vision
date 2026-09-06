@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FactoryVisionApiClient } from '@factory-vision/api-client';
 import { AdvancedDataTable, ColumnDef, Button, Icon, Modal } from '@factory-vision/ui';
-import { MetricCard, Page, Section, Dialog, FilterChip } from '@factory-vision/ui/fv';
+import { MetricCard, Page, Section, Dialog, FilterChip, RowActionMenu, type RowActionItem } from '@factory-vision/ui/fv';
 import { SplitWorkOrderDialog, isSplittable } from './SplitWorkOrderDialog.js';
 import {
   WorkOrder,
@@ -11,11 +11,26 @@ import {
   ProductionOrderStatus,
   statusLabel,
 } from '@factory-vision/domain-types';
+import { useNewlyCreated } from '../common/useNewlyCreated.js';
 
 const api = new FactoryVisionApiClient({ baseUrl: '' });
 
 export const WorkOrdersPage: React.FC = () => {
   const queryClient = useQueryClient();
+
+  const {
+    isNewlyCreated: isNewlyCreatedWo,
+    markNewlyCreated: markNewlyCreatedWo,
+    sortWithNewlyCreated: sortWithNewlyCreatedWo,
+    NewlyCreatedBadge: WoNewlyCreatedBadge,
+  } = useNewlyCreated<WorkOrder>();
+
+  const {
+    isNewlyCreated: isNewlyCreatedPo,
+    markNewlyCreated: markNewlyCreatedPo,
+    sortWithNewlyCreated: sortWithNewlyCreatedPo,
+    NewlyCreatedBadge: PoNewlyCreatedBadge,
+  } = useNewlyCreated<ProductionOrder>();
 
   // Navigation & Filter states
   const [activeTab, setActiveTab] = useState<'WO' | 'PO'>('WO');
@@ -137,6 +152,7 @@ export const WorkOrdersPage: React.FC = () => {
     onSuccess: (newWo) => {
       queryClient.invalidateQueries({ queryKey: ['work-orders'] });
       setShowCreateModal(false);
+      markNewlyCreatedWo(newWo.id);
       showToast(`Work Order ${newWo.woNumber} berhasil dibuat!`);
     },
     onError: (err: any) => {
@@ -231,6 +247,7 @@ export const WorkOrdersPage: React.FC = () => {
     onSuccess: (newPo) => {
       queryClient.invalidateQueries({ queryKey: ['production-orders'] });
       setShowCreatePoModal(false);
+      markNewlyCreatedPo(newPo.id);
       showToast(`Production Order ${newPo.orderNumber} berhasil dibuat!`);
     },
   });
@@ -278,7 +295,7 @@ export const WorkOrdersPage: React.FC = () => {
   };
 
   // Filtered dataset
-  const filteredWos = (workOrders || []).filter((wo) => {
+  const rawFilteredWos = (workOrders || []).filter((wo) => {
     const matchesStatus = selectedStatus === 'ALL' || wo.status === selectedStatus;
     const matchesLine = selectedLineFilter === 'ALL' || wo.lineId === selectedLineFilter;
     const matchesSearch =
@@ -288,6 +305,7 @@ export const WorkOrdersPage: React.FC = () => {
       wo.lineId.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesStatus && matchesLine && matchesSearch;
   });
+  const filteredWos = sortWithNewlyCreatedWo(rawFilteredWos);
 
   const totalWos = workOrders?.length || 0;
   const inProductionWos = workOrders?.filter((w) => w.status === WorkOrderStatus.IN_PRODUCTION).length || 0;
@@ -319,12 +337,16 @@ export const WorkOrdersPage: React.FC = () => {
       key: 'woNumber',
       header: 'Work Order',
       sortable: true,
+      width: '20%',
       render: (wo) => {
         const prod = products?.find((p) => p.id === wo.productId);
         return (
           <div>
-            <div style={{ fontWeight: 800, fontSize: '13.5px', color: 'var(--color-on-surface)' }}>
-              {wo.woNumber}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              <span style={{ fontWeight: 800, fontSize: '13.5px', color: 'var(--color-on-surface)' }}>
+                {wo.woNumber}
+              </span>
+              {isNewlyCreatedWo(wo.id) && <WoNewlyCreatedBadge />}
             </div>
             <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}>
               {prod ? `${prod.sku}, ${prod.name}` : wo.productId}
@@ -337,6 +359,7 @@ export const WorkOrdersPage: React.FC = () => {
       key: 'processId',
       header: 'Proses Produksi',
       sortable: true,
+      width: '19%',
       render: (wo) => {
         const proc = processes?.find((p) => p.id === wo.processId);
         // ADR-29: the batch names its work order, not the reverse.
@@ -369,6 +392,7 @@ export const WorkOrdersPage: React.FC = () => {
       key: 'lineId',
       header: 'Production Line & Mesin',
       sortable: true,
+      width: '17%',
       render: (wo) => {
         const line = lines?.find((l) => l.id === wo.lineId);
         const mc = machines?.find((m) => m.id === wo.machineId);
@@ -388,10 +412,11 @@ export const WorkOrdersPage: React.FC = () => {
       key: 'targetQuantity',
       header: 'Target Produksi & Produksi Aktual',
       sortable: true,
+      width: '22%',
       render: (wo) => {
         const pct = wo.plannedQuantity > 0 ? Math.round((wo.outputQuantity / wo.plannedQuantity) * 100) : 0;
         return (
-          <div style={{ minWidth: '160px' }}>
+          <div style={{ width: '100%', minWidth: '150px' }}>
             <div
               style={{
                 display: 'flex',
@@ -448,6 +473,7 @@ export const WorkOrdersPage: React.FC = () => {
       key: 'rejectQuantity',
       header: 'Jumlah Reject',
       sortable: true,
+      width: '9%',
       render: (wo) => (
         <span
           style={{
@@ -465,6 +491,7 @@ export const WorkOrdersPage: React.FC = () => {
       key: 'status',
       header: 'Status',
       sortable: true,
+      width: '13%',
       render: (wo) => {
         const color = getStatusColor(wo.status);
         return (
@@ -491,70 +518,57 @@ export const WorkOrdersPage: React.FC = () => {
     {
       key: 'actions',
       header: 'Aksi',
-      render: (wo) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-          {/* Detail Button */}
-          <Button
-            variant="tonal"
-            size="sm"
-            onClick={() => handleOpenDetailWo(wo)}
-            title="Lihat Detail Work Order"
-            style={{ padding: `0 var(--space-2)` }}
-          >
-            <Icon name="visibility" size={16} />
-          </Button>
+      // One icon wide. Every row action lives behind the overflow menu, so the
+      // width the three buttons used to hold goes back to the data columns.
+      width: '64px',
+      render: (wo) => {
+        const actions: RowActionItem[] = [
+          {
+            id: 'detail',
+            label: 'Lihat Detail',
+            icon: 'visibility',
+            onClick: () => handleOpenDetailWo(wo),
+          },
+          {
+            id: 'edit',
+            label: 'Edit Work Order',
+            icon: 'edit',
+            onClick: () => handleOpenEditWo(wo),
+          },
+        ];
 
-          {/* Edit Button */}
-          <Button
-            variant="tonal"
-            size="sm"
-            onClick={() => handleOpenEditWo(wo)}
-            title="Edit Work Order"
-            style={{ padding: `0 var(--space-2)` }}
-          >
-            <Icon name="edit" size={16} />
-          </Button>
+        if (wo.status === WorkOrderStatus.DRAFT || wo.status === WorkOrderStatus.SCHEDULED) {
+          actions.push({
+            id: 'release',
+            label: 'Release ke Produksi',
+            icon: 'play_arrow',
+            onClick: () => releaseMutation.mutate(wo.id),
+          });
+        }
 
-          {/* State Transition Actions */}
-          {(wo.status === WorkOrderStatus.DRAFT || wo.status === WorkOrderStatus.SCHEDULED) && (
-            <Button
-              variant="filled"
-              size="sm"
-              onClick={() => releaseMutation.mutate(wo.id)}
-              style={{ fontSize: '11.5px', padding: `0 var(--space-3)` }}
-            >
-              Release
-            </Button>
-          )}
+        // Split — only where the API would accept one, so the item never lies.
+        if (isSplittable(wo)) {
+          actions.push({
+            id: 'split',
+            label: 'Split Work Order',
+            icon: 'call_split',
+            onClick: () => {
+              setSplitError('');
+              setSplitTarget(wo);
+            },
+          });
+        }
 
-          {/* Split — only where the API would accept one, so the button never lies */}
-          {isSplittable(wo) && (
-            <Button
-              variant="tonal"
-              size="sm"
-              onClick={() => {
-                setSplitError('');
-                setSplitTarget(wo);
-              }}
-              title="Split Work Order menjadi beberapa child yang berjalan paralel"
-              style={{ padding: `0 var(--space-2)` }}
-            >
-              <Icon name="call_split" size={16} />
-            </Button>
-          )}
+        actions.push({
+          id: 'delete',
+          label: 'Hapus Work Order',
+          icon: 'delete',
+          danger: true,
+          onClick: () => handleOpenDeleteWo(wo),
+        });
 
-          {/* Delete / Cancel Button */}
-          <Button
-            variant="text"
-            size="sm"
-            style={{ color: 'var(--color-error)', padding: `0 var(--space-2)` }}
-            onClick={() => handleOpenDeleteWo(wo)}
-            title="Hapus Work Order"
-          >
-            <Icon name="delete" size={16} />
-          </Button>
-        </div>
-      ),
+        return <RowActionMenu items={actions} label={`Aksi untuk ${wo.woNumber}`} />;
+      },
     },
   ];
 
@@ -891,7 +905,7 @@ export const WorkOrdersPage: React.FC = () => {
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--space-3)' }}>
-            {productionOrders?.map((po) => {
+            {sortWithNewlyCreatedPo(productionOrders || []).map((po) => {
               const prod = products?.find((p) => p.id === po.productId);
               const relatedWos = workOrders?.filter((w) => w.productionOrderId === po.id) || [];
               const totalOutput = relatedWos.reduce((acc, curr) => acc + curr.outputQuantity, 0);
@@ -900,12 +914,16 @@ export const WorkOrdersPage: React.FC = () => {
                 .filter((r) => r.productId === po.productId)
                 .sort((a, b) => a.sequence - b.sequence);
 
+              const isPoHighlighted = isNewlyCreatedPo(po.id);
+
               return (
                 <div
                   key={po.id}
                   style={{
                     backgroundColor: 'var(--color-surface)',
-                    border: '1px solid var(--color-outline-variant)',
+                    border: isPoHighlighted
+                      ? '1.5px solid var(--color-success)'
+                      : '1px solid var(--color-outline-variant)',
                     borderRadius: 'var(--radius-lg)',
                     padding: `var(--space-5) var(--space-5)`,
                     display: 'flex',
@@ -927,6 +945,7 @@ export const WorkOrdersPage: React.FC = () => {
                         <span style={{ fontWeight: 800, fontSize: '15px', color: 'var(--color-on-surface)' }}>
                           {po.orderNumber}
                         </span>
+                        {isPoHighlighted && <PoNewlyCreatedBadge />}
                         <span
                           style={{
                             padding: `var(--space-1) var(--space-2)`,

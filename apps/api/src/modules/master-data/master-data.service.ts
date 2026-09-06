@@ -21,6 +21,12 @@ import {
   UserRole,
   KpiTarget,
   KpiMetric,
+  BillOfMaterial,
+  BillOfMaterialItem,
+  BillOfMaterialStatus,
+  BomComponentType,
+  CreateBomInput,
+  UpdateBomInput,
 } from '@factory-vision/domain-types';
 import { demoRows } from '../../platform/config/demo-seed.js';
 
@@ -379,6 +385,120 @@ export class MasterDataService {
       unit: 'PCS',
       idealCycleTimeSeconds: 210,
       status: 'ACTIVE',
+    },
+    // Raw materials & components for BOM relations in pilot factory
+    {
+      id: 'mat-rub-01',
+      tenantId: 'tenant-pilot-factory-01',
+      sku: 'MAT-RUB-01',
+      name: 'Natural Rubber Tread Compound RSS-3',
+      unit: 'KG',
+      idealCycleTimeSeconds: 0,
+      status: 'ACTIVE',
+    },
+    {
+      id: 'mat-stl-01',
+      tenantId: 'tenant-pilot-factory-01',
+      sku: 'MAT-STL-01',
+      name: 'High-Tensile Steel Belt Cord 3x0.28',
+      unit: 'METER',
+      idealCycleTimeSeconds: 0,
+      status: 'ACTIVE',
+    },
+    {
+      id: 'mat-bdw-01',
+      tenantId: 'tenant-pilot-factory-01',
+      sku: 'MAT-BDW-01',
+      name: 'Bead Wire Carbon Steel 1.2mm',
+      unit: 'KG',
+      idealCycleTimeSeconds: 0,
+      status: 'ACTIVE',
+    },
+    {
+      id: 'pkg-trw-01',
+      tenantId: 'tenant-pilot-factory-01',
+      sku: 'PKG-TRW-01',
+      name: 'Polyolefin Tire Wrapping Film',
+      unit: 'ROLL',
+      idealCycleTimeSeconds: 0,
+      status: 'ACTIVE',
+    },
+  ]);
+
+  private boms: BillOfMaterial[] = demoRows<BillOfMaterial>(() => [
+    {
+      id: 'bom-tire-a-01',
+      tenantId: 'tenant-pilot-factory-01',
+      bomNumber: 'BOM-2026-001',
+      productId: 'prod-tire-a',
+      productSku: 'TIRE-PCR-185',
+      productName: 'Tire A: Passenger Car Radial 185/65 R15',
+      productRevision: 'Rev A',
+      bomName: 'BOM Passenger Car Radial 185 Standard',
+      version: 'v1.0',
+      status: 'ACTIVE',
+      effectiveDate: '2026-01-01',
+      description: 'Standard OEM formulation for passenger car radial tire.',
+      createdBy: 'Agung Wicaksono',
+      createdAt: '2026-01-10T08:00:00.000Z',
+      updatedBy: 'Agung Wicaksono',
+      updatedAt: '2026-01-10T08:00:00.000Z',
+      components: [
+        {
+          id: 'bom-item-001',
+          bomId: 'bom-tire-a-01',
+          lineNumber: 1,
+          componentPartId: 'mat-rub-01',
+          componentPartSku: 'MAT-RUB-01',
+          componentPartName: 'Natural Rubber Tread Compound RSS-3',
+          componentType: 'RAW_MATERIAL',
+          quantity: 6.8,
+          uom: 'KG',
+          scrapPercentage: 1.5,
+          sequence: 1,
+          notes: 'Banbury mixing stage batch',
+        },
+        {
+          id: 'bom-item-002',
+          bomId: 'bom-tire-a-01',
+          lineNumber: 2,
+          componentPartId: 'mat-stl-01',
+          componentPartSku: 'MAT-STL-01',
+          componentPartName: 'High-Tensile Steel Belt Cord 3x0.28',
+          componentType: 'COMPONENT',
+          quantity: 14.5,
+          uom: 'METER',
+          scrapPercentage: 0.8,
+          sequence: 2,
+          notes: 'Calendering belt layer',
+        },
+        {
+          id: 'bom-item-003',
+          bomId: 'bom-tire-a-01',
+          lineNumber: 3,
+          componentPartId: 'mat-bdw-01',
+          componentPartSku: 'MAT-BDW-01',
+          componentPartName: 'Bead Wire Carbon Steel 1.2mm',
+          componentType: 'COMPONENT',
+          quantity: 1.2,
+          uom: 'KG',
+          sequence: 3,
+          notes: 'Bead winding sub-assembly',
+        },
+        {
+          id: 'bom-item-004',
+          bomId: 'bom-tire-a-01',
+          lineNumber: 4,
+          componentPartId: 'pkg-trw-01',
+          componentPartSku: 'PKG-TRW-01',
+          componentPartName: 'Polyolefin Tire Wrapping Film',
+          componentType: 'PACKAGING',
+          quantity: 0.05,
+          uom: 'ROLL',
+          sequence: 4,
+          notes: 'Final packaging wrapping',
+        },
+      ],
     },
   ]);
 
@@ -1426,6 +1546,180 @@ export class MasterDataService {
     if (index === -1) throw new Error('Product not found');
     this.products.splice(index, 1);
     this.persist(tenantId, (repo, exec) => repo.remove(exec, 'product', tenantId, id));
+    return true;
+  }
+
+  // --- Bill of Materials (BOM) ---
+  getBoms(
+    tenantId: string,
+    filters?: { productId?: string; status?: BillOfMaterialStatus; search?: string }
+  ): BillOfMaterial[] {
+    let result = this.boms.filter((b) => b.tenantId === tenantId);
+    if (filters?.productId) {
+      result = result.filter((b) => b.productId === filters.productId);
+    }
+    if (filters?.status) {
+      result = result.filter((b) => b.status === filters.status);
+    }
+    if (filters?.search) {
+      const q = filters.search.toLowerCase();
+      result = result.filter(
+        (b) =>
+          b.bomNumber.toLowerCase().includes(q) ||
+          b.bomName.toLowerCase().includes(q) ||
+          b.productSku.toLowerCase().includes(q) ||
+          b.productName.toLowerCase().includes(q)
+      );
+    }
+    return result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  getBomById(tenantId: string, id: string): BillOfMaterial | undefined {
+    return this.boms.find((b) => b.id === id && b.tenantId === tenantId);
+  }
+
+  createBom(tenantId: string, payload: CreateBomInput, createdBy?: string): BillOfMaterial {
+    const product = this.getProductById(tenantId, payload.productId);
+    if (!product) throw new Error('Product not found for this BOM');
+
+    const year = new Date().getFullYear();
+    const count = this.boms.filter((b) => b.tenantId === tenantId).length + 1;
+    const bomNumber = `BOM-${year}-${String(count).padStart(3, '0')}`;
+
+    if (payload.status === 'ACTIVE') {
+      for (const b of this.boms) {
+        if (b.tenantId === tenantId && b.productId === payload.productId && b.status === 'ACTIVE') {
+          b.status = 'INACTIVE';
+          b.updatedAt = new Date().toISOString();
+        }
+      }
+    }
+
+    const bomId = `bom-${Date.now()}`;
+    const components: BillOfMaterialItem[] = payload.components.map((c, idx) => {
+      const compPart = this.getProductById(tenantId, c.componentPartId);
+      return {
+        id: `bom-item-${Date.now()}-${idx + 1}`,
+        bomId,
+        lineNumber: idx + 1,
+        componentPartId: c.componentPartId,
+        componentPartSku: compPart?.sku ?? c.componentPartId,
+        componentPartName: compPart?.name ?? 'Component Part',
+        componentType: c.componentType,
+        quantity: Number(c.quantity),
+        uom: c.uom,
+        scrapPercentage: c.scrapPercentage ? Number(c.scrapPercentage) : 0,
+        sequence: c.sequence ? Number(c.sequence) : idx + 1,
+        reference: c.reference,
+        notes: c.notes,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+    });
+
+    const now = new Date().toISOString();
+    const bom: BillOfMaterial = {
+      id: bomId,
+      tenantId,
+      bomNumber,
+      productId: payload.productId,
+      productSku: product.sku,
+      productName: product.name,
+      productRevision: payload.productRevision,
+      bomName: payload.bomName,
+      version: payload.version || 'v1.0',
+      status: payload.status || 'DRAFT',
+      effectiveDate: payload.effectiveDate || now.split('T')[0],
+      endDate: payload.endDate,
+      description: payload.description,
+      components,
+      createdBy: createdBy || 'Admin',
+      createdAt: now,
+      updatedBy: createdBy || 'Admin',
+      updatedAt: now,
+    };
+
+    this.boms.unshift(bom);
+    return bom;
+  }
+
+  updateBom(tenantId: string, id: string, payload: UpdateBomInput, updatedBy?: string): BillOfMaterial {
+    const bom = this.getBomById(tenantId, id);
+    if (!bom) throw new Error('Bill of Material not found');
+
+    if (payload.status === 'ACTIVE' && bom.status !== 'ACTIVE') {
+      for (const b of this.boms) {
+        if (b.tenantId === tenantId && b.productId === bom.productId && b.id !== id && b.status === 'ACTIVE') {
+          b.status = 'INACTIVE';
+          b.updatedAt = new Date().toISOString();
+        }
+      }
+    }
+
+    if (payload.bomName) bom.bomName = payload.bomName;
+    if (payload.version) bom.version = payload.version;
+    if (payload.effectiveDate) bom.effectiveDate = payload.effectiveDate;
+    if (payload.endDate !== undefined) bom.endDate = payload.endDate;
+    if (payload.productRevision !== undefined) bom.productRevision = payload.productRevision;
+    if (payload.description !== undefined) bom.description = payload.description;
+    if (payload.status) bom.status = payload.status;
+
+    if (payload.components) {
+      bom.components = payload.components.map((c, idx) => {
+        const compPart = this.getProductById(tenantId, c.componentPartId);
+        return {
+          id: c.id || `bom-item-${Date.now()}-${idx + 1}`,
+          bomId: bom.id,
+          lineNumber: idx + 1,
+          componentPartId: c.componentPartId,
+          componentPartSku: compPart?.sku ?? c.componentPartId,
+          componentPartName: compPart?.name ?? 'Component Part',
+          componentType: c.componentType,
+          quantity: Number(c.quantity),
+          uom: c.uom,
+          scrapPercentage: c.scrapPercentage ? Number(c.scrapPercentage) : 0,
+          sequence: c.sequence ? Number(c.sequence) : idx + 1,
+          reference: c.reference,
+          notes: c.notes,
+          createdAt: bom.createdAt,
+          updatedAt: new Date().toISOString(),
+        };
+      });
+    }
+
+    bom.updatedBy = updatedBy || bom.updatedBy;
+    bom.updatedAt = new Date().toISOString();
+    return bom;
+  }
+
+  setBomStatus(
+    tenantId: string,
+    id: string,
+    status: BillOfMaterialStatus,
+    updatedBy?: string
+  ): BillOfMaterial {
+    const bom = this.getBomById(tenantId, id);
+    if (!bom) throw new Error('Bill of Material not found');
+
+    if (status === 'ACTIVE') {
+      for (const b of this.boms) {
+        if (b.tenantId === tenantId && b.productId === bom.productId && b.id !== id && b.status === 'ACTIVE') {
+          b.status = 'INACTIVE';
+          b.updatedAt = new Date().toISOString();
+        }
+      }
+    }
+
+    bom.status = status;
+    bom.updatedBy = updatedBy || bom.updatedBy;
+    bom.updatedAt = new Date().toISOString();
+    return bom;
+  }
+
+  deleteBom(tenantId: string, id: string): boolean {
+    const index = this.boms.findIndex((b) => b.id === id && b.tenantId === tenantId);
+    if (index === -1) throw new Error('Bill of Material not found');
+    this.boms.splice(index, 1);
     return true;
   }
 

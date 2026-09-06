@@ -447,6 +447,43 @@ export class OnboardingService {
     // Refresh memory cache in MasterDataService
     await this.masterData.hydrate(tenantId);
 
+    // Pre-create initial Bill of Materials (BOM) from industry template if available
+    if (tmpl.boms && tmpl.boms.length > 0) {
+      const tenantProducts = this.masterData.getProducts(tenantId);
+      for (const b of tmpl.boms) {
+        const targetProduct = tenantProducts[b.productIndex] || tenantProducts[0];
+        if (targetProduct) {
+          try {
+            this.masterData.createBom(
+              tenantId,
+              {
+                productId: targetProduct.id,
+                bomName: b.bomName,
+                version: b.version,
+                status: b.status,
+                description: b.description,
+                components: b.items.map((it) => {
+                  const matchingPart = tenantProducts.find((p) => p.sku === it.componentSku);
+                  return {
+                    componentPartId: matchingPart ? matchingPart.id : it.componentSku,
+                    componentType: it.componentType,
+                    quantity: it.quantity,
+                    uom: it.uom,
+                    scrapPercentage: it.scrapPercentage || 0,
+                    sequence: it.sequence,
+                    notes: it.notes,
+                  };
+                }),
+              },
+              'system-onboarding'
+            );
+          } catch {
+            // Non-fatal if BOM template has minor mismatch
+          }
+        }
+      }
+    }
+
     // Pre-create initial sample Production Order so the user can immediately experience the workflow
     try {
       const sampleProd = this.masterData.getProducts(tenantId)[0];

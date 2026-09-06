@@ -349,6 +349,105 @@ app.delete('/api/v1/master/products/:id', async (req, res, next) => {
   }
 });
 
+// Bill of Material (BOM) Master Data
+app.get('/api/v1/master/bom', async (req, res) => {
+  const tenantId = req.context!.tenantId;
+  const { productId, status, search } = req.query as {
+    productId?: string;
+    status?: any;
+    search?: string;
+  };
+  const boms = masterDataService.getBoms(tenantId, { productId, status, search });
+  res.json(boms);
+});
+
+app.get('/api/v1/master/bom/:id', async (req, res) => {
+  const tenantId = req.context!.tenantId;
+  const bom = masterDataService.getBomById(tenantId, req.params.id);
+  if (!bom) return res.status(404).json({ message: 'Bill of Material not found' });
+  res.json(bom);
+});
+
+app.post('/api/v1/master/bom', async (req, res, next) => {
+  try {
+    const tenantId = req.context!.tenantId;
+    const actorName = req.context?.userId || 'Admin';
+    const bom = masterDataService.createBom(tenantId, req.body, actorName);
+    await auditService.record({
+      tenantId,
+      actorType: 'USER',
+      actorId: actorName,
+      entityType: 'bill_of_material',
+      entityId: bom.id,
+      action: 'CREATE',
+      newValue: bom,
+    });
+    res.status(201).json(bom);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.put('/api/v1/master/bom/:id', async (req, res, next) => {
+  try {
+    const tenantId = req.context!.tenantId;
+    const actorName = req.context?.userId || 'Admin';
+    const bom = masterDataService.updateBom(tenantId, req.params.id, req.body, actorName);
+    await auditService.record({
+      tenantId,
+      actorType: 'USER',
+      actorId: actorName,
+      entityType: 'bill_of_material',
+      entityId: bom.id,
+      action: 'UPDATE',
+      newValue: bom,
+    });
+    res.json(bom);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.patch('/api/v1/master/bom/:id/status', async (req, res, next) => {
+  try {
+    const tenantId = req.context!.tenantId;
+    const actorName = req.context?.userId || 'Admin';
+    const { status } = req.body;
+    if (!status) return res.status(400).json({ message: 'Status is required' });
+    const bom = masterDataService.setBomStatus(tenantId, req.params.id, status, actorName);
+    await auditService.record({
+      tenantId,
+      actorType: 'USER',
+      actorId: actorName,
+      entityType: 'bill_of_material',
+      entityId: bom.id,
+      action: 'STATUS_CHANGE',
+      newValue: { status },
+    });
+    res.json(bom);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.delete('/api/v1/master/bom/:id', async (req, res, next) => {
+  try {
+    const tenantId = req.context!.tenantId;
+    masterDataService.deleteBom(tenantId, req.params.id);
+    await auditService.record({
+      tenantId,
+      actorType: 'USER',
+      actorId: req.context?.userId || 'Admin',
+      entityType: 'bill_of_material',
+      entityId: req.params.id,
+      action: 'DELETE',
+    });
+    res.json({ success: true, message: 'Bill of Material deleted successfully' });
+  } catch (err) {
+    next(err);
+  }
+});
+
 app.get('/api/v1/master/operators', async (req, res) => {
   res.json(masterDataService.getOperators(req.context!.tenantId));
 });

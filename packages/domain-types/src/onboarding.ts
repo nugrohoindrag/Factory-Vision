@@ -7,6 +7,9 @@ export type IndustryType =
   | 'automotive'
   | 'electronics'
   | 'fnb'
+  | 'packaging'
+  | 'metal-fabrication'
+  | 'furniture'
   | 'pharmaceutical'
   | 'chemical'
   | 'general';

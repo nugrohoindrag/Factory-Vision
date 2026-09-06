@@ -143,6 +143,91 @@ export interface ProductRouting {
   active: boolean;
 }
 
+export type BillOfMaterialStatus = 'DRAFT' | 'ACTIVE' | 'INACTIVE';
+
+export type BomComponentType = 'RAW_MATERIAL' | 'COMPONENT' | 'SUB_ASSEMBLY' | 'PACKAGING';
+
+export interface BillOfMaterialItem {
+  id: string;
+  bomId: string;
+  lineNumber: number;
+  componentPartId: string;
+  componentPartSku: string;
+  componentPartName: string;
+  componentType: BomComponentType;
+  quantity: number;
+  uom: string;
+  scrapPercentage?: number;
+  sequence?: number;
+  reference?: string;
+  notes?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface BillOfMaterial {
+  id: string;
+  tenantId: string;
+  bomNumber: string;
+  productId: string;
+  productSku: string;
+  productName: string;
+  productRevision?: string;
+  bomName: string;
+  version: string;
+  status: BillOfMaterialStatus;
+  effectiveDate: string;
+  endDate?: string;
+  description?: string;
+  components: BillOfMaterialItem[];
+  createdBy?: string;
+  createdAt: string;
+  updatedBy?: string;
+  updatedAt: string;
+}
+
+export interface CreateBomInput {
+  productId: string;
+  bomName: string;
+  version?: string;
+  effectiveDate?: string;
+  endDate?: string;
+  productRevision?: string;
+  description?: string;
+  status?: BillOfMaterialStatus;
+  components: Array<{
+    componentPartId: string;
+    componentType: BomComponentType;
+    quantity: number;
+    uom: string;
+    scrapPercentage?: number;
+    sequence?: number;
+    reference?: string;
+    notes?: string;
+  }>;
+}
+
+export interface UpdateBomInput {
+  bomName?: string;
+  version?: string;
+  effectiveDate?: string;
+  endDate?: string;
+  productRevision?: string;
+  description?: string;
+  status?: BillOfMaterialStatus;
+  components?: Array<{
+    id?: string;
+    componentPartId: string;
+    componentType: BomComponentType;
+    quantity: number;
+    uom: string;
+    scrapPercentage?: number;
+    sequence?: number;
+    reference?: string;
+    notes?: string;
+  }>;
+}
+
 export interface Operator {
   id: string;
   tenantId: string;

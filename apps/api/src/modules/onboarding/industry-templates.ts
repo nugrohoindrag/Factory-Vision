@@ -40,6 +40,23 @@ export interface RawTemplateData {
     goodQty: number;
     rejectQty: number;
   };
+  boms?: Array<{
+    productIndex: number;
+    bomName: string;
+    version: string;
+    status: 'ACTIVE' | 'DRAFT';
+    description?: string;
+    items: Array<{
+      componentSku: string;
+      componentName: string;
+      componentType: 'RAW_MATERIAL' | 'COMPONENT' | 'SUB_ASSEMBLY' | 'PACKAGING';
+      quantity: number;
+      uom: string;
+      scrapPercentage?: number;
+      sequence?: number;
+      notes?: string;
+    }>;
+  }>;
 }
 
 export const INDUSTRY_TEMPLATES: Record<IndustryType, RawTemplateData> = {
@@ -817,5 +834,249 @@ export const INDUSTRY_TEMPLATES: Record<IndustryType, RawTemplateData> = {
       goodQty: 480,
       rejectQty: 20,
     },
+  },
+
+  // 7. PACKAGING
+  packaging: {
+    info: {
+      id: 'template-packaging-v1',
+      name: 'Kemasan & Percetakan Industri (Packaging)',
+      industry: 'packaging',
+      version: '1.0',
+      description: 'Pembuatan karton box corrugated, cetak offset/flexo, die-cutting rotary, dan folder-gluer berkecepatan tinggi.',
+      status: 'active',
+      icon: 'inventory_2',
+      productsCount: 3,
+      machinesCount: 4,
+      workCentersCount: 4,
+      processesCount: 4,
+      sampleProducts: ['Master Corrugated Box 60x40x40', 'Mailbox E-Commerce Die-Cut', 'Printed Folding Carton FMCG'],
+      sampleProcesses: ['Corrugating & Fluting', 'Flexographic 4-Color Printing', 'Rotary Die-Cutting', 'High-Speed Folding & Gluing'],
+      highlights: ['Kalkulasi yield roll kertas & flute', 'Manajemen cetak multi-warna & die cutter', 'BOM material kertas, lem & tinta'],
+    },
+    defaultPlantName: 'Pabrik Karton & Kemasan Nusantara',
+    lines: [
+      { code: 'LINE-BOX-01', name: 'Lini Corrugated Box Master', status: 'ACTIVE', plannedProductionTimeMinutes: 480 },
+    ],
+    workCenters: [
+      { lineIndex: 0, code: 'WC-CORR', name: 'Work Center Corrugating', sequence: 1 },
+      { lineIndex: 0, code: 'WC-PRINT', name: 'Work Center Flexo Printing', sequence: 2 },
+      { lineIndex: 0, code: 'WC-DIECUT', name: 'Work Center Die Cutting', sequence: 3 },
+      { lineIndex: 0, code: 'WC-GLUE', name: 'Work Center Folding & Gluing', sequence: 4 },
+    ],
+    processes: [
+      { code: 'PROC-CORR', name: 'Corrugating & Fluting', sequenceDefault: 1, status: 'ACTIVE' },
+      { code: 'PROC-FLEXO', name: 'Flexographic Printing', sequenceDefault: 2, status: 'ACTIVE' },
+      { code: 'PROC-DIECUT', name: 'Rotary Die Cutting', sequenceDefault: 3, status: 'ACTIVE' },
+      { code: 'PROC-GLUE', name: 'Folder Gluing & Bundling', sequenceDefault: 4, status: 'ACTIVE' },
+    ],
+    machines: [
+      { workCenterIndex: 0, code: 'CORR-BHS', name: 'BHS Corrugator Line 2.5m', status: 'ACTIVE', idealCycleTimeSeconds: 1.0, currentState: MachineState.RUNNING, currentStateSince: '2026-01-01T00:00:00.000Z' },
+      { workCenterIndex: 1, code: 'FLEXO-HEIDEL', name: 'Heidelberg Speedmaster XL 106', status: 'ACTIVE', idealCycleTimeSeconds: 0.5, currentState: MachineState.RUNNING, currentStateSince: '2026-01-01T00:00:00.000Z' },
+      { workCenterIndex: 2, code: 'BOBST-NOVACUT', name: 'Bobst Novacut 106 E Die-Cutter', status: 'ACTIVE', idealCycleTimeSeconds: 0.6, currentState: MachineState.IDLE, currentStateSince: '2026-01-01T00:00:00.000Z' },
+      { workCenterIndex: 3, code: 'BOBST-GLUER', name: 'Bobst Expertfold 110 Gluer', status: 'ACTIVE', idealCycleTimeSeconds: 0.4, currentState: MachineState.IDLE, currentStateSince: '2026-01-01T00:00:00.000Z' },
+    ],
+    products: [
+      { sku: 'BOX-MSTR-6040', name: 'Corrugated Master Box 60x40x40cm Single Wall', unit: 'PCS', idealCycleTimeSeconds: 1.2, status: 'ACTIVE' },
+      { sku: 'BOX-ECOM-M', name: 'Mailbox Karton E-Commerce Self-Locking M', unit: 'PCS', idealCycleTimeSeconds: 0.8, status: 'ACTIVE' },
+      { sku: 'CTN-FMCG-250', name: 'Printed Folding Carton Kemasan Makanan Ringan', unit: 'PCS', idealCycleTimeSeconds: 0.5, status: 'ACTIVE' },
+    ],
+    routings: [
+      { productIndex: 0, processIndex: 0, workCenterIndex: 0, machineIndex: 0, sequence: 1, standardCycleTimeSeconds: 1.0 },
+      { productIndex: 0, processIndex: 1, workCenterIndex: 1, machineIndex: 1, sequence: 2, standardCycleTimeSeconds: 0.5 },
+      { productIndex: 0, processIndex: 2, workCenterIndex: 2, machineIndex: 2, sequence: 3, standardCycleTimeSeconds: 0.6 },
+      { productIndex: 0, processIndex: 3, workCenterIndex: 3, machineIndex: 3, sequence: 4, standardCycleTimeSeconds: 0.4 },
+    ],
+    shifts: [
+      { name: 'Shift 1 Pagi', startTime: '07:00', endTime: '15:00', breakMinutes: 60, crossesMidnight: false, active: true },
+      { name: 'Shift 2 Siang', startTime: '15:00', endTime: '23:00', breakMinutes: 60, crossesMidnight: false, active: true },
+    ],
+    downtimeReasons: [
+      { category: DowntimeCategory.MACHINE, code: 'DT-WASHUP', name: 'Wash-up Tinta & Pembersihan Plate', isPlanned: true, active: true, sortOrder: 1 },
+      { category: DowntimeCategory.PROCESS, code: 'DT-DIE-CHG', name: 'Setup Pisau Pond & Creasing Matrix', isPlanned: true, active: true, sortOrder: 2 },
+    ],
+    rejectReasons: [
+      { category: RejectCategory.APPEARANCE, code: 'RJ-MISREG', name: 'Meleset Cetak Warna / Misregistration', active: true, sortOrder: 1 },
+      { category: RejectCategory.ASSEMBLY, code: 'RJ-GLUE-FAIL', name: 'Lem Terkelupas / Joint Rusak', active: true, sortOrder: 2 },
+    ],
+    sampleOrder: { productIndex: 0, quantity: 10000, orderNumberPrefix: 'PO-PACK-DEMO', goodQty: 9750, rejectQty: 250 },
+    boms: [
+      {
+        productIndex: 0,
+        bomName: 'BOM Master Box 60x40x40 Standard',
+        version: 'v1.0',
+        status: 'ACTIVE',
+        description: 'Struktur material kertas liner kraft, medium fluting, tinta, dan lem PVA.',
+        items: [
+          { componentSku: 'RAW-KRAFT-150', componentName: 'Kertas Kraft Liner 150 GSM', componentType: 'RAW_MATERIAL', quantity: 0.65, uom: 'KG', scrapPercentage: 2.0, sequence: 1 },
+          { componentSku: 'RAW-MED-FLUTE', componentName: 'Kertas Medium Fluting 125 GSM', componentType: 'RAW_MATERIAL', quantity: 0.45, uom: 'KG', scrapPercentage: 2.0, sequence: 2 },
+          { componentSku: 'CHEM-INK-BLACK', componentName: 'Tinta Water-Based Black', componentType: 'RAW_MATERIAL', quantity: 0.008, uom: 'KG', sequence: 3 },
+          { componentSku: 'CHEM-GLUE-PVA', componentName: 'Lem PVA Carton Adhesive', componentType: 'RAW_MATERIAL', quantity: 0.015, uom: 'KG', sequence: 4 },
+        ],
+      },
+    ],
+  },
+
+  // 8. METAL FABRICATION
+  'metal-fabrication': {
+    info: {
+      id: 'template-metal-fab-v1',
+      name: 'Fabrikasi Logam & Sheet Metal',
+      industry: 'metal-fabrication',
+      version: '1.0',
+      description: 'Pemotongan pelat baja fiber laser, penekukan CNC press brake, pengelasan robotic, dan finishing powder coating oven.',
+      status: 'active',
+      icon: 'handyman',
+      productsCount: 3,
+      machinesCount: 4,
+      workCentersCount: 4,
+      processesCount: 4,
+      sampleProducts: ['Electrical Cabinet IP66 600x400', '19 Inch Server Rack Frame 42U', 'Heavy Duty Structural Wall Bracket'],
+      sampleProcesses: ['Fiber Laser Cutting', 'CNC Press Brake Bending', 'MIG/TIG Robotic Welding', 'Powder Coating & Curing Oven'],
+      highlights: ['Yield nesting pelat lembaran SPCC/SUS', 'Pengendalian sudut tekukan & toleransi pengelasan', 'BOM pelat, kawat las, dan powder coat'],
+    },
+    defaultPlantName: 'Pabrik Sheet Metal & Fabrikasi Cipta',
+    lines: [
+      { code: 'LINE-MET-01', name: 'Lini Fabrikasi Panel & Enclosure', status: 'ACTIVE', plannedProductionTimeMinutes: 480 },
+    ],
+    workCenters: [
+      { lineIndex: 0, code: 'WC-LASER', name: 'Work Center Laser Cutting', sequence: 1 },
+      { lineIndex: 0, code: 'WC-BEND', name: 'Work Center Press Brake', sequence: 2 },
+      { lineIndex: 0, code: 'WC-WELD', name: 'Work Center Robotic Welding', sequence: 3 },
+      { lineIndex: 0, code: 'WC-COAT', name: 'Work Center Powder Coating', sequence: 4 },
+    ],
+    processes: [
+      { code: 'PROC-LASER', name: 'High-Power Laser Cutting', sequenceDefault: 1, status: 'ACTIVE' },
+      { code: 'PROC-BEND', name: 'CNC Hydraulic Bending', sequenceDefault: 2, status: 'ACTIVE' },
+      { code: 'PROC-WELD', name: 'Robotic MIG/TIG Welding', sequenceDefault: 3, status: 'ACTIVE' },
+      { code: 'PROC-COAT', name: 'Powder Coating Oven', sequenceDefault: 4, status: 'ACTIVE' },
+    ],
+    machines: [
+      { workCenterIndex: 0, code: 'TRUMPF-3030', name: 'Trumpf TruLaser 3030 Fiber 6kW', status: 'ACTIVE', idealCycleTimeSeconds: 15, currentState: MachineState.RUNNING, currentStateSince: '2026-01-01T00:00:00.000Z' },
+      { workCenterIndex: 1, code: 'AMADA-HFE', name: 'Amada HFE 100-3 Press Brake', status: 'ACTIVE', idealCycleTimeSeconds: 20, currentState: MachineState.RUNNING, currentStateSince: '2026-01-01T00:00:00.000Z' },
+      { workCenterIndex: 2, code: 'FANUC-ROBOWELD', name: 'Fanuc ARC Mate Robotic Welder', status: 'ACTIVE', idealCycleTimeSeconds: 35, currentState: MachineState.IDLE, currentStateSince: '2026-01-01T00:00:00.000Z' },
+      { workCenterIndex: 3, code: 'GEMA-COATOVEN', name: 'Gema Automatic Powder Spray Booth', status: 'ACTIVE', idealCycleTimeSeconds: 25, currentState: MachineState.IDLE, currentStateSince: '2026-01-01T00:00:00.000Z' },
+    ],
+    products: [
+      { sku: 'CAB-IP66-6040', name: 'Electrical Enclosure Cabinet IP66 (600x400x200mm)', unit: 'UNIT', idealCycleTimeSeconds: 95, status: 'ACTIVE' },
+      { sku: 'SRV-RACK-42U', name: '19 Inch Server Rack 42U Welded Frame', unit: 'UNIT', idealCycleTimeSeconds: 180, status: 'ACTIVE' },
+      { sku: 'BRK-HVY-WALL', name: 'Heavy Duty Structural Wall Mounting Bracket', unit: 'PCS', idealCycleTimeSeconds: 30, status: 'ACTIVE' },
+    ],
+    routings: [
+      { productIndex: 0, processIndex: 0, workCenterIndex: 0, machineIndex: 0, sequence: 1, standardCycleTimeSeconds: 15 },
+      { productIndex: 0, processIndex: 1, workCenterIndex: 1, machineIndex: 1, sequence: 2, standardCycleTimeSeconds: 20 },
+      { productIndex: 0, processIndex: 2, workCenterIndex: 2, machineIndex: 2, sequence: 3, standardCycleTimeSeconds: 35 },
+      { productIndex: 0, processIndex: 3, workCenterIndex: 3, machineIndex: 3, sequence: 4, standardCycleTimeSeconds: 25 },
+    ],
+    shifts: [
+      { name: 'Shift Pagi', startTime: '07:30', endTime: '16:00', breakMinutes: 60, crossesMidnight: false, active: true },
+      { name: 'Shift Malam', startTime: '16:00', endTime: '00:30', breakMinutes: 60, crossesMidnight: true, active: true },
+    ],
+    downtimeReasons: [
+      { category: DowntimeCategory.MACHINE, code: 'DT-LENS', name: 'Pembersihan Lensa Optik Laser', isPlanned: true, active: true, sortOrder: 1 },
+      { category: DowntimeCategory.PROCESS, code: 'DT-BEND-TOOL', name: 'Ganti Punch & Die Press Brake', isPlanned: true, active: true, sortOrder: 2 },
+    ],
+    rejectReasons: [
+      { category: RejectCategory.DIMENSION, code: 'RJ-ANGLE', name: 'Sudut Tekukan Melenceng', active: true, sortOrder: 1 },
+      { category: RejectCategory.APPEARANCE, code: 'RJ-PAINT', name: 'Gelembung / Scratch Powder Coat', active: true, sortOrder: 2 },
+    ],
+    sampleOrder: { productIndex: 0, quantity: 200, orderNumberPrefix: 'PO-MET-DEMO', goodQty: 195, rejectQty: 5 },
+    boms: [
+      {
+        productIndex: 0,
+        bomName: 'BOM Electrical Cabinet IP66 600x400',
+        version: 'v1.0',
+        status: 'ACTIVE',
+        description: 'Struktur pelat SPCC, kawat las, cat powder coat, dan aksesori kunci cam lock.',
+        items: [
+          { componentSku: 'RAW-SPCC-2MM', componentName: 'Pelat Baja SPCC 2.0mm', componentType: 'RAW_MATERIAL', quantity: 12.5, uom: 'KG', scrapPercentage: 2.5, sequence: 1 },
+          { componentSku: 'CONS-WELD-WIRE', componentName: 'Kawat Las MIG ER70S-6', componentType: 'RAW_MATERIAL', quantity: 0.35, uom: 'KG', sequence: 2 },
+          { componentSku: 'CHEM-POWDER-RAL', componentName: 'Powder Coat RAL 7035 Grey', componentType: 'RAW_MATERIAL', quantity: 0.85, uom: 'KG', sequence: 3 },
+          { componentSku: 'FAST-RIVET-M6', componentName: 'Blind Rivet Nut M6', componentType: 'COMPONENT', quantity: 8, uom: 'PCS', sequence: 4 },
+          { componentSku: 'ACC-LOCK-CAM', componentName: 'Kunci Cam Lock Chrome', componentType: 'COMPONENT', quantity: 2, uom: 'PCS', sequence: 5 },
+        ],
+      },
+    ],
+  },
+
+  // 9. FURNITURE
+  furniture: {
+    info: {
+      id: 'template-furniture-v1',
+      name: 'Furnitur & Pengolahan Kayu (Furniture & Woodworking)',
+      industry: 'furniture',
+      version: '1.0',
+      description: 'Pemotongan panel beam sizing saw, CNC nesting router, penempelan edging PUR, pengeboran dowel, dan flat-pack.',
+      status: 'active',
+      icon: 'chair',
+      productsCount: 3,
+      machinesCount: 4,
+      workCentersCount: 4,
+      processesCount: 4,
+      sampleProducts: ['Executive Desk L-Shape HPL Teak', '3-Drawer Mobile Filing Pedestal Cabinet', 'Open Bookshelf 5-Tier Heavy Duty'],
+      sampleProcesses: ['Computerized Panel Beam Sizing', 'PUR Adhesive Edge Banding', 'CNC Dowel & Cam Drilling', 'Hardware Kitting & Flatpack'],
+      highlights: ['Manajemen panel board MDF & HPL', 'Pengendalian edging PVC & aksesoris minifix', 'BOM flatpack & packaging proteksi'],
+    },
+    defaultPlantName: 'Pabrik Mebel & Furnitur Kencana',
+    lines: [
+      { code: 'LINE-FURN-01', name: 'Lini Furnitur Kantor & Kabinet', status: 'ACTIVE', plannedProductionTimeMinutes: 480 },
+    ],
+    workCenters: [
+      { lineIndex: 0, code: 'WC-BEAM', name: 'Work Center Beam Sizing Saw', sequence: 1 },
+      { lineIndex: 0, code: 'WC-EDGE', name: 'Work Center Edgebanding', sequence: 2 },
+      { lineIndex: 0, code: 'WC-DRILL', name: 'Work Center CNC Drilling', sequence: 3 },
+      { lineIndex: 0, code: 'WC-PACK', name: 'Work Center Flatpack Assembly', sequence: 4 },
+    ],
+    processes: [
+      { code: 'PROC-SAW', name: 'Panel Beam Sizing', sequenceDefault: 1, status: 'ACTIVE' },
+      { code: 'PROC-EDGE', name: 'PUR Edge Banding', sequenceDefault: 2, status: 'ACTIVE' },
+      { code: 'PROC-DRILL', name: 'CNC Boring & Dowel Drilling', sequenceDefault: 3, status: 'ACTIVE' },
+      { code: 'PROC-FLATPACK', name: 'Hardware Packing & Carton', sequenceDefault: 4, status: 'ACTIVE' },
+    ],
+    machines: [
+      { workCenterIndex: 0, code: 'HOMAG-SAW', name: 'Homag SAWTEQ B-300 Dividing Saw', status: 'ACTIVE', idealCycleTimeSeconds: 18, currentState: MachineState.RUNNING, currentStateSince: '2026-01-01T00:00:00.000Z' },
+      { workCenterIndex: 1, code: 'BIESSE-EDGE', name: 'Biesse Akron 1440 Edgebander', status: 'ACTIVE', idealCycleTimeSeconds: 12, currentState: MachineState.RUNNING, currentStateSince: '2026-01-01T00:00:00.000Z' },
+      { workCenterIndex: 2, code: 'SCM-DRILL', name: 'SCM Morbidelli CX100 Boring Centre', status: 'ACTIVE', idealCycleTimeSeconds: 22, currentState: MachineState.IDLE, currentStateSince: '2026-01-01T00:00:00.000Z' },
+      { workCenterIndex: 3, code: 'PANOTEC-PACK', name: 'Panotec Box-on-Demand Machine', status: 'ACTIVE', idealCycleTimeSeconds: 15, currentState: MachineState.IDLE, currentStateSince: '2026-01-01T00:00:00.000Z' },
+    ],
+    products: [
+      { sku: 'DESK-EXEC-L', name: 'Executive L-Shape Office Desk 160x140cm', unit: 'UNIT', idealCycleTimeSeconds: 120, status: 'ACTIVE' },
+      { sku: 'CAB-FILE-3D', name: '3-Drawer Mobile Filing Pedestal Cabinet', unit: 'UNIT', idealCycleTimeSeconds: 85, status: 'ACTIVE' },
+      { sku: 'RACK-BOOK-5T', name: 'Open Storage Bookshelf 5-Tier Heavy Duty', unit: 'UNIT', idealCycleTimeSeconds: 65, status: 'ACTIVE' },
+    ],
+    routings: [
+      { productIndex: 0, processIndex: 0, workCenterIndex: 0, machineIndex: 0, sequence: 1, standardCycleTimeSeconds: 18 },
+      { productIndex: 0, processIndex: 1, workCenterIndex: 1, machineIndex: 1, sequence: 2, standardCycleTimeSeconds: 12 },
+      { productIndex: 0, processIndex: 2, workCenterIndex: 2, machineIndex: 2, sequence: 3, standardCycleTimeSeconds: 22 },
+      { productIndex: 0, processIndex: 3, workCenterIndex: 3, machineIndex: 3, sequence: 4, standardCycleTimeSeconds: 15 },
+    ],
+    shifts: [
+      { name: 'Shift Normal', startTime: '08:00', endTime: '17:00', breakMinutes: 60, crossesMidnight: false, active: true },
+    ],
+    downtimeReasons: [
+      { category: DowntimeCategory.PROCESS, code: 'DT-SAW-BLADE', name: 'Ganti Mata Pisau Sizing Saw', isPlanned: true, active: true, sortOrder: 1 },
+      { category: DowntimeCategory.MACHINE, code: 'DT-GLUE-POT', name: 'Bersihkan Glue Pot Lem PUR', isPlanned: true, active: true, sortOrder: 2 },
+    ],
+    rejectReasons: [
+      { category: RejectCategory.ASSEMBLY, code: 'RJ-CHIPPING', name: 'Gumpil Potong Laminasi (Chipping)', active: true, sortOrder: 1 },
+      { category: RejectCategory.DIMENSION, code: 'RJ-HOLE-DRIFT', name: 'Titik Lubang Bor Meleset', active: true, sortOrder: 2 },
+    ],
+    sampleOrder: { productIndex: 0, quantity: 150, orderNumberPrefix: 'PO-FURN-DEMO', goodQty: 145, rejectQty: 5 },
+    boms: [
+      {
+        productIndex: 0,
+        bomName: 'BOM Executive Desk L-Shape HPL Teak',
+        version: 'v1.0',
+        status: 'ACTIVE',
+        description: 'Struktur papan MDF, HPL teak, PVC edgeband, hardware cam lock dowel, dan box flatpack.',
+        items: [
+          { componentSku: 'RAW-MDF-18', componentName: 'Papan MDF E1 Moisture Resistant 18mm', componentType: 'RAW_MATERIAL', quantity: 2.2, uom: 'PCS', scrapPercentage: 4.0, sequence: 1 },
+          { componentSku: 'RAW-HPL-TEAK', componentName: 'HPL Natural Teak Sheet', componentType: 'RAW_MATERIAL', quantity: 2, uom: 'PCS', sequence: 2 },
+          { componentSku: 'EDGE-PVC-2MM', componentName: 'PVC Edgeband 2mm Teak Roll', componentType: 'RAW_MATERIAL', quantity: 18, uom: 'METER', sequence: 3 },
+          { componentSku: 'HARD-CAM-LOCK', componentName: 'Cam Lock & Dowel Minifix Set', componentType: 'COMPONENT', quantity: 24, uom: 'SET', sequence: 4 },
+          { componentSku: 'PKG-CORNER-BOX', componentName: 'Foam Protector & Carton Flatpack', componentType: 'PACKAGING', quantity: 1, uom: 'BOX', sequence: 5 },
+        ],
+      },
+    ],
   },
 };

@@ -468,6 +468,24 @@ export const ConsoleAuth: React.FC = () => {
                   Buka alamat itu di tablet, lalu tambahkan ke layar utama. Setelah termuat, pencatatan produksi
                   tetap berjalan saat Wi-Fi terputus dan tersinkron otomatis ketika koneksi kembali.
                 </p>
+
+                <div style={{ marginTop: 'var(--space-4)' }}>
+                  <Button
+                    variant="filled"
+                    icon={<Icon name="open_in_new" size={16} />}
+                    onClick={() => {
+                      const operatorUrl =
+                        typeof window !== 'undefined' &&
+                        (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+                          ? `${window.location.protocol}//${window.location.hostname}:3200`
+                          : 'https://operator.factoryvision.id';
+                      window.open(operatorUrl, '_blank', 'noopener,noreferrer');
+                    }}
+                    style={{ width: '100%', height: '46px' }}
+                  >
+                    Buka Terminal Operator
+                  </Button>
+                </div>
               </SurfaceCard>
             </div>
           )}

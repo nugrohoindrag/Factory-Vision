@@ -1,0 +1,18 @@
+export const COMMON_PERMISSIONS: string[] = [
+  'dashboard:view',
+  'work_order:view',
+  'work_order:create',
+  'work_order:edit',
+  'work_order:execute',
+  'production_order:view',
+  'production_order:create',
+  'customer_order:view',
+  'customer_order:create',
+  'master_data:view',
+  'master_data:manage',
+  'analytics:view',
+  'quality:view',
+  'quality:manage',
+  'audit:view',
+  'configuration:manage',
+];

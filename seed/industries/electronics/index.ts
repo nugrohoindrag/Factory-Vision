@@ -1,0 +1,128 @@
+import type { SeedIndustryDataset } from '../industry.types.js';
+
+export const ELECTRONICS_DATASET: SeedIndustryDataset = {
+  id: 'electronics',
+  name: 'Elektronik & High-Tech Assembly',
+  code: 'IND-ELEC',
+  description: 'SMT High-Speed Placement, Through-Hole Soldering, In-Circuit Test, dan Enclosure Final Assembly.',
+  companyName: 'PT Batam Solusi Mikroelektronika',
+  warehouses: [
+    { code: 'WH-SMD-01', name: 'Gudang Reel Komponen SMT & IC', type: 'RAW_MATERIAL' },
+    { code: 'WH-PCB-FG', name: 'Gudang Finished Electronics Board', type: 'FINISHED_GOODS' },
+  ],
+  workCenters: [
+    { code: 'WC-SMT', name: 'Work Center SMT Line Cleanroom', capacityPerShift: 2400 },
+    { code: 'WC-DIP', name: 'Work Center Wave Soldering DIP', capacityPerShift: 1000 },
+    { code: 'WC-ICT', name: 'Work Center In-Circuit & Functional Testing', capacityPerShift: 1800 },
+    { code: 'WC-BOX', name: 'Work Center Final Box Build Assembly', capacityPerShift: 600 },
+  ],
+  processes: [
+    { code: 'PROC-PASTE', name: 'Solder Paste Screen Printing', sequenceDefault: 1 },
+    { code: 'PROC-PICK', name: 'High-Speed Pick & Place SMT', sequenceDefault: 2 },
+    { code: 'PROC-REFLOW', name: '10-Zone Reflow Convection Oven', sequenceDefault: 3 },
+    { code: 'PROC-AOI', name: 'Automated Optical Inspection (AOI)', sequenceDefault: 4 },
+    { code: 'PROC-TEST', name: 'In-Circuit Functional Testing (ICT)', sequenceDefault: 5 },
+  ],
+  machines: [
+    { code: 'SMT-YAMAHA-01', name: 'Yamaha YSM20R Pick & Place High-Speed', idealCycleTimeSeconds: 4, workCenterCode: 'WC-SMT' },
+    { code: 'REFLOW-HELLER', name: 'Heller 1913 MK5 Nitrogen Reflow Oven', idealCycleTimeSeconds: 12, workCenterCode: 'WC-SMT' },
+    { code: 'AOI-KOHYOUNG', name: 'Koh Young 3D AOI Inspection System', idealCycleTimeSeconds: 8, workCenterCode: 'WC-ICT' },
+    { code: 'WAVE-ELECTRO', name: 'Electrovert Lead-Free Wave Solder', idealCycleTimeSeconds: 16, workCenterCode: 'WC-DIP' },
+    { code: 'ICT-TERADYNE', name: 'Teradyne TestStation In-Circuit Tester', idealCycleTimeSeconds: 15, workCenterCode: 'WC-ICT' },
+  ],
+  lines: [
+    { code: 'LINE-SMT-01', name: 'SMT Cleanroom Line 1 (Class 10k)' },
+    { code: 'LINE-SMT-02', name: 'SMT Box-Build Final Line 2' },
+  ],
+  shifts: [
+    { name: 'Shift Pagi', startTime: '06:30', endTime: '14:30', breakMinutes: 60 },
+    { name: 'Shift Sore', startTime: '14:30', endTime: '22:30', breakMinutes: 60 },
+    { name: 'Shift Malam', startTime: '22:30', endTime: '06:30', breakMinutes: 60 },
+  ],
+  parts: [
+    { sku: 'RAW-PCB-4L', name: 'FR4 4-Layer Bare PCB Panel (1.6mm)', unit: 'PCS', category: 'RAW_MATERIAL', initialStock: 5000 },
+    { sku: 'COMP-MCU-STM32', name: 'Microcontroller IC STM32F407 LQFP-100', unit: 'PCS', category: 'COMPONENT', initialStock: 12000 },
+    { sku: 'COMP-RES-0805', name: 'SMD Resistor 10k Ohm 0805 Reel', unit: 'PCS', category: 'COMPONENT', initialStock: 150000 },
+    { sku: 'COMP-CAP-0805', name: 'Ceramic Capacitor 10uF 25V 0805', unit: 'PCS', category: 'COMPONENT', initialStock: 120000 },
+    { sku: 'COMP-CONN-HDR', name: 'Terminal Block Header 2.54mm 16-Pin', unit: 'PCS', category: 'COMPONENT', initialStock: 25000 },
+    { sku: 'COMP-ENCL-ABS', name: 'Flame-Retardant ABS Enclosure Case IP54', unit: 'PCS', category: 'COMPONENT', initialStock: 3500 },
+    { sku: 'PKG-ESD-BAG', name: 'Anti-Static ESD Shielding Pouch 20x30cm', unit: 'PCS', category: 'PACKAGING', initialStock: 8000 },
+  ],
+  products: [
+    { sku: 'PRD-CTRL-BRD', name: 'Industrial IoT Control Main Board', unit: 'PCS', idealCycleTimeSeconds: 18, category: 'Mainboards' },
+    { sku: 'PRD-PWR-MOD', name: 'Switched-Mode Power Supply Module 24V 5A', unit: 'PCS', idealCycleTimeSeconds: 22, category: 'Power Modules' },
+    { sku: 'PRD-SENS-MOD', name: 'Environmental RS485 Sensor Telemetry Module', unit: 'PCS', idealCycleTimeSeconds: 14, category: 'Sensors' },
+    { sku: 'PRD-PLC-UNIT', name: 'Compact Micro-PLC Controller Unit', unit: 'PCS', idealCycleTimeSeconds: 40, category: 'Controllers' },
+  ],
+  boms: [
+    {
+      bomNumber: 'BOM-ELEC-001',
+      productSku: 'PRD-CTRL-BRD',
+      bomName: 'BOM IoT Control Board Rev 2.1',
+      version: 'v2.1',
+      status: 'ACTIVE',
+      effectiveDate: '2026-01-01',
+      description: 'Struktur komponen SMT untuk modul IoT controller industri.',
+      items: [
+        { componentPartSku: 'RAW-PCB-4L', componentType: 'RAW_MATERIAL', quantity: 1, uom: 'PCS', sequence: 1 },
+        { componentPartSku: 'COMP-MCU-STM32', componentType: 'COMPONENT', quantity: 1, uom: 'PCS', sequence: 2 },
+        { componentPartSku: 'COMP-RES-0805', componentType: 'COMPONENT', quantity: 18, uom: 'PCS', scrapPercentage: 0.5, sequence: 3 },
+        { componentPartSku: 'COMP-CAP-0805', componentType: 'COMPONENT', quantity: 12, uom: 'PCS', scrapPercentage: 0.5, sequence: 4 },
+        { componentPartSku: 'COMP-CONN-HDR', componentType: 'COMPONENT', quantity: 2, uom: 'PCS', sequence: 5 },
+        { componentPartSku: 'PKG-ESD-BAG', componentType: 'PACKAGING', quantity: 1, uom: 'PCS', sequence: 6 },
+      ],
+    },
+    {
+      bomNumber: 'BOM-ELEC-002',
+      productSku: 'PRD-PLC-UNIT',
+      bomName: 'BOM Compact Micro-PLC Box Build',
+      version: 'v1.0',
+      status: 'ACTIVE',
+      effectiveDate: '2026-01-01',
+      description: 'Perakitan controller final lengkap dengan casing housing ABS dan packaging.',
+      items: [
+        { componentPartSku: 'RAW-PCB-4L', componentType: 'RAW_MATERIAL', quantity: 1, uom: 'PCS', sequence: 1 },
+        { componentPartSku: 'COMP-MCU-STM32', componentType: 'COMPONENT', quantity: 1, uom: 'PCS', sequence: 2 },
+        { componentPartSku: 'COMP-ENCL-ABS', componentType: 'COMPONENT', quantity: 1, uom: 'PCS', sequence: 3 },
+        { componentPartSku: 'PKG-ESD-BAG', componentType: 'PACKAGING', quantity: 1, uom: 'PCS', sequence: 4 },
+      ],
+    },
+  ],
+  customers: [
+    { code: 'CUST-SCHNEIDER', name: 'PT Schneider Electric Manufacturing Batam', email: 'orders@schneider-electric.com', phone: '+62-778-461000', address: 'Batamindo Industrial Park' },
+    { code: 'CUST-EPSON', name: 'PT Indonesia Epson Industry', email: 'supply@epson.co.id', phone: '+62-21-8970111', address: 'EJIP Industrial Park Cikarang' },
+    { code: 'CUST-PANASONIC', name: 'PT Panasonic Gobel Life Solutions', email: 'procurement@panasonic.co.id', phone: '+62-21-8710222', address: 'Pasuruan Industrial Estate' },
+    { code: 'CUST-POLYTRON', name: 'PT Hartono Istana Teknologi (Polytron)', email: 'b2b@polytron.co.id', phone: '+62-291-433000', address: 'Kudus, Jawa Tengah' },
+    { code: 'CUST-OMRON', name: 'PT Omron Manufacturing of Indonesia', email: 'vendor@omron.co.id', phone: '+62-21-8970333', address: 'EJIP Cikarang Selatan' },
+  ],
+  suppliers: [
+    { code: 'SUP-WURTH', name: 'Wurth Elektronik Asia Pte Ltd', category: 'Passives & Inductors', contact: 'sales@we-online.com' },
+    { code: 'SUP-DIGIKEY', name: 'DigiKey Semiconductor Supply', category: 'Microcontrollers & ICs', contact: 'orders@digikey.com' },
+    { code: 'SUP-SHENZHEN-PCB', name: 'Shenzhen Fastprint Circuit Board', category: 'Multilayer FR4 PCBs', contact: 'sales@fastprint.com' },
+    { code: 'SUP-MOLEX', name: 'Molex Interconnect Components', category: 'Connectors & Headers', contact: 'indo@molex.com' },
+    { code: 'SUP-PLASTIC-ENC', name: 'PT Prima Plastik Presisi', category: 'Injection Moulded Casing', contact: 'sales@primaplast.co.id' },
+  ],
+  routings: [
+    { productSku: 'PRD-CTRL-BRD', processCode: 'PROC-PICK', sequence: 1, workCenterCode: 'WC-SMT', machineCode: 'SMT-YAMAHA-01', standardCycleTimeSeconds: 4 },
+    { productSku: 'PRD-CTRL-BRD', processCode: 'PROC-REFLOW', sequence: 2, workCenterCode: 'WC-SMT', machineCode: 'REFLOW-HELLER', standardCycleTimeSeconds: 12 },
+    { productSku: 'PRD-CTRL-BRD', processCode: 'PROC-AOI', sequence: 3, workCenterCode: 'WC-ICT', machineCode: 'AOI-KOHYOUNG', standardCycleTimeSeconds: 8 },
+    { productSku: 'PRD-CTRL-BRD', processCode: 'PROC-TEST', sequence: 4, workCenterCode: 'WC-ICT', machineCode: 'ICT-TERADYNE', standardCycleTimeSeconds: 15 },
+  ],
+  orders: [
+    { orderNumber: 'PO-SCHNEIDER-001', customerCode: 'CUST-SCHNEIDER', productSku: 'PRD-CTRL-BRD', quantity: 3000, unit: 'PCS', targetDays: 6 },
+    { orderNumber: 'PO-OMRON-002', customerCode: 'CUST-OMRON', productSku: 'PRD-PLC-UNIT', quantity: 800, unit: 'PCS', targetDays: 8 },
+  ],
+  workOrders: [
+    { woNumber: 'WO-ELEC-2026-001', orderNumber: 'PO-SCHNEIDER-001', productSku: 'PRD-CTRL-BRD', lineCode: 'LINE-SMT-01', machineCode: 'SMT-YAMAHA-01', targetQuantity: 1000, unit: 'PCS', status: 'IN_PROGRESS' },
+  ],
+  downtimeReasons: [
+    { code: 'DT-FEEDER-EMPTY', name: 'Feeder Reel Komponen Habis', category: 'MATERIAL', isPlanned: false },
+    { code: 'DT-NOZZLE-CLOG', name: 'Nozzle SMT Tersumbat / Pick Error', category: 'TOOLING', isPlanned: false },
+    { code: 'DT-PASTE-CLEAN', name: 'Stensil Auto-Wipe & Cleaning', category: 'MAINTENANCE', isPlanned: true },
+  ],
+  rejectReasons: [
+    { code: 'REJ-SOLDER-BRIDGE', name: 'Solder Bridging / Short Circuit', category: 'PROCESS' },
+    { code: 'REJ-TOMBSTONE', name: 'Tombstone Effect Komponen SMD', category: 'PROCESS' },
+    { code: 'REJ-MISALIGN', name: 'Komponen Miring / Misaligned', category: 'DIMENSION' },
+  ],
+};

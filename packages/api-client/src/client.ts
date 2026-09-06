@@ -58,6 +58,12 @@ import {
   TargetVsActualSummary,
   WorkCenter,
   Mold,
+  BillOfMaterial,
+  BillOfMaterialItem,
+  BillOfMaterialStatus,
+  BomComponentType,
+  CreateBomInput,
+  UpdateBomInput,
   ProductMoldCompatibility,
   Customer,
   CustomerOrder,
@@ -327,6 +333,22 @@ export class FactoryVisionApiClient {
       this.request<{ success: boolean; message: string }>(`/api/v1/master/products/${id}`, {
         method: 'DELETE',
       }),
+
+    // Bill of Materials (BOM)
+    getBoms: (params?: { productId?: string; status?: BillOfMaterialStatus; search?: string }) =>
+      this.request<BillOfMaterial[]>(`/api/v1/master/bom${qs(params)}`),
+    getBomById: (id: string) => this.request<BillOfMaterial>(`/api/v1/master/bom/${id}`),
+    createBom: (body: CreateBomInput) =>
+      this.request<BillOfMaterial>('/api/v1/master/bom', { method: 'POST', body: JSON.stringify(body) }),
+    updateBom: (id: string, body: UpdateBomInput) =>
+      this.request<BillOfMaterial>(`/api/v1/master/bom/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+    setBomStatus: (id: string, status: BillOfMaterialStatus) =>
+      this.request<BillOfMaterial>(`/api/v1/master/bom/${id}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+      }),
+    deleteBom: (id: string) =>
+      this.request<{ success: boolean; message: string }>(`/api/v1/master/bom/${id}`, { method: 'DELETE' }),
 
     // Operators
     getOperators: () => this.request<Operator[]>('/api/v1/master/operators'),
@@ -842,6 +864,28 @@ export class FactoryVisionApiClient {
       this.request<{ success: boolean; message: string }>(`/api/v1/master/work-centers/${id}`, {
         method: 'DELETE',
       }),
+    deleteWorkCenter: (id: string) =>
+      this.request<{ success: boolean; message: string }>(`/api/v1/master/work-centers/${id}`, {
+        method: 'DELETE',
+      }),
+  };
+
+  // Bill of Materials (BOM) Dedicated Namespace
+  readonly bom = {
+    list: (params?: { productId?: string; status?: BillOfMaterialStatus; search?: string }) =>
+      this.request<BillOfMaterial[]>(`/api/v1/master/bom${qs(params)}`),
+    get: (id: string) => this.request<BillOfMaterial>(`/api/v1/master/bom/${id}`),
+    create: (body: CreateBomInput) =>
+      this.request<BillOfMaterial>('/api/v1/master/bom', { method: 'POST', body: JSON.stringify(body) }),
+    update: (id: string, body: UpdateBomInput) =>
+      this.request<BillOfMaterial>(`/api/v1/master/bom/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+    setStatus: (id: string, status: BillOfMaterialStatus) =>
+      this.request<BillOfMaterial>(`/api/v1/master/bom/${id}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+      }),
+    delete: (id: string) =>
+      this.request<{ success: boolean; message: string }>(`/api/v1/master/bom/${id}`, { method: 'DELETE' }),
   };
 
   /**

@@ -6,6 +6,7 @@ import { Button, Icon, FilledTextField, Select, EmptyState } from '@factory-visi
 import { DateField, Page, Section, SurfaceCard } from '@factory-vision/ui/fv';
 import { OrderChannel, ORDER_CHANNEL_LABEL } from '@factory-vision/domain-types';
 import type { ApiFieldError } from '@factory-vision/domain-types';
+import { useNewlyCreated } from '../common/useNewlyCreated.js';
 
 const api = new FactoryVisionApiClient({ baseUrl: '' });
 
@@ -37,6 +38,7 @@ const today = () => new Date().toISOString().slice(0, 10);
 
 export const OrderReceivingPage: React.FC = () => {
   const queryClient = useQueryClient();
+  const { markNewlyCreated } = useNewlyCreated('fv_new_customer_order');
 
   const [customerId, setCustomerId] = useState('');
   const [orderChannel, setOrderChannel] = useState<OrderChannel | ''>('');
@@ -101,6 +103,7 @@ export const OrderReceivingPage: React.FC = () => {
         })),
       }),
     onSuccess: (order) => {
+      markNewlyCreated(order.id);
       setBanner({ text: `Order ${order.orderNumber} tersimpan dengan status Received.`, tone: 'success' });
       resetForm();
       void queryClient.invalidateQueries({ queryKey: ['planning', 'orders'] });

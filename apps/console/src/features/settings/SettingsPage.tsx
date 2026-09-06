@@ -32,6 +32,7 @@ import { ImportExportTab } from './tabs/ImportExportTab.js';
 import { SessionsTab } from './tabs/SessionsTab.js';
 import { OeeConfigTab } from './tabs/OeeConfigTab.js';
 import { AclMatrixTab } from './tabs/AclMatrixTab.js';
+import { BomTab } from './tabs/BomTab.js';
 
 const api = new FactoryVisionApiClient({ baseUrl: '' });
 
@@ -4054,6 +4055,7 @@ export const SettingsPage: React.FC = () => {
       {activeTab === 'oee-config' && <OeeConfigTab onToast={showToast} />}
 
       {activeTab === 'acl' && <AclMatrixTab onToast={showToast} />}
+      {activeTab === 'bom' && <BomTab onToast={showToast} />}
 
       {/* --- MODAL FORMS --- */}
       {/* 0. Process Form Modal */}

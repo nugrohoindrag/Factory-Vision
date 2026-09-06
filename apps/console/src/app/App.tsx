@@ -434,6 +434,14 @@ export const App: React.FC = () => {
           section: 'Produk & Proses',
         },
         {
+          label: 'Bill of Material (BOM)',
+          path: '/settings?tab=bom',
+          tabKey: 'bom',
+          icon: 'schema',
+          permission: 'master_data:view',
+          section: 'Produk & Proses',
+        },
+        {
           label: 'Proses Produksi',
           path: '/settings?tab=processes',
           tabKey: 'processes',
@@ -596,16 +604,18 @@ export const App: React.FC = () => {
       <div
         style={{
           display: 'flex',
-          minHeight: '100vh',
+          height: '100vh',
+          overflow: 'hidden',
           backgroundColor: 'var(--color-background)',
           color: 'var(--color-on-background)',
           fontFamily: 'var(--font-family)',
         }}
       >
-      {/* Morphic Collapsible Sidebar */}
+      {/* Morphic Collapsible Sidebar with Independent Scroll */}
       <aside
         style={{
           width: isCollapsed ? '72px' : '270px',
+          height: '100vh',
           transition: 'width 0.22s cubic-bezier(0.2, 0, 0, 1)',
           backgroundColor: 'var(--color-surface)',
           borderRight: '1px solid var(--color-outline-variant)',
@@ -1003,6 +1013,27 @@ export const App: React.FC = () => {
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               </button>
+
+              {/* Dedicated Logout Button when Collapsed */}
+              <button
+                onClick={handleLogout}
+                style={{
+                  width: '38px',
+                  height: '38px',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: 'var(--color-surface-container)',
+                  border: '1px solid var(--color-outline-variant)',
+                  color: 'var(--color-on-surface-variant)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+                title="Keluar / Logout"
+              >
+                <Icon name="logout" size={18} />
+              </button>
             </div>
           ) : (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-2)' }}>
@@ -1075,7 +1106,7 @@ export const App: React.FC = () => {
                 </div>
               </div>
 
-              {/* Actions: Edit + Switch */}
+              {/* Actions: Edit + Keluar (Logout) */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
                 <button
                   onClick={() => setIsEditProfileOpen(true)}
@@ -1099,19 +1130,24 @@ export const App: React.FC = () => {
                 <button
                   onClick={handleLogout}
                   style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 'var(--space-1)',
                     padding: `var(--space-1) var(--space-2)`,
                     borderRadius: 'var(--radius-sm)',
                     backgroundColor: 'var(--color-surface-container)',
                     border: '1px solid var(--color-outline-variant)',
                     color: 'var(--color-on-surface-variant)',
-                    fontSize: '10.5px',
+                    fontSize: '11px',
                     fontWeight: 700,
                     cursor: 'pointer',
                     flexShrink: 0,
+                    transition: 'all 0.15s ease',
                   }}
-                  title="Switch profile / login with other role"
+                  title="Keluar dari akun (Logout)"
                 >
-                  Switch
+                  <Icon name="logout" size={14} />
+                  <span>Keluar</span>
                 </button>
               </div>
             </div>

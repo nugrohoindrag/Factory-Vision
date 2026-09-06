@@ -1,0 +1,125 @@
+import type { SeedIndustryDataset } from '../industry.types.js';
+
+export const FURNITURE_DATASET: SeedIndustryDataset = {
+  id: 'furniture',
+  name: 'Furnitur & Pengolahan Kayu (Furniture & Woodworking)',
+  code: 'IND-FURN',
+  description: 'Panel sizing beam saw, CNC nesting router, edge banding PUR, multi-spindle drilling, dan flat-pack assembly.',
+  companyName: 'PT Kencana Mebel Nusantara',
+  warehouses: [
+    { code: 'WH-PANEL-01', name: 'Gudang Lembaran Kayu MDF & Plywood', type: 'RAW_MATERIAL' },
+    { code: 'WH-FURN-FG', name: 'Gudang Furnitur Siap Kirim (Flatpack & Assembled)', type: 'FINISHED_GOODS' },
+  ],
+  workCenters: [
+    { code: 'WC-BEAM', name: 'Work Center CNC Beam Sizing Saw', capacityPerShift: 1000 },
+    { code: 'WC-EDGE', name: 'Work Center High-Speed Edgebanding', capacityPerShift: 1400 },
+    { code: 'WC-DRILL', name: 'Work Center CNC 5-Sided Point-to-Point Drilling', capacityPerShift: 900 },
+    { code: 'WC-ASSY-FURN', name: 'Work Center Assembly & Flatpack Packaging', capacityPerShift: 600 },
+  ],
+  processes: [
+    { code: 'PROC-CUTTING', name: 'Computerized Panel Beam Sizing', sequenceDefault: 1 },
+    { code: 'PROC-EDGEBAND', name: 'PUR Adhesive Edge Banding & Trimming', sequenceDefault: 2 },
+    { code: 'PROC-DRILL', name: 'High-Precision CNC Dowel & Cam Drilling', sequenceDefault: 3 },
+    { code: 'PROC-FLATPACK', name: 'Hardware Kitting & Carton Flatpack', sequenceDefault: 4 },
+  ],
+  machines: [
+    { code: 'SAW-HOMAG-01', name: 'Homag SAWTEQ B-300 Panel Dividing Saw', idealCycleTimeSeconds: 18, workCenterCode: 'WC-BEAM' },
+    { code: 'EDGE-BIESSE-02', name: 'Biesse Akron 1440 Single-Sided Edgebander', idealCycleTimeSeconds: 12, workCenterCode: 'WC-EDGE' },
+    { code: 'DRILL-SCM-03', name: 'SCM Morbidelli CX100 CNC Boring Centre', idealCycleTimeSeconds: 22, workCenterCode: 'WC-DRILL' },
+    { code: 'PACK-CART-04', name: 'Panotec Box-on-Demand Packaging Machine', idealCycleTimeSeconds: 15, workCenterCode: 'WC-ASSY-FURN' },
+  ],
+  lines: [
+    { code: 'LINE-OFFICE-A', name: 'Lini Produksi Workstation & Meja Kantor' },
+    { code: 'LINE-CAB-B', name: 'Lini Produksi Filing Cabinet & Lemari Arsip' },
+  ],
+  shifts: [
+    { name: 'Shift Normal', startTime: '08:00', endTime: '17:00', breakMinutes: 60 },
+  ],
+  parts: [
+    { sku: 'RAW-MDF-E1-18', name: 'Papan MDF E1 Moisture Resistant 18mm (1220x2440mm)', unit: 'PCS', category: 'RAW_MATERIAL', initialStock: 3500 },
+    { sku: 'RAW-PLY-BIRCH', name: 'Plywood Birch Core Grade A 15mm', unit: 'PCS', category: 'RAW_MATERIAL', initialStock: 2200 },
+    { sku: 'RAW-LAMINAT-HPL', name: 'High-Pressure Laminate (HPL) Natural Teak', unit: 'PCS', category: 'RAW_MATERIAL', initialStock: 4000 },
+    { sku: 'EDGE-PVC-2MM', name: 'PVC Edgeband 2mm Teak Textured Roll', unit: 'METER', category: 'RAW_MATERIAL', initialStock: 12000 },
+    { sku: 'HARD-CAM-LOCK', name: 'Cam Lock & Connecting Dowel Minifix Set', unit: 'SET', category: 'COMPONENT', initialStock: 25000 },
+    { sku: 'HARD-HINGE-SOFT', name: 'Soft-Closing Concealed European Hinge 35mm', unit: 'PCS', category: 'COMPONENT', initialStock: 8000 },
+    { sku: 'HARD-SLIDE-BALL', name: 'Ball-Bearing Drawer Slide 450mm Soft-Close', unit: 'SET', category: 'COMPONENT', initialStock: 3000 },
+    { sku: 'PKG-CORNER-PROT', name: 'Foam Corner Protector & Flatpack Box', unit: 'BOX', category: 'PACKAGING', initialStock: 4500 },
+  ],
+  products: [
+    { sku: 'PRD-DESK-EXEC', name: 'Executive L-Shape Office Desk 160x140cm', unit: 'UNIT', idealCycleTimeSeconds: 120, category: 'Desks' },
+    { sku: 'PRD-CAB-FILE', name: '3-Drawer Mobile Filing Pedestal Cabinet', unit: 'UNIT', idealCycleTimeSeconds: 85, category: 'Storage' },
+    { sku: 'PRD-RACK-BOOK', name: 'Open Storage Bookshelf 5-Tier Heavy Duty', unit: 'UNIT', idealCycleTimeSeconds: 65, category: 'Bookshelves' },
+    { sku: 'PRD-TABLE-CONF', name: 'Conference Meeting Table 240x120cm with Cable Box', unit: 'UNIT', idealCycleTimeSeconds: 150, category: 'Meeting Tables' },
+  ],
+  boms: [
+    {
+      bomNumber: 'BOM-FURN-001',
+      productSku: 'PRD-DESK-EXEC',
+      bomName: 'BOM Executive Desk L-Shape HPL Teak',
+      version: 'v1.0',
+      status: 'ACTIVE',
+      effectiveDate: '2026-01-01',
+      description: 'Struktur material meja kerja eksekutif HPL lengkap dengan edging dan set minifix dowel.',
+      items: [
+        { componentPartSku: 'RAW-MDF-E1-18', componentType: 'RAW_MATERIAL', quantity: 2.2, uom: 'PCS', scrapPercentage: 4.0, sequence: 1 },
+        { componentPartSku: 'RAW-LAMINAT-HPL', componentType: 'RAW_MATERIAL', quantity: 2, uom: 'PCS', sequence: 2 },
+        { componentPartSku: 'EDGE-PVC-2MM', componentType: 'RAW_MATERIAL', quantity: 18, uom: 'METER', sequence: 3 },
+        { componentPartSku: 'HARD-CAM-LOCK', componentType: 'COMPONENT', quantity: 24, uom: 'SET', sequence: 4 },
+        { componentPartSku: 'PKG-CORNER-PROT', componentType: 'PACKAGING', quantity: 1, uom: 'BOX', sequence: 5 },
+      ],
+    },
+    {
+      bomNumber: 'BOM-FURN-002',
+      productSku: 'PRD-CAB-FILE',
+      bomName: 'BOM 3-Drawer Mobile Pedestal',
+      version: 'v1.0',
+      status: 'ACTIVE',
+      effectiveDate: '2026-01-01',
+      description: 'Lemari laci dorong 3 susun dengan rel ball-bearing lembut.',
+      items: [
+        { componentPartSku: 'RAW-MDF-E1-18', componentType: 'RAW_MATERIAL', quantity: 1.1, uom: 'PCS', sequence: 1 },
+        { componentPartSku: 'EDGE-PVC-2MM', componentType: 'RAW_MATERIAL', quantity: 9.5, uom: 'METER', sequence: 2 },
+        { componentPartSku: 'HARD-SLIDE-BALL', componentType: 'COMPONENT', quantity: 3, uom: 'SET', sequence: 3 },
+        { componentPartSku: 'HARD-CAM-LOCK', componentType: 'COMPONENT', quantity: 16, uom: 'SET', sequence: 4 },
+        { componentPartSku: 'PKG-CORNER-PROT', componentType: 'PACKAGING', quantity: 1, uom: 'BOX', sequence: 5 },
+      ],
+    },
+  ],
+  customers: [
+    { code: 'CUST-INFORMA', name: 'PT Home Center Indonesia (Informa)', email: 'b2b.order@informa.co.id', phone: '+62-21-5829000', address: 'Kawan Lama Building, Jakarta Barat' },
+    { code: 'CUST-DEKORUMA', name: 'PT Dekoruma Inovasi Lestari', email: 'merchant@dekoruma.com', phone: '+62-21-5085000', address: 'Gandaria City, Jakarta Selatan' },
+    { code: 'CUST-FURNIMART', name: 'Furnimart Olympic Furniture Retail', email: 'supply@olympicfurniture.co.id', phone: '+62-251-8610000', address: 'Bogor, Jawa Barat' },
+    { code: 'CUST-BANK-MANDIRI', name: 'PT Bank Mandiri (Persero) Tbk Proc', email: 'ga.procurement@bankmandiri.co.id', phone: '+62-21-5265000', address: 'Gatot Subroto, Jakarta' },
+    { code: 'CUST-KEMENKEU', name: 'Biro Perlengkapan Kementerian Keuangan', email: 'sarpras@kemenkeu.go.id', phone: '+62-21-3840000', address: 'Lapangan Banteng, Jakarta Pusat' },
+  ],
+  suppliers: [
+    { code: 'SUP-KORINDO-WOOD', name: 'PT Korindo Heavy Wood Industry', category: 'MDF & Particle Board', contact: 'sales@korindo.co.id' },
+    { code: 'SUP-TACON-HPL', name: 'Tacon Laminates Indonesia', category: 'HPL & Surface Films', contact: 'info@tacon.co.id' },
+    { code: 'SUP-HAFELE', name: 'PT Hafele Indotama', category: 'Architectural & Furniture Fittings', contact: 'service@hafele.co.id' },
+    { code: 'SUP-TITUS-PLUS', name: 'Titus Hardware Precision', category: 'Cam Locks & Fasteners', contact: 'sales@titusplus.com' },
+    { code: 'SUP-JOWAT-GLUE', name: 'Jowat Adhesives Indonesia', category: 'PUR Edgebanding Hotmelt Glue', contact: 'glue@jowat.co.id' },
+  ],
+  routings: [
+    { productSku: 'PRD-DESK-EXEC', processCode: 'PROC-CUTTING', sequence: 1, workCenterCode: 'WC-BEAM', machineCode: 'SAW-HOMAG-01', standardCycleTimeSeconds: 18 },
+    { productSku: 'PRD-DESK-EXEC', processCode: 'PROC-EDGEBAND', sequence: 2, workCenterCode: 'WC-EDGE', machineCode: 'EDGE-BIESSE-02', standardCycleTimeSeconds: 12 },
+    { productSku: 'PRD-DESK-EXEC', processCode: 'PROC-DRILL', sequence: 3, workCenterCode: 'WC-DRILL', machineCode: 'DRILL-SCM-03', standardCycleTimeSeconds: 22 },
+    { productSku: 'PRD-DESK-EXEC', processCode: 'PROC-FLATPACK', sequence: 4, workCenterCode: 'WC-ASSY-FURN', machineCode: 'PACK-CART-04', standardCycleTimeSeconds: 15 },
+  ],
+  orders: [
+    { orderNumber: 'PO-INFORMA-2026-001', customerCode: 'CUST-INFORMA', productSku: 'PRD-DESK-EXEC', quantity: 400, unit: 'UNIT', targetDays: 8 },
+    { orderNumber: 'PO-MANDIRI-2026-002', customerCode: 'CUST-BANK-MANDIRI', productSku: 'PRD-CAB-FILE', quantity: 300, unit: 'UNIT', targetDays: 5 },
+  ],
+  workOrders: [
+    { woNumber: 'WO-FURN-2026-001', orderNumber: 'PO-INFORMA-2026-001', productSku: 'PRD-DESK-EXEC', lineCode: 'LINE-OFFICE-A', machineCode: 'SAW-HOMAG-01', targetQuantity: 150, unit: 'UNIT', status: 'IN_PROGRESS' },
+  ],
+  downtimeReasons: [
+    { code: 'DT-BLADE-SHARP', name: 'Asah & Penggantian Mata Pisau Gergaji', category: 'TOOLING', isPlanned: true },
+    { code: 'DT-GLUE-POT-CLOG', name: 'Pembersihan Glue Pot PUR Lem Panas', category: 'MAINTENANCE', isPlanned: true },
+    { code: 'DT-VACUUM-FAIL', name: 'Daya Hisap Suction Cup Lemah', category: 'MECHANICAL', isPlanned: false },
+  ],
+  rejectReasons: [
+    { code: 'REJ-CHIP-OUT', name: 'Gumpil Potong Laminasi (Chipping Edge)', category: 'WORKMANSHIP' },
+    { code: 'REJ-GLUE-LINE', name: 'Garis Lem Terbuka / Tebal (Glue Line)', category: 'PROCESS' },
+    { code: 'REJ-HOLE-DRIFT', name: 'Titik Lubang Bor Meleset (> 0.3mm)', category: 'DIMENSION' },
+  ],
+};
