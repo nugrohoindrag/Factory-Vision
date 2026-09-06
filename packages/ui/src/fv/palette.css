@@ -19,28 +19,43 @@
  * import '@factory-vision/ui/fv/palette.css';
  *
  * ---------------------------------------------------------------------------
+ * THE BRAND. Six colours, and every one of them has exactly one job:
+ *
+ * #2454C3 Primary Blue    the one accent, `primary` in light
+ * #071326 Deep Navy       the dark end of the accent, never the page
+ * #050505 Factory Black   dark-mode page ground, light-mode ink
+ * #F7F8FA Industrial White light-mode page ground, dark-mode ink
+ * #8A93A3 Steel Gray      outline, and muted text on the dark side
+ * #00B8D9 Factory Circle  the cyan accent, `tertiary` / `info`
+ *
  * BLUE IS AN ACCENT, NOT THE PAGE. Background and card surfaces are neutral
- * grey/white (light) and neutral near-black (dark), the same surface split
- * `tokens/colors.css` already used, just without the green tint. The seven
- * source blues live only in primary / secondary / tertiary / chart / hero:
+ * white/grey (light) and neutral near-black off Factory Black (dark). Primary
+ * Blue, Deep Navy and the cyan live only in primary / secondary / tertiary /
+ * chart / hero. Deep Navy is a *fill*, an accent surface, not a page ground,
+ * putting it behind everything is what makes a console read as a brand website
+ * rather than as an instrument.
  *
- * #001D39 ink dark-mode page background
- * #0A4174 deep primary (light) · dark-mode elevated surface
- * #49769F slate secondary · mid chart series
- * #4E8EA2 teal tertiary family
- * #6EA2B3 mist muted tertiary · chart series
- * #7BBDE8 sky primary (dark) · brightest chart series
- * #BDD8E9 pale primary-container · light-mode tonal fills
+ * Values that are not one of the six are tints/shades of the same hue, derived
+ * only where the brand cannot reach, the container steps, the dark-mode accent
+ * (Primary Blue reads 2.8:1 on near-black and cannot carry text there), and
+ * every `on-*` foreground that has to clear WCAG AA against its own container.
+ * Those are marked `derived`, with the measured ratio where it was the reason.
  *
- * Values that are not one of the seven are tints/shades of the same hue,
- * derived only where the ramp cannot reach, the darkest primary-container
- * step, and every `on-*` foreground that has to clear WCAG AA against its
- * own container ( Accessibility Contract). Those are marked `derived`.
+ * TWO BRAND COLOURS CANNOT CARRY SMALL TEXT, and the palette respects that
+ * rather than pretending otherwise:
  *
- * SEMANTIC STATES ARE NOT BLUE. success / warning / error carry meaning on a
+ * - Steel Gray #8A93A3 reads 2.96:1 on Industrial White. It is `outline` on
+ *   the light side, never a light-mode text colour; muted text there is
+ *   #5A626E (5.84:1), the same hue taken down. On the dark side the ratio
+ *   inverts and Steel Gray *is* the muted text (5.14:1 through `-high`).
+ * - Factory Circle #00B8D9 reads 2.37:1 under white. As a light-mode fill it
+ *   is darkened to #00758A (5.33:1 under white); the pure cyan is kept for
+ *   dark mode and for chart marks, where it has the ground for it.
+ *
+ * SEMANTIC STATES ARE NOT BRAND. success / warning / error carry meaning on a
  * shop floor, a line that is running versus one that has stopped, and an
  * accent-only palette cannot encode that from grey. They keep their own hues
- * (: colour for meaning, never decoration).
+ * (: colour for meaning, never decoration) and the rebrand leaves them alone.
  *
  * Selector specificity is deliberate: the dark block is `:root[data-theme=…]`
  * (0,2,0) so it outranks the now-unused `[data-theme][data-accent]` preset
@@ -49,193 +64,208 @@
 
 /* ========================================================================= */
 /* LIGHT */
-/* ========================================================================= */:root {
- color-scheme: light;
+/* ========================================================================= */
+:root {
+  color-scheme: light;
 
- /* Primary, deep navy blue, the one accent colour */
- --md-sys-color-primary: #0A4174;
- --md-sys-color-primary-strong: #0A4174; /* already ≥3:1 on every surface */
- --md-sys-color-on-primary: #FFFFFF;
- --md-sys-color-primary-container: #BDD8E9;
- --md-sys-color-on-primary-container: #001D39;
- --md-sys-color-primary-soft: #D7E8F3; /* derived */
+  /* Primary, Primary Blue, the one accent colour. 6.31:1 as text on the page
+     ground and 6.71:1 under white as a fill, so it works either way round. */
+  --md-sys-color-primary: #2454C3;
+  --md-sys-color-primary-strong: #2454C3; /* already ≥3:1 on every surface */
+  --md-sys-color-on-primary: #FFFFFF;
+  --md-sys-color-primary-container: #D7E0F7; /* derived */
+  --md-sys-color-on-primary-container: #071326; /* Deep Navy, 14.2:1 */
+  --md-sys-color-primary-soft: #E9EEFB; /* derived */
 
- /* Secondary, slate blue, supporting emphasis */
- --md-sys-color-secondary: #49769F;
- --md-sys-color-on-secondary: #FFFFFF;
- --md-sys-color-secondary-container: #D3E3EE; /* derived */
- --md-sys-color-on-secondary-container: #123350; /* derived */
+  /* Secondary, Primary Blue pulled toward Steel Gray, supporting emphasis */
+  --md-sys-color-secondary: #4A5C82; /* derived, 6.68:1 under white */
+  --md-sys-color-on-secondary: #FFFFFF;
+  --md-sys-color-secondary-container: #DDE2EC; /* derived */
+  --md-sys-color-on-secondary-container: #16223A; /* derived */
 
- /* Tertiary, the teal end of the ramp, darkened to hold AA as a fill */
- --md-sys-color-tertiary: #3C7284; /* derived from #4E8EA2 */
- --md-sys-color-on-tertiary: #FFFFFF;
- --md-sys-color-tertiary-container: #CFE4EC; /* derived */
- --md-sys-color-on-tertiary-container: #0C2B35; /* derived */
+  /* Tertiary, Factory Circle cyan, darkened to hold AA as a fill */
+  --md-sys-color-tertiary: #00758A; /* derived from #00B8D9, 5.33:1 */
+  --md-sys-color-on-tertiary: #FFFFFF;
+  --md-sys-color-tertiary-container: #C4EDF5; /* derived */
+  --md-sys-color-on-tertiary-container: #06303A; /* derived */
 
- /* Semantic data states, meaning, not brand (see header note) */
- /* #2FA968 read only 3.0:1 on the light surface. It works as a fill, but the
-    product also uses `success` as a text colour — "Target terpenuhi", "242
-    Good", a running line's name — and at 11px that failed WCAG AA. Darkened to
-    5.34:1; white on it stays 5.34:1, so fills are unaffected. The dark theme's
-    #6FD39B already reads 9.6:1 on its own ground and is unchanged. */
- --md-sys-color-success: #1E7A48;
- --md-sys-color-on-success: #FFFFFF;
- --md-sys-color-success-container: #C9E9D7;
- --md-sys-color-on-success-container: #05301C;
- --md-sys-color-warning: #9A5B12;
- --md-sys-color-on-warning: #FFFFFF;
- --md-sys-color-warning-container: #F6DDBD;
- --md-sys-color-on-warning-container: #402203;
- --md-sys-color-error: #B3261E;
- --md-sys-color-on-error: #FFFFFF;
- --md-sys-color-error-container: #F9D8D4;
- --md-sys-color-on-error-container: #470E0A;
- --md-sys-color-info: #2A6E96;
- --md-sys-color-on-info: #FFFFFF;
- --md-sys-color-info-container: #CBE6F4;
- --md-sys-color-on-info-container: #062A3E;
+  /* Semantic data states, meaning, not brand (see header note) */
+  /* #2FA968 read only 3.0:1 on the light surface. It works as a fill, but the
+     product also uses `success` as a text colour, "Target terpenuhi", "242
+     Good", a running line name, and at 11px that failed WCAG AA. Darkened to
+     5.34:1; white on it stays 5.34:1, so fills are unaffected. The dark theme
+     #6FD39B already reads 9.6:1 on its own ground and is unchanged. */
+  --md-sys-color-success: #1E7A48;
+  --md-sys-color-on-success: #FFFFFF;
+  --md-sys-color-success-container: #C9E9D7;
+  --md-sys-color-on-success-container: #05301C;
+  --md-sys-color-warning: #9A5B12;
+  --md-sys-color-on-warning: #FFFFFF;
+  --md-sys-color-warning-container: #F6DDBD;
+  --md-sys-color-on-warning-container: #402203;
+  --md-sys-color-error: #B3261E;
+  --md-sys-color-on-error: #FFFFFF;
+  --md-sys-color-error-container: #F9D8D4;
+  --md-sys-color-on-error-container: #470E0A;
+  /* Info rides the Factory Circle accent, the two roles mean the same thing in
+     this product and splitting them would invent a seventh colour. */
+  --md-sys-color-info: #00758A; /* derived from #00B8D9 */
+  --md-sys-color-on-info: #FFFFFF;
+  --md-sys-color-info-container: #C4EDF5;
+  --md-sys-color-on-info-container: #06303A;
 
- /* Surfaces, neutral grey page, white cards. Blue stays out of the
- background entirely; it only ever shows up as an accent on top. */
- --md-sys-color-background: #F1F3F5;
- --md-sys-color-on-background: #16191C;
- --md-sys-color-surface: #FFFFFF;
- --md-sys-color-on-surface: #16191C;
- --md-sys-color-on-surface-variant: #565C62; /* derived, AA through -high */
- --md-sys-color-surface-variant: #F3F5F7;
+  /* Surfaces, Industrial White page, white cards. The brand blues stay out of
+     the background entirely; they only ever show up as an accent on top. */
+  --md-sys-color-background: #F7F8FA; /* Industrial White */
+  --md-sys-color-on-background: #050505; /* Factory Black */
+  --md-sys-color-surface: #FFFFFF;
+  --md-sys-color-on-surface: #050505; /* Factory Black, 19.2:1 */
+  --md-sys-color-on-surface-variant: #5A626E; /* derived from Steel Gray, 5.84:1 */
+  --md-sys-color-surface-variant: #F1F3F6; /* derived */
 
- /* Tonal hierarchy. TEXT CONTRACT: `on-surface` / `on-surface-variant`
- are AA-guaranteed through `surface-container-high`. `-highest` is a
- NON-TEXT surface, tracks, sliders, state layers, skeletons. */
- --md-sys-color-surface-container-lowest: #FFFFFF;
- --md-sys-color-surface-container-low: #FAFBFC;
- --md-sys-color-surface-container: #F3F5F7;
- --md-sys-color-surface-container-high: #E8EBEE;
- --md-sys-color-surface-container-highest: #DDE1E5;
+  /* Tonal hierarchy. TEXT CONTRACT: `on-surface` / `on-surface-variant`
+     are AA-guaranteed through `surface-container-high`. `-highest` is a
+     NON-TEXT surface, tracks, sliders, state layers, skeletons. */
+  --md-sys-color-surface-container-lowest: #FFFFFF;
+  --md-sys-color-surface-container-low: #FBFCFD; /* derived */
+  --md-sys-color-surface-container: #F7F8FA; /* Industrial White */
+  --md-sys-color-surface-container-high: #EDEFF3; /* derived */
+  --md-sys-color-surface-container-highest: #E2E5EB; /* derived */
 
- /* Outline, neutral, subtle */
- --md-sys-color-outline: #7A8087;
- --md-sys-color-outline-variant: #DADDE0;
- --md-sys-color-border: #DADDE0;
+  /* Outline. Steel Gray is the brand border colour and reads 2.96:1 on the
+     page, under the 3:1 a UI component boundary needs, so `outline` proper is
+     the same hue one step down and Steel Gray holds the subtler role. */
+  --md-sys-color-outline: #7C8697; /* derived from Steel Gray, 3.45:1 */
+  --md-sys-color-outline-variant: #8A93A3; /* Steel Gray */
+  --md-sys-color-border: #DCE0E6; /* derived, the hairline weight */
 
- /* Data visualisation, the one place besides `primary` the ramp
- reads as colour, not just as an accent dot */
- --md-sys-color-chart-primary: #0A4174;
- --md-sys-color-chart-secondary: #49769F;
- --md-sys-color-chart-tertiary: #4E8EA2;
- --md-sys-color-chart-quaternary: #7BBDE8;
- --md-sys-color-chart-neutral: #6EA2B3;
- --md-sys-color-chart-grid: rgba(22, 25, 28, 0.08);
- --md-sys-color-chart-axis: #7A8087;
- --md-sys-color-chart-area-from: rgba(10, 65, 116, 0.22);
- --md-sys-color-chart-area-to: rgba(10, 65, 116, 0);
+  /* Data visualisation, the one place besides `primary` the brand
+     reads as colour, not just as an accent dot */
+  --md-sys-color-chart-primary: #2454C3;
+  --md-sys-color-chart-secondary: #00B8D9;
+  --md-sys-color-chart-tertiary: #6E92E8; /* derived */
+  --md-sys-color-chart-quaternary: #4A5C82; /* derived */
+  --md-sys-color-chart-neutral: #8A93A3; /* Steel Gray */
+  --md-sys-color-chart-grid: rgba(5, 5, 5, 0.08);
+  --md-sys-color-chart-axis: #7C8697;
+  --md-sys-color-chart-area-from: rgba(36, 84, 195, 0.22);
+  --md-sys-color-chart-area-to: rgba(36, 84, 195, 0);
 
- /* Hero card, a deliberate accent surface, not the page background;
- this is the one card allowed to read as the ramp rather than a dot of it */
- --hero-banner-bg: linear-gradient(135deg, #D7E8F3 0%, #BDD8E9 45%, #7BBDE8 100%);
- --hero-banner-text: #001D39;
- --hero-banner-subtext: #0A4174;
- --hero-banner-pill-bg: #0A4174;
- --hero-banner-pill-text: #EAF3FA;
- --hero-banner-pill-icon: #BDD8E9;
- --hero-banner-tag-bg: rgba(10, 65, 116, 0.12);
- --hero-banner-tag-text: #001D39;
- --hero-banner-blob-1: rgba(10, 65, 116, 0.07);
- --hero-banner-blob-2: rgba(255, 255, 255, 0.38);
- --hero-banner-arc: rgba(10, 65, 116, 0.16);
+  /* Hero card, a deliberate accent surface, not the page background;
+     this is the one card allowed to read as the brand rather than a dot of it */
+  --hero-banner-bg: linear-gradient(135deg, #E9EEFB 0%, #D7E0F7 45%, #9FBCF2 100%);
+  --hero-banner-text: #071326;
+  --hero-banner-subtext: #2454C3;
+  --hero-banner-pill-bg: #2454C3;
+  --hero-banner-pill-text: #F7F8FA;
+  --hero-banner-pill-icon: #00B8D9;
+  --hero-banner-tag-bg: rgba(36, 84, 195, 0.12);
+  --hero-banner-tag-text: #071326;
+  --hero-banner-blob-1: rgba(36, 84, 195, 0.07);
+  --hero-banner-blob-2: rgba(255, 255, 255, 0.38);
+  --hero-banner-arc: rgba(0, 184, 217, 0.20);
 
- /* Inverse, neutral, matches the surface split above */
- --md-sys-color-inverse-surface: #292D31; /* derived */
- --md-sys-color-inverse-on-surface: #F1F3F5; /* derived */
- --md-sys-color-inverse-primary: #7BBDE8;
+  /* Inverse, neutral, matches the surface split above */
+  --md-sys-color-inverse-surface: #22262B; /* derived */
+  --md-sys-color-inverse-on-surface: #F7F8FA; /* Industrial White */
+  --md-sys-color-inverse-primary: #6E92E8; /* derived */
 
- /* Scrim, neutral black, not tinted */
- --md-sys-color-scrim: rgba(0, 0, 0, 0.42);
+  /* Scrim, neutral black, not tinted */
+  --md-sys-color-scrim: rgba(5, 5, 5, 0.42);
 }
 
 /* ========================================================================= */
 /* DARK (,, semantic colour only; geometry is untouched) */
-/* ========================================================================= */:root[data-theme='dark'],:root.dark {
- color-scheme: dark;
+/* ========================================================================= */
+:root[data-theme='dark'],
+:root.dark {
+  color-scheme: dark;
 
- --md-sys-color-primary: #7BBDE8;
- --md-sys-color-primary-strong: #7BBDE8;
- --md-sys-color-on-primary: #001D39;
- --md-sys-color-primary-container: #14568F; /* derived */
- --md-sys-color-on-primary-container: #D6E9F7; /* derived */
- --md-sys-color-primary-soft: #0A4174;
+  /* Primary Blue reads 2.81:1 on the near-black ground, under AA for text and
+     under 3:1 for a control boundary, so the dark accent is the same hue
+     lifted to 6.20:1. Deep Navy comes back as the foreground on it. */
+  --md-sys-color-primary: #6E92E8; /* derived from #2454C3, 6.20:1 */
+  --md-sys-color-primary-strong: #6E92E8;
+  --md-sys-color-on-primary: #071326; /* Deep Navy, 6.08:1 */
+  --md-sys-color-primary-container: #2454C3; /* Primary Blue, a fill not a page */
+  --md-sys-color-on-primary-container: #E9EEFB; /* derived */
+  --md-sys-color-primary-soft: #071326; /* Deep Navy */
 
- --md-sys-color-secondary: #93B7D6; /* derived from #49769F */
- --md-sys-color-on-secondary: #002944; /* derived */
- --md-sys-color-secondary-container: #2A5378; /* derived */
- --md-sys-color-on-secondary-container: #D4E5F2; /* derived */
+  --md-sys-color-secondary: #9FB0D2; /* derived from #4A5C82 */
+  --md-sys-color-on-secondary: #0D1526; /* derived */
+  --md-sys-color-secondary-container: #33456B; /* derived */
+  --md-sys-color-on-secondary-container: #DDE5F3; /* derived */
 
- --md-sys-color-tertiary: #6EA2B3;
- --md-sys-color-on-tertiary: #052730; /* derived */
- --md-sys-color-tertiary-container: #2C5F70; /* derived */
- --md-sys-color-on-tertiary-container: #CFE6EE; /* derived */
+  /* The pure Factory Circle cyan, which has the ground for it here */
+  --md-sys-color-tertiary: #00B8D9;
+  --md-sys-color-on-tertiary: #04262E; /* derived */
+  --md-sys-color-tertiary-container: #005C6E; /* derived */
+  --md-sys-color-on-tertiary-container: #C4EDF5; /* derived */
 
- --md-sys-color-success: #6FD39B;
- --md-sys-color-on-success: #003820;
- --md-sys-color-success-container: #1C5238;
- --md-sys-color-on-success-container: #C9F0DA;
- --md-sys-color-warning: #E7A257;
- --md-sys-color-on-warning: #3A1F02;
- --md-sys-color-warning-container: #5C3A12;
- --md-sys-color-on-warning-container: #F7DEC0;
- --md-sys-color-error: #FF897D;
- --md-sys-color-on-error: #4A0F09;
- --md-sys-color-error-container: #7A2119;
- --md-sys-color-on-error-container: #FFDAD4;
- --md-sys-color-info: #7BBDE8;
- --md-sys-color-on-info: #001D39;
- --md-sys-color-info-container: #1B4C74;
- --md-sys-color-on-info-container: #CFE6F7;
+  --md-sys-color-success: #6FD39B;
+  --md-sys-color-on-success: #003820;
+  --md-sys-color-success-container: #1C5238;
+  --md-sys-color-on-success-container: #C9F0DA;
+  --md-sys-color-warning: #E7A257;
+  --md-sys-color-on-warning: #3A1F02;
+  --md-sys-color-warning-container: #5C3A12;
+  --md-sys-color-on-warning-container: #F7DEC0;
+  --md-sys-color-error: #FF897D;
+  --md-sys-color-on-error: #4A0F09;
+  --md-sys-color-error-container: #7A2119;
+  --md-sys-color-on-error-container: #FFDAD4;
+  --md-sys-color-info: #00B8D9;
+  --md-sys-color-on-info: #04262E;
+  --md-sys-color-info-container: #005C6E;
+  --md-sys-color-on-info-container: #C4EDF5;
 
- /* Neutral near-black page, matching the light side's neutral split,
- blue stays confined to primary/secondary/tertiary/chart/hero. */
- --md-sys-color-background: #101214;
- --md-sys-color-on-background: #E7E9EA;
- --md-sys-color-surface: #17191C;
- --md-sys-color-on-surface: #E7E9EA;
- --md-sys-color-on-surface-variant: #A8ADB3; /* derived, AA through -high */
- --md-sys-color-surface-variant: #202327;
+  /* Neutral near-black page off Factory Black, matching the light side
+     neutral split. The brand blues stay confined to primary / secondary /
+     tertiary / chart / hero, Deep Navy included. */
+  --md-sys-color-background: #050505; /* Factory Black */
+  --md-sys-color-on-background: #F7F8FA; /* Industrial White */
+  --md-sys-color-surface: #101215; /* derived */
+  --md-sys-color-on-surface: #F7F8FA; /* Industrial White */
+  --md-sys-color-on-surface-variant: #8A93A3; /* Steel Gray, 5.14:1 through -high */
+  --md-sys-color-surface-variant: #1C2027; /* derived */
 
- --md-sys-color-surface-container-lowest: #0B0C0E;
- --md-sys-color-surface-container-low: #17191C;
- --md-sys-color-surface-container: #202327;
- --md-sys-color-surface-container-high: #2B2E33;
- --md-sys-color-surface-container-highest: #383B41;
+  --md-sys-color-surface-container-lowest: #050505; /* Factory Black */
+  --md-sys-color-surface-container-low: #101215;
+  --md-sys-color-surface-container: #17191E;
+  --md-sys-color-surface-container-high: #1F2229;
+  --md-sys-color-surface-container-highest: #2A2E37;
 
- --md-sys-color-outline: #8B9098;
- --md-sys-color-outline-variant: #2B2E33;
- --md-sys-color-border: #2B2E33;
+  --md-sys-color-outline: #8A93A3; /* Steel Gray, which reads here */
+  --md-sys-color-outline-variant: #2A2E37;
+  --md-sys-color-border: #2A2E37;
 
- --md-sys-color-chart-primary: #7BBDE8;
- --md-sys-color-chart-secondary: #4E8EA2;
- --md-sys-color-chart-tertiary: #6EA2B3;
- --md-sys-color-chart-quaternary: #BDD8E9;
- --md-sys-color-chart-neutral: #49769F;
- --md-sys-color-chart-grid: rgba(231, 233, 234, 0.08);
- --md-sys-color-chart-axis: #8B9098;
- --md-sys-color-chart-area-from: rgba(123, 189, 232, 0.22);
- --md-sys-color-chart-area-to: rgba(123, 189, 232, 0);
+  --md-sys-color-chart-primary: #6E92E8;
+  --md-sys-color-chart-secondary: #00B8D9;
+  --md-sys-color-chart-tertiary: #9FB0D2;
+  --md-sys-color-chart-quaternary: #5FD8EE; /* derived */
+  --md-sys-color-chart-neutral: #8A93A3; /* Steel Gray */
+  --md-sys-color-chart-grid: rgba(247, 248, 250, 0.08);
+  --md-sys-color-chart-axis: #8A93A3;
+  --md-sys-color-chart-area-from: rgba(110, 146, 232, 0.22);
+  --md-sys-color-chart-area-to: rgba(110, 146, 232, 0);
 
- --hero-banner-bg: linear-gradient(135deg, #0B3358 0%, #0A4174 55%, #185285 100%);
- --hero-banner-text: #EAF3FB;
- --hero-banner-subtext: #BDD8E9;
- --hero-banner-pill-bg: #7BBDE8;
- --hero-banner-pill-text: #001D39;
- --hero-banner-pill-icon: #001D39;
- --hero-banner-tag-bg: rgba(222, 234, 244, 0.14);
- --hero-banner-tag-text: #E7E9EA;
- --hero-banner-blob-1: rgba(123, 189, 232, 0.10);
- --hero-banner-blob-2: rgba(231, 233, 234, 0.06);
- --hero-banner-arc: rgba(189, 216, 233, 0.22);
+  /* Deep Navy earns its keep here: the hero is the one card meant to read as
+     the brand, and the navy is what the blue is anchored to. */
+  --hero-banner-bg: linear-gradient(135deg, #071326 0%, #14295C 55%, #2454C3 100%);
+  --hero-banner-text: #F7F8FA;
+  --hero-banner-subtext: #9FBCF2;
+  --hero-banner-pill-bg: #6E92E8;
+  --hero-banner-pill-text: #071326;
+  --hero-banner-pill-icon: #071326;
+  --hero-banner-tag-bg: rgba(247, 248, 250, 0.14);
+  --hero-banner-tag-text: #F7F8FA;
+  --hero-banner-blob-1: rgba(0, 184, 217, 0.12);
+  --hero-banner-blob-2: rgba(247, 248, 250, 0.06);
+  --hero-banner-arc: rgba(0, 184, 217, 0.22);
 
- --md-sys-color-inverse-surface: #E7E9EA;
- --md-sys-color-inverse-on-surface: #16191C;
- --md-sys-color-inverse-primary: #0A4174;
+  --md-sys-color-inverse-surface: #F7F8FA;
+  --md-sys-color-inverse-on-surface: #050505;
+  --md-sys-color-inverse-primary: #2454C3;
 
- --md-sys-color-scrim: rgba(0, 0, 0, 0.72);
+  --md-sys-color-scrim: rgba(5, 5, 5, 0.72);
 }

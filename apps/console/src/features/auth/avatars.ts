@@ -15,11 +15,11 @@
 
 /** Drawn from the Factory Vision blue ramp so the avatars sit in the palette. */
 const AVATAR_PALETTE = [
-  { background: '#0A4174', foreground: '#EAF2F8' },
-  { background: '#0B5394', foreground: '#EAF2F8' },
-  { background: '#1D5BC7', foreground: '#F2F6FD' },
-  { background: '#4280EA', foreground: '#0A1B33' },
-  { background: '#7FA9D4', foreground: '#0A1B33' },
+  { background: '#071326', foreground: '#F7F8FA' },
+  { background: '#16337A', foreground: '#F7F8FA' },
+  { background: '#2454C3', foreground: '#F7F8FA' },
+  { background: '#6E92E8', foreground: '#071326' },
+  { background: '#00B8D9', foreground: '#04262E' },
 ];
 
 /** First letters of the first two words, e.g. "Rian Pratama" gives "RP". */

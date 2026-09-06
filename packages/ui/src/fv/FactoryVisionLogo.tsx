@@ -29,44 +29,44 @@ export const FactoryVisionIcon: React.FC<FactoryVisionIconProps> = ({
       className={className}
       style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0, ...style }}
     >
-      {/* Center dot - Deep Cobalt / Navy */}
-      <circle cx="50" cy="50" r="9" fill="#00358E" />
+      {/* Center dot - Primary Blue */}
+      <circle cx="50" cy="50" r="9" fill="#2454C3" />
 
-      {/* Ring 1 - 6 Medium Navy / Royal Blue Dots */}
-      <circle cx="70" cy="50" r="6.8" fill="#1D5BC7" />
-      <circle cx="60" cy="67.32" r="6.8" fill="#1D5BC7" />
-      <circle cx="40" cy="67.32" r="6.8" fill="#1D5BC7" />
-      <circle cx="30" cy="50" r="6.8" fill="#1D5BC7" />
-      <circle cx="40" cy="32.68" r="6.8" fill="#1D5BC7" />
-      <circle cx="60" cy="32.68" r="6.8" fill="#1D5BC7" />
+      {/* Ring 1 - 6 dots, Primary Blue lifted */}
+      <circle cx="70" cy="50" r="6.8" fill="#4A78DC" />
+      <circle cx="60" cy="67.32" r="6.8" fill="#4A78DC" />
+      <circle cx="40" cy="67.32" r="6.8" fill="#4A78DC" />
+      <circle cx="30" cy="50" r="6.8" fill="#4A78DC" />
+      <circle cx="40" cy="32.68" r="6.8" fill="#4A78DC" />
+      <circle cx="60" cy="32.68" r="6.8" fill="#4A78DC" />
 
-      {/* Ring 2 - 12 Royal / Sky Blue Dots */}
-      <circle cx="83" cy="50" r="5" fill="#4280EA" />
-      <circle cx="78.58" cy="66.5" r="5" fill="#4280EA" />
-      <circle cx="66.5" cy="78.58" r="5" fill="#4280EA" />
-      <circle cx="50" cy="83" r="5" fill="#4280EA" />
-      <circle cx="33.5" cy="78.58" r="5" fill="#4280EA" />
-      <circle cx="21.42" cy="66.5" r="5" fill="#4280EA" />
-      <circle cx="17" cy="50" r="5" fill="#4280EA" />
-      <circle cx="21.42" cy="33.5" r="5" fill="#4280EA" />
-      <circle cx="33.5" cy="21.42" r="5" fill="#4280EA" />
-      <circle cx="50" cy="17" r="5" fill="#4280EA" />
-      <circle cx="66.5" cy="21.42" r="5" fill="#4280EA" />
-      <circle cx="78.58" cy="33.5" r="5" fill="#4280EA" />
+      {/* Ring 2 - 12 dots, mid tint */}
+      <circle cx="83" cy="50" r="5" fill="#78A0EE" />
+      <circle cx="78.58" cy="66.5" r="5" fill="#78A0EE" />
+      <circle cx="66.5" cy="78.58" r="5" fill="#78A0EE" />
+      <circle cx="50" cy="83" r="5" fill="#78A0EE" />
+      <circle cx="33.5" cy="78.58" r="5" fill="#78A0EE" />
+      <circle cx="21.42" cy="66.5" r="5" fill="#78A0EE" />
+      <circle cx="17" cy="50" r="5" fill="#78A0EE" />
+      <circle cx="21.42" cy="33.5" r="5" fill="#78A0EE" />
+      <circle cx="33.5" cy="21.42" r="5" fill="#78A0EE" />
+      <circle cx="50" cy="17" r="5" fill="#78A0EE" />
+      <circle cx="66.5" cy="21.42" r="5" fill="#78A0EE" />
+      <circle cx="78.58" cy="33.5" r="5" fill="#78A0EE" />
 
-      {/* Ring 3 - 12 Outer Light Blue Dots */}
-      <circle cx="92.5" cy="61.4" r="3.2" fill="#78A7F7" />
-      <circle cx="81.1" cy="81.1" r="3.2" fill="#78A7F7" />
-      <circle cx="61.4" cy="92.5" r="3.2" fill="#78A7F7" />
-      <circle cx="38.6" cy="92.5" r="3.2" fill="#78A7F7" />
-      <circle cx="18.9" cy="81.1" r="3.2" fill="#78A7F7" />
-      <circle cx="7.5" cy="61.4" r="3.2" fill="#78A7F7" />
-      <circle cx="7.5" cy="38.6" r="3.2" fill="#78A7F7" />
-      <circle cx="18.9" cy="18.9" r="3.2" fill="#78A7F7" />
-      <circle cx="38.6" cy="7.5" r="3.2" fill="#78A7F7" />
-      <circle cx="61.4" cy="7.5" r="3.2" fill="#78A7F7" />
-      <circle cx="81.1" cy="18.9" r="3.2" fill="#78A7F7" />
-      <circle cx="92.5" cy="38.6" r="3.2" fill="#78A7F7" />
+      {/* Ring 3 - 12 dots, the Factory Circle accent cyan */}
+      <circle cx="92.5" cy="61.4" r="3.2" fill="#00B8D9" />
+      <circle cx="81.1" cy="81.1" r="3.2" fill="#00B8D9" />
+      <circle cx="61.4" cy="92.5" r="3.2" fill="#00B8D9" />
+      <circle cx="38.6" cy="92.5" r="3.2" fill="#00B8D9" />
+      <circle cx="18.9" cy="81.1" r="3.2" fill="#00B8D9" />
+      <circle cx="7.5" cy="61.4" r="3.2" fill="#00B8D9" />
+      <circle cx="7.5" cy="38.6" r="3.2" fill="#00B8D9" />
+      <circle cx="18.9" cy="18.9" r="3.2" fill="#00B8D9" />
+      <circle cx="38.6" cy="7.5" r="3.2" fill="#00B8D9" />
+      <circle cx="61.4" cy="7.5" r="3.2" fill="#00B8D9" />
+      <circle cx="81.1" cy="18.9" r="3.2" fill="#00B8D9" />
+      <circle cx="92.5" cy="38.6" r="3.2" fill="#00B8D9" />
     </svg>
   );
 };
@@ -144,13 +144,13 @@ export const FactoryVisionLogo: React.FC<FactoryVisionLogoProps> = ({
             fontWeight: 800,
             fontSize: conf.titleSize,
             letterSpacing: '-0.025em',
-            color: 'var(--fv-text-main, var(--color-on-surface, #001D39))',
+            color: 'var(--fv-text-main, var(--color-on-surface, #050505))',
             display: 'flex',
             alignItems: 'baseline',
           }}
         >
           <span>Factory</span>
-          <span style={{ color: 'var(--fv-deep, var(--color-primary, #0A4174))' }}>Vision</span>
+          <span style={{ color: 'var(--fv-deep, var(--color-primary, #2454C3))' }}>Vision</span>
         </div>
 
         {(variant === 'full' || showTagline) && tagline && (
@@ -159,7 +159,7 @@ export const FactoryVisionLogo: React.FC<FactoryVisionLogoProps> = ({
               fontSize: conf.taglineSize,
               fontWeight: 600,
               letterSpacing: '-0.01em',
-              color: 'var(--fv-text-muted, var(--color-on-surface-variant, #49769F))',
+              color: 'var(--fv-text-muted, var(--color-on-surface-variant, #5A626E))',
               marginTop: '1.5px',
               whiteSpace: 'nowrap',
             }}
