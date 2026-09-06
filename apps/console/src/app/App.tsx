@@ -36,6 +36,16 @@ interface NavSubItem {
   icon?: string;
   /** The permission this destination needs; the API enforces the same id. */
   permission?: string;
+  /**
+   * Classification heading this entry sits under.
+   *
+   * Master Data had grown to twenty-one destinations in one flat list, which is
+   * a list nobody reads â€” they scan it for the word they want and give up. The
+   * heading is emitted whenever it changes between two *visible* entries, so a
+   * section whose every item is filtered out by permission leaves no orphan
+   * label behind. Entries sharing a section must therefore be adjacent.
+   */
+  section?: string;
 }
 
 interface NavGroup {
@@ -45,6 +55,29 @@ interface NavGroup {
   basePath: string;
   children: NavSubItem[];
 }
+
+/**
+ * The classification heading inside a nav group.
+ *
+ * Rendered only when `section` differs from the entry above it, so headings
+ * follow whatever survives the permission filter rather than being declared
+ * up front and stranded when their items disappear.
+ */
+const NavSectionLabel: React.FC<{ label: string; first: boolean }> = ({ label, first }) => (
+  <div
+    style={{
+      padding: `var(--space-2) var(--space-2) var(--space-1)`,
+      marginTop: first ? 0 : 'var(--space-2)',
+      fontSize: '10px',
+      fontWeight: 800,
+      letterSpacing: '0.08em',
+      textTransform: 'uppercase',
+      color: 'var(--color-on-surface-variant)',
+    }}
+  >
+    {label}
+  </div>
+);
 
 /**
  * Route-level authorization (US-003).
@@ -115,7 +148,21 @@ export const App: React.FC = () => {
     : null;
 
   const [isEditProfileOpen, setIsEditProfileOpen] = useState<boolean>(false);
-  const [themeMode, setThemeMode] = useState<'dark' | 'light'>('dark');
+  /*
+   * Light is the default.
+   *
+   * A plant office is a lit room and the console is read on a desk monitor, so
+   * dark was the wrong ground to open on. The choice is also remembered: it
+   * used to reset to the default on every reload, which made the toggle look
+   * broken to anyone who set it and came back.
+   */
+  const [themeMode, setThemeMode] = useState<'dark' | 'light'>(() => {
+    try {
+      return localStorage.getItem('fv_theme') === 'dark' ? 'dark' : 'light';
+    } catch {
+      return 'light';
+    }
+  });
 
   // Sidebar Collapsed State
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
@@ -169,6 +216,11 @@ export const App: React.FC = () => {
   useEffect(() => {
     const effectiveTheme = principal ? themeMode : 'light';
     document.documentElement.setAttribute('data-theme', effectiveTheme);
+    try {
+      localStorage.setItem('fv_theme', themeMode);
+    } catch {
+      /* a locked-down browser just loses the preference, it does not break */
+    }
     if (effectiveTheme === 'dark') {
       document.body.classList.add('morphic-theme-dark');
       document.body.classList.remove('morphic-theme-light');
@@ -370,20 +422,7 @@ export const App: React.FC = () => {
           path: '/master-customers',
           icon: 'apartment',
           permission: 'customer:view',
-        },
-        {
-          label: 'Proses Produksi',
-          path: '/settings?tab=processes',
-          tabKey: 'processes',
-          icon: 'account_tree',
-          permission: 'master_data:view',
-        },
-        {
-          label: 'Routing Produk',
-          path: '/settings?tab=routings',
-          tabKey: 'routings',
-          icon: 'alt_route',
-          permission: 'master_data:view',
+          section: 'Produk & Proses',
         },
         {
           label: 'Produk',
@@ -391,6 +430,23 @@ export const App: React.FC = () => {
           tabKey: 'products',
           icon: 'category',
           permission: 'master_data:view',
+          section: 'Produk & Proses',
+        },
+        {
+          label: 'Proses Produksi',
+          path: '/settings?tab=processes',
+          tabKey: 'processes',
+          icon: 'account_tree',
+          permission: 'master_data:view',
+          section: 'Produk & Proses',
+        },
+        {
+          label: 'Routing Produk',
+          path: '/settings?tab=routings',
+          tabKey: 'routings',
+          icon: 'alt_route',
+          permission: 'master_data:view',
+          section: 'Produk & Proses',
         },
         {
           label: 'Ideal Cycle Time',
@@ -398,6 +454,7 @@ export const App: React.FC = () => {
           tabKey: 'rates',
           icon: 'speed',
           permission: 'master_data:view',
+          section: 'Produk & Proses',
         },
         {
           label: 'Batch Produksi & Lot',
@@ -405,13 +462,7 @@ export const App: React.FC = () => {
           tabKey: 'batches',
           icon: 'inventory_2',
           permission: 'batch:view',
-        },
-        {
-          label: 'Mesin',
-          path: '/settings?tab=machines',
-          tabKey: 'machines',
-          icon: 'precision_manufacturing',
-          permission: 'master_data:view',
+          section: 'Produk & Proses',
         },
         {
           label: 'Production Line',
@@ -419,6 +470,7 @@ export const App: React.FC = () => {
           tabKey: 'lines',
           icon: 'view_stream',
           permission: 'master_data:view',
+          section: 'Fasilitas & Aset',
         },
         {
           label: 'Work Center',
@@ -426,6 +478,15 @@ export const App: React.FC = () => {
           tabKey: 'work-centers',
           icon: 'grid_view',
           permission: 'master_data:view',
+          section: 'Fasilitas & Aset',
+        },
+        {
+          label: 'Mesin',
+          path: '/settings?tab=machines',
+          tabKey: 'machines',
+          icon: 'precision_manufacturing',
+          permission: 'master_data:view',
+          section: 'Fasilitas & Aset',
         },
         {
           label: 'Mold',
@@ -433,62 +494,7 @@ export const App: React.FC = () => {
           tabKey: 'molds',
           icon: 'compress',
           permission: 'master_data:view',
-        },
-        {
-          label: 'Shift',
-          path: '/settings?tab=shifts',
-          tabKey: 'shifts',
-          icon: 'schedule',
-          permission: 'shift:view',
-        },
-        {
-          label: 'Operator',
-          path: '/settings?tab=operators',
-          tabKey: 'operators',
-          icon: 'badge',
-          permission: 'master_data:view',
-        },
-        {
-          label: 'Alasan Downtime',
-          path: '/settings?tab=downtime-reasons',
-          tabKey: 'downtime-reasons',
-          icon: 'timer_off',
-          permission: 'master_data:view',
-        },
-        {
-          label: 'Alasan Reject',
-          path: '/settings?tab=reject-reasons',
-          tabKey: 'reject-reasons',
-          icon: 'cancel',
-          permission: 'master_data:view',
-        },
-        {
-          label: 'Import / Export CSV',
-          path: '/settings?tab=import-export',
-          tabKey: 'import-export',
-          icon: 'swap_vert',
-          permission: 'master_data:view',
-        },
-        {
-          label: 'Pengguna',
-          path: '/settings?tab=users',
-          tabKey: 'users',
-          icon: 'manage_accounts',
-          permission: 'user:view',
-        },
-        {
-          label: 'Peran & Permission',
-          path: '/settings?tab=roles',
-          tabKey: 'roles',
-          icon: 'admin_panel_settings',
-          permission: 'role:view',
-        },
-        {
-          label: 'Sesi Aktif',
-          path: '/settings?tab=sessions',
-          tabKey: 'sessions',
-          icon: 'devices',
-          permission: 'user:view',
+          section: 'Fasilitas & Aset',
         },
         {
           label: 'Terminal Shop Floor',
@@ -496,6 +502,39 @@ export const App: React.FC = () => {
           tabKey: 'devices',
           icon: 'tablet_android',
           permission: 'device:view',
+          section: 'Fasilitas & Aset',
+        },
+        {
+          label: 'Shift',
+          path: '/settings?tab=shifts',
+          tabKey: 'shifts',
+          icon: 'schedule',
+          permission: 'shift:view',
+          section: 'Tenaga Kerja',
+        },
+        {
+          label: 'Operator',
+          path: '/settings?tab=operators',
+          tabKey: 'operators',
+          icon: 'badge',
+          permission: 'master_data:view',
+          section: 'Tenaga Kerja',
+        },
+        {
+          label: 'Alasan Downtime',
+          path: '/settings?tab=downtime-reasons',
+          tabKey: 'downtime-reasons',
+          icon: 'timer_off',
+          permission: 'master_data:view',
+          section: 'Klasifikasi',
+        },
+        {
+          label: 'Alasan Reject',
+          path: '/settings?tab=reject-reasons',
+          tabKey: 'reject-reasons',
+          icon: 'cancel',
+          permission: 'master_data:view',
+          section: 'Klasifikasi',
         },
         {
           label: 'Definisi OEE',
@@ -503,6 +542,23 @@ export const App: React.FC = () => {
           tabKey: 'oee-config',
           icon: 'calculate',
           permission: 'analytics:view',
+          section: 'Klasifikasi',
+        },
+        {
+          label: 'Pengguna',
+          path: '/settings?tab=users',
+          tabKey: 'users',
+          icon: 'manage_accounts',
+          permission: 'user:view',
+          section: 'Pengguna & Akses',
+        },
+        {
+          label: 'Peran & Permission',
+          path: '/settings?tab=roles',
+          tabKey: 'roles',
+          icon: 'admin_panel_settings',
+          permission: 'role:view',
+          section: 'Pengguna & Akses',
         },
         {
           label: 'Matriks Hak Akses',
@@ -510,6 +566,23 @@ export const App: React.FC = () => {
           tabKey: 'acl',
           icon: 'verified_user',
           permission: 'master_data:view',
+          section: 'Pengguna & Akses',
+        },
+        {
+          label: 'Sesi Aktif',
+          path: '/settings?tab=sessions',
+          tabKey: 'sessions',
+          icon: 'devices',
+          permission: 'user:view',
+          section: 'Pengguna & Akses',
+        },
+        {
+          label: 'Import / Export CSV',
+          path: '/settings?tab=import-export',
+          tabKey: 'import-export',
+          icon: 'swap_vert',
+          permission: 'master_data:view',
+          section: 'Pemeliharaan Data',
         },
       ],
     },
@@ -694,14 +767,19 @@ export const App: React.FC = () => {
                           {group.label.toUpperCase()}
                         </div>
 
-                        {group.children.map((sub) => {
+                        {group.children.map((sub, subIndex) => {
+                          const sectionChanged =
+                            sub.section && sub.section !== group.children[subIndex - 1]?.section;
                           const isSubActive =
                             sub.path === currentFullUrl ||
                             (sub.path === location.pathname && !location.search && !sub.tabKey);
 
                           return (
+                            <React.Fragment key={sub.path}>
+                              {sectionChanged && (
+                                <NavSectionLabel label={sub.section!} first={subIndex === 0} />
+                              )}
                             <Link
-                              key={sub.path}
                               to={sub.path}
                               onClick={() => setHoveredGroupId(null)}
                               style={{
@@ -729,6 +807,7 @@ export const App: React.FC = () => {
                                 {sub.label}
                               </span>
                             </Link>
+                          </React.Fragment>
                           );
                         })}
                       </motion.div>
@@ -798,14 +877,19 @@ export const App: React.FC = () => {
                         marginLeft: 'var(--space-4)',
                       }}
                     >
-                      {group.children.map((sub) => {
+                      {group.children.map((sub, subIndex) => {
+                          const sectionChanged =
+                            sub.section && sub.section !== group.children[subIndex - 1]?.section;
                         const isSubActive =
                           sub.path === currentFullUrl ||
                           (sub.path === location.pathname && !location.search && !sub.tabKey);
 
                         return (
+                          <React.Fragment key={sub.path}>
+                            {sectionChanged && (
+                              <NavSectionLabel label={sub.section!} first={subIndex === 0} />
+                            )}
                           <Link
-                            key={sub.path}
                             to={sub.path}
                             style={{
                               display: 'flex',
@@ -834,6 +918,7 @@ export const App: React.FC = () => {
                               {sub.label}
                             </span>
                           </Link>
+                        </React.Fragment>
                         );
                       })}
                     </motion.div>
