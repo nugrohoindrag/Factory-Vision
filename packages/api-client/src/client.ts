@@ -596,7 +596,7 @@ export class FactoryVisionApiClient {
         body: JSON.stringify(body),
       }),
     getDowntimes: (params?: { lineId?: string }) => {
-      const query = new URLSearchParams(params as Record<string, string>).toString;
+      const query = new URLSearchParams(params as Record<string, string>).toString();
       return this.request<DowntimeRecord[]>(`/api/v1/shop-floor/downtime${query ? `?${query}` : ''}`);
     },
     syncBatch: (commands: unknown[]) =>
@@ -622,7 +622,7 @@ export class FactoryVisionApiClient {
         }>
       >('/api/v1/analytics/live-board'),
     getDowntimePareto: (params?: { lineId?: string }) => {
-      const query = new URLSearchParams(params as Record<string, string>).toString;
+      const query = new URLSearchParams(params as Record<string, string>).toString();
       return this.request<DowntimeParetoItem[]>(`/api/v1/analytics/downtime-pareto${query ? `?${query}` : ''}`);
     },
 
@@ -679,19 +679,19 @@ export class FactoryVisionApiClient {
   // Reporting & Export API
   readonly reports = {
     getProduction: (params?: { lineId?: string; shiftDate?: string }) => {
-      const query = new URLSearchParams(params as Record<string, string>).toString;
+      const query = new URLSearchParams(params as Record<string, string>).toString();
       return this.request<ProductionReportItem[]>(`/api/v1/reports/production${query ? `?${query}` : ''}`);
     },
     getDowntime: (params?: { lineId?: string }) => {
-      const query = new URLSearchParams(params as Record<string, string>).toString;
+      const query = new URLSearchParams(params as Record<string, string>).toString();
       return this.request<DowntimeReportItem[]>(`/api/v1/reports/downtime${query ? `?${query}` : ''}`);
     },
     getShift: (params?: { shiftDate?: string }) => {
-      const query = new URLSearchParams(params as Record<string, string>).toString;
+      const query = new URLSearchParams(params as Record<string, string>).toString();
       return this.request<ShiftReportItem[]>(`/api/v1/reports/shift${query ? `?${query}` : ''}`);
     },
     getCsvUrl: (type: 'production' | 'downtime' | 'shift', params?: Record<string, string>) => {
-      const query = new URLSearchParams({ ...params, format: 'csv' }).toString;
+      const query = new URLSearchParams({ ...params, format: 'csv' }).toString();
       return `${this.baseUrl}/api/v1/reports/${type}?${query}`;
     },
   };
@@ -726,7 +726,7 @@ export class FactoryVisionApiClient {
   // Audit Logs API
   readonly audit = {
     list: (params?: { entityType?: string; action?: string }) => {
-      const query = new URLSearchParams(params as Record<string, string>).toString;
+      const query = new URLSearchParams(params as Record<string, string>).toString();
       return this.request<AuditLog[]>(`/api/v1/audit-logs${query ? `?${query}` : ''}`);
     },
   };
