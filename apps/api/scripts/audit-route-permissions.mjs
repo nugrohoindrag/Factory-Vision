@@ -55,6 +55,15 @@ const ROUTER_MOUNTS = {
   'modules/planning/api/production-plan.routes.ts': '/api/v1',
   'modules/planning/api/index.ts': '/api/v1',
   'modules/master-data/mold.routes.ts': '/api/v1',
+  'routes/onboarding.routes.ts': '/api/v1',
+  // MES Improvement v2.0 (Improvement PRD §34).
+  'routes/event.routes.ts': '/api/v1',
+  'routes/material.routes.ts': '/api/v1',
+  'routes/quality.routes.ts': '/api/v1',
+  'routes/maintenance.routes.ts': '/api/v1',
+  'routes/workforce.routes.ts': '/api/v1',
+  'routes/wip.routes.ts': '/api/v1',
+  'routes/production-board.routes.ts': '/api/v1',
 };
 
 function walk(dir, found = []) {

@@ -12,18 +12,13 @@ declare global {
   }
 }
 
-/**
- * Endpoints that must stay open: the login doors themselves, health, and the
- * API documentation. Everything else under `/api/v1` requires a session.
+/*
+ * There is deliberately no second list of public paths here. This file used to
+ * carry one, beside the one in `route-permissions.ts` that is actually
+ * mounted, and the two had already drifted: the copy here still exempted the
+ * API documentation after the enforced policy stopped doing so. One policy,
+ * in one place, is the only version of this that stays true.
  */
-const PUBLIC_PATHS = new Set([
-  '/health',
-  '/api/v1/auth/login',
-  '/api/v1/auth/operator-login',
-  '/api/v1/meta/deployment',
-  '/api/v1/meta/openapi.json',
-  '/api/v1/docs',
-]);
 
 /**
  * Resolves the bearer token into a principal (US-001, US-002).
@@ -33,10 +28,17 @@ const PUBLIC_PATHS = new Set([
  * corrected from the session rather than trusting the `X-Tenant-Id` header.
  */
 export function attachPrincipal(auth: AuthService): RequestHandler {
-  return (req: Request, _res: Response, next: NextFunction) => {
+  return async (req: Request, _res: Response, next: NextFunction) => {
     const header = req.headers.authorization;
     if (header?.startsWith('Bearer ')) {
-      const principal = auth.resolve(header.slice(7).trim());
+      // Resolving reads the session store (§6), so this middleware is async.
+      // A failure here must not become a 500 on a protected route: no
+      // principal is attached, and the guard below answers 401.
+      const principal = await auth.resolve(header.slice(7).trim()).catch((error) => {
+        // eslint-disable-next-line no-console
+        console.warn('[auth] session lookup failed:', error);
+        return undefined;
+      });
       if (principal) {
         req.principal = principal;
         // The session is the authority on tenancy. A caller cannot widen its
@@ -49,17 +51,6 @@ export function attachPrincipal(auth: AuthService): RequestHandler {
       }
     }
     next();
-  };
-}
-
-/** Rejects unauthenticated traffic to everything that is not explicitly public. */
-export function requireAuthentication(options: { enabled: boolean }): RequestHandler {
-  return (req: Request, _res: Response, next: NextFunction) => {
-    if (!options.enabled) return next();
-    if (!req.path.startsWith('/api/v1')) return next();
-    if (PUBLIC_PATHS.has(req.path)) return next();
-    if (req.principal) return next();
-    next(ApiError.unauthenticated('Diperlukan autentikasi. Silakan login kembali.'));
   };
 }
 

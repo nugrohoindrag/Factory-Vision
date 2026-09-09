@@ -1,6 +1,7 @@
 import type { AuditLog } from '@factory-vision/domain-types';
 import { withTenant } from '../../platform/db/pool.js';
 import { AuditRepository } from './audit.repository.js';
+import { recordSecurityEvent } from '../../platform/security/security-events.js';
 
 /**
  * The audit trail (US-054).
@@ -23,7 +24,21 @@ export class AuditService {
       id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       occurredAt: new Date().toISOString(),
     };
-    return withTenant(entry.tenantId, (client) => this.repo.insert(client, entry));
+    try {
+      return await withTenant(entry.tenantId, (client) => this.repo.insert(client, entry));
+    } catch (error) {
+      // §43: an audit trail that quietly stops recording is worse than one
+      // that was never claimed. A failed write is itself a security event.
+      recordSecurityEvent({
+        type: 'AUDIT_WRITE_FAILED',
+        severity: 'CRITICAL',
+        message: `Gagal menulis audit log untuk ${entry.action} pada ${entry.entityType}.`,
+        tenantId: entry.tenantId,
+        actor: entry.actorId,
+        detail: { action: entry.action, entityType: entry.entityType, entityId: entry.entityId },
+      });
+      throw error;
+    }
   }
 
   /**

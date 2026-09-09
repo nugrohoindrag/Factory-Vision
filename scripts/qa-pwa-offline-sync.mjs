@@ -133,7 +133,7 @@ try {
   check('keypad PIN tersedia di layar login', pinButtons >= 10, `${pinButtons} tombol angka`);
 
   const employeeNumber = process.env.OPERATOR_EMPLOYEE_NUMBER || operator.rows[0]?.employee_number;
-  const pin = process.env.OPERATOR_PIN || '2468';
+  const pin = process.env.OPERATOR_PIN || '284617';
 
   // Prefer the operator card if the roster rendered; fall back to typing the
   // number, which is what the screen offers when the roster is empty.

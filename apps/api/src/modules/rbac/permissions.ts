@@ -91,6 +91,55 @@ export const PERMISSION_CATALOG: PermissionDefinition[] = [
 
   perm('audit:view', 'Melihat audit trail', true),
   perm('configuration:manage', 'Mengubah konfigurasi sistem dan OEE', true),
+
+  // --- MES Improvement v2.0 (Improvement PRD §34) ---------------------
+  //
+  // One permission per operational decision, not per screen: `material:consume`
+  // is what an operator terminal needs and `material:adjust` is what a stock
+  // take needs, and the two are different rights even though both change stock.
+  perm('material:view', 'Melihat inventory, kebutuhan, dan konsumsi material'),
+  perm('material:reserve', 'Mereservasi material untuk work order'),
+  perm('material:consume', 'Mencatat konsumsi material terhadap work order'),
+  perm('material:return', 'Mencatat pengembalian material ke gudang'),
+  perm('material:adjust', 'Menyesuaikan stok material dan melakukan override konsumsi', true),
+
+  perm('mrp:view', 'Melihat hasil MRP'),
+  perm('mrp:run', 'Menjalankan MRP'),
+  perm('mrp:approve', 'Menyetujui rekomendasi MRP', true),
+
+  perm('quality:view', 'Melihat inspeksi, hold, disposition, dan NCR'),
+  perm('quality:inspect', 'Menjalankan inspeksi kualitas'),
+  perm('quality:hold', 'Menahan kuantitas karena masalah kualitas'),
+  perm('quality:release', 'Melepas hold kualitas'),
+  perm('quality:disposition', 'Menetapkan disposition atas kuantitas gagal'),
+  perm('quality:ncr:create', 'Membuat Non-Conformance Record'),
+  perm('quality:ncr:manage', 'Mengelola NCR dan corrective action'),
+
+  perm('maintenance:view', 'Melihat rencana, permintaan, dan riwayat maintenance'),
+  perm('maintenance:create', 'Membuat rencana dan permintaan maintenance'),
+  perm('maintenance:assign', 'Menugaskan teknisi maintenance'),
+  perm('maintenance:execute', 'Menjalankan pekerjaan maintenance'),
+  perm('maintenance:complete', 'Menyelesaikan pekerjaan maintenance'),
+
+  perm('workforce:view', 'Melihat operator, skill, dan kualifikasi'),
+  perm('workforce:manage', 'Mengelola skill dan requirement kualifikasi'),
+  perm('workforce:qualification', 'Mengelola kualifikasi operator'),
+  perm('workforce:assignment', 'Menugaskan operator ke work order dan shift'),
+  perm('workforce:availability', 'Mengubah status ketersediaan operator'),
+
+  perm('wip:view', 'Melihat WIP dan transfer antar proses'),
+  perm('wip:create', 'Membuat catatan WIP'),
+  perm('wip:transfer', 'Mentransfer WIP ke proses berikutnya'),
+  perm('wip:receive', 'Menerima WIP di proses tujuan'),
+  perm('wip:hold', 'Menahan WIP'),
+  perm('wip:release', 'Melepas WIP yang ditahan'),
+
+  perm('production_board:view', 'Melihat Visual Production Board'),
+  perm('production_board:reschedule', 'Menjadwalkan ulang work order dari board'),
+  perm('production_board:assign', 'Mengubah penugasan mesin dan operator dari board'),
+  perm('production_board:dispatch', 'Mengonfirmasi dan membatalkan dispatch dari board'),
+
+  perm('event:view', 'Melihat Event History operasional'),
 ];
 
 function perm(id: PermissionId, description: string, privileged = false): PermissionDefinition {
@@ -118,6 +167,14 @@ const VIEW_ONLY: PermissionId[] = [
   'report:export',
   'master_data:view',
   'audit:view',
+  'material:view',
+  'mrp:view',
+  'quality:view',
+  'maintenance:view',
+  'workforce:view',
+  'wip:view',
+  'production_board:view',
+  'event:view',
 ];
 
 /**
@@ -173,6 +230,31 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<UserRole, PermissionId[]> = {
     'master_data:import',
     'device:view',
     'audit:view',
+    // §35 — the Production Manager owns production, WIP, labour, quality
+    // performance and maintenance impact. Execution of quality and maintenance
+    // work belongs to those roles; visibility and disposition do not.
+    'material:view',
+    'material:reserve',
+    'mrp:view',
+    'mrp:run',
+    'mrp:approve',
+    'quality:view',
+    'quality:hold',
+    'quality:disposition',
+    'quality:ncr:create',
+    'quality:ncr:manage',
+    'maintenance:view',
+    'maintenance:create',
+    'workforce:view',
+    'workforce:assignment',
+    'wip:view',
+    'wip:hold',
+    'wip:release',
+    'production_board:view',
+    'production_board:reschedule',
+    'production_board:assign',
+    'production_board:dispatch',
+    'event:view',
   ],
 
   [UserRole.SUPERVISOR]: [
@@ -204,6 +286,31 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<UserRole, PermissionId[]> = {
     'device:view',
     'device:manage',
     'audit:view',
+    // §35 — the Supervisor dispatches, assigns operators, and keeps WIP and
+    // quality moving on the floor.
+    'material:view',
+    'material:reserve',
+    'material:consume',
+    'material:return',
+    'quality:view',
+    'quality:inspect',
+    'quality:hold',
+    'quality:ncr:create',
+    'maintenance:view',
+    'maintenance:create',
+    'workforce:view',
+    'workforce:assignment',
+    'workforce:availability',
+    'wip:view',
+    'wip:create',
+    'wip:transfer',
+    'wip:receive',
+    'wip:hold',
+    'production_board:view',
+    'production_board:reschedule',
+    'production_board:assign',
+    'production_board:dispatch',
+    'event:view',
   ],
 
   // "Assigned Execute", the operator's reach is narrowed further by scope,
@@ -221,6 +328,19 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<UserRole, PermissionId[]> = {
     // configured code, so the terminal has to be able to read that list.
     // Scope still narrows what the rows can be, and no write is granted.
     'master_data:view',
+    // §35 — an operator consumes material, inspects where assigned, and moves
+    // WIP to the next process. Everything else in the improvement is read-only
+    // or absent for them.
+    'material:view',
+    'material:consume',
+    'material:return',
+    'quality:view',
+    'quality:inspect',
+    'maintenance:create',
+    'wip:view',
+    'wip:create',
+    'wip:transfer',
+    'wip:receive',
   ],
 
   [UserRole.PPIC]: [
@@ -258,6 +378,20 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<UserRole, PermissionId[]> = {
     'master_data:manage',
     'master_data:import',
     'audit:view',
+    // §35 — MRP and material readiness are PPIC's primary responsibility, and
+    // the board is where the plan becomes a dispatch.
+    'material:view',
+    'material:reserve',
+    'mrp:view',
+    'mrp:run',
+    'quality:view',
+    'maintenance:view',
+    'workforce:view',
+    'wip:view',
+    'production_board:view',
+    'production_board:reschedule',
+    'production_board:assign',
+    'event:view',
   ],
 
   [UserRole.QUALITY]: [
@@ -275,6 +409,86 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<UserRole, PermissionId[]> = {
     'master_data:view',
     'master_data:manage',
     'audit:view',
+    // §35 — Quality owns the whole lifecycle: inspection, hold, disposition,
+    // NCR and corrective action. It also holds the WIP hold/release pair,
+    // because a quality gate that cannot stop a transfer is not a gate (BR-H04).
+    'quality:view',
+    'quality:inspect',
+    'quality:hold',
+    'quality:release',
+    'quality:disposition',
+    'quality:ncr:create',
+    'quality:ncr:manage',
+    'material:view',
+    'wip:view',
+    'wip:hold',
+    'wip:release',
+    'event:view',
+  ],
+
+  /**
+   * Maintenance: the machine's health, and nothing about what it produces.
+   *
+   * Read access to work orders and the board is deliberate — a technician
+   * needs to know what is scheduled on a machine before taking it offline
+   * (BR-MT04) — but no production, quality or planning write is granted.
+   */
+  [UserRole.MAINTENANCE]: [
+    'dashboard:view',
+    'work_order:view',
+    'production_board:view',
+    'analytics:view',
+    'report:export',
+    'master_data:view',
+    'shift:view',
+    'downtime:create',
+    'maintenance:view',
+    'maintenance:create',
+    'maintenance:assign',
+    'maintenance:execute',
+    'maintenance:complete',
+    'event:view',
+  ],
+
+  /**
+   * Warehouse / Material Controller: stock, issue, return, and the ledger.
+   *
+   * `material:adjust` is privileged and granted here, because a stock take is
+   * this role's job and nobody else's.
+   */
+  [UserRole.WAREHOUSE]: [
+    'dashboard:view',
+    'work_order:view',
+    'master_data:view',
+    'report:export',
+    'material:view',
+    'material:reserve',
+    'material:consume',
+    'material:return',
+    'material:adjust',
+    'mrp:view',
+    'wip:view',
+    'event:view',
+  ],
+
+  /**
+   * HR / Workforce admin: who is qualified, who is on which shift, who is in.
+   *
+   * No production write at all: this role decides who may run a machine, not
+   * what the machine does.
+   */
+  [UserRole.WORKFORCE_ADMIN]: [
+    'dashboard:view',
+    'master_data:view',
+    'report:export',
+    'shift:view',
+    'analytics:view',
+    'workforce:view',
+    'workforce:manage',
+    'workforce:qualification',
+    'workforce:assignment',
+    'workforce:availability',
+    'event:view',
   ],
 
   /**
@@ -312,6 +526,9 @@ export const ROLE_LANDING_PATH: Record<UserRole, string> = {
   [UserRole.PPIC]: '/work-orders',
   [UserRole.QUALITY]: '/quality',
   [UserRole.SALES]: '/order-receiving',
+  [UserRole.MAINTENANCE]: '/maintenance',
+  [UserRole.WAREHOUSE]: '/material-inventory',
+  [UserRole.WORKFORCE_ADMIN]: '/workforce',
   [UserRole.ADMIN]: '/settings?tab=users',
 };
 
@@ -324,6 +541,12 @@ export const ROLE_DESCRIPTION: Record<UserRole, string> = {
   [UserRole.QUALITY]: 'Pencatatan dan analisis reject serta traceability kualitas.',
   [UserRole.SALES]:
     'Penerimaan dan pencatatan Customer Order, beserta status pemenuhannya. Tanpa akses planning maupun eksekusi produksi.',
+  [UserRole.MAINTENANCE]:
+    'Preventive, corrective, dan emergency maintenance mesin. Tanpa akses eksekusi produksi.',
+  [UserRole.WAREHOUSE]:
+    'Inventory, issue, return, dan penyesuaian stok material beserta ledger transaksinya.',
+  [UserRole.WORKFORCE_ADMIN]:
+    'Skill, kualifikasi, penugasan shift, dan ketersediaan operator. Tanpa akses eksekusi produksi.',
   [UserRole.ADMIN]: 'Administrasi tenant: pengguna, peran, master data, dan audit.',
 };
 

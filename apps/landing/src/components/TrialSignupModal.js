@@ -135,7 +135,7 @@ export const TrialSignupModal = ({ isOpen, onClose }) => {
                                                         color: 'var(--color-on-surface)',
                                                         fontSize: '13px',
                                                         boxSizing: 'border-box',
-                                                    } })] }), _jsxs("div", { children: [_jsx("label", { style: { display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: 'var(--space-1)', color: 'var(--color-on-surface)' }, children: "Kata Sandi (min 8 karakter) *" }), _jsx("input", { type: "password", required: true, minLength: 8, placeholder: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022", value: formData.password, onChange: (e) => setFormData({ ...formData, password: e.target.value }), style: {
+                                                    } })] }), _jsxs("div", { children: [_jsx("label", { style: { display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: 'var(--space-1)', color: 'var(--color-on-surface)' }, children: "Kata Sandi (min 12 karakter) *" }), _jsx("input", { type: "password", required: true, minLength: 12, placeholder: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022", value: formData.password, onChange: (e) => setFormData({ ...formData, password: e.target.value }), style: {
                                                         width: '100%',
                                                         padding: '10px 12px',
                                                         borderRadius: 'var(--radius-md)',

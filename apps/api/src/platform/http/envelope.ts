@@ -2,6 +2,7 @@ import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import { randomUUID } from 'crypto';
 import type { Paginated } from '@factory-vision/domain-types';
 import { ApiError } from './api-error.js';
+import { recordSecurityEvent } from '../security/security-events.js';
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -149,6 +150,26 @@ export function errorMiddleware(error: unknown, req: Request, res: Response, _ne
   const requestId = req.requestId ?? 'unknown';
 
   if (error instanceof ApiError) {
+    // §43. A request that reached for a plant, a line or a tenant outside its
+    // own scope is either a misconfigured integration or somebody trying;
+    // both are worth a person's attention rather than a 403 in a log file.
+    if (error.code === 'OUT_OF_SCOPE') {
+      recordSecurityEvent({
+        type: 'CROSS_TENANT_ATTEMPT',
+        severity: 'WARNING',
+        message: `Akses di luar cakupan ditolak: ${req.method} ${req.path}`,
+        tenantId: req.context?.tenantId,
+        actor: req.principal?.subjectId,
+        ip: req.ip,
+        detail: { path: req.path, method: req.method },
+      });
+    }
+
+    // A 429 without Retry-After tells a well-behaved client to guess, and a
+    // guessing client retries in a loop (§30).
+    if (error.retryAfterSeconds) {
+      res.setHeader('Retry-After', String(error.retryAfterSeconds));
+    }
     res.status(error.status).json({
       error: { code: error.code, message: error.message, fields: error.fields, requestId },
     });

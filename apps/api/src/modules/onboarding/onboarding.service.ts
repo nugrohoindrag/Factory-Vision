@@ -16,6 +16,8 @@ import type {
   TrialRegistrationResponse,
 } from '@factory-vision/domain-types';
 import { ApiError } from '../../platform/http/api-error.js';
+import { assertPasswordPolicy } from '../../platform/security/credential-policy.js';
+import { isMfaChallenge } from '@factory-vision/domain-types';
 import { isDatabaseConfigured, withTenant } from '../../platform/db/pool.js';
 import { MasterDataService } from '../master-data/master-data.service.js';
 import { MasterReferenceRepository } from '../master-data/master-reference.repository.js';
@@ -108,9 +110,10 @@ export class OnboardingService {
   ): Promise<TrialRegistrationResponse> {
     if (!payload.fullName?.trim()) throw ApiError.validation('Nama lengkap wajib diisi.');
     if (!payload.email?.trim() || !payload.email.includes('@')) throw ApiError.validation('Email tidak valid.');
-    if (!payload.password || payload.password.length < 6) {
-      throw ApiError.validation('Kata sandi minimal 6 karakter.');
-    }
+    // The public trial form is a password-setting path like any other, so it
+    // meets the same policy (§4.1). It used to accept six characters, which
+    // made the shortest password in the product the one anybody could set.
+    assertPasswordPolicy(payload.password);
     if (!payload.factoryName?.trim()) throw ApiError.validation('Nama pabrik wajib diisi.');
 
     const tenantSlug = slug(payload.factoryName).slice(0, 16) || 'factory';
@@ -237,6 +240,12 @@ export class OnboardingService {
       timestamp: now.toISOString(),
       metadata: { industry: payload.industry, factoryName: payload.factoryName },
     });
+
+    // A brand-new trial account cannot already carry a second factor, so the
+    // login above always returns a session rather than a challenge.
+    if (isMfaChallenge(loginRes)) {
+      throw ApiError.invalidState('Akun trial baru tidak dapat meminta verifikasi MFA.');
+    }
 
     return {
       token: loginRes.token,

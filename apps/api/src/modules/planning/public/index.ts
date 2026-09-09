@@ -13,7 +13,7 @@
 
 export { planningRoutes } from '../api/index.js';
 export { PlanningFacade } from './planning.facade.js';
-export type { PlanLineDemandView, WorkOrderDemandView } from './planning.facade.js';
+export type { PlanDemandLine, PlanLineDemandView, WorkOrderDemandView } from './planning.facade.js';
 export {
   PLANNING_EVENTS,
   planningEvent,

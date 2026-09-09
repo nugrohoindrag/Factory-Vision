@@ -4,6 +4,9 @@ import { ApiError } from '../../platform/http/api-error.js';
 import { isDatabaseConfigured } from '../../platform/db/pool.js';
 import { hashSecret, verifySecret } from '../auth/credentials.js';
 import { internalAudit, internalUsers } from './client.repository.js';
+import { describeCredentialProblem } from '../../platform/security/credential-policy.js';
+import { internalLoginGuard } from '../../platform/security/rate-limit.js';
+import { recordSecurityEvent } from '../../platform/security/security-events.js';
 
 /**
  * Authentication for vendor staff.
@@ -60,11 +63,10 @@ export class InternalAuthService {
       );
       return;
     }
-    if (password.length < 12) {
+    const problem = describeCredentialProblem(password, 'password');
+    if (problem) {
       // eslint-disable-next-line no-console
-      console.warn(
-        '[internal-auth] INTERNAL_ADMIN_PASSWORD is shorter than 12 characters. Refusing to use it.'
-      );
+      console.warn(`[internal-auth] INTERNAL_ADMIN_PASSWORD rejected: ${problem} The admin console has no way in.`);
       return;
     }
 
@@ -83,22 +85,45 @@ export class InternalAuthService {
     password: string,
     ip?: string
   ): Promise<{ token: string; principal: InternalPrincipal }> {
+    // The vendor console reaches every customer, so its lock is stricter than
+    // a factory's own (§58).
+    const guardKey = email.trim().toLowerCase();
+    internalLoginGuard.assertAvailable(
+      guardKey,
+      'Terlalu banyak percobaan login. Coba lagi dalam beberapa menit.'
+    );
+
     const user = await internalUsers.byEmail(email);
 
     // A missing account and a wrong password fail identically, so the form
     // cannot be used to discover who works for the vendor.
     if (!user || !verifySecret(password, user.passwordHash ?? undefined)) {
+      const locked = internalLoginGuard.recordFailure(guardKey);
       await internalAudit.record({
         actorEmail: email,
-        action: 'INTERNAL_LOGIN_FAILED',
+        action: locked ? 'INTERNAL_LOGIN_LOCKED' : 'INTERNAL_LOGIN_FAILED',
         entityType: 'internal_user',
         ip,
       });
+      if (locked) {
+        recordSecurityEvent({
+          type: 'INTERNAL_LOGIN_LOCKED',
+          severity: 'CRITICAL',
+          message: `Konsol internal: ${email} dikunci setelah percobaan login berulang.`,
+          actor: email,
+          ip,
+        });
+        throw ApiError.rateLimited(
+          'Terlalu banyak percobaan login. Coba lagi dalam beberapa menit.'
+        );
+      }
       throw ApiError.unauthenticated('Email atau kata sandi salah.');
     }
     if (user.status !== 'ACTIVE') {
       throw ApiError.forbidden('Akun internal Anda tidak aktif.');
     }
+
+    internalLoginGuard.recordSuccess(guardKey);
 
     const now = Date.now();
     const principal: InternalPrincipal = {

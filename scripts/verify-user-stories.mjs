@@ -7,7 +7,7 @@
  *
  *   BOOTSTRAP_ADMIN_EMAIL=admin@pabrik.co.id \
  *   BOOTSTRAP_ADMIN_PASSWORD=<password admin> \
- *   BOOTSTRAP_OPERATOR_PIN=1234 pnpm dev:api
+ *   BOOTSTRAP_OPERATOR_PIN=284617 pnpm dev:api
  *
  *   node scripts/verify-user-stories.mjs
  *
@@ -18,7 +18,7 @@
 const BASE = process.env.API_BASE || 'http://localhost:4000';
 const ADMIN_EMAIL = process.env.BOOTSTRAP_ADMIN_EMAIL || 'admin@pabrik.co.id';
 const ADMIN_PASSWORD = process.env.BOOTSTRAP_ADMIN_PASSWORD || 'ChangeMe-Local-Only';
-const OPERATOR_PIN = process.env.BOOTSTRAP_OPERATOR_PIN || '1234';
+const OPERATOR_PIN = process.env.BOOTSTRAP_OPERATOR_PIN || '284617';
 
 const results = [];
 let adminToken = '';
@@ -120,7 +120,7 @@ async function authentication() {
   await check('US-002', 'Wrong PIN is refused', async () => {
     const { status } = await api('/api/v1/auth/operator-login', {
       method: 'POST',
-      body: { employeeNumber: 'OP-1001', pin: '9999' },
+      body: { employeeNumber: 'OP-1001', pin: '999999' },
     });
     assert(status === 401, `expected 401, got ${status}`);
     return '401';
@@ -1041,9 +1041,16 @@ async function governance() {
   });
 
   await check('US-054', 'API documentation is served', async () => {
-    const openapi = await api('/api/v1/meta/openapi.json', { expect: 200 });
+    // The endpoint inventory is no longer public: it maps every route in the
+    // product, which is as useful to an attacker as to an integrator. It is
+    // served to a session, and API_DOCS_PUBLIC=true puts it back on the open
+    // internet for a deployment that publishes its API deliberately.
+    const anonymous = await api('/api/v1/meta/openapi.json', { expect: 401 });
+    assert(anonymous.status === 401, 'openapi.json must not be readable without a session');
+
+    const openapi = await api('/api/v1/meta/openapi.json', { token: adminToken, expect: 200 });
     assert(openapi.body.paths && Object.keys(openapi.body.paths).length > 20, 'openapi has too few paths');
-    return `${Object.keys(openapi.body.paths).length} documented paths`;
+    return `${Object.keys(openapi.body.paths).length} documented paths, session required`;
   });
 
   await check('US-054', 'Pagination convention works', async () => {

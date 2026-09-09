@@ -1,0 +1,21 @@
+# Factory Vision — backup runner (§39, §41).
+#
+# postgres:16-alpine already carries pg_dump, which is most of what a backup
+# needs, but not the openssl binary — and an encrypted backup is the whole
+# point on a machine whose dumps leave the plant. One package on top of the
+# image the stack already pulls is cheaper than a second base image.
+#
+# Nothing else is added: the container's only job is to run deploy/backup.sh
+# on a schedule, and a backup host with build tools on it is a backup host
+# with more ways in.
+FROM postgres:16-alpine
+
+RUN apk add --no-cache openssl
+
+COPY deploy/backup.sh /backup.sh
+COPY deploy/backup-verify.sh /backup-verify.sh
+RUN chmod +x /backup.sh /backup-verify.sh
+
+# The compose service overrides this with its own interval loop; running the
+# script once is the correct default for a one-shot `docker run`.
+CMD ["/bin/sh", "/backup.sh"]

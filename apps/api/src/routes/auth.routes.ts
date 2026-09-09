@@ -9,6 +9,16 @@ import { MasterDataService } from '../modules/master-data/master-data.service.js
  * Authentication endpoints (US-001, US-002) and session administration
  * (US-005). Login is deliberately the only unauthenticated write in the API.
  */
+/** MFA belongs to a named person, so an operator terminal session cannot use it. */
+function requireApplicationSession(req: import('express').Request) {
+  const principal = req.principal;
+  if (!principal) throw ApiError.unauthenticated('Sesi tidak aktif.');
+  if (principal.kind !== 'APPLICATION') {
+    throw ApiError.forbidden('MFA hanya berlaku untuk akun pengguna aplikasi.');
+  }
+  return principal;
+}
+
 export function authRoutes(auth: AuthService, masterData: MasterDataService): Router {
   const router = Router();
 
@@ -37,11 +47,92 @@ export function authRoutes(auth: AuthService, masterData: MasterDataService): Ro
     route(async (req, res) => {
       const v = validate(req.body);
       const employeeNumber = v.string('employeeNumber', { min: 1 });
-      const pin = v.string('pin', { min: 4, max: 8 });
+      const pin = v.string('pin', { min: 1, max: 32 });
       v.done('Nomor karyawan dan PIN wajib diisi.');
 
       const tenantId = req.context?.tenantId ?? 'tenant-pilot-factory-01';
       res.json(await auth.operatorLogin(tenantId, employeeNumber!, pin!, clientContext(req)));
+    })
+  );
+
+  // §5, second factor. The challenge token is what the login answered with;
+  // it is single use and expires in minutes.
+  router.post(
+    '/auth/mfa/verify',
+    route(async (req, res) => {
+      const v = validate(req.body);
+      const challengeToken = v.string('challengeToken', { min: 1 });
+      const code = v.string('code', { min: 6, max: 16 });
+      v.done('Token verifikasi dan kode MFA wajib diisi.');
+
+      res.json(await auth.verifyMfaLogin(challengeToken!, code!, clientContext(req)));
+    })
+  );
+
+  /** Where the signed-in user stands on MFA, and whether their role needs it. */
+  router.get(
+    '/auth/mfa',
+    route(async (req, res) => {
+      const principal = requireApplicationSession(req);
+      const status = await auth.mfa.status(principal.tenantId, principal.subjectId, principal.role);
+      res.json({ ...status, available: auth.mfa.available });
+    })
+  );
+
+  /**
+   * Starts enrolment: issues a secret and the otpauth URI for the app.
+   * Nothing is enforced until it is confirmed with a code, so a botched scan
+   * cannot lock anyone out.
+   */
+  router.post(
+    '/auth/mfa/enroll',
+    route(async (req, res) => {
+      const principal = requireApplicationSession(req);
+      const user = masterData.getUserById(principal.tenantId, principal.subjectId);
+      const enrolment = await auth.mfa.beginEnrolment(
+        principal.tenantId,
+        principal.subjectId,
+        user?.email ?? principal.name
+      );
+      res.json(enrolment);
+    })
+  );
+
+  /** Confirms enrolment. The recovery codes in the response are shown once. */
+  router.post(
+    '/auth/mfa/confirm',
+    route(async (req, res) => {
+      const principal = requireApplicationSession(req);
+      const v = validate(req.body);
+      const code = v.string('code', { min: 6, max: 8 });
+      v.done('Kode MFA wajib diisi.');
+
+      const recoveryCodes = await auth.mfa.confirmEnrolment(
+        principal.tenantId,
+        principal.subjectId,
+        code!
+      );
+      res.json({ success: true, recoveryCodes });
+    })
+  );
+
+  /**
+   * Turns MFA off for the signed-in account, and only after a current code:
+   * an unlocked console left on a desk should not be able to remove the
+   * factor that protects it.
+   */
+  router.post(
+    '/auth/mfa/disable',
+    route(async (req, res) => {
+      const principal = requireApplicationSession(req);
+      const v = validate(req.body);
+      const code = v.string('code', { min: 6, max: 16 });
+      v.done('Kode MFA wajib diisi untuk menonaktifkan MFA.');
+
+      const challenge = auth.mfa.issueChallenge(principal.tenantId, principal.subjectId);
+      await auth.mfa.verifyChallenge(challenge.challengeToken, code!);
+      await auth.mfa.disable(principal.tenantId, principal.subjectId);
+      res.json({ success: true });
     })
   );
 
@@ -81,7 +172,7 @@ export function authRoutes(auth: AuthService, masterData: MasterDataService): Ro
     route(async (req, res) => {
       const tenantId = req.context!.tenantId;
       const subjectId = typeof req.query.subjectId === 'string' ? req.query.subjectId : undefined;
-      res.json(auth.listSessions(tenantId, subjectId));
+      res.json(await auth.listSessions(tenantId, subjectId));
     })
   );
 

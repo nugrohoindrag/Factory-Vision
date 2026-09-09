@@ -18,7 +18,9 @@ export function onboardingRoutes(service: OnboardingService): Router {
       const v = validate(req.body);
       const fullName = v.string('fullName', { min: 2 });
       const email = v.email('email');
-      const password = v.string('password', { min: 6 });
+      // Length is checked against the shared policy in the service; the field
+      // check here only ensures the value is present and a string.
+      const password = v.string('password', { min: 1 });
       const factoryName = v.string('factoryName', { min: 2 });
       const industry = v.string('industry', { min: 2 }) as any;
       const city = typeof req.body.city === 'string' ? req.body.city : undefined;

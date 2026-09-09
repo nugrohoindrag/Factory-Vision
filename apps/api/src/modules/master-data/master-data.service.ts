@@ -33,6 +33,7 @@ import { demoRows } from '../../platform/config/demo-seed.js';
 import { withTenant } from '../../platform/db/pool.js';
 import { AppUserRepository, OperatorRepository, ShiftRepository } from './reference.repository.js';
 import { MasterReferenceRepository } from './master-reference.repository.js';
+import { BomRepository } from './bom.repository.js';
 import type { Executor } from '../../platform/db/executor.js';
 
 export class MasterDataService {
@@ -47,6 +48,7 @@ export class MasterDataService {
   private readonly shiftRepo = new ShiftRepository();
   private readonly operatorRepo = new OperatorRepository();
   private readonly userRepo = new AppUserRepository();
+  private readonly bomRepo = new BomRepository();
 
   /** Password hashes, keyed by user id, as loaded from `app_user`. */
   private readonly userPasswordHashes = new Map<string, string>();
@@ -1640,6 +1642,10 @@ export class MasterDataService {
     };
 
     this.boms.unshift(bom);
+    this.persistBom(tenantId, async (repo, exec) => {
+      await repo.upsert(exec, bom);
+      if (bom.status === 'ACTIVE') await repo.deactivateOthers(exec, tenantId, bom.productId, bom.id);
+    });
     return bom;
   }
 
@@ -1689,6 +1695,10 @@ export class MasterDataService {
 
     bom.updatedBy = updatedBy || bom.updatedBy;
     bom.updatedAt = new Date().toISOString();
+    this.persistBom(tenantId, async (repo, exec) => {
+      await repo.upsert(exec, bom);
+      if (bom.status === 'ACTIVE') await repo.deactivateOthers(exec, tenantId, bom.productId, bom.id);
+    });
     return bom;
   }
 
@@ -1713,6 +1723,10 @@ export class MasterDataService {
     bom.status = status;
     bom.updatedBy = updatedBy || bom.updatedBy;
     bom.updatedAt = new Date().toISOString();
+    this.persistBom(tenantId, async (repo, exec) => {
+      await repo.setStatus(exec, tenantId, id, status);
+      if (status === 'ACTIVE') await repo.deactivateOthers(exec, tenantId, bom.productId, id);
+    });
     return bom;
   }
 
@@ -1720,7 +1734,46 @@ export class MasterDataService {
     const index = this.boms.findIndex((b) => b.id === id && b.tenantId === tenantId);
     if (index === -1) throw new Error('Bill of Material not found');
     this.boms.splice(index, 1);
+    this.persistBom(tenantId, (repo, exec) => repo.delete(exec, tenantId, id));
     return true;
+  }
+
+  /**
+   * The BOM material planning explodes: ACTIVE, effective today, for one
+   * product. Read straight from PostgreSQL rather than from the cache so a
+   * requirement is always computed against the stored master (BR-M01).
+   */
+  async getActiveBomForProduct(tenantId: string, productId: string): Promise<BillOfMaterial | undefined> {
+    try {
+      return await withTenant(tenantId, (client) =>
+        this.bomRepo.findActiveForProduct(client, tenantId, productId)
+      );
+    } catch {
+      // No database configured (a local demo). The cache is all there is.
+      return this.boms.find(
+        (b) => b.tenantId === tenantId && b.productId === productId && b.status === 'ACTIVE'
+      );
+    }
+  }
+
+  /**
+   * Writes a BOM change through to PostgreSQL.
+   *
+   * Same shape as `persist` for the reference master: the cache is updated
+   * synchronously because the console reads it back immediately, and the
+   * database write is what survives the restart.
+   */
+  private persistBom(
+    tenantId: string,
+    write: (repo: BomRepository, exec: Executor) => Promise<void>
+  ): void {
+    withTenant(tenantId, (client) => write(this.bomRepo, client)).catch((error) => {
+      // eslint-disable-next-line no-console
+      console.error(
+        '[master-data] gagal menyimpan bill of material ke PostgreSQL:',
+        error instanceof Error ? error.message : error
+      );
+    });
   }
 
   // Operators
@@ -1979,6 +2032,7 @@ export class MasterDataService {
       this.rejectReasons,
       await this.referenceRepo.listRejectReasons(exec, tenantId)
     );
+    this.boms = swap(this.boms, await this.bomRepo.list(exec, tenantId));
     return loaded;
   }
 

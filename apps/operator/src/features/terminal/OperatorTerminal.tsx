@@ -7,6 +7,12 @@ import { Icon, M3_EASE, M3_TRANSITIONS } from '@factory-vision/ui';
 import { enqueueCommand, syncQueue } from '../../offline/queue.js';
 import { TerminalDashboard } from './TerminalDashboard.js';
 import { WorkOrderPicker } from './WorkOrderPicker.js';
+import {
+  ShopFloorTransactionModal,
+  type TransactionKind,
+  type TransactionOption,
+  type TransactionSubmission,
+} from './ShopFloorTransactionModal.js';
 import type { ThemeMode } from '../../app/theme.js';
 import {
   acknowledgeRejections,
@@ -117,6 +123,12 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
   const [showCustomQtyModal, setShowCustomQtyModal] = useState<boolean>(false);
   const [customQty, setCustomQty] = useState<string>('');
   const [customQtyType, setCustomQtyType] = useState<'GOOD' | 'REJECT'>('GOOD');
+
+  /**
+   * Which of the improvement's transactions the operator is entering
+   * (Improvement PRD §38). One state, because only one modal is open at a time.
+   */
+  const [transactionKind, setTransactionKind] = useState<TransactionKind | null>(null);
 
   const [selectedDowntimeReasonId, setSelectedDowntimeReasonId] = useState<string>('dt-breakdown');
   const [selectedRejectReasonId, setSelectedRejectReasonId] = useState<string>('rej-dimension');
@@ -333,6 +345,125 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
       triggerTapFeedback('WO SELESAI', 'primary');
       queryClient.invalidateQueries({ queryKey: ['work-orders'] });
     }
+  };
+
+  /*
+   * What each transaction offers to choose from (§38).
+   *
+   * All three read from react-query's cache, which the service worker keeps
+   * warm, so the lists are still there when the terminal is offline — which is
+   * the only time any of this matters.
+   */
+  const { data: materialRequirements } = useQuery({
+    queryKey: ['wo-material-requirements', activeWo?.id],
+    queryFn: () => api.materials.getRequirements({ sourceType: 'WORK_ORDER', sourceId: activeWo!.id }),
+    enabled: Boolean(activeWo?.id),
+    staleTime: 5 * 60_000,
+  });
+
+  const { data: inspectionPlans } = useQuery({
+    queryKey: ['inspection-plans', activeWo?.productId],
+    queryFn: () => api.quality.getPlans({ productId: activeWo?.productId, status: 'ACTIVE' }),
+    enabled: Boolean(activeWo?.id),
+    staleTime: 5 * 60_000,
+  });
+
+  const { data: openWip } = useQuery({
+    queryKey: ['wo-wip', activeWo?.id],
+    queryFn: () => api.wip.getRecords({ workOrderId: activeWo!.id, openOnly: true }),
+    enabled: Boolean(activeWo?.id),
+    refetchInterval: 30_000,
+  });
+
+  const transactionOptions: TransactionOption[] =
+    transactionKind === 'CONSUMPTION'
+      ? (materialRequirements ?? []).map((requirement) => ({
+          id: requirement.materialId,
+          label: requirement.materialSku,
+          sublabel: `${requirement.materialName} · rencana ${requirement.requiredQuantity} ${requirement.uom}`,
+        }))
+      : transactionKind === 'INSPECTION'
+        ? (inspectionPlans ?? []).map((plan) => ({
+            id: plan.id,
+            label: plan.name,
+            sublabel: `${plan.inspectionType}${plan.mandatory ? ' · wajib' : ''}`,
+          }))
+        : (openWip ?? []).map((record) => ({
+            id: record.id,
+            label: record.wipNumber,
+            sublabel: `${record.quantity} ${record.uom} · ${record.sourceProcessName ?? 'proses ini'}`,
+          }));
+
+  /**
+   * Queues one improvement transaction.
+   *
+   * `clientEventId` doubles as the server's idempotency key, so a queue that
+   * replays after a reconnect issues the material, records the inspection or
+   * moves the WIP exactly once.
+   */
+  const handleTransactionSubmit = async (submission: TransactionSubmission) => {
+    if (!activeWo) return;
+
+    const common = {
+      tenantId: activeWo.tenantId,
+      workOrderId: activeWo.id,
+      operatorId: operator.id,
+      operatorName: operator.name,
+      notes: submission.notes,
+    };
+
+    if (submission.kind === 'CONSUMPTION') {
+      await enqueueCommand({
+        tenantId: activeWo.tenantId,
+        workOrderId: activeWo.id,
+        type: 'RECORD_CONSUMPTION',
+        payload: {
+          ...common,
+          materialId: submission.optionId,
+          actualQuantity: submission.quantity,
+          machineId: activeWo.machineId,
+          processId: activeWo.processId,
+          batchId: activeBatch?.id,
+        },
+      });
+      triggerTapFeedback('MATERIAL DIPAKAI', 'primary');
+    } else if (submission.kind === 'INSPECTION') {
+      await enqueueCommand({
+        tenantId: activeWo.tenantId,
+        workOrderId: activeWo.id,
+        type: 'RECORD_INSPECTION',
+        payload: {
+          ...common,
+          inspectionPlanId: submission.optionId || undefined,
+          inspectedQuantity: submission.quantity,
+          failedQuantity: submission.failedQuantity,
+          productId: activeWo.productId,
+          processId: activeWo.processId,
+          machineId: activeWo.machineId,
+          batchId: activeBatch?.id,
+        },
+      });
+      triggerTapFeedback(
+        (submission.failedQuantity ?? 0) > 0 ? 'INSPEKSI FAIL' : 'INSPEKSI PASS',
+        (submission.failedQuantity ?? 0) > 0 ? 'error' : 'success'
+      );
+    } else {
+      await enqueueCommand({
+        tenantId: activeWo.tenantId,
+        workOrderId: activeWo.id,
+        type: 'TRANSFER_WIP',
+        payload: {
+          ...common,
+          wipId: submission.optionId,
+          quantity: submission.quantity,
+        },
+      });
+      triggerTapFeedback('WIP DIKIRIM', 'primary');
+    }
+
+    setTransactionKind(null);
+    queryClient.invalidateQueries({ queryKey: ['work-orders'] });
+    queryClient.invalidateQueries({ queryKey: ['wo-wip', activeWo.id] });
   };
 
   const handleQuickGoodOutput = async (qty: number) => {
@@ -573,6 +704,9 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
           setShowCustomQtyModal(true);
         }}
         onOpenDowntime={() => setShowDowntimeModal(true)}
+        onOpenConsumption={() => setTransactionKind('CONSUMPTION')}
+        onOpenInspection={() => setTransactionKind('INSPECTION')}
+        onOpenWipTransfer={() => setTransactionKind('WIP_TRANSFER')}
         onResolveDowntime={handleResolveDowntime}
         onStartWo={handleStartWo}
         onPauseWo={handlePauseWo}
@@ -885,6 +1019,19 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
             </motion.div>
           </motion.div>
         )}
+      </AnimatePresence>
+
+      {/* Material, quality and WIP from the terminal (Improvement PRD §38) */}
+      <AnimatePresence>
+        {transactionKind && activeWo ? (
+          <ShopFloorTransactionModal
+            kind={transactionKind}
+            options={transactionOptions}
+            context={`${activeWo.woNumber} · ${activeProduct?.name ?? ''}`}
+            onClose={() => setTransactionKind(null)}
+            onSubmit={handleTransactionSubmit}
+          />
+        ) : null}
       </AnimatePresence>
     </Page>
   );

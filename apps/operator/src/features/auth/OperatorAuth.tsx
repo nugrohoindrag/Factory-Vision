@@ -7,6 +7,15 @@ import { FactoryVisionLogo } from '@factory-vision/ui/fv';
 import { ThemeToggle } from '../../app/ThemeToggle.js';
 import type { ThemeMode } from '../../app/theme.js';
 
+/**
+ * Digits the pad collects before it will submit.
+ *
+ * Six, not four: the API enforces a six-digit minimum because a shared
+ * terminal on the shop floor is the smallest keyspace in the product, and a
+ * pad that only accepts four would refuse every valid PIN.
+ */
+const PIN_LENGTH = 6;
+
 interface OperatorAuthProps {
   operators: Operator[];
   /** Resolves the employee number + PIN against the API (US-002). */
@@ -45,7 +54,7 @@ export const OperatorAuth: React.FC<OperatorAuthProps> = ({
   const [submitting, setSubmitting] = useState<boolean>(false);
 
   const handleDigit = (digit: string) => {
-    if (pin.length < 4) {
+    if (pin.length < PIN_LENGTH) {
       setPin((prev) => prev + digit);
       setError('');
     }
@@ -269,9 +278,9 @@ export const OperatorAuth: React.FC<OperatorAuthProps> = ({
               gap: 'var(--space-4)',
             }}
           >
-            {/* Four slots, not a free-text box: the field has to say how many
+            {/* Fixed slots, not a free-text box: the field has to say how many
                 digits are expected, and how many are already in. */}
-            {[0, 1, 2, 3].map((idx) => (
+            {Array.from({ length: PIN_LENGTH }, (_, idx) => idx).map((idx) => (
               <motion.div
                 key={idx}
                 animate={{
@@ -339,13 +348,13 @@ export const OperatorAuth: React.FC<OperatorAuthProps> = ({
 
         {/* Submit Button */}
         <motion.div
-          whileHover={{ scale: pin.length === 4 ? 1.02 : 1 }}
-          whileTap={{ scale: pin.length === 4 ? 0.98 : 1 }}
+          whileHover={{ scale: pin.length === PIN_LENGTH ? 1.02 : 1 }}
+          whileTap={{ scale: pin.length === PIN_LENGTH ? 0.98 : 1 }}
         >
           <Button
             variant="filled"
             onClick={() => void handleSubmit()}
-            disabled={pin.length !== 4 || submitting}
+            disabled={pin.length !== PIN_LENGTH || submitting}
             style={{
               width: '100%',
               height: '46px',

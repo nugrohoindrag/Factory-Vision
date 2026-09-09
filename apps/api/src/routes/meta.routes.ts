@@ -23,7 +23,13 @@ interface EndpointDoc {
 const ENDPOINTS: EndpointDoc[] = [
   { method: 'POST', path: '/api/v1/auth/login', summary: 'Login pengguna aplikasi (email + password)' },
   { method: 'POST', path: '/api/v1/auth/operator-login', summary: 'Login operator (employee number + PIN)' },
+  { method: 'POST', path: '/api/v1/auth/mfa/verify', summary: 'Verifikasi kode MFA saat login' },
+  { method: 'GET', path: '/api/v1/auth/mfa', summary: 'Status MFA akun yang sedang login' },
+  { method: 'POST', path: '/api/v1/auth/mfa/enroll', summary: 'Mulai pendaftaran MFA (TOTP)' },
+  { method: 'POST', path: '/api/v1/auth/mfa/confirm', summary: 'Konfirmasi MFA dan terbitkan recovery code' },
+  { method: 'POST', path: '/api/v1/auth/mfa/disable', summary: 'Nonaktifkan MFA dengan kode berjalan' },
   { method: 'GET', path: '/api/v1/auth/session', summary: 'Detail sesi aktif' },
+  { method: 'GET', path: '/api/v1/security/summary', summary: 'Ringkasan security event dan postur konfigurasi' },
   { method: 'POST', path: '/api/v1/auth/logout', summary: 'Akhiri sesi' },
   { method: 'GET', path: '/api/v1/sessions', summary: 'Daftar sesi aktif tenant' },
   { method: 'DELETE', path: '/api/v1/sessions/:sessionId', summary: 'Cabut satu sesi' },

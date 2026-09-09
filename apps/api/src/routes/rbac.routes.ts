@@ -3,6 +3,7 @@ import { route } from '../platform/http/envelope.js';
 import { validate } from '../platform/http/validate.js';
 import { AuditService } from '../modules/audit/audit.service.js';
 import { RbacService } from '../modules/rbac/rbac.service.js';
+import { recordSecurityEvent } from '../platform/security/security-events.js';
 
 /**
  * Roles and permissions (US-006).
@@ -96,6 +97,22 @@ export function rbacRoutes(rbac: RbacService, audit: AuditService): Router {
         ip: req.ip,
         userAgent: req.headers['user-agent'],
       });
+
+      // §43: what a role may do is the definition of who can do what, so a
+      // change to it is alertable, not merely recorded.
+      const added = role.permissions.filter((p) => !previous.permissions.includes(p));
+      const removed = previous.permissions.filter((p) => !role.permissions.includes(p));
+      if (added.length || removed.length) {
+        recordSecurityEvent({
+          type: 'PERMISSION_CHANGED',
+          severity: 'WARNING',
+          message: `Peran ${role.name}: ${added.length} izin ditambahkan, ${removed.length} dicabut.`,
+          tenantId,
+          actor: req.principal?.subjectId,
+          ip: req.ip,
+          detail: { roleId: role.id, added, removed },
+        });
+      }
 
       res.json(role);
     })

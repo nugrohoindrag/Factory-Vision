@@ -177,7 +177,7 @@ type Mode = 'CONSOLE' | 'OPERATOR';
  * than leaving an operator to discover it by failing to log in.
  */
 export const ConsoleAuth: React.FC = () => {
-  const { login } = useSession();
+  const { login, verifyMfa } = useSession();
 
   const [mode, setMode] = useState<Mode>('CONSOLE');
   const [email, setEmail] = useState('');
@@ -187,6 +187,21 @@ export const ConsoleAuth: React.FC = () => {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
+  // The second step (§5). Holding the challenge in state rather than routing
+  // to another screen keeps the password out of a second render pass, and
+  // makes "back" mean "start again" rather than "resend the password".
+  const [challengeToken, setChallengeToken] = useState<string | null>(null);
+  const [mfaCode, setMfaCode] = useState('');
+
+  const describeError = (err: unknown) => {
+    if (err instanceof ApiRequestError) {
+      setError(err.message);
+      setFieldErrors(Object.fromEntries(err.fields.map((f) => [f.field, f.message])));
+    } else {
+      setError('Tidak dapat menghubungi server. Periksa koneksi jaringan Anda.');
+    }
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
@@ -194,20 +209,41 @@ export const ConsoleAuth: React.FC = () => {
     setSubmitting(true);
 
     try {
-      await login(email.trim(), password);
+      const result = await login(email.trim(), password);
+      if (result.kind === 'MFA_REQUIRED') {
+        setChallengeToken(result.challengeToken);
+        setPassword('');
+        return;
+      }
       // Navigation is handled by the shell once a principal exists, which is
       // what makes "landing page mengikuti role" a server-decided route.
     } catch (err) {
-      if (err instanceof ApiRequestError) {
-        setError(err.message);
-        setFieldErrors(Object.fromEntries(err.fields.map((f) => [f.field, f.message])));
-      } else {
-        setError('Tidak dapat menghubungi server. Periksa koneksi jaringan Anda.');
-      }
+      describeError(err);
     } finally {
       setSubmitting(false);
     }
   };
+
+  const handleMfaSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!challengeToken) return;
+    setError(null);
+    setSubmitting(true);
+
+    try {
+      await verifyMfa(challengeToken, mfaCode.trim());
+    } catch (err) {
+      describeError(err);
+      // A challenge is single use, so a wrong code means starting over rather
+      // than trying again against a token the server has already discarded.
+      setChallengeToken(null);
+      setMfaCode('');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const mfaStep = challengeToken !== null;
 
   return (
     <div className="fv-login">
@@ -283,7 +319,89 @@ export const ConsoleAuth: React.FC = () => {
             })}
           </div>
 
-          {mode === 'CONSOLE' ? (
+          {mode === 'CONSOLE' && mfaStep ? (
+            /* §5, second factor. The password step is finished; this asks for
+ the code and nothing else, so there is no way to resubmit credentials
+ here by accident. */
+            <form onSubmit={handleMfaSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: 'var(--space-3)',
+                  padding: 'var(--space-3)',
+                  borderRadius: 'var(--radius-sm, 8px)',
+                  backgroundColor: 'var(--color-surface-container)',
+                  border: '1px solid var(--color-outline-variant)',
+                }}
+              >
+                <Icon name="encrypted" size={18} />
+                <span style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
+                  Akun ini dilindungi verifikasi dua langkah. Masukkan kode dari aplikasi
+                  authenticator Anda, atau salah satu recovery code.
+                </span>
+              </div>
+
+              <div>
+                <label htmlFor="fv-mfa-code" style={labelStyle}>
+                  Kode Verifikasi
+                </label>
+                <input
+                  id="fv-mfa-code"
+                  inputMode="text"
+                  autoComplete="one-time-code"
+                  autoFocus
+                  required
+                  value={mfaCode}
+                  onChange={(e) => setMfaCode(e.target.value)}
+                  placeholder="123456"
+                  style={{ ...inputStyle, letterSpacing: '0.2em', fontWeight: 700 }}
+                />
+              </div>
+
+              {error && (
+                <div
+                  role="alert"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: 'var(--space-2)',
+                    padding: `var(--space-3) var(--space-3)`,
+                    borderRadius: 'var(--radius-sm, 8px)',
+                    backgroundColor: 'var(--color-error-container)',
+                    color: 'var(--color-on-error-container)',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                  }}
+                >
+                  <Icon name="error" size={16} />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                variant="filled"
+                disabled={submitting || mfaCode.trim().length < 6}
+                icon={<Icon name="login" size={16} />}
+                style={{ width: '100%', height: '46px' }}
+              >
+                {submitting ? 'Memverifikasi…' : 'Verifikasi'}
+              </Button>
+
+              <Button
+                type="button"
+                variant="text"
+                onClick={() => {
+                  setChallengeToken(null);
+                  setMfaCode('');
+                  setError(null);
+                }}
+                style={{ width: '100%' }}
+              >
+                Kembali
+              </Button>
+            </form>
+          ) : mode === 'CONSOLE' ? (
             <>
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                 <div>

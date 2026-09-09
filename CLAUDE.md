@@ -14,6 +14,40 @@ db/             SQL migrations and seeds
 
 Product language is **Indonesian** — UI copy, labels and empty states are in Bahasa Indonesia; code and comments are in English.
 
+## MES Improvement v2.0
+
+The Improvement PRD (`Docs/Factory Vision — MES Improvement PRD.md`) adds six operational
+capabilities on top of the v1.7 baseline. Each is one API module, one console screen and one
+migration:
+
+| Capability | API module | Console route | Migration |
+|---|---|---|---|
+| Event History (append-only) | `modules/event` | `/event-history` | 026 |
+| Material, inventory, MRP | `modules/material` | `/material-inventory`, `/material-readiness`, `/mrp` | 027 |
+| Quality lifecycle | `modules/quality` | `/quality` | 028 |
+| Maintenance | `modules/maintenance` | `/maintenance` | 029 |
+| Workforce & labour | `modules/workforce` | `/workforce` | 030 |
+| WIP & process handoff | `modules/wip` | `/wip` | 031 |
+| Visual Production Board | `modules/board` | `/production-board` | — (a projection) |
+
+Things worth knowing before changing any of it:
+
+- **Every capability writes to `operational_event`**, and that table is append-only *by privilege*:
+  `factory_app` holds SELECT and INSERT and nothing else. Use `EventService.recordDetached` from a
+  path whose work is already committed — a failed timeline write must never fail the production
+  record that caused it.
+- **The improvement's roles are `MAINTENANCE`, `WAREHOUSE` and `WORKFORCE_ADMIN`** (migration 032).
+  New permissions must be added to `modules/rbac/permissions.ts` *and* backfilled in a migration:
+  baseline roles are only materialised for a tenant that has none, so anything added later is inert
+  for existing tenants until a migration grants it.
+- **`pnpm --filter @factory-vision/api run qa:routes` fails on an unmapped router file.** A new
+  `routes/*.ts` must be added to `ROUTER_MOUNTS` in `scripts/audit-route-permissions.mjs`, and every
+  mutating endpoint needs an explicit rule in `platform/auth/route-permissions.ts`.
+- **`pnpm verify:improvement` is the acceptance gate** — eight end-to-end scenarios (PRD §50) run
+  against a live API and a live PostgreSQL, asserting business rules through HTTP and then reading
+  the rows back as the database owner. It is idempotent: it may be run repeatedly against the same
+  database.
+
 ## UI work: read this first
 
 All UI changes are governed by **[Docs/DESIGN-SYSTEM-GUIDELINE.md](Docs/DESIGN-SYSTEM-GUIDELINE.md)**, which is kept out of the published repository and so exists only in a local checkout. The rules that catch people out:
@@ -37,6 +71,7 @@ pnpm typecheck        # tsc --noEmit across the workspace
 pnpm ds:check         # design system mirror integrity
 pnpm db:migrate       # apply db/migrations
 pnpm db:seed          # apply db/seeds
+pnpm verify:improvement   # MES Improvement end-to-end acceptance (PRD §50)
 ```
 
 ## Notes

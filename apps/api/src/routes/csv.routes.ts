@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { route } from '../platform/http/envelope.js';
 import { validate } from '../platform/http/validate.js';
+import { recordSecurityEvent } from '../platform/security/security-events.js';
 import { AuditService } from '../modules/audit/audit.service.js';
 import { CsvService } from '../modules/csv/csv.service.js';
 
@@ -13,6 +14,9 @@ import { CsvService } from '../modules/csv/csv.service.js';
  * master-data file while keeping a mistyped upload from exhausting memory.
  */
 const MAX_CSV_BYTES = 5 * 1024 * 1024;
+
+/** Above this, an export is worth telling somebody about (§43). */
+const LARGE_EXPORT_ROWS = Number(process.env.LARGE_EXPORT_ROWS ?? 5000);
 
 export function csvRoutes(csv: CsvService, audit: AuditService): Router {
   const router = Router();
@@ -44,6 +48,8 @@ export function csvRoutes(csv: CsvService, audit: AuditService): Router {
       const allowedLineIds =
         req.principal && req.principal.scope.level !== 'TENANT' ? req.principal.scope.lineIds : undefined;
       const body = csv.export(req.params.entity, tenantId, allowedLineIds);
+      // Header line excluded: what an auditor asks is how many records left.
+      const rowCount = Math.max(0, body.split('\n').filter((line) => line.trim()).length - 1);
 
       await audit.record({
         tenantId,
@@ -52,9 +58,28 @@ export function csvRoutes(csv: CsvService, audit: AuditService): Router {
         entityType: 'csv_export',
         entityId: req.params.entity,
         action: 'EXPORT',
-        newValue: { entity: req.params.entity, scope: req.principal?.scope.level ?? 'TENANT' },
+        newValue: {
+          entity: req.params.entity,
+          scope: req.principal?.scope.level ?? 'TENANT',
+          rowCount,
+          bytes: Buffer.byteLength(body),
+        },
         ip: req.ip,
       });
+
+      // §43: a bulk export is the shape data leaves in, so it is alertable
+      // rather than merely audited.
+      if (rowCount >= LARGE_EXPORT_ROWS) {
+        recordSecurityEvent({
+          type: 'LARGE_EXPORT',
+          severity: 'WARNING',
+          message: `Export ${req.params.entity} berisi ${rowCount} baris.`,
+          tenantId,
+          actor: req.principal?.subjectId,
+          ip: req.ip,
+          detail: { entity: req.params.entity, rowCount },
+        });
+      }
 
       res.setHeader('Content-Type', 'text/csv; charset=utf-8');
       res.setHeader('Content-Disposition', `attachment; filename="${req.params.entity}.csv"`);

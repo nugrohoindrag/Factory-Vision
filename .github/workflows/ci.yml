@@ -108,7 +108,7 @@ jobs:
           # with them; nothing here is a real credential.
           BOOTSTRAP_ADMIN_EMAIL: admin@pabrik.co.id
           BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
-          BOOTSTRAP_OPERATOR_PIN: '1234'
+          BOOTSTRAP_OPERATOR_PIN: '284617'
         run: |
           node apps/api/dist/main.js > api.log 2>&1 &
           echo $! > api.pid
@@ -118,12 +118,20 @@ jobs:
           done
           echo "API did not become healthy:" && cat api.log && exit 1
 
+      - name: Unit tests (domain & security controls)
+        run: pnpm --filter @factory-vision/api test
+
+      - name: Security posture (Cyber Security Requirement, MUST controls)
+        env:
+          QA_API: http://localhost:4000
+        run: node apps/api/scripts/qa-security-posture.mjs
+
       - name: Acceptance (54 user stories)
         env:
           API_BASE: http://localhost:4000
           BOOTSTRAP_ADMIN_EMAIL: admin@pabrik.co.id
           BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
-          BOOTSTRAP_OPERATOR_PIN: '1234'
+          BOOTSTRAP_OPERATOR_PIN: '284617'
         run: node scripts/verify-user-stories.mjs
 
       - name: API log on failure
@@ -204,9 +212,93 @@ jobs:
           DATABASE_URL: postgresql://factory_app:ci-app-role-password@localhost:5432/factory_vision
         run: pnpm verify:persistence
 
+  # Security scanning (§47, §49, §50). Separate from `verify` so a scanner
+  # being slow, or its feed being down, never blocks the acceptance signal —
+  # and separate from `publish` so nothing reaches the registry unscanned.
+  scan:
+    name: Dependency, secret & static analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Secret scanning needs history: a credential committed and then
+          # removed is still a leaked credential, and the fix is rotation.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      # Known-vulnerable dependencies (§47).
+      #
+      # The blocking gate is the production dependency tree, because that is
+      # what ships inside the images. Build tooling is reported but does not
+      # fail the run: a Vite dev-server advisory is real for a developer's
+      # laptop and irrelevant to a factory, where nginx serves a static
+      # bundle and no dev server exists. Tracked exceptions live in
+      # SECURITY-EXCEPTIONS.md with an owner and a review date.
+      - name: Dependency audit (production tree, blocking)
+        run: pnpm audit --prod --audit-level high
+
+      - name: Dependency audit (full tree, reported)
+        if: always()
+        run: pnpm audit || true
+
+      # Secrets that should never have been committed (§51).
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # SAST. CodeQL rather than a bespoke ruleset: it is maintained, it
+      # understands TypeScript, and its findings land in the repository's
+      # security tab where they can be tracked rather than scrolled past.
+      - name: Initialise CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-and-quality
+
+      - name: CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: '/language:javascript-typescript'
+
+  # Container image scanning (§48). Runs on the images this commit would
+  # publish, built locally so a pull request is scanned too.
+  scan-image:
+    name: Container image scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build API image
+        run: docker build -f deploy/Dockerfile.api -t factory-vision-api:scan .
+
+      - name: Scan API image
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: factory-vision-api:scan
+          format: table
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
   publish:
     name: Publish images
-    needs: [verify, persistence]
+    needs: [verify, persistence, scan, scan-image]
     # Pull requests verify but never publish: the head of a PR is not a
     # release, and a fork's token could not push to the registry anyway.
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -236,6 +328,9 @@ jobs:
             app: admin
           - image: factory-vision-worker
             dockerfile: deploy/Dockerfile.worker
+            app: ''
+          - image: factory-vision-backup
+            dockerfile: deploy/Dockerfile.backup
             app: ''
     steps:
       - uses: actions/checkout@v7

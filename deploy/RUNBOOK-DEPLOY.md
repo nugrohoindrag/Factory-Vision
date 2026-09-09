@@ -46,10 +46,14 @@ Opsional, tapi biasanya diisi untuk instalasi on-premise:
 ```dotenv
 DEPLOYMENT_MODE=ON_PREMISE_SINGLE_TENANT
 DEFAULT_TENANT_ID=tenant-pilot-factory-01
-AUTH_REQUIRED=true
+AUTH_REQUIRED=true           # ditolak bila false saat NODE_ENV=production
 SEED_DEMO_DATA=true          # matikan untuk instalasi pabrik sungguhan
+MFA_ENCRYPTION_KEY=<32+ karakter acak>   # tanpa ini MFA tidak bisa diaktifkan
+CORS_ALLOWED_ORIGINS=        # kosong = same-origin saja
+SECURITY_ALERT_WEBHOOK=      # kosong = alert hanya ke log
+BACKUP_PASSPHRASE=<passphrase backup>    # wajib bila backup keluar dari pabrik
 BOOTSTRAP_ADMIN_NAME=Administrator
-BOOTSTRAP_OPERATOR_PIN=<4–8 digit>   # PIN awal terminal, hanya untuk operator yang belum punya
+BOOTSTRAP_OPERATOR_PIN=<6–12 digit>  # PIN awal terminal, hanya untuk operator yang belum punya
 TZ=Asia/Jakarta
 ```
 
@@ -314,15 +318,127 @@ docker compose -f deploy/docker-compose.yml --env-file deploy/.env build
 docker compose -f deploy/docker-compose.yml --env-file deploy/.env --profile migrate run --rm migrate
 docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d
 
-# Backup database
-docker compose -f deploy/docker-compose.yml --env-file deploy/.env exec -T db \
-  pg_dump -U factory factory_vision | gzip > backup-$(date +%F).sql.gz
+# Backup manual di luar jadwal (backup harian berjalan sendiri, lihat §9a)
+docker compose -f deploy/docker-compose.yml --env-file deploy/.env run --rm backup /bin/sh /backup.sh
 
 # Hentikan stack (data tetap, ada di volume)
 docker compose -f deploy/docker-compose.yml --env-file deploy/.env down
 ```
 
 > `down -v` **menghapus volume database**. Jangan pakai pada host produksi.
+
+---
+
+## 9a. Backup dan restore
+
+Service `backup` berjalan otomatis bersama stack: setiap `BACKUP_INTERVAL_SECONDS`
+(default harian) ia menulis dump database dan arsip lampiran ke volume
+`backup-data`, lalu menghapus berkas yang lebih tua dari `BACKUP_RETENTION_DAYS`.
+
+```bash
+# Apa yang sudah tersimpan
+docker compose -f deploy/docker-compose.yml --env-file deploy/.env run --rm backup ls -lh /backup/db
+
+# Salin ke host, lalu teruskan ke penyimpanan offsite
+docker compose -f deploy/docker-compose.yml --env-file deploy/.env cp backup:/backup ./backup-copy
+```
+
+Isi `BACKUP_PASSPHRASE` di `deploy/.env` untuk backup yang meninggalkan pabrik.
+Tanpa itu dump ditulis apa adanya, dan skrip mencatat peringatan setiap kali.
+Simpan passphrase di tempat lain: kunci yang disimpan bersama data yang
+dilindunginya tidak melindungi apa pun.
+
+**Restore.** Uji ini minimal tiap kuartal — backup yang belum pernah direstore
+adalah harapan, bukan kontrol.
+
+```bash
+# 1. Dekripsi bila terenkripsi
+openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 \
+  -pass env:BACKUP_PASSPHRASE \
+  -in factory-vision-<stamp>.sql.gz.enc -out factory-vision-<stamp>.sql.gz
+
+# 2. Hentikan penulis sebelum memuat ulang
+docker compose -f deploy/docker-compose.yml --env-file deploy/.env stop api worker
+
+# 3. Muat ulang
+gunzip -c factory-vision-<stamp>.sql.gz | \
+  docker compose -f deploy/docker-compose.yml --env-file deploy/.env exec -T db \
+  psql -U factory -d factory_vision
+
+# 4. Nyalakan kembali
+docker compose -f deploy/docker-compose.yml --env-file deploy/.env start api worker
+```
+
+Verifikasi setelah restore: login berhasil, work order hari terakhir muncul,
+audit log terisi sampai waktu backup, dan satu alur produksi dapat diselesaikan
+dari mulai sampai selesai.
+
+---
+
+## 9b. Rotasi secret
+
+Setiap secret punya pemilik, tempat, dan jadwal (§34). Rotasi yang belum pernah
+dicoba akan dicoba pertama kali saat insiden — waktu terburuk untuk mencoba.
+
+| Secret | Jadwal | Dampak saat dirotasi |
+|---|---|---|
+| `APP_DB_PASSWORD` | 12 bulan, atau segera saat bocor | API dan worker restart |
+| `POSTGRES_PASSWORD` | 12 bulan | Hanya migrate dan backup |
+| `BOOTSTRAP_ADMIN_PASSWORD` | Saat personel berganti | Tidak ada; hanya dipakai saat instalasi |
+| `INTERNAL_ADMIN_PASSWORD` | Saat personel berganti | Sesi konsol internal berakhir |
+| `MFA_ENCRYPTION_KEY` | Hanya saat kompromi | **Semua enrolment MFA hangus, pengguna mendaftar ulang** |
+| `BACKUP_PASSPHRASE` | Saat kompromi | Backup lama tetap butuh passphrase lama — simpan keduanya sampai retensi habis |
+| `OBJECT_STORAGE_*` | 12 bulan | API restart |
+| Sertifikat TLS | Otomatis oleh Traefik | Tidak ada |
+
+Prosedur rotasi password database aplikasi:
+
+```bash
+# 1. Ubah APP_DB_PASSWORD di deploy/.env
+
+# 2. Terapkan ke database. Migrate menetapkan password role dari env.
+docker compose -f deploy/docker-compose.yml --env-file deploy/.env --profile migrate run --rm migrate
+
+# 3. Restart pemakainya
+docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d api worker
+
+# 4. Verifikasi
+curl -sf http://localhost:3100/api/v1/health && echo OK
+```
+
+Setelah personel dengan akses produksi keluar: rotasi `INTERNAL_ADMIN_PASSWORD`,
+cabut kunci SSH mereka, cabut sesi mereka di Pengaturan → Sesi, dan periksa
+audit log untuk aktivitas terakhir mereka.
+
+---
+
+## 9c. Respons insiden
+
+Alur singkat saat akun diduga disalahgunakan (§64, §66):
+
+```bash
+# 1. Cabut sesi akun tersebut (bertahan melewati restart)
+#    Konsol: Pengaturan → Sesi → Cabut
+#    atau:
+curl -X DELETE "http://localhost:3100/api/v1/sessions?subjectId=<userId>"   -H "Authorization: Bearer <token admin>"
+
+# 2. Nonaktifkan akun
+curl -X PATCH "http://localhost:3100/api/v1/master/users/<userId>/status"   -H "Authorization: Bearer <token admin>" -H 'Content-Type: application/json'   -d '{"status":"SUSPENDED"}'
+
+# 3. Baca jejaknya
+curl "http://localhost:3100/api/v1/audit-logs?entityType=auth"   -H "Authorization: Bearer <token admin>"
+
+# 4. Lihat apa yang tercatat kontrol keamanan sejak proses berjalan
+curl "http://localhost:3100/api/v1/security/summary"   -H "Authorization: Bearer <token admin>"
+```
+
+Urutan itu disengaja: cabut sesi **sebelum** menonaktifkan akun. Menonaktifkan
+lebih dulu tetap menyisakan sesi yang aktif sampai permintaan berikutnya.
+
+Untuk insiden yang menyentuh data pribadi, kewajiban notifikasi ada pada
+pelanggan sebagai Pengendali Data Pribadi; Factory Vision sebagai Prosesor
+wajib memberi informasi yang cukup dan tepat waktu (lihat bab UU PDP pada
+dokumen Cyber Security Requirement).
 
 ---
 

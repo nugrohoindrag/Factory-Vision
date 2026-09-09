@@ -306,6 +306,16 @@ export interface TerminalDashboardProps {
   onOpenCustomQty: (type: 'GOOD' | 'REJECT') => void;
   onOpenDowntime: () => void;
   onResolveDowntime: () => void;
+  /**
+   * The improvement's shop-floor transactions (Improvement PRD §38).
+   *
+   * All three queue offline like output and downtime already do, because the
+   * places that lose connectivity are exactly the places material is issued
+   * and WIP is handed on.
+   */
+  onOpenConsumption: () => void;
+  onOpenInspection: () => void;
+  onOpenWipTransfer: () => void;
   onStartWo: () => void;
   onPauseWo: () => void;
   onCompleteWo: () => void;
@@ -334,6 +344,9 @@ export const TerminalDashboard: React.FC<TerminalDashboardProps> = ({
   onOpenCustomQty,
   onOpenDowntime,
   onResolveDowntime,
+  onOpenConsumption,
+  onOpenInspection,
+  onOpenWipTransfer,
   onStartWo,
   onPauseWo,
   onCompleteWo,
@@ -471,6 +484,27 @@ export const TerminalDashboard: React.FC<TerminalDashboardProps> = ({
       disabled: activeWo?.status !== WorkOrderStatus.CONFIRMED,
     },
     { label: 'Jeda Produksi', icon: 'pause', tone: 'warning', onClick: onPauseWo, disabled: !running },
+    {
+      label: 'Pakai Material',
+      icon: 'inventory_2',
+      tone: 'chart-2',
+      onClick: onOpenConsumption,
+      disabled: !running,
+    },
+    {
+      label: 'Inspeksi Mutu',
+      icon: 'fact_check',
+      tone: 'info',
+      onClick: onOpenInspection,
+      disabled: !running,
+    },
+    {
+      label: 'Kirim ke Proses',
+      icon: 'swap_horiz',
+      tone: 'chart-3',
+      onClick: onOpenWipTransfer,
+      disabled: !running,
+    },
     { label: 'Selesaikan WO', icon: 'done_all', tone: 'success', onClick: onCompleteWo, disabled: !running },
   ];
 

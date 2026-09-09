@@ -11,6 +11,7 @@ import { Operator, SessionPrincipal } from '@factory-vision/domain-types';
 import { OperatorAuth } from '../features/auth/OperatorAuth.js';
 import { OperatorTerminal } from '../features/terminal/OperatorTerminal.js';
 import { startSyncEngine, syncQueue, syncServerClock } from '../offline/queue.js';
+import { clearCacheOnLogout, purgeExpiredCache } from '../offline/retention.js';
 import { bootstrapOffline } from '../offline/bootstrap.js';
 import { useOperatorTheme } from './theme.js';
 
@@ -47,6 +48,19 @@ export const App: React.FC = () => {
     clearAuth();
     setOperator(null);
     setPrincipal(null);
+
+    // §9: cached shift data leaves with the operator. Unsynced work is never
+    // touched — if the queue still holds anything the cache stays until the
+    // next login flushes it, because losing counts would be far worse than a
+    // cache that lingers on a tablet that is still offline.
+    void clearCacheOnLogout()
+      .then(({ cleared, pending }) => {
+        if (!cleared) {
+          // eslint-disable-next-line no-console
+          console.warn(`[offline] cache dipertahankan: ${pending} perintah belum tersinkron.`);
+        }
+      })
+      .catch(() => undefined);
   }, []);
 
   // Restore a session across a tablet reload, a dropped browser must not cost
@@ -80,6 +94,29 @@ export const App: React.FC = () => {
   // The queue runs regardless of who is signed in: commands captured before a
   // logout still belong to the server.
   useEffect(() => startSyncEngine(), []);
+
+  /**
+   * Retention sweep (§9).
+   *
+   * A terminal is often simply left on, so logout is not a reliable moment to
+   * clean up. This runs at boot and then hourly, dropping cached reference
+   * data past its window while leaving the queue alone.
+   */
+  useEffect(() => {
+    const sweep = () =>
+      void purgeExpiredCache()
+        .then((removed) => {
+          if (removed > 0) {
+            // eslint-disable-next-line no-console
+            console.log(`[offline] ${removed} cache lama dibersihkan.`);
+          }
+        })
+        .catch(() => undefined);
+
+    sweep();
+    const timer = window.setInterval(sweep, 60 * 60 * 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   /**
    * Local schema and offline caches (MES-077, MES-078).

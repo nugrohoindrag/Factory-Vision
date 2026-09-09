@@ -78,6 +78,17 @@ services:
       BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:?set BOOTSTRAP_ADMIN_PASSWORD in deploy/.env}
       BOOTSTRAP_ADMIN_NAME: ${BOOTSTRAP_ADMIN_NAME:-Administrator}
       BOOTSTRAP_OPERATOR_PIN: ${BOOTSTRAP_OPERATOR_PIN:-}
+      # Cross-origin allowlist; empty means same-origin only (§28).
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-}
+      # Second factor (§5). Without the key, enrolment refuses to start.
+      MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY:-}
+      MFA_REQUIRED_ROLES: ${MFA_REQUIRED_ROLES:-ADMIN}
+      PASSWORD_MIN_LENGTH: ${PASSWORD_MIN_LENGTH:-12}
+      PIN_MIN_LENGTH: ${PIN_MIN_LENGTH:-6}
+      # Where security alerts go (§43): a Slack/Teams incoming webhook, or any
+      # endpoint that accepts JSON. Unset means log-only.
+      SECURITY_ALERT_WEBHOOK: ${SECURITY_ALERT_WEBHOOK:-}
+      LARGE_EXPORT_ROWS: ${LARGE_EXPORT_ROWS:-5000}
       # The vendor's own client management, served under /api/internal/v1 and
       # reachable only with an internal session. Without these the admin
       # console has no way in, which is deliberate.
@@ -167,6 +178,63 @@ services:
       # How often the planning queue is drained (demand forecast, capacity
       # recalculation). This is the process that actually drains it.
       PLANNING_JOB_INTERVAL_MS: ${PLANNING_JOB_INTERVAL_MS:-5000}
+
+  # Automated backup (§39, §41). Daily database dump plus the attachment
+  # volume, encrypted when BACKUP_PASSPHRASE is set, pruned to
+  # BACKUP_RETENTION_DAYS. A backup that nobody scheduled is a backup that
+  # exists on the day someone remembers, which is never the day it is needed.
+  #
+  # Restore is the other half and it is documented in RUNBOOK-DEPLOY.md; a
+  # restore that has never been tested is a hope, not a control.
+  backup:
+    image: ${IMAGE_PREFIX:-ghcr.io/nugrohoindrag}/factory-vision-backup:${IMAGE_TAG:-master}
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.backup
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      TZ: ${TZ:-Asia/Jakarta}
+      PGHOST: db
+      PGUSER: ${POSTGRES_USER:-factory}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in deploy/.env}
+      POSTGRES_DB: ${POSTGRES_DB:-factory_vision}
+      DOCUMENT_SOURCE: /data/documents
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-30}
+      # Leave empty and the dump is written in the clear. Set it for anything
+      # that leaves the plant, and keep the passphrase somewhere other than
+      # this host: a key stored beside the data it protects protects nothing.
+      BACKUP_PASSPHRASE: ${BACKUP_PASSPHRASE:-}
+      BACKUP_OFFSITE_CMD: ${BACKUP_OFFSITE_CMD:-}
+      SECURITY_ALERT_WEBHOOK: ${SECURITY_ALERT_WEBHOOK:-}
+      BACKUP_INTERVAL_SECONDS: ${BACKUP_INTERVAL_SECONDS:-86400}
+      # §41. Restoring the newest dump into a throwaway database proves the
+      # backup is a backup. Weekly by default; the live database is never the
+      # target and the script refuses if it is.
+      BACKUP_VERIFY_INTERVAL_SECONDS: ${BACKUP_VERIFY_INTERVAL_SECONDS:-604800}
+      BACKUP_VERIFY_DB: ${BACKUP_VERIFY_DB:-factory_vision_restore_check}
+      BACKUP_MAX_AGE_HOURS: ${BACKUP_MAX_AGE_HOURS:-48}
+    volumes:
+      # The script is baked into the image; mounting it as well means an
+      # operator can fix a backup at 2am without rebuilding anything.
+      - ./backup.sh:/backup.sh:ro
+      - backup-data:/backup
+      - document-data:/data/documents:ro
+    entrypoint: ['/bin/sh', '-c']
+    command:
+      - |
+        last_verify=0
+        while true; do
+          /bin/sh /backup.sh || echo "[backup] FAILED"
+          now=$$(date +%s)
+          if [ $$(( now - last_verify )) -ge "$${BACKUP_VERIFY_INTERVAL_SECONDS:-604800}" ]; then
+            /bin/sh /backup-verify.sh || echo "[verify] FAILED"
+            last_verify=$$now
+          fi
+          sleep "$${BACKUP_INTERVAL_SECONDS:-86400}"
+        done
 
   # S3-compatible object storage for Customer Order attachments (ADR-09).
   #
@@ -322,6 +390,10 @@ services:
 
 volumes:
   db-data:
+  # Database dumps and attachment archives written by the `backup` service.
+  # Copy this off the host: a backup that only exists on the machine it backs
+  # up is not a backup.
+  backup-data:
   # Order attachments on the filesystem driver. Separate from db-data so a
   # database restore and a document restore are independent operations.
   document-data:

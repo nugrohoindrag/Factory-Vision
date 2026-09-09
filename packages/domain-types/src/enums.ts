@@ -23,6 +23,18 @@ export enum UserRole {
    * that ownership is enforced rather than merely documented.
    */
   SALES = 'SALES',
+  /**
+   * Maintenance, Warehouse and Workforce admin (Improvement PRD §35).
+   *
+   * The improvement gives three groups of people work of their own — preventive
+   * and corrective maintenance, material issue and stock accuracy, operator
+   * qualification and shift assignment. Each was previously somebody's side
+   * duty inside Supervisor or Admin, which meant the plant could not say who
+   * owned a job by looking at the roster.
+   */
+  MAINTENANCE = 'MAINTENANCE',
+  WAREHOUSE = 'WAREHOUSE',
+  WORKFORCE_ADMIN = 'WORKFORCE_ADMIN',
   ADMIN = 'ADMIN',
 }
 

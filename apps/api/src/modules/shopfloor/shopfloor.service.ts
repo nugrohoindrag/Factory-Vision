@@ -10,6 +10,47 @@ import { getPool, withTenant } from '../../platform/db/pool.js';
 import type { Executor } from '../../platform/db/executor.js';
 import { MasterDataService } from '../master-data/master-data.service.js';
 import { ProductionService } from '../production/production.service.js';
+
+/**
+ * The improvement's write signatures, described structurally rather than by
+ * importing the services.
+ *
+ * The shop floor is constructed before material, quality and WIP — each of
+ * those needs production, which needs the shop floor — so importing them here
+ * would be a cycle. A structural type keeps the dependency one-way and still
+ * type-checks the calls the sync switch makes.
+ */
+type OfflineActor = { id: string; name?: string; type?: 'USER' | 'OPERATOR' };
+
+type MaterialConsumptionWriter = (
+  tenantId: string,
+  input: {
+    workOrderId: string;
+    materialId: string;
+    actualQuantity: number;
+    idempotencyKey?: string;
+    [key: string]: unknown;
+  },
+  actor: OfflineActor
+) => Promise<{ id: string }>;
+
+type QualityInspectionWriter = (
+  tenantId: string,
+  input: { inspectedQuantity: number; workOrderId?: string; idempotencyKey?: string; [key: string]: unknown },
+  actor: OfflineActor
+) => Promise<{ id: string }>;
+
+type WipWriter = (
+  tenantId: string,
+  input: { workOrderId: string; quantity: number; [key: string]: unknown },
+  actor: OfflineActor
+) => Promise<{ id: string }>;
+
+type WipTransferWriter = (
+  tenantId: string,
+  input: { wipId: string; quantity: number; idempotencyKey?: string; [key: string]: unknown },
+  actor: OfflineActor
+) => Promise<{ id: string }>;
 import { generateHistory, type HistorySeedInput } from './history.seed.js';
 import { resolveShiftContext } from './shift-date.js';
 import { ProductionRecordRepository } from './production-record.repository.js';
@@ -51,6 +92,24 @@ export class ShopFloorService {
     private productionService: ProductionService,
     private masterData: MasterDataService
   ) {}
+
+  /**
+   * The improvement's offline-capable transactions (Improvement PRD §38).
+   *
+   * Attached rather than injected because these services are constructed after
+   * the shop floor — material consumption needs production, which needs the
+   * shop floor — and because a terminal that never records a consumption
+   * should not make the shop floor refuse to start.
+   */
+  private improvement?: {
+    material: { recordConsumption: MaterialConsumptionWriter };
+    quality: { recordInspection: QualityInspectionWriter };
+    wip: { createWip: WipWriter; createTransfer: WipTransferWriter };
+  };
+
+  attachImprovement(services: NonNullable<ShopFloorService['improvement']>): void {
+    this.improvement = services;
+  }
 
   /**
    * The production context a shop-floor event inherits from its work order
@@ -837,6 +896,64 @@ export class ShopFloorService {
         });
         await this.markProcessed(tenantId, cmd.clientEventId, cmd.type, cmd.workOrderId, wo.id);
         return wo.id;
+      }
+
+      // --- MES Improvement v2.0 (§38) --------------------------------
+      //
+      // Each of these already has server-side idempotency keyed on its own
+      // key, and `clientEventId` is reused as that key: a terminal replaying
+      // its queue after a reconnect must issue the material, record the
+      // inspection or move the WIP exactly once.
+      case 'RECORD_CONSUMPTION': {
+        if (!this.improvement) throw ApiError.validation('Modul material belum aktif.');
+        const record = await this.improvement.material.recordConsumption(
+          tenantId,
+          {
+            ...payload,
+            workOrderId: cmd.workOrderId,
+            idempotencyKey: cmd.clientEventId,
+          },
+          { id: payload.operatorId ?? 'operator', name: payload.operatorName, type: 'OPERATOR' }
+        );
+        await this.markProcessed(tenantId, cmd.clientEventId, cmd.type, cmd.workOrderId, record.id);
+        return record.id;
+      }
+
+      case 'RECORD_INSPECTION': {
+        if (!this.improvement) throw ApiError.validation('Modul quality belum aktif.');
+        const record = await this.improvement.quality.recordInspection(
+          tenantId,
+          {
+            ...payload,
+            workOrderId: cmd.workOrderId,
+            idempotencyKey: cmd.clientEventId,
+          },
+          { id: payload.operatorId ?? 'operator', name: payload.operatorName, type: 'OPERATOR' }
+        );
+        await this.markProcessed(tenantId, cmd.clientEventId, cmd.type, cmd.workOrderId, record.id);
+        return record.id;
+      }
+
+      case 'RECORD_WIP': {
+        if (!this.improvement) throw ApiError.validation('Modul WIP belum aktif.');
+        const record = await this.improvement.wip.createWip(
+          tenantId,
+          { ...payload, workOrderId: cmd.workOrderId },
+          { id: payload.operatorId ?? 'operator', name: payload.operatorName, type: 'OPERATOR' }
+        );
+        await this.markProcessed(tenantId, cmd.clientEventId, cmd.type, cmd.workOrderId, record.id);
+        return record.id;
+      }
+
+      case 'TRANSFER_WIP': {
+        if (!this.improvement) throw ApiError.validation('Modul WIP belum aktif.');
+        const record = await this.improvement.wip.createTransfer(
+          tenantId,
+          { ...payload, idempotencyKey: cmd.clientEventId },
+          { id: payload.operatorId ?? 'operator', name: payload.operatorName, type: 'OPERATOR' }
+        );
+        await this.markProcessed(tenantId, cmd.clientEventId, cmd.type, cmd.workOrderId, record.id);
+        return record.id;
       }
 
       default:

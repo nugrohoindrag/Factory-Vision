@@ -39,7 +39,12 @@
     "qa:themes": "node scripts/qa-visual-themes.mjs",
     "qa:pwa": "node scripts/qa-pwa-offline-sync.mjs",
     "dev:admin": "pnpm --filter @factory-vision/admin dev",
-    "dev:landing": "pnpm --filter @factory-vision/landing dev"
+    "dev:landing": "pnpm --filter @factory-vision/landing dev",
+    "verify:improvement": "pnpm --filter @factory-vision/api run verify:improvement",
+    "qa:db": "pnpm --filter @factory-vision/api run qa:db",
+    "qa:routes": "pnpm --filter @factory-vision/api run qa:routes",
+    "qa:security": "pnpm --filter @factory-vision/api run qa:security",
+    "qa:sales-boundary": "pnpm --filter @factory-vision/api run qa:sales-boundary"
   },
   "devDependencies": {
     "dotenv": "^16.6.1",

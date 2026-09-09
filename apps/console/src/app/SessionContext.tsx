@@ -7,6 +7,7 @@ import {
   getAuthToken,
   onAuthExpired,
 } from '@factory-vision/api-client';
+import { isMfaChallenge } from '@factory-vision/domain-types';
 import type { AppUser, SessionPrincipal } from '@factory-vision/domain-types';
 
 const api = new FactoryVisionApiClient({ baseUrl: '' });
@@ -18,9 +19,21 @@ interface SessionState {
   restoring: boolean;
 }
 
+/**
+ * What a password buys (§5): either a session, or the right to answer one
+ * challenge. The union is here rather than a nullable principal so the login
+ * screen has to handle the second case to compile.
+ */
+export type LoginResult =
+  | { kind: 'SESSION'; principal: SessionPrincipal; mfaEnrollmentRequired: boolean }
+  | { kind: 'MFA_REQUIRED'; challengeToken: string; expiresInSeconds: number };
+
 interface SessionContextValue extends SessionState {
-  login: (email: string, password: string) => Promise<SessionPrincipal>;
+  login: (email: string, password: string) => Promise<LoginResult>;
+  verifyMfa: (challengeToken: string, code: string) => Promise<SessionPrincipal>;
   logout: () => Promise<void>;
+  /** Set when the signed-in role must enrol in MFA and has not yet. */
+  mfaEnrollmentRequired: boolean;
   /**
    * US-003, the console renders from the very permission ids the API enforces,
    * so a hidden button and a rejected request can never disagree.
@@ -91,9 +104,31 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     []
   );
 
-  const login = useCallback(async (email: string, password: string) => {
+  const [mfaEnrollmentRequired, setMfaEnrollmentRequired] = useState(false);
+
+  const login = useCallback(async (email: string, password: string): Promise<LoginResult> => {
     const result = await api.auth.login(email, password);
+    if (isMfaChallenge(result)) {
+      return {
+        kind: 'MFA_REQUIRED',
+        challengeToken: result.challengeToken,
+        expiresInSeconds: result.expiresInSeconds,
+      };
+    }
     setAuthToken(result.token);
+    setMfaEnrollmentRequired(Boolean(result.mfaEnrollmentRequired));
+    setState({ principal: result.principal, user: result.user ?? null, restoring: false });
+    return {
+      kind: 'SESSION',
+      principal: result.principal,
+      mfaEnrollmentRequired: Boolean(result.mfaEnrollmentRequired),
+    };
+  }, []);
+
+  const verifyMfa = useCallback(async (challengeToken: string, code: string) => {
+    const result = await api.auth.verifyMfa(challengeToken, code);
+    setAuthToken(result.token);
+    setMfaEnrollmentRequired(false);
     setState({ principal: result.principal, user: result.user ?? null, restoring: false });
     return result.principal;
   }, []);
@@ -115,13 +150,15 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const permissions = new Set(state.principal?.permissions ?? []);
     return {
       ...state,
+      mfaEnrollmentRequired,
       login,
+      verifyMfa,
       logout,
       can: (permission: string) => permissions.has(permission),
       canAny: (...list: string[]) => list.some((p) => permissions.has(p)),
       isScoped: (state.principal?.scope.level ?? 'TENANT') !== 'TENANT',
     };
-  }, [state, login, logout]);
+  }, [state, mfaEnrollmentRequired, login, verifyMfa, logout]);
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 };

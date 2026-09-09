@@ -162,6 +162,9 @@ export const USER_ROLE_LABEL: Record<UserRole, string> = {
   [UserRole.PPIC]: 'PPIC',
   [UserRole.QUALITY]: 'Quality',
   [UserRole.SALES]: 'Sales',
+  [UserRole.MAINTENANCE]: 'Maintenance',
+  [UserRole.WAREHOUSE]: 'Warehouse',
+  [UserRole.WORKFORCE_ADMIN]: 'Workforce Admin',
   [UserRole.ADMIN]: 'Admin',
 };
 

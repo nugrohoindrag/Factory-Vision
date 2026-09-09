@@ -28,6 +28,11 @@ import { validate } from './platform/http/validate.js';
 import { ApiError } from './platform/http/api-error.js';
 import { attachPrincipal, scope } from './platform/auth/auth.middleware.js';
 import { authorizeRoutes } from './platform/auth/route-permissions.js';
+import { securityHeaders } from './platform/http/security-headers.js';
+import { corsOptions, describeCorsPolicy, isProduction } from './platform/http/cors-policy.js';
+import { bodyKey, clientKey, rateLimit } from './platform/security/rate-limit.js';
+import { recordSecurityEvent, securityCounters } from './platform/security/security-events.js';
+import { rolesRequiringMfa } from './modules/auth/mfa.service.js';
 import { internalRoutes } from './routes/internal.routes.js';
 import { ClientManagementService } from './modules/client-management/client.service.js';
 import { ClientAdminService } from './modules/client-management/client.admin.service.js';
@@ -54,21 +59,52 @@ import { WorkOrderGenerationService } from './modules/production/work-order-gene
 import { PlanningFacade, planningRoutes } from './modules/planning/public/index.js';
 import { OnboardingService } from './modules/onboarding/onboarding.service.js';
 import { onboardingRoutes } from './routes/onboarding.routes.js';
+import { EventService } from './modules/event/event.service.js';
+import { eventRoutes } from './routes/event.routes.js';
+import { MaterialService } from './modules/material/material.service.js';
+import { MrpService } from './modules/material/mrp.service.js';
+import { materialRoutes } from './routes/material.routes.js';
+import { QualityService } from './modules/quality/quality.service.js';
+import { qualityRoutes } from './routes/quality.routes.js';
+import { MaintenanceService } from './modules/maintenance/maintenance.service.js';
+import { maintenanceRoutes } from './routes/maintenance.routes.js';
+import { WorkforceService } from './modules/workforce/workforce.service.js';
+import { workforceRoutes } from './routes/workforce.routes.js';
+import { WipService } from './modules/wip/wip.service.js';
+import { wipRoutes } from './routes/wip.routes.js';
+import { ProductionBoardService } from './modules/board/production-board.service.js';
+import { productionBoardRoutes } from './routes/production-board.routes.js';
+import { ImprovementAlertsService } from './modules/alerts/improvement-alerts.service.js';
 import { SEED_DEMO_DATA } from './platform/config/demo-seed.js';
 
 const app = express();
 const server = http.createServer(app);
-const realtimeGateway = new RealtimeGateway(server);
 
 /**
  * Authentication and authorization are enforced by default and can be switched
  * off for a local demo (`AUTH_REQUIRED=false`). The pilot's on-premise install
  * runs with it on, US-003 requires the API to apply the same rules as the UI,
  * and a flag that defaults to open would quietly defeat that.
+ *
+ * In production the flag is not honoured at all. A demo switch that can be set
+ * by one line in a `.env` is a way to publish a factory's data by accident,
+ * and the accident is silent — everything keeps working, which is the problem.
  */
-const AUTH_REQUIRED = process.env.AUTH_REQUIRED !== 'false';
+const AUTH_DISABLED_REQUESTED = process.env.AUTH_REQUIRED === 'false';
+if (AUTH_DISABLED_REQUESTED && isProduction()) {
+  // eslint-disable-next-line no-console
+  console.error(
+    '[security] AUTH_REQUIRED=false is refused in production. Authentication stays on. ' +
+      'Use a non-production NODE_ENV for a demo install.'
+  );
+}
+const AUTH_REQUIRED = !AUTH_DISABLED_REQUESTED || isProduction();
 
-app.use(cors({ exposedHeaders: ['X-Request-Id'] }));
+/** Reported on the security summary so "since when" has an answer. */
+const bootedAt = new Date().toISOString();
+
+app.use(securityHeaders());
+app.use(cors(corsOptions()));
 app.use(express.json({ limit: '8mb' }));
 app.use(requestIdMiddleware);
 app.use(tenantMiddleware);
@@ -95,6 +131,11 @@ const clientManagementService = new ClientManagementService(
 const clientAdminService = new ClientAdminService();
 const rbacService = new RbacService(masterDataService);
 const authService = new AuthService(masterDataService, rbacService, auditService);
+
+// The realtime gateway needs the session store, so it is built here rather
+// than beside the HTTP server: an unauthenticated socket is the same leak as
+// an unauthenticated endpoint.
+const realtimeGateway = new RealtimeGateway(server, authService, { enabled: AUTH_REQUIRED });
 const oeeService = new OeeService(masterDataService, productionService, shopFloorService);
 const csvService = new CsvService(masterDataService);
 const shiftHandoverService = new ShiftHandoverService(masterDataService, productionService, shopFloorService);
@@ -112,6 +153,51 @@ const processChainService = new ProcessChainService();
 const workOrderGenerationService = new WorkOrderGenerationService();
 const planningFacade = new PlanningFacade();
 
+/**
+ * MES Improvement v2.0 (Improvement PRD §3–§10).
+ *
+ * The event history is constructed first because every capability below writes
+ * into it: material consumption, quality, maintenance, workforce and WIP all
+ * append to the same operational timeline rather than each keeping its own.
+ */
+const eventService = new EventService();
+const materialService = new MaterialService(masterDataService, productionService, eventService);
+const mrpService = new MrpService(materialService, masterDataService, planningFacade, eventService);
+const qualityService = new QualityService(masterDataService, productionService, eventService);
+const maintenanceService = new MaintenanceService(masterDataService, shopFloorService, eventService);
+const workforceService = new WorkforceService(masterDataService, productionService, eventService);
+const wipService = new WipService(masterDataService, productionService, qualityService, eventService);
+const productionBoardService = new ProductionBoardService(
+  masterDataService,
+  productionService,
+  maintenanceService,
+  materialService,
+  workforceService,
+  eventService
+);
+
+// §26 — the improvement's alerts join the existing operational feed.
+const improvementAlertsService = new ImprovementAlertsService(
+  materialService,
+  qualityService,
+  maintenanceService,
+  workforceService,
+  wipService
+);
+
+// §38 — the offline queue can carry material consumption, quality inspection
+// and WIP transactions. Attached rather than injected because these services
+// are built after the shop floor, and because a terminal that never records one
+// must not stop the shop floor from starting.
+shopFloorService.attachImprovement({
+  material: { recordConsumption: materialService.recordConsumption.bind(materialService) },
+  quality: { recordInspection: qualityService.recordInspection.bind(qualityService) },
+  wip: {
+    createWip: wipService.createWip.bind(wipService),
+    createTransfer: wipService.createTransfer.bind(wipService),
+  },
+});
+
 correctionService.attachDependencies({ shopFloor: shopFloorService, audit: auditService, oee: oeeService });
 
 // Production tells planning when a fact it derives from has changed (MES-026-1).
@@ -122,7 +208,87 @@ productionService.attachPlanning(planningFacade);
 // Resolve the bearer token before anything reads `req.context`, then apply the
 // route to permission policy in one place (US-003, US-054).
 app.use(attachPrincipal(authService));
+
+/**
+ * Rate limits on the endpoints an attacker gets to call for free (§30).
+ *
+ * Keyed on the identity being attacked as well as the address: one factory
+ * leaves through one IP, so limiting only by address would lock a whole shift
+ * out the first time somebody fat-fingers a PIN.
+ */
+app.use(
+  '/api/v1/auth/login',
+  rateLimit({
+    // A coarse backstop only: the per-account lockout in AuthService is what
+    // actually stops a guessing run, and this ceiling has to stay above what
+    // a busy shift change or an automated test suite legitimately produces.
+    limit: 40,
+    windowMs: 15 * 60_000,
+    message: 'Terlalu banyak percobaan login. Coba lagi beberapa saat.',
+    key: (req) => `login:${bodyKey(req, 'email')}:${clientKey(req)}`,
+  })
+);
+app.use(
+  '/api/v1/auth/operator-login',
+  rateLimit({
+    limit: 40,
+    windowMs: 10 * 60_000,
+    message: 'Terlalu banyak percobaan PIN. Coba lagi beberapa saat.',
+    key: (req) => `pin:${bodyKey(req, 'employeeNumber')}`,
+  })
+);
+// A six-digit code is guessable in a hundred thousand tries; the challenge is
+// single-use, and this keeps the attempts per challenge in single figures.
+app.use(
+  '/api/v1/auth/mfa/verify',
+  rateLimit({
+    limit: 8,
+    windowMs: 10 * 60_000,
+    message: 'Terlalu banyak percobaan kode MFA. Silakan login ulang.',
+    key: (req) => `mfa:${bodyKey(req, 'challengeToken')}`,
+  })
+);
+app.use(
+  '/api/v1/auth/trial-register',
+  rateLimit({
+    limit: 5,
+    windowMs: 60 * 60_000,
+    message: 'Terlalu banyak pendaftaran dari alamat ini. Coba lagi nanti.',
+  })
+);
+app.use(
+  '/api/internal/v1/auth/login',
+  rateLimit({
+    limit: 8,
+    windowMs: 15 * 60_000,
+    message: 'Terlalu banyak percobaan login internal.',
+    key: (req) => `internal:${bodyKey(req, 'email')}:${clientKey(req)}`,
+  })
+);
+
+// Credential-setting and bulk-data endpoints: cheap for the caller, expensive
+// or sensitive for everyone else.
+const credentialLimit = rateLimit({
+  limit: 20,
+  windowMs: 15 * 60_000,
+  message: 'Terlalu banyak perubahan kredensial. Coba lagi beberapa saat.',
+});
+app.use(/^\/api\/v1\/(users|master\/users)\/[^/]+\/password$/, credentialLimit);
+app.use(/^\/api\/v1\/operators\/[^/]+\/pin$/, credentialLimit);
+app.use(
+  /^\/api\/v1\/csv\/[^/]+\/(export|import)$/,
+  rateLimit({
+    limit: 30,
+    windowMs: 15 * 60_000,
+    message: 'Terlalu banyak permintaan export/import. Coba lagi beberapa saat.',
+  })
+);
+
 app.use(authorizeRoutes({ enabled: AUTH_REQUIRED }));
+
+// Expired sessions are already ignored on every read; this keeps the table
+// from growing without bound (§6).
+authService.startSessionSweeper();
 
 // PostgreSQL must be reachable and migrated before anything is served: the
 // shop floor's records live there, not in this process (persistence fix §7).
@@ -707,6 +873,20 @@ app.put(
       scopeId: user.scopeId,
       status: user.status,
     });
+
+    // §43: handing out administrator is the change most worth noticing on
+    // the day it happens, not at the next audit.
+    if (roleChanged && String(user.role).toUpperCase() === 'ADMIN') {
+      recordSecurityEvent({
+        type: 'ADMIN_ROLE_ASSIGNED',
+        severity: 'CRITICAL',
+        message: `${user.email} sekarang berperan ADMIN (sebelumnya ${previous.role}).`,
+        tenantId,
+        actor: req.principal?.subjectId,
+        ip: req.ip,
+        detail: { userId: user.id, previousRole: previous.role },
+      });
+    }
 
     // A narrowed scope or a different role must take effect now, not at the
     // user's next login.
@@ -1496,7 +1676,15 @@ app.get('/api/v1/analytics/order-status', async (req, res) => {
 
 // Operational Alerts / Exceptions
 app.get('/api/v1/analytics/alerts', async (req, res) => {
-  res.json(await performanceService.getOperationalAlerts(req.context!.tenantId, parseDays(req.query.days, 7)));
+  // Two producers, one feed: v1.7's OEE-derived rules and the improvement's
+  // material, quality, maintenance, workforce and WIP rules (§26). The console
+  // shows one alert list, so the merge happens here rather than there.
+  const tenantId = req.context!.tenantId;
+  const [performance, improvement] = await Promise.all([
+    performanceService.getOperationalAlerts(tenantId, parseDays(req.query.days, 7)),
+    improvementAlertsService.getAlerts(tenantId),
+  ]);
+  res.json([...performance, ...improvement]);
 });
 
 // Daily aggregate backing every trend above; useful for export and debugging.
@@ -1833,6 +2021,39 @@ app.use(
   )
 );
 app.use('/api/v1', onboardingRoutes(onboardingService));
+
+// MES Improvement v2.0.
+app.use('/api/v1', eventRoutes(eventService));
+app.use('/api/v1', materialRoutes(materialService, mrpService, planningFacade, auditService));
+app.use('/api/v1', qualityRoutes(qualityService, auditService));
+app.use('/api/v1', maintenanceRoutes(maintenanceService, auditService));
+app.use('/api/v1', workforceRoutes(workforceService, auditService));
+app.use('/api/v1', wipRoutes(wipService, auditService));
+app.use('/api/v1', productionBoardRoutes(productionBoardService, auditService));
+/**
+ * What the security controls have seen since this process started (§42).
+ *
+ * Counters rather than a log: an administrator wants to know whether lockouts
+ * are happening at all before going to read anything, and a log shipper can
+ * take the structured lines from stdout for the detail.
+ */
+app.get(
+  '/api/v1/security/summary',
+  route(async (req, res) => {
+    res.json({
+      since: bootedAt,
+      counters: securityCounters(),
+      posture: {
+        authRequired: AUTH_REQUIRED,
+        corsPolicy: describeCorsPolicy(),
+        mfaAvailable: authService.mfa.available,
+        mfaRequiredRoles: rolesRequiringMfa(),
+        tenantId: req.context?.tenantId,
+      },
+    });
+  })
+);
+
 app.use('/api/v1', metaRoutes());
 app.use('/api/internal/v1', internalRoutes(internalAuthService, clientManagementService, clientAdminService));
 

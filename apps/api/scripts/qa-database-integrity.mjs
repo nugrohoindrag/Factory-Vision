@@ -39,6 +39,40 @@ function check(label, condition, detail) {
 const owner = new pg.Client({ connectionString: OWNER_URL });
 await owner.connect();
 
+/*
+ * `DATABASE_URL` here means the *owner* connection, and dotenv does not
+ * override a variable already exported by the shell. Point it at `factory_app`
+ * by accident — easy, since that is what the API itself uses — and every
+ * section below reads zero rows through FORCE ROW LEVEL SECURITY, reporting
+ * "0 production records" and "system role ADMIN does not exist" against a
+ * database where both are plainly there.
+ *
+ * A dozen confident, wrong failures is worse than one refusal, so the harness
+ * checks who it is before it asserts anything. The fix is never to relax RLS:
+ * it is to connect as the role the check is written for.
+ */
+const whoami = await owner.query(
+  'SELECT current_user AS name, rolsuper AS superuser, rolbypassrls AS bypassrls FROM pg_roles WHERE rolname = current_user'
+);
+if (whoami.rows[0] && !whoami.rows[0].superuser && !whoami.rows[0].bypassrls) {
+  console.error(
+    [
+      '',
+      `DATABASE_URL points at "${whoami.rows[0].name}", which is subject to row-level security.`,
+      'Sections 1 to 7 read tenant-scoped tables without declaring a tenant, so under FORCE ROW',
+      'LEVEL SECURITY they would see nothing and report a correct database as broken — "0',
+      'production records", "system role ADMIN does not exist", and so on.',
+      '',
+      'This script wants the *owner* connection in DATABASE_URL; the application role belongs in',
+      'APP_DATABASE_URL, where section 8 uses it to prove isolation actually holds. Note that an',
+      'exported DATABASE_URL overrides the one in .env.',
+      '',
+    ].join('\n')
+  );
+  await owner.end();
+  process.exit(2);
+}
+
 async function asTenant(client, tenantId, fn) {
   await client.query('BEGIN');
   try {

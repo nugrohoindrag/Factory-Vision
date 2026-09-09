@@ -2,6 +2,7 @@ import { randomBytes } from 'crypto';
 import { UserRole } from '@factory-vision/domain-types';
 import type {
   AppUser,
+  LoginOutcome,
   LoginResponse,
   Operator,
   SessionKind,
@@ -13,6 +14,16 @@ import { AuditService } from '../audit/audit.service.js';
 import { MasterDataService } from '../master-data/master-data.service.js';
 import { RbacService } from '../rbac/rbac.service.js';
 import { hashSecret, verifySecret } from './credentials.js';
+import { assertPasswordPolicy, assertPinPolicy, describeCredentialProblem } from '../../platform/security/credential-policy.js';
+import { loginGuard, pinGuard } from '../../platform/security/rate-limit.js';
+import { recordSecurityEvent } from '../../platform/security/security-events.js';
+import { MfaService } from './mfa.service.js';
+import {
+  SessionRepository,
+  hashToken,
+  summarise,
+  type StoredSession,
+} from './session.repository.js';
 
 /**
  * Session lifetimes (, US-002).
@@ -27,20 +38,23 @@ const LIFETIMES: Record<SessionKind, { absoluteSeconds: number; idleSeconds: num
   OPERATOR: { absoluteSeconds: 8 * 60 * 60, idleSeconds: 15 * 60 },
 };
 
-interface StoredSession {
-  principal: SessionPrincipal;
-  token: string;
-  lastSeenAt: string;
-  ip?: string;
-  userAgent?: string;
-}
-
 interface AuthContext {
   ip?: string;
   userAgent?: string;
 }
 
 const PILOT_TENANT = 'tenant-pilot-factory-01';
+
+/**
+ * How long a resolved session may be answered from memory before the store is
+ * consulted again, and how often the idle window is written back.
+ *
+ * Ten seconds is the window in which a revocation made elsewhere is still
+ * honoured here. Sixty seconds of write throttling keeps the shop floor's
+ * capture path free of a database write per request.
+ */
+const CACHE_MS = 10_000;
+const TOUCH_MS = 60_000;
 
 /**
  * Authentication for both front doors (US-001, US-002) and the session store
@@ -53,12 +67,25 @@ const PILOT_TENANT = 'tenant-pilot-factory-01';
 export class AuthService {
   private readonly userSecrets = new Map<string, string>();
   private readonly operatorSecrets = new Map<string, string>();
-  private readonly sessions = new Map<string, StoredSession>();
+
+  /**
+   * Sessions live in `app_session` (§6). This map is only a read-through
+   * cache in front of it, held for `CACHE_MS` so that a burst of shop-floor
+   * requests does not become a burst of queries.
+   *
+   * The consequence worth stating: a revocation made on another replica takes
+   * effect here within `CACHE_MS`, not instantly. That is a deliberate trade,
+   * and it is the difference between "seconds" and the previous behaviour,
+   * which was "never, because the other replica had its own sessions".
+   */
+  private readonly cache = new Map<string, { session: StoredSession; readAt: number }>();
+  private readonly sessions = new SessionRepository();
 
   constructor(
     private masterData: MasterDataService,
     private rbac: RbacService,
-    private audit: AuditService
+    private audit: AuditService,
+    readonly mfa: MfaService = new MfaService()
   ) {}
 
   /**
@@ -91,9 +118,10 @@ export class AuthService {
       return;
     }
 
-    if (password.length < 12) {
+    const problem = describeCredentialProblem(password, 'password');
+    if (problem) {
       // eslint-disable-next-line no-console
-      console.warn('[auth] BOOTSTRAP_ADMIN_PASSWORD is shorter than 12 characters. Refusing to use it.');
+      console.warn(`[auth] BOOTSTRAP_ADMIN_PASSWORD rejected: ${problem} No account can sign in until it is fixed.`);
       return;
     }
 
@@ -123,7 +151,12 @@ export class AuthService {
     // the installer asks for one; otherwise operators cannot sign in until an
     // administrator issues each of them a PIN.
     const operatorPin = process.env.BOOTSTRAP_OPERATOR_PIN;
-    if (operatorPin && /^\d{4,8}$/.test(operatorPin)) {
+    const pinProblem = operatorPin ? describeCredentialProblem(operatorPin, 'pin') : undefined;
+    if (operatorPin && pinProblem) {
+      // eslint-disable-next-line no-console
+      console.warn(`[auth] BOOTSTRAP_OPERATOR_PIN rejected: ${pinProblem} No starting PIN was applied.`);
+    }
+    if (operatorPin && !pinProblem) {
       // A *starting* PIN, which is only a starting point. Applying it to every
       // operator on every boot would silently reset a PIN an administrator had
       // issued, so an operator whose credential was rotated last week would be
@@ -173,7 +206,16 @@ export class AuthService {
   // US-001, Application login
   // ---------------------------------------------------------
 
-  async login(tenantId: string, email: string, password: string, ctx: AuthContext = {}): Promise<LoginResponse> {
+  async login(tenantId: string, email: string, password: string, ctx: AuthContext = {}): Promise<LoginOutcome> {
+    // Brute-force protection is keyed on the account being attacked, and the
+    // lock is temporary: a permanent one keyed on something the attacker
+    // supplies is a way to keep a supervisor out of their own shift (§7).
+    const guardKey = `${tenantId}:${email.trim().toLowerCase()}`;
+    loginGuard.assertAvailable(
+      guardKey,
+      'Terlalu banyak percobaan login yang gagal. Coba lagi dalam beberapa menit.'
+    );
+
     const user = this.masterData
       .getUsers(tenantId)
       .find((u) => u.email.toLowerCase() === email.toLowerCase() && u.accountType === 'APPLICATION_USER');
@@ -181,17 +223,31 @@ export class AuthService {
     // A missing account and a wrong password are reported identically so the
     // login form cannot be used to enumerate who works here.
     if (!user || !verifySecret(password, this.userSecrets.get(user.id))) {
+      const locked = loginGuard.recordFailure(guardKey);
       await this.audit.record({
         tenantId,
         actorType: 'SYSTEM',
         actorId: email,
         entityType: 'auth',
         entityId: email,
-        action: 'LOGIN_FAILED',
-        newValue: { reason: 'INVALID_CREDENTIALS' },
+        action: locked ? 'LOGIN_LOCKED' : 'LOGIN_FAILED',
+        newValue: { reason: 'INVALID_CREDENTIALS', locked },
         ip: ctx.ip,
         userAgent: ctx.userAgent,
       });
+      if (locked) {
+        recordSecurityEvent({
+          type: 'LOGIN_LOCKED',
+          severity: 'WARNING',
+          message: `Akun ${email} dikunci sementara setelah percobaan login berulang.`,
+          tenantId,
+          actor: email,
+          ip: ctx.ip,
+        });
+        throw ApiError.rateLimited(
+          'Terlalu banyak percobaan login yang gagal. Coba lagi dalam beberapa menit.'
+        );
+      }
       throw ApiError.unauthenticated('Email atau kata sandi salah.');
     }
 
@@ -214,7 +270,41 @@ export class AuthService {
       );
     }
 
-    const principal = this.issue('APPLICATION', {
+    loginGuard.recordSuccess(guardKey);
+
+    // Second factor (§5). The password alone gets a challenge, never a
+    // session: what comes back carries no permissions and expires in minutes.
+    if (await this.mfa.isActiveFor(tenantId, user.id)) {
+      const challenge = this.mfa.issueChallenge(tenantId, user.id);
+      await this.audit.record({
+        tenantId,
+        actorType: 'USER',
+        actorId: user.id,
+        entityType: 'auth',
+        entityId: user.id,
+        action: 'MFA_CHALLENGED',
+        ip: ctx.ip,
+        userAgent: ctx.userAgent,
+      });
+      return { mfaRequired: true, ...challenge };
+    }
+
+    return this.completeLogin(tenantId, user, ctx, { usedRecoveryCode: false });
+  }
+
+  /**
+   * Issues the session once every factor has been satisfied.
+   *
+   * Shared by the single-factor path and by MFA verification so there is only
+   * one place where a session comes into existence.
+   */
+  private async completeLogin(
+    tenantId: string,
+    user: AppUser,
+    ctx: AuthContext,
+    options: { usedRecoveryCode: boolean; viaMfa?: boolean }
+  ): Promise<LoginResponse> {
+    const { principal, token } = this.issue('APPLICATION', {
       tenantId,
       subjectId: user.id,
       name: user.name,
@@ -222,10 +312,7 @@ export class AuthService {
       scopeLevel: user.scopeLevel,
       scopeId: user.scopeId,
     });
-
-    const stored = this.sessions.get(principal.sessionId)!;
-    stored.ip = ctx.ip;
-    stored.userAgent = ctx.userAgent;
+    await this.persist(principal, token, ctx);
 
     user.lastLoginAt = new Date().toISOString();
 
@@ -236,17 +323,60 @@ export class AuthService {
       entityType: 'auth',
       entityId: user.id,
       action: 'LOGIN',
-      newValue: { role: user.role, sessionId: principal.sessionId },
+      newValue: {
+        role: user.role,
+        sessionId: principal.sessionId,
+        mfa: options.viaMfa ? (options.usedRecoveryCode ? 'RECOVERY_CODE' : 'TOTP') : 'NONE',
+      },
       ip: ctx.ip,
       userAgent: ctx.userAgent,
     });
 
+    // A role that must carry a second factor, on an account that has not
+    // enrolled one, is not refused at the door — that would leave the account
+    // no way to fix it. It is flagged, and the console sends them to enrol.
+    const mfaEnrollmentRequired =
+      !options.viaMfa && this.mfa.available && this.mfa.isRequiredFor(user.role);
+
     return {
-      token: stored.token,
+      token,
       principal,
       user,
       idleTimeoutSeconds: LIFETIMES.APPLICATION.idleSeconds,
+      ...(mfaEnrollmentRequired ? { mfaEnrollmentRequired } : {}),
     };
+  }
+
+  /** Answers a login challenge and issues the session (§5). */
+  async verifyMfaLogin(challengeToken: string, code: string, ctx: AuthContext = {}): Promise<LoginResponse> {
+    const { tenantId, userId, usedRecoveryCode } = await this.mfa.verifyChallenge(challengeToken, code);
+    const user = this.masterData.getUserById(tenantId, userId);
+    if (!user || user.status !== 'ACTIVE') {
+      throw ApiError.forbidden('Akun Anda tidak aktif. Hubungi administrator.');
+    }
+
+    if (usedRecoveryCode) {
+      await this.audit.record({
+        tenantId,
+        actorType: 'USER',
+        actorId: user.id,
+        entityType: 'auth',
+        entityId: user.id,
+        action: 'MFA_RECOVERY_CODE_USED',
+        ip: ctx.ip,
+        userAgent: ctx.userAgent,
+      });
+      recordSecurityEvent({
+        type: 'MFA_RECOVERY_CODE_USED',
+        severity: 'WARNING',
+        message: `${user.email} masuk memakai recovery code, bukan aplikasi authenticator.`,
+        tenantId,
+        actor: user.id,
+        ip: ctx.ip,
+      });
+    }
+
+    return this.completeLogin(tenantId, user, ctx, { usedRecoveryCode, viaMfa: true });
   }
 
   // ---------------------------------------------------------
@@ -254,24 +384,49 @@ export class AuthService {
   // ---------------------------------------------------------
 
   async operatorLogin(tenantId: string, employeeNumber: string, pin: string, ctx: AuthContext = {}): Promise<LoginResponse> {
+    // A PIN pad has ten keys, so this is the smallest keyspace in the product
+    // and the one that most needs a lock (§8). Keyed per employee number, not
+    // per address: the whole plant shares one.
+    const guardKey = `${tenantId}:${employeeNumber.trim().toLowerCase()}`;
+    pinGuard.assertAvailable(
+      guardKey,
+      'PIN terkunci sementara karena terlalu banyak percobaan. Hubungi supervisor.'
+    );
+
     const operator = this.masterData
       .getOperators(tenantId)
       .find((o) => o.employeeNumber.toLowerCase() === employeeNumber.toLowerCase());
 
     if (!operator || !verifySecret(pin, this.operatorSecrets.get(operator.id))) {
+      const locked = pinGuard.recordFailure(guardKey);
       await this.audit.record({
         tenantId,
         actorType: 'SYSTEM',
         actorId: employeeNumber,
         entityType: 'auth',
         entityId: employeeNumber,
-        action: 'OPERATOR_LOGIN_FAILED',
-        newValue: { reason: 'INVALID_CREDENTIALS' },
+        action: locked ? 'OPERATOR_LOGIN_LOCKED' : 'OPERATOR_LOGIN_FAILED',
+        newValue: { reason: 'INVALID_CREDENTIALS', locked },
         ip: ctx.ip,
         userAgent: ctx.userAgent,
       });
+      if (locked) {
+        recordSecurityEvent({
+          type: 'OPERATOR_LOGIN_LOCKED',
+          severity: 'WARNING',
+          message: `PIN operator ${employeeNumber} dikunci sementara setelah percobaan berulang.`,
+          tenantId,
+          actor: employeeNumber,
+          ip: ctx.ip,
+        });
+        throw ApiError.rateLimited(
+          'PIN terkunci sementara karena terlalu banyak percobaan. Hubungi supervisor.'
+        );
+      }
       throw ApiError.unauthenticated('Nomor karyawan atau PIN salah.');
     }
+
+    pinGuard.recordSuccess(guardKey);
 
     if (operator.status !== 'ACTIVE') {
       throw ApiError.forbidden('Operator tidak aktif. Hubungi supervisor.');
@@ -280,7 +435,7 @@ export class AuthService {
     // An operator is scoped to the line they are rostered on, which is what
     // makes "hanya melihat assigned shop-floor context" true at the API level
     // rather than only in the terminal UI.
-    const principal = this.issue('OPERATOR', {
+    const { principal, token } = this.issue('OPERATOR', {
       tenantId,
       subjectId: operator.id,
       name: operator.name,
@@ -288,10 +443,7 @@ export class AuthService {
       scopeLevel: operator.defaultLineId ? 'LINE' : 'TENANT',
       scopeId: operator.defaultLineId,
     });
-
-    const stored = this.sessions.get(principal.sessionId)!;
-    stored.ip = ctx.ip;
-    stored.userAgent = ctx.userAgent;
+    await this.persist(principal, token, ctx);
 
     await this.audit.record({
       tenantId,
@@ -306,7 +458,7 @@ export class AuthService {
     });
 
     return {
-      token: stored.token,
+      token,
       principal,
       operator,
       idleTimeoutSeconds: LIFETIMES.OPERATOR.idleSeconds,
@@ -327,11 +479,13 @@ export class AuthService {
       scopeLevel: AppUser['scopeLevel'];
       scopeId?: string;
     }
-  ): SessionPrincipal {
+  ): { principal: SessionPrincipal; token: string } {
     const now = Date.now();
     const lifetime = LIFETIMES[kind];
     const sessionId = `ses-${randomBytes(9).toString('hex')}`;
-    const token = randomBytes(32).toString('base64url');
+    // The tenant prefix is what lets a lookup by token declare a tenant before
+    // row-level security will show it anything. See SessionRepository.
+    const token = `${subject.tenantId}.${randomBytes(32).toString('base64url')}`;
 
     const principal: SessionPrincipal = {
       sessionId,
@@ -352,13 +506,31 @@ export class AuthService {
       landingPath: kind === 'OPERATOR' ? '/terminal' : this.rbac.landingPathFor(subject.tenantId, subject.role),
     };
 
-    this.sessions.set(sessionId, {
-      principal,
-      token,
-      lastSeenAt: principal.issuedAt,
-    });
+    return { principal, token };
+  }
 
-    return principal;
+  /**
+   * Writes the session to the store and primes the cache.
+   *
+   * Separate from `issue` so the login paths can attach the IP and user agent
+   * they know about before anything is persisted: a session row without them
+   * is a session an administrator cannot recognise when deciding whether to
+   * revoke it.
+   */
+  private async persist(
+    principal: SessionPrincipal,
+    token: string,
+    ctx: AuthContext
+  ): Promise<StoredSession> {
+    const stored: StoredSession = {
+      principal,
+      lastSeenAt: principal.issuedAt,
+      ip: ctx.ip,
+      userAgent: ctx.userAgent,
+    };
+    await this.sessions.insert(principal, token, ctx);
+    this.cache.set(hashToken(token), { session: stored, readAt: Date.now() });
+    return stored;
   }
 
   /**
@@ -367,101 +539,165 @@ export class AuthService {
    * Returns `undefined` for anything expired, revoked or unknown; the caller
    * decides whether that is a 401 or an anonymous request.
    */
-  resolve(token: string): SessionPrincipal | undefined {
-    const entry = Array.from(this.sessions.values()).find((s) => s.token === token);
-    if (!entry) return undefined;
-
+  /**
+   * Resolves a bearer token into a live principal (US-001, US-002, §6).
+   *
+   * The store is the authority; the cache in front of it holds a session for
+   * CACHE_MS so a shift's worth of shop-floor traffic does not become a query
+   * per request. Role, permission and scope are re-derived on every resolve,
+   * so a role change or a suspension takes effect on the next request rather
+   * than at the next login.
+   */
+  async resolve(token: string): Promise<SessionPrincipal | undefined> {
+    const key = hashToken(token);
     const now = Date.now();
-    if (now > Date.parse(entry.principal.expiresAt) || now > Date.parse(entry.principal.idleExpiresAt)) {
-      this.sessions.delete(entry.principal.sessionId);
+
+    const cached = this.cache.get(key);
+    let session = cached && now - cached.readAt < CACHE_MS ? cached.session : undefined;
+
+    if (!session) {
+      session = await this.sessions.findByToken(token);
+      if (!session) {
+        this.cache.delete(key);
+        return undefined;
+      }
+      this.cache.set(key, { session, readAt: now });
+    }
+
+    const principal = session.principal;
+    if (now > Date.parse(principal.expiresAt) || now > Date.parse(principal.idleExpiresAt)) {
+      await this.forget(principal.tenantId, principal.sessionId, key);
       return undefined;
     }
 
-    const lifetime = LIFETIMES[entry.principal.kind];
-    entry.lastSeenAt = new Date(now).toISOString();
-    entry.principal.idleExpiresAt = new Date(now + lifetime.idleSeconds * 1000).toISOString();
-
     // Role, permission or scope changes take effect on the next request rather
     // than at the next login, US-005 requires access to remain controlled.
-    const subject = this.masterData.getUserById(entry.principal.tenantId, entry.principal.subjectId);
-    if (entry.principal.kind === 'APPLICATION') {
+    if (principal.kind === 'APPLICATION') {
+      const subject = this.masterData.getUserById(principal.tenantId, principal.subjectId);
       if (!subject || subject.status !== 'ACTIVE') {
-        this.sessions.delete(entry.principal.sessionId);
+        await this.forget(principal.tenantId, principal.sessionId, key);
         return undefined;
       }
-      entry.principal.role = subject.role as UserRole;
-      entry.principal.permissions = this.rbac.permissionsFor(entry.principal.tenantId, subject.role);
-      entry.principal.scope = this.rbac.resolveScope(subject);
+      principal.role = subject.role as UserRole;
+      principal.permissions = this.rbac.permissionsFor(principal.tenantId, subject.role);
+      principal.scope = this.rbac.resolveScope(subject);
     } else {
       const operator = this.masterData
-        .getOperators(entry.principal.tenantId)
-        .find((o) => o.id === entry.principal.subjectId);
+        .getOperators(principal.tenantId)
+        .find((o) => o.id === principal.subjectId);
       if (!operator || operator.status !== 'ACTIVE') {
-        this.sessions.delete(entry.principal.sessionId);
+        await this.forget(principal.tenantId, principal.sessionId, key);
         return undefined;
       }
     }
 
-    return entry.principal;
+    // The idle window moves on a throttle. Writing it on every request would
+    // turn a read-mostly table into a write on the shop floor's hot path for
+    // a value measured in minutes.
+    const lifetime = LIFETIMES[principal.kind];
+    const idleExpiresAt = new Date(now + lifetime.idleSeconds * 1000).toISOString();
+    principal.idleExpiresAt = idleExpiresAt;
+    session.lastSeenAt = new Date(now).toISOString();
+
+    if (now - Date.parse(session.touchedAt ?? '0') > TOUCH_MS) {
+      session.touchedAt = new Date(now).toISOString();
+      // Fire and forget: a slow write must not hold up the request, and a
+      // failed one only means the idle window moves at the next request.
+      void this.sessions
+        .touch(principal.tenantId, principal.sessionId, idleExpiresAt)
+        // eslint-disable-next-line no-console
+        .catch((error) => console.warn('[auth] session touch failed:', error));
+    }
+
+    return principal;
+  }
+
+  /** Drops a session from both the store and the cache. */
+  private async forget(tenantId: string, sessionId: string, cacheKey?: string): Promise<void> {
+    if (cacheKey) this.cache.delete(cacheKey);
+    else this.forgetBySessionId(sessionId);
+    await this.sessions.delete(tenantId, sessionId);
+  }
+
+  private forgetBySessionId(sessionId: string): void {
+    for (const [key, entry] of this.cache) {
+      if (entry.session.principal.sessionId === sessionId) this.cache.delete(key);
+    }
+  }
+
+  /**
+   * Housekeeping, started once at boot: expired rows are already ignored by
+   * every read, this only keeps the table from growing without bound.
+   */
+  startSessionSweeper(intervalMs = 15 * 60_000): NodeJS.Timeout {
+    const timer = setInterval(() => {
+      void this.sessions
+        .purgeExpired()
+        .then((removed) => {
+          if (removed > 0) {
+            // eslint-disable-next-line no-console
+            console.log(`[auth] purged ${removed} expired session(s).`);
+          }
+        })
+        // eslint-disable-next-line no-console
+        .catch((error) => console.warn('[auth] session purge failed:', error));
+
+      for (const [key, entry] of this.cache) {
+        if (Date.now() > Date.parse(entry.session.principal.expiresAt)) this.cache.delete(key);
+      }
+    }, intervalMs);
+    timer.unref?.();
+    return timer;
   }
 
   async logout(sessionId: string): Promise<void> {
-    const entry = this.sessions.get(sessionId);
-    if (!entry) return;
-    this.sessions.delete(sessionId);
+    const cached = Array.from(this.cache.values()).find(
+      (entry) => entry.session.principal.sessionId === sessionId
+    )?.session;
+    if (!cached) return;
+
+    await this.forget(cached.principal.tenantId, sessionId);
     await this.audit.record({
-      tenantId: entry.principal.tenantId,
-      actorType: entry.principal.kind === 'OPERATOR' ? 'OPERATOR' : 'USER',
-      actorId: entry.principal.subjectId,
+      tenantId: cached.principal.tenantId,
+      actorType: cached.principal.kind === 'OPERATOR' ? 'OPERATOR' : 'USER',
+      actorId: cached.principal.subjectId,
       entityType: 'auth',
-      entityId: entry.principal.subjectId,
+      entityId: cached.principal.subjectId,
       action: 'LOGOUT',
       previousValue: { sessionId },
-      ip: entry.ip,
-      userAgent: entry.userAgent,
+      ip: cached.ip,
+      userAgent: cached.userAgent,
     });
   }
 
-  listSessions(tenantId: string, subjectId?: string): SessionSummary[] {
-    const now = Date.now();
-    return Array.from(this.sessions.values())
-      .filter((s) => s.principal.tenantId === tenantId)
-      .filter((s) => !subjectId || s.principal.subjectId === subjectId)
-      .filter((s) => now <= Date.parse(s.principal.expiresAt) && now <= Date.parse(s.principal.idleExpiresAt))
-      .map((s) => ({
-        sessionId: s.principal.sessionId,
-        kind: s.principal.kind,
-        subjectId: s.principal.subjectId,
-        name: s.principal.name,
-        role: s.principal.role,
-        issuedAt: s.principal.issuedAt,
-        lastSeenAt: s.lastSeenAt,
-        expiresAt: s.principal.expiresAt,
-        ip: s.ip,
-        userAgent: s.userAgent,
-      }))
-      .sort((a, b) => b.lastSeenAt.localeCompare(a.lastSeenAt));
+  async listSessions(tenantId: string, subjectId?: string): Promise<SessionSummary[]> {
+    return this.sessions.list(tenantId, subjectId);
   }
 
-  /** US-005, revoke one session, or every session belonging to one account. */
-  async revokeSessions(tenantId: string, opts: { sessionId?: string; subjectId?: string }, actorId: string): Promise<number> {
-    const victims = Array.from(this.sessions.values()).filter(
-      (s) =>
-        s.principal.tenantId === tenantId &&
-        (opts.sessionId ? s.principal.sessionId === opts.sessionId : true) &&
-        (opts.subjectId ? s.principal.subjectId === opts.subjectId : true)
-    );
+  /**
+   * US-005, revoke one session, or every session belonging to one account.
+   *
+   * The delete happens in the store, so the decision outlives this process —
+   * which is the whole point of revocation. The local cache is cleared with
+   * it; another replica stops honouring the session within CACHE_MS.
+   */
+  async revokeSessions(
+    tenantId: string,
+    opts: { sessionId?: string; subjectId?: string },
+    actorId: string
+  ): Promise<number> {
+    const victims = await this.sessions.deleteWhere(tenantId, opts);
 
     for (const victim of victims) {
-      this.sessions.delete(victim.principal.sessionId);
+      this.forgetBySessionId(victim.sessionId);
       await this.audit.record({
         tenantId,
         actorType: 'USER',
         actorId,
         entityType: 'session',
-        entityId: victim.principal.sessionId,
+        entityId: victim.sessionId,
         action: 'SESSION_REVOKED',
-        previousValue: { subjectId: victim.principal.subjectId, issuedAt: victim.principal.issuedAt },
+        previousValue: { subjectId: victim.subjectId, issuedAt: victim.issuedAt },
       });
     }
 
@@ -475,11 +711,7 @@ export class AuthService {
   async setUserPassword(tenantId: string, userId: string, password: string, actorId: string): Promise<void> {
     const user = this.masterData.getUserById(tenantId, userId);
     if (!user) throw ApiError.notFound('Pengguna tidak ditemukan.');
-    if (password.length < 8) {
-      throw ApiError.validation('Kata sandi minimal 8 karakter.', [
-        { field: 'password', code: 'TOO_SHORT', message: 'Kata sandi minimal 8 karakter.' },
-      ]);
-    }
+    assertPasswordPolicy(password);
     const hash = hashSecret(password);
     this.userSecrets.set(userId, hash);
     await this.masterData.saveUserPassword(tenantId, userId, hash);
@@ -498,11 +730,7 @@ export class AuthService {
   async setOperatorPin(tenantId: string, operatorId: string, pin: string, actorId: string): Promise<void> {
     const operator = this.masterData.getOperators(tenantId).find((o) => o.id === operatorId);
     if (!operator) throw ApiError.notFound('Operator tidak ditemukan.');
-    if (!/^\d{4,8}$/.test(pin)) {
-      throw ApiError.validation('PIN harus 4-8 digit angka.', [
-        { field: 'pin', code: 'INVALID_FORMAT', message: 'PIN harus 4-8 digit angka.' },
-      ]);
-    }
+    assertPinPolicy(pin);
     const hash = hashSecret(pin);
     this.operatorSecrets.set(operatorId, hash);
     await this.masterData.saveOperatorPin(tenantId, operatorId, hash, actorId);

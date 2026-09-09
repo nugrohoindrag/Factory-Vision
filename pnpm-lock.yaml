@@ -58,7 +58,7 @@ importers:
         specifier: ^5.7.0
         version: 5.9.3
       vite:
-        specifier: ^5.4.0
+        specifier: ^5.4.21
         version: 5.4.21(@types/node@22.20.1)
 
   apps/api:
@@ -153,7 +153,7 @@ importers:
         specifier: ^5.7.0
         version: 5.9.3
       vite:
-        specifier: ^5.4.0
+        specifier: ^5.4.21
         version: 5.4.21(@types/node@22.20.1)
 
   apps/landing:
@@ -187,7 +187,7 @@ importers:
         specifier: ^5.7.0
         version: 5.9.3
       vite:
-        specifier: ^5.4.0
+        specifier: ^5.4.21
         version: 5.4.21(@types/node@22.20.1)
 
   apps/operator:
@@ -239,7 +239,7 @@ importers:
         specifier: ^5.7.0
         version: 5.9.3
       vite:
-        specifier: ^5.4.0
+        specifier: ^5.4.21
         version: 5.4.21(@types/node@22.20.1)
 
   apps/worker:

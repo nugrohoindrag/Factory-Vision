@@ -11,6 +11,8 @@ export class ApiError extends Error {
   readonly code: ApiErrorCode;
   readonly status: number;
   readonly fields?: ApiFieldError[];
+  /** Set on 429s so the error middleware can answer with `Retry-After`. */
+  retryAfterSeconds?: number;
 
   constructor(code: ApiErrorCode, message: string, status: number, fields?: ApiFieldError[]) {
     super(message);
@@ -47,6 +49,19 @@ export class ApiError extends Error {
   /** A legal request against an entity whose state does not allow it. */
   static invalidState(message: string): ApiError {
     return new ApiError('INVALID_STATE', message, 409);
+  }
+
+  /**
+   * Too many attempts (§30, §7).
+   *
+   * The message carries the wait rather than the reason: telling a caller how
+   * many attempts remain, or whether the account exists, hands a brute-force
+   * script the feedback it needs.
+   */
+  static rateLimited(message: string, retryAfterSeconds?: number): ApiError {
+    const error = new ApiError('RATE_LIMITED', message, 429);
+    error.retryAfterSeconds = retryAfterSeconds;
+    return error;
   }
 
   static internal(message = 'Terjadi kesalahan internal.'): ApiError {

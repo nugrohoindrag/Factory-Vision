@@ -147,6 +147,39 @@ export interface LoginResponse {
   operator?: Operator;
   /** Seconds of inactivity after which the session is dropped. */
   idleTimeoutSeconds: number;
+  /**
+   * The account's role requires MFA but the account has not enrolled yet.
+   * The session is real; the console uses this to send the user straight to
+   * enrolment rather than to let them settle in without it.
+   */
+  mfaEnrollmentRequired?: boolean;
+}
+
+/**
+ * The password was right, and a second factor is still owed (§5).
+ *
+ * Deliberately not a session: it carries no permissions and no tenant reach,
+ * only the right to answer one challenge within a few minutes.
+ */
+export interface MfaChallengeResponse {
+  mfaRequired: true;
+  challengeToken: string;
+  expiresInSeconds: number;
+}
+
+export type LoginOutcome = LoginResponse | MfaChallengeResponse;
+
+export function isMfaChallenge(outcome: LoginOutcome): outcome is MfaChallengeResponse {
+  return (outcome as MfaChallengeResponse).mfaRequired === true;
+}
+
+/** What the console shows on the security page for one account. */
+export interface MfaStatusResponse {
+  enrolled: boolean;
+  confirmedAt?: string;
+  required: boolean;
+  recoveryCodesRemaining: number;
+  available: boolean;
 }
 
 /** A live session shown to an admin so it can be revoked (US-005). */

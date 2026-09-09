@@ -765,9 +765,28 @@ function numberError(column: string): Omit<CsvRowError, 'row'> {
   return { column, code: 'INVALID_FORMAT', message: `${column} harus berupa angka lebih besar dari 0.` };
 }
 
+/**
+ * Formula injection (§55).
+ *
+ * A cell that begins with `=`, `+`, `-`, `@`, a tab or a carriage return is a
+ * formula to Excel and to Google Sheets, not text. An export is opened by a
+ * supervisor on a plant PC, so a product name typed as `=cmd|...` would run on
+ * their machine rather than read as a name. The apostrophe prefix is what a
+ * spreadsheet itself understands as "treat this as text".
+ *
+ * A plain negative number is left alone: `-5` is a quantity, and prefixing it
+ * would corrupt the export this same importer has to read back.
+ */
+export function neutralizeFormula(value: string): string {
+  if (!/^[=+\-@\t\r]/.test(value)) return value;
+  if (/^-?\d+([.,]\d+)?$/.test(value)) return value;
+  return `'${value}`;
+}
+
 function escapeCsv(value: string): string {
-  if (/[",\n]/.test(value)) return `"${value.replace(/"/g, '""')}"`;
-  return value;
+  const safe = neutralizeFormula(value);
+  if (/[",\n]/.test(safe)) return `"${safe.replace(/"/g, '""')}"`;
+  return safe;
 }
 
 /**

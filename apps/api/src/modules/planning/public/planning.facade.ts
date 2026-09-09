@@ -39,6 +39,25 @@ export interface WorkOrderDemandView extends PlanLineDemandView {
   workOrderId: string;
 }
 
+/**
+ * What a plan line asks the factory to make, in the terms material planning
+ * needs (Improvement PRD §3.1, §3.2).
+ *
+ * Deliberately narrower than the plan itself: MRP explodes a product and a
+ * quantity against a date, and has no business reading a plan's wizard step or
+ * its capacity status.
+ */
+export interface PlanDemandLine {
+  productionPlanId: string;
+  planNumber: string;
+  productionPlanLineId: string;
+  productId: string;
+  plannedQuantity: number;
+  /** The plan line's delivery date, falling back to the plan's period end. */
+  requiredDate: string;
+  status: string;
+}
+
 export class PlanningFacade {
   private readonly orders = new CustomerOrderService();
   private readonly reference = new PlanningReferenceRepository();
@@ -155,6 +174,65 @@ export class PlanningFacade {
         await this.orders.refreshStatus(client, tenantId, orderId);
       }
       return touchedOrders.size;
+    });
+  }
+
+  /**
+   * The demand a material check or an MRP run should explode.
+   *
+   * `planIds` empty means "every plan whose period overlaps the horizon", which
+   * is what a PPIC means by "run MRP for next month". Cancelled plans are left
+   * out: they are not going to consume anything.
+   */
+  async planDemandLines(
+    tenantId: string,
+    filter: { planIds?: string[]; horizonStart?: string; horizonEnd?: string } = {}
+  ): Promise<PlanDemandLine[]> {
+    return withTenant(tenantId, async (client) => {
+      const where = ["p.tenant_id = $1", "p.status <> 'CANCELLED'"];
+      const params: unknown[] = [tenantId];
+
+      if (filter.planIds && filter.planIds.length > 0) {
+        params.push(filter.planIds);
+        where.push(`p.id = ANY($${params.length}::varchar[])`);
+      }
+      if (filter.horizonStart) {
+        params.push(filter.horizonStart);
+        where.push(`p.period_end >= $${params.length}`);
+      }
+      if (filter.horizonEnd) {
+        params.push(filter.horizonEnd);
+        where.push(`p.period_start <= $${params.length}`);
+      }
+
+      const rows = await client.query<{
+        production_plan_id: string;
+        plan_number: string;
+        id: string;
+        product_id: string;
+        planned_quantity: number;
+        required_date: string;
+        status: string;
+      }>(
+        `SELECT l.production_plan_id, p.plan_number, l.id, l.product_id, l.planned_quantity,
+                to_char(COALESCE(l.required_delivery_date, p.period_end), 'YYYY-MM-DD') AS required_date,
+                l.status
+           FROM production_plan_line l
+           JOIN production_plan p ON p.id = l.production_plan_id
+          WHERE ${where.join(' AND ')}
+          ORDER BY required_date, p.plan_number, l.priority`,
+        params
+      );
+
+      return rows.rows.map((row) => ({
+        productionPlanId: row.production_plan_id,
+        planNumber: row.plan_number,
+        productionPlanLineId: row.id,
+        productId: row.product_id,
+        plannedQuantity: Number(row.planned_quantity),
+        requiredDate: row.required_date,
+        status: row.status,
+      }));
     });
   }
 

@@ -41,7 +41,9 @@ import {
   CsvImportResult,
   CsvTemplate,
   DeploymentInfo,
+  LoginOutcome,
   LoginResponse,
+  MfaStatusResponse,
   MachinePerformanceRow,
   OeeCalculationConfig,
   OeeReportItem,
@@ -66,6 +68,45 @@ import {
   UpdateBomInput,
   ProductMoldCompatibility,
   Customer,
+  // --- MES Improvement v2.0 (Improvement PRD 3-10) ---
+  MaterialInventory,
+  MaterialReadiness,
+  MaterialRequirement,
+  MaterialReservation,
+  MaterialConsumption,
+  MaterialTransaction,
+  MrpRun,
+  MrpResult,
+  InspectionPlan,
+  Inspection,
+  QualityHold,
+  QualityDisposition,
+  NonConformanceRecord,
+  CorrectiveAction,
+  MaintenancePlan,
+  MaintenanceRequest,
+  MaintenanceRecord,
+  MaintenanceKpi,
+  Skill,
+  OperatorQualification,
+  QualificationRequirement,
+  OperatorShiftAssignment,
+  OperatorAvailability,
+  OperatorEligibility,
+  LaborAssignment,
+  LaborRequirement,
+  LaborTimeRecord,
+  LaborUtilization,
+  WipRecord,
+  WipTransfer,
+  WipReceipt,
+  WipStatusHistory,
+  WipDashboard,
+  ProductionBoard,
+  ProductionBoardQuery,
+  DispatchAction,
+  OperationalEvent,
+  EventHistoryQuery,
   CustomerOrder,
   CustomerOrderLine,
   CustomerOrderDocumentRef,
@@ -792,10 +833,36 @@ export class FactoryVisionApiClient {
 
   /** US-001, US-002, US-005, authentication and session administration. */
   readonly auth = {
+    /**
+     * US-001. The answer is either a session or an MFA challenge (§5), so
+     * callers must narrow it with `isMfaChallenge` before reading a token.
+     */
     login: (email: string, password: string) =>
-      this.request<LoginResponse>('/api/v1/auth/login', {
+      this.request<LoginOutcome>('/api/v1/auth/login', {
         method: 'POST',
         body: JSON.stringify({ email, password }),
+      }),
+    /** Answers a login challenge with a TOTP code or a recovery code. */
+    verifyMfa: (challengeToken: string, code: string) =>
+      this.request<LoginResponse>('/api/v1/auth/mfa/verify', {
+        method: 'POST',
+        body: JSON.stringify({ challengeToken, code }),
+      }),
+    mfaStatus: () => this.request<MfaStatusResponse>('/api/v1/auth/mfa'),
+    enrollMfa: () =>
+      this.request<{ secret: string; otpauthUri: string }>('/api/v1/auth/mfa/enroll', {
+        method: 'POST',
+        body: JSON.stringify({}),
+      }),
+    confirmMfa: (code: string) =>
+      this.request<{ success: boolean; recoveryCodes: string[] }>('/api/v1/auth/mfa/confirm', {
+        method: 'POST',
+        body: JSON.stringify({ code }),
+      }),
+    disableMfa: (code: string) =>
+      this.request<{ success: boolean }>('/api/v1/auth/mfa/disable', {
+        method: 'POST',
+        body: JSON.stringify({ code }),
       }),
     operatorLogin: (employeeNumber: string, pin: string) =>
       this.request<LoginResponse>('/api/v1/auth/operator-login', {
@@ -1316,6 +1383,658 @@ export class FactoryVisionApiClient {
       }),
   };
 
+  // =========================================================================
+  // MES Improvement v2.0 (Improvement PRD §3–§10)
+  //
+  // One namespace per capability, grouped rather than flattened onto the
+  // client, for the same reason `planning` is: a screen imports the one area
+  // it works in, and the module boundaries the API enforces stay visible here.
+  // =========================================================================
+
+  /** Material readiness, inventory, consumption and the stock ledger (§3). */
+  readonly materials = {
+    getWarehouses: () => this.request<WarehouseView[]>('/api/v1/materials/warehouses'),
+    createWarehouse: (body: { code: string; name: string; plantId?: string; warehouseType?: string }) =>
+      this.request<WarehouseView>('/api/v1/materials/warehouses', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+
+    getInventory: (params?: {
+      materialId?: string;
+      warehouseId?: string;
+      belowReorder?: boolean;
+      search?: string;
+    }) => this.request<MaterialInventory[]>(`/api/v1/materials/inventory${qs(params)}`),
+    adjustInventory: (body: {
+      materialId: string;
+      onHandQuantity: number;
+      reason: string;
+      warehouseId?: string;
+      uom?: string;
+      reorderPoint?: number;
+      safetyStock?: number;
+    }) =>
+      this.request<MaterialInventory>('/api/v1/materials/inventory/adjust', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    receiveMaterial: (body: {
+      materialId: string;
+      quantity: number;
+      warehouseId?: string;
+      uom?: string;
+      reference?: string;
+    }) =>
+      this.request<MaterialTransaction>('/api/v1/materials/inventory/receive', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    recordIncoming: (body: {
+      materialId: string;
+      quantity: number;
+      warehouseId?: string;
+      uom?: string;
+      reference?: string;
+    }) =>
+      this.request<MaterialTransaction>('/api/v1/materials/inventory/incoming', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+
+    getTransactions: (params?: {
+      materialId?: string;
+      referenceId?: string;
+      from?: string;
+      to?: string;
+      limit?: number;
+    }) => this.request<MaterialTransaction[]>(`/api/v1/materials/transactions${qs(params)}`),
+
+    getRequirements: (params?: { sourceType?: string; sourceId?: string; status?: string }) =>
+      this.request<MaterialRequirement[]>(`/api/v1/materials/requirements${qs(params)}`),
+    checkWorkOrder: (workOrderId: string) =>
+      this.request<MaterialReadiness>(`/api/v1/materials/availability/work-order/${workOrderId}`, {
+        method: 'POST',
+      }),
+    checkProductionPlan: (planId: string) =>
+      this.request<MaterialReadiness>(`/api/v1/materials/availability/production-plan/${planId}`, {
+        method: 'POST',
+      }),
+    getReadiness: (params?: { from?: string; to?: string }) =>
+      this.request<MaterialReadiness[]>(`/api/v1/materials/readiness${qs(params)}`),
+
+    getReservations: (params?: { workOrderId?: string; materialId?: string; status?: string }) =>
+      this.request<MaterialReservation[]>(`/api/v1/materials/reservations${qs(params)}`),
+    reserveForWorkOrder: (workOrderId: string) =>
+      this.request<MaterialReservation[]>(`/api/v1/materials/reservations/work-order/${workOrderId}`, {
+        method: 'POST',
+      }),
+    releaseReservation: (id: string) =>
+      this.request<{ success: boolean; message: string }>(`/api/v1/materials/reservations/${id}`, {
+        method: 'DELETE',
+      }),
+
+    getConsumption: (params?: {
+      workOrderId?: string;
+      materialId?: string;
+      status?: string;
+      from?: string;
+      to?: string;
+      limit?: number;
+    }) => this.request<MaterialConsumption[]>(`/api/v1/materials/consumption${qs(params)}`),
+    recordConsumption: (body: {
+      workOrderId: string;
+      materialId: string;
+      actualQuantity: number;
+      plannedQuantity?: number;
+      warehouseId?: string;
+      batchId?: string;
+      processId?: string;
+      machineId?: string;
+      operatorId?: string;
+      consumptionType?: 'PRODUCTION' | 'SCRAP' | 'REWORK' | 'RETURN';
+      uom?: string;
+      notes?: string;
+      idempotencyKey?: string;
+      allowOverride?: boolean;
+    }) =>
+      this.request<MaterialConsumption>('/api/v1/materials/consumption', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    getConsumptionVariance: (workOrderId: string) =>
+      this.request<ConsumptionVarianceRow[]>(`/api/v1/materials/consumption/variance/${workOrderId}`),
+  };
+
+  /** MRP (§3.2). A run is a snapshot; the latest is what a dashboard shows. */
+  readonly mrp = {
+    getRuns: (params?: { limit?: number }) => this.request<MrpRun[]>(`/api/v1/mrp/runs${qs(params)}`),
+    getLatest: () =>
+      this.request<{ run: MrpRun | null; results: MrpResult[] }>('/api/v1/mrp/runs/latest'),
+    getRun: (id: string) => this.request<{ run: MrpRun; results: MrpResult[] }>(`/api/v1/mrp/runs/${id}`),
+    run: (body?: { horizonStart?: string; horizonEnd?: string; planIds?: string[]; notes?: string }) =>
+      this.request<{ run: MrpRun; results: MrpResult[] }>('/api/v1/mrp/run', {
+        method: 'POST',
+        body: JSON.stringify(body ?? {}),
+      }),
+  };
+
+  /** Quality lifecycle: inspection, hold, disposition, NCR (§4). */
+  readonly quality = {
+    getPlans: (params?: { productId?: string; processId?: string; status?: string }) =>
+      this.request<InspectionPlan[]>(`/api/v1/quality/inspection-plans${qs(params)}`),
+    getPlan: (id: string) => this.request<InspectionPlan>(`/api/v1/quality/inspection-plans/${id}`),
+    createPlan: (body: Record<string, unknown>) =>
+      this.request<InspectionPlan>('/api/v1/quality/inspection-plans', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    updatePlan: (id: string, body: Record<string, unknown>) =>
+      this.request<InspectionPlan>(`/api/v1/quality/inspection-plans/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+      }),
+    deletePlan: (id: string) =>
+      this.request<{ success: boolean; message: string }>(`/api/v1/quality/inspection-plans/${id}`, {
+        method: 'DELETE',
+      }),
+
+    getInspections: (params?: {
+      workOrderId?: string;
+      batchId?: string;
+      productId?: string;
+      result?: string;
+      from?: string;
+      to?: string;
+      limit?: number;
+    }) => this.request<Inspection[]>(`/api/v1/quality/inspections${qs(params)}`),
+    recordInspection: (body: {
+      inspectedQuantity: number;
+      inspectionPlanId?: string;
+      inspectionType?: string;
+      workOrderId?: string;
+      batchId?: string;
+      productId?: string;
+      processId?: string;
+      machineId?: string;
+      failedQuantity?: number;
+      uom?: string;
+      operatorId?: string;
+      notes?: string;
+      idempotencyKey?: string;
+      measurements?: Array<{
+        characteristicId?: string;
+        characteristicName: string;
+        actualValue?: string;
+        numericValue?: number;
+        notes?: string;
+      }>;
+    }) =>
+      this.request<Inspection>('/api/v1/quality/inspections', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+
+    getHolds: (params?: { status?: string; workOrderId?: string; batchId?: string }) =>
+      this.request<QualityHold[]>(`/api/v1/quality/holds${qs(params)}`),
+    createHold: (body: {
+      quantity: number;
+      reason: string;
+      ownerId: string;
+      ownerName?: string;
+      workOrderId?: string;
+      batchId?: string;
+      productId?: string;
+      materialId?: string;
+      inspectionId?: string;
+      uom?: string;
+      notes?: string;
+    }) =>
+      this.request<QualityHold>('/api/v1/quality/holds', { method: 'POST', body: JSON.stringify(body) }),
+    releaseHold: (id: string, reason: string) =>
+      this.request<QualityHold>(`/api/v1/quality/holds/${id}/release`, {
+        method: 'POST',
+        body: JSON.stringify({ reason }),
+      }),
+    /** BR-Q02 / BR-H04 — whether quality would block this work order's handoff. */
+    getGate: (workOrderId: string, params?: { productId?: string; processId?: string }) =>
+      this.request<{ blocked: boolean; reason?: string }>(
+        `/api/v1/quality/gate/${workOrderId}${qs(params)}`
+      ),
+
+    getDispositions: (params?: { workOrderId?: string; inspectionId?: string; decision?: string }) =>
+      this.request<QualityDisposition[]>(`/api/v1/quality/dispositions${qs(params)}`),
+    createDisposition: (body: {
+      decision: 'RELEASE' | 'REWORK' | 'SCRAP' | 'HOLD' | 'RETURN';
+      quantity: number;
+      reason: string;
+      inspectionId?: string;
+      qualityHoldId?: string;
+      workOrderId?: string;
+      batchId?: string;
+      productId?: string;
+      uom?: string;
+      defectCode?: string;
+      ncrId?: string;
+    }) =>
+      this.request<QualityDisposition>('/api/v1/quality/dispositions', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+
+    getNcrs: (params?: { status?: string; workOrderId?: string; overdue?: boolean; limit?: number }) =>
+      this.request<NonConformanceRecord[]>(`/api/v1/quality/ncr${qs(params)}`),
+    createNcr: (body: Record<string, unknown>) =>
+      this.request<NonConformanceRecord>('/api/v1/quality/ncr', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    updateNcr: (id: string, body: Record<string, unknown>) =>
+      this.request<NonConformanceRecord>(`/api/v1/quality/ncr/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      }),
+    addAction: (
+      ncrId: string,
+      body: { action: string; ownerId: string; ownerName?: string; dueDate?: string; notes?: string }
+    ) =>
+      this.request<CorrectiveAction>(`/api/v1/quality/ncr/${ncrId}/actions`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    updateAction: (id: string, body: { status?: string; evidence?: string }) =>
+      this.request<{ success: boolean }>(`/api/v1/quality/ncr/actions/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      }),
+
+    getDashboard: (params?: { from?: string; to?: string }) =>
+      this.request<QualityDashboardView>(`/api/v1/quality/dashboard${qs(params)}`),
+  };
+
+  /** Preventive, corrective and emergency maintenance (§5). */
+  readonly maintenance = {
+    getPlans: (params?: { machineId?: string; status?: string }) =>
+      this.request<MaintenancePlan[]>(`/api/v1/maintenance/plans${qs(params)}`),
+    createPlan: (body: {
+      name: string;
+      machineId: string;
+      triggerType: 'CALENDAR' | 'OPERATING_HOURS' | 'PRODUCTION_CYCLES';
+      intervalValue: number;
+      intervalUnit?: string;
+      tasks?: string[];
+      estimatedDurationMinutes?: number;
+      warningThreshold?: number;
+      startFrom?: string;
+    }) =>
+      this.request<MaintenancePlan>('/api/v1/maintenance/plans', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    updatePlan: (id: string, body: Record<string, unknown>) =>
+      this.request<MaintenancePlan>(`/api/v1/maintenance/plans/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+      }),
+    deletePlan: (id: string) =>
+      this.request<{ success: boolean; message: string }>(`/api/v1/maintenance/plans/${id}`, {
+        method: 'DELETE',
+      }),
+    /** BR-MT01 — turns every due plan into work. Safe to call repeatedly. */
+    generateDueWork: () =>
+      this.request<{ created: number; records: MaintenanceRecord[] }>(
+        '/api/v1/maintenance/plans/generate',
+        { method: 'POST' }
+      ),
+
+    getRequests: (params?: { status?: string; machineId?: string; limit?: number }) =>
+      this.request<MaintenanceRequest[]>(`/api/v1/maintenance/requests${qs(params)}`),
+    createRequest: (body: {
+      machineId: string;
+      problemDescription: string;
+      maintenanceType?: 'PREVENTIVE' | 'CORRECTIVE' | 'EMERGENCY';
+      priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+      reportedSymptom?: string;
+      workOrderId?: string;
+      downtimeId?: string;
+      notes?: string;
+    }) =>
+      this.request<MaintenanceRequest>('/api/v1/maintenance/requests', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    acceptRequest: (
+      id: string,
+      body?: { technicianId?: string; technicianName?: string; scheduledFor?: string }
+    ) =>
+      this.request<MaintenanceRecord>(`/api/v1/maintenance/requests/${id}/accept`, {
+        method: 'POST',
+        body: JSON.stringify(body ?? {}),
+      }),
+    rejectRequest: (id: string) =>
+      this.request<{ success: boolean; message: string }>(`/api/v1/maintenance/requests/${id}/reject`, {
+        method: 'POST',
+      }),
+
+    getRecords: (params?: {
+      machineId?: string;
+      status?: string;
+      maintenanceType?: string;
+      from?: string;
+      to?: string;
+      limit?: number;
+    }) => this.request<MaintenanceRecord[]>(`/api/v1/maintenance/records${qs(params)}`),
+    assignTechnician: (
+      id: string,
+      body: { technicianId: string; technicianName?: string; scheduledFor?: string }
+    ) =>
+      this.request<MaintenanceRecord>(`/api/v1/maintenance/records/${id}/assign`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    startWork: (id: string) =>
+      this.request<MaintenanceRecord>(`/api/v1/maintenance/records/${id}/start`, { method: 'POST' }),
+    completeWork: (
+      id: string,
+      body: {
+        result: 'REPAIRED' | 'REPLACED' | 'ADJUSTED' | 'NO_FAULT_FOUND' | 'DEFERRED';
+        rootCause?: string;
+        actionTaken?: string;
+        costReference?: number;
+        meterReading?: number;
+        notes?: string;
+        parts?: Array<{
+          partId?: string;
+          partName: string;
+          quantity: number;
+          uom?: string;
+          costReference?: number;
+        }>;
+      }
+    ) =>
+      this.request<MaintenanceRecord>(`/api/v1/maintenance/records/${id}/complete`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+
+    /** §5.4 — a breakdown in one call: downtime, record, machine offline. */
+    raiseEmergency: (body: {
+      machineId: string;
+      problem: string;
+      workOrderId?: string;
+      lineId?: string;
+      operatorId?: string;
+      shiftId?: string;
+      reasonId?: string;
+      technicianId?: string;
+      technicianName?: string;
+    }) =>
+      this.request<{ record: MaintenanceRecord; downtimeId?: string }>('/api/v1/maintenance/emergency', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+
+    getKpi: (params?: { from?: string; to?: string; machineId?: string }) =>
+      this.request<MaintenanceKpi & { from: string; to: string }>(`/api/v1/maintenance/kpi${qs(params)}`),
+  };
+
+  /** Skills, qualification, shift, availability and labour (§6). */
+  readonly workforce = {
+    getSkills: () => this.request<Skill[]>('/api/v1/workforce/skills'),
+    createSkill: (body: {
+      code: string;
+      name: string;
+      category?: string;
+      description?: string;
+      maxLevel?: number;
+    }) => this.request<Skill>('/api/v1/workforce/skills', { method: 'POST', body: JSON.stringify(body) }),
+    updateSkill: (id: string, body: Partial<Skill>) =>
+      this.request<Skill>(`/api/v1/workforce/skills/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+    deleteSkill: (id: string) =>
+      this.request<{ success: boolean; message: string }>(`/api/v1/workforce/skills/${id}`, {
+        method: 'DELETE',
+      }),
+
+    getRequirements: (params?: { targetType?: string; targetId?: string }) =>
+      this.request<QualificationRequirement[]>(`/api/v1/workforce/requirements${qs(params)}`),
+    setRequirement: (body: {
+      targetType: 'MACHINE' | 'PROCESS';
+      targetId: string;
+      skillId: string;
+      minimumLevel?: number;
+      mandatory?: boolean;
+    }) =>
+      this.request<QualificationRequirement>('/api/v1/workforce/requirements', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    deleteRequirement: (id: string) =>
+      this.request<{ success: boolean; message: string }>(`/api/v1/workforce/requirements/${id}`, {
+        method: 'DELETE',
+      }),
+
+    getQualifications: (params?: {
+      operatorId?: string;
+      skillId?: string;
+      expiringWithinDays?: number;
+    }) => this.request<OperatorQualification[]>(`/api/v1/workforce/qualifications${qs(params)}`),
+    setQualification: (body: {
+      operatorId: string;
+      skillId: string;
+      level: number;
+      certifiedDate?: string;
+      expiryDate?: string;
+      issuer?: string;
+      certificateNumber?: string;
+      status?: 'ACTIVE' | 'EXPIRED' | 'SUSPENDED';
+      suspendedReason?: string;
+    }) =>
+      this.request<OperatorQualification>('/api/v1/workforce/qualifications', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    deleteQualification: (id: string) =>
+      this.request<{ success: boolean; message: string }>(`/api/v1/workforce/qualifications/${id}`, {
+        method: 'DELETE',
+      }),
+
+    getShiftAssignments: (params?: { operatorId?: string; shiftId?: string; onDate?: string }) =>
+      this.request<OperatorShiftAssignment[]>(`/api/v1/workforce/shift-assignments${qs(params)}`),
+    assignShift: (body: {
+      operatorId: string;
+      shiftId: string;
+      effectiveFrom?: string;
+      effectiveTo?: string;
+      isDefault?: boolean;
+    }) =>
+      this.request<OperatorShiftAssignment>('/api/v1/workforce/shift-assignments', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    removeShiftAssignment: (id: string) =>
+      this.request<{ success: boolean; message: string }>(`/api/v1/workforce/shift-assignments/${id}`, {
+        method: 'DELETE',
+      }),
+
+    getAvailability: (params?: { operatorId?: string }) =>
+      this.request<OperatorAvailability[]>(`/api/v1/workforce/availability${qs(params)}`),
+    setAvailability: (body: {
+      operatorId: string;
+      state: string;
+      shiftId?: string;
+      effectiveFrom?: string;
+      effectiveTo?: string;
+      reason?: string;
+    }) =>
+      this.request<OperatorAvailability>('/api/v1/workforce/availability', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+
+    /** US-W004 — who may run this machine and process, and why not. */
+    getEligibility: (params?: {
+      machineId?: string;
+      processId?: string;
+      onDate?: string;
+      operatorIds?: string;
+    }) => this.request<OperatorEligibility[]>(`/api/v1/workforce/eligibility${qs(params)}`),
+
+    getLaborRequirement: (workOrderId: string) =>
+      this.request<LaborRequirement>(`/api/v1/workforce/labor-requirements/${workOrderId}`),
+    setLaborRequirement: (
+      workOrderId: string,
+      body: { requiredOperators: number; shiftId?: string; notes?: string }
+    ) =>
+      this.request<LaborRequirement>(`/api/v1/workforce/labor-requirements/${workOrderId}`, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+      }),
+
+    getAssignments: (params?: {
+      workOrderId?: string;
+      operatorId?: string;
+      status?: string;
+      active?: boolean;
+    }) => this.request<LaborAssignment[]>(`/api/v1/workforce/assignments${qs(params)}`),
+    assignOperator: (body: {
+      workOrderId: string;
+      operatorId: string;
+      role?: string;
+      shiftId?: string;
+      force?: boolean;
+    }) =>
+      this.request<LaborAssignment>('/api/v1/workforce/assignments', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    unassignOperator: (id: string) =>
+      this.request<{ success: boolean; message: string }>(`/api/v1/workforce/assignments/${id}`, {
+        method: 'DELETE',
+      }),
+
+    getTimeRecords: (params?: {
+      operatorId?: string;
+      workOrderId?: string;
+      from?: string;
+      to?: string;
+      limit?: number;
+    }) => this.request<LaborTimeRecord[]>(`/api/v1/workforce/time-records${qs(params)}`),
+    recordTime: (body: {
+      operatorId: string;
+      startedAt: string;
+      productiveMinutes: number;
+      availableMinutes: number;
+      workOrderId?: string;
+      shiftId?: string;
+      shiftDate?: string;
+      endedAt?: string;
+      category?: string;
+    }) =>
+      this.request<LaborTimeRecord>('/api/v1/workforce/time-records', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    getUtilization: (params?: { scope?: string; from?: string; to?: string }) =>
+      this.request<LaborUtilization[]>(`/api/v1/workforce/utilization${qs(params)}`),
+    getDashboard: () => this.request<WorkforceDashboardView>('/api/v1/workforce/dashboard'),
+  };
+
+  /** WIP and transactional process handoff (§7, §8). */
+  readonly wip = {
+    getRecords: (params?: {
+      workOrderId?: string;
+      status?: string;
+      openOnly?: boolean;
+      destinationProcessId?: string;
+      productId?: string;
+      agingOnly?: boolean;
+      limit?: number;
+    }) => this.request<WipRecord[]>(`/api/v1/wip/records${qs(params)}`),
+    createRecord: (body: {
+      workOrderId: string;
+      quantity: number;
+      productId?: string;
+      batchId?: string;
+      sourceProcessId?: string;
+      destinationProcessId?: string;
+      uom?: string;
+      locationId?: string;
+      locationName?: string;
+      notes?: string;
+    }) => this.request<WipRecord>('/api/v1/wip/records', { method: 'POST', body: JSON.stringify(body) }),
+    getHistory: (id: string) => this.request<WipStatusHistory[]>(`/api/v1/wip/records/${id}/history`),
+    holdRecord: (id: string, reason: string) =>
+      this.request<WipRecord>(`/api/v1/wip/records/${id}/hold`, {
+        method: 'POST',
+        body: JSON.stringify({ reason }),
+      }),
+    releaseRecord: (id: string, reason: string) =>
+      this.request<WipRecord>(`/api/v1/wip/records/${id}/release`, {
+        method: 'POST',
+        body: JSON.stringify({ reason }),
+      }),
+
+    getTransfers: (params?: {
+      wipId?: string;
+      sourceWorkOrderId?: string;
+      destinationWorkOrderId?: string;
+      status?: string;
+      limit?: number;
+    }) => this.request<WipTransfer[]>(`/api/v1/wip/transfers${qs(params)}`),
+    createTransfer: (body: {
+      wipId: string;
+      quantity: number;
+      destinationWorkOrderId?: string;
+      destinationProcessId?: string;
+      notes?: string;
+      idempotencyKey?: string;
+    }) =>
+      this.request<WipTransfer>('/api/v1/wip/transfers', { method: 'POST', body: JSON.stringify(body) }),
+    receiveTransfer: (
+      id: string,
+      body: {
+        receivedQuantity: number;
+        varianceReason?: string;
+        destinationWorkOrderId?: string;
+        destinationProcessId?: string;
+        notes?: string;
+        idempotencyKey?: string;
+      }
+    ) =>
+      this.request<{ receipt: WipReceipt; wip?: WipRecord }>(`/api/v1/wip/transfers/${id}/receive`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    getReceipts: (params?: { transferId?: string }) =>
+      this.request<WipReceipt[]>(`/api/v1/wip/receipts${qs(params)}`),
+    getDashboard: () => this.request<WipDashboard>('/api/v1/wip/dashboard'),
+  };
+
+  /** Visual Production Board (§9). */
+  readonly productionBoard = {
+    get: (params?: ProductionBoardQuery) =>
+      this.request<ProductionBoard>(
+        `/api/v1/production-board${qs(params as Record<string, string | number | boolean | undefined>)}`
+      ),
+    dispatch: (body: DispatchAction) =>
+      this.request<WorkOrder>('/api/v1/production-board/dispatch', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+  };
+
+  /** Operational Event History (§10). Read-only by design (BR-E02). */
+  readonly events = {
+    list: (params?: EventHistoryQuery) =>
+      this.request<OperationalEvent[]>(
+        `/api/v1/events${qs(params as Record<string, string | number | boolean | undefined>)}`
+      ),
+    timeline: (entityType: string, entityId: string) =>
+      this.request<OperationalEvent[]>(`/api/v1/events/timeline/${entityType}/${entityId}`),
+    summary: (days?: number) =>
+      this.request<Array<{ eventType: string; count: number }>>(`/api/v1/events/summary${qs({ days })}`),
+  };
+
   /** US-046, the offline queue drain, with per-command results. */
   syncOfflineBatch(commands: unknown[]): Promise<SyncBatchResult> {
     return this.request<SyncBatchResult>('/api/v1/shop-floor/sync-batch', {
@@ -1449,4 +2168,67 @@ export interface CreateCustomerOrderBody {
   deliveryAddress?: string;
   dockNumber?: string;
   lines?: CreateCustomerOrderLineBody[];
+}
+
+// ===========================================================================
+// MES Improvement v2.0 response shapes
+//
+// Views the API composes but the domain does not name: a dashboard is a
+// projection of several entities, and a warehouse is master data the
+// improvement introduced without a v1.7 counterpart.
+// ===========================================================================
+
+/** Where stock physically sits (Improvement PRD §3.1). */
+export interface WarehouseView {
+  id: string;
+  tenantId: string;
+  plantId?: string;
+  code: string;
+  name: string;
+  warehouseType: string;
+  status: string;
+}
+
+/** One row of the planned-vs-actual consumption report (§3.3). */
+export interface ConsumptionVarianceRow {
+  materialId: string;
+  materialSku: string;
+  materialName: string;
+  plannedQuantity: number;
+  actualQuantity: number;
+  varianceQuantity: number;
+  variancePercentage: number;
+  uom: string;
+  status: 'NORMAL' | 'OVER_CONSUMPTION' | 'UNDER_CONSUMPTION';
+}
+
+/** §22.2 */
+export interface QualityDashboardView {
+  firstPassYield: number;
+  inspectedQuantity: number;
+  passedQuantity: number;
+  failedQuantity: number;
+  failRate: number;
+  inspections: number;
+  failedInspections: number;
+  openHolds: number;
+  heldQuantity: number;
+  reworkQuantity: number;
+  scrapQuantity: number;
+  openNcr: number;
+  overdueNcr: number;
+  from: string;
+  to: string;
+}
+
+/** §22.4 */
+export interface WorkforceDashboardView {
+  operatorsTotal: number;
+  operatorsAvailable: number;
+  operatorsAssigned: number;
+  operatorsUnavailable: number;
+  qualificationsActive: number;
+  qualificationsExpired: number;
+  qualificationsExpiringSoon: number;
+  utilizationPercentage: number;
 }

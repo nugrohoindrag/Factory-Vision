@@ -27,6 +27,15 @@ import { DemandForecastPage } from '../features/planning/DemandForecastPage.js';
 import { CapacityPlanningPage } from '../features/planning/CapacityPlanningPage.js';
 import { ProductionPlansPage } from '../features/planning/ProductionPlansPage.js';
 import { ProductionPlanWizardPage } from '../features/planning/ProductionPlanWizardPage.js';
+import { MrpPage } from '../features/mes/MrpPage.js';
+import { MaterialReadinessPage } from '../features/mes/MaterialReadinessPage.js';
+import { MaterialsPage } from '../features/mes/MaterialsPage.js';
+import { QualityPage } from '../features/mes/QualityPage.js';
+import { MaintenancePage } from '../features/mes/MaintenancePage.js';
+import { WorkforcePage } from '../features/mes/WorkforcePage.js';
+import { WipPage } from '../features/mes/WipPage.js';
+import { ProductionBoardPage } from '../features/mes/ProductionBoardPage.js';
+import { EventHistoryPage } from '../features/mes/EventHistoryPage.js';
 import { useSession } from './SessionContext.js';
 import { OnboardingProvider, OnboardingLayers, OnboardingHeaderTrigger } from '../features/onboarding/index.js';
 
@@ -324,6 +333,18 @@ export const App: React.FC = () => {
           icon: 'inventory_2',
           permission: 'production_plan:view',
         },
+        {
+          label: 'MRP',
+          path: '/mrp',
+          icon: 'calculate',
+          permission: 'mrp:view',
+        },
+        {
+          label: 'Material Readiness',
+          path: '/material-readiness',
+          icon: 'checklist',
+          permission: 'material:view',
+        },
       ],
     },
     {
@@ -333,16 +354,67 @@ export const App: React.FC = () => {
       basePath: '/work-orders',
       children: [
         {
+          label: 'Production Board',
+          path: '/production-board',
+          icon: 'calendar_view_week',
+          permission: 'production_board:view',
+        },
+        {
           label: 'Work Order',
           path: '/work-orders',
           icon: 'list_alt',
           permission: 'work_order:view',
         },
         {
+          label: 'WIP & Handoff',
+          path: '/wip',
+          icon: 'swap_horiz',
+          permission: 'wip:view',
+        },
+        {
           label: 'Performa & Serah Terima Shift',
           path: '/shift-handover',
           icon: 'handshake',
           permission: 'shift:view',
+        },
+      ],
+    },
+    {
+      /*
+       * The improvement's four operational modules (Improvement PRD §21).
+       *
+       * One group rather than four, because each is a single screen with tabs
+       * and four one-item groups would be four collapsed headings a user has
+       * to open before finding anything.
+       */
+      id: 'operations',
+      label: 'Material, Mutu & Sumber Daya',
+      icon: 'precision_manufacturing',
+      basePath: '/material-inventory',
+      children: [
+        {
+          label: 'Material & Inventory',
+          path: '/material-inventory',
+          icon: 'inventory_2',
+          permission: 'material:view',
+        },
+        {
+          label: 'Quality',
+          path: '/quality',
+          icon: 'verified',
+          permission: 'quality:view',
+        },
+        {
+          label: 'Maintenance',
+          path: '/maintenance',
+          icon: 'build',
+          permission: 'maintenance:view',
+        },
+        {
+          label: 'Workforce & Labor',
+          path: '/workforce',
+          icon: 'engineering',
+          permission: 'workforce:view',
         },
       ],
     },
@@ -388,6 +460,44 @@ export const App: React.FC = () => {
           icon: 'monitoring',
           permission: 'report:export',
         },
+        // Improvement PRD §24. Each is guarded by its own module's view
+        // permission rather than by `report:export`: a warehouse controller
+        // may read the material report without being handed the OEE one.
+        {
+          label: 'Laporan Material',
+          path: '/reports?tab=material',
+          tabKey: 'material',
+          icon: 'inventory_2',
+          permission: 'material:view',
+        },
+        {
+          label: 'Laporan Quality',
+          path: '/reports?tab=quality',
+          tabKey: 'quality',
+          icon: 'verified',
+          permission: 'quality:view',
+        },
+        {
+          label: 'Laporan Maintenance',
+          path: '/reports?tab=maintenance',
+          tabKey: 'maintenance',
+          icon: 'build',
+          permission: 'maintenance:view',
+        },
+        {
+          label: 'Laporan Workforce',
+          path: '/reports?tab=workforce',
+          tabKey: 'workforce',
+          icon: 'engineering',
+          permission: 'workforce:view',
+        },
+        {
+          label: 'Laporan WIP',
+          path: '/reports?tab=wip',
+          tabKey: 'wip',
+          icon: 'swap_horiz',
+          permission: 'wip:view',
+        },
       ],
     },
     {
@@ -408,6 +518,7 @@ export const App: React.FC = () => {
           icon: 'compare_arrows',
           permission: 'work_order:view',
         },
+        { label: 'Event History', path: '/event-history', icon: 'timeline', permission: 'event:view' },
         { label: 'Audit Trail', path: '/audit-logs', icon: 'history', permission: 'audit:view' },
         { label: 'Validasi OEE', path: '/oee-validation', icon: 'fact_check', permission: 'analytics:view' },
       ],
@@ -1442,6 +1553,83 @@ export const App: React.FC = () => {
               element={
                 <Guarded need="master_data:view">
                   <SettingsPage />
+                </Guarded>
+              }
+            />
+            {/*
+              MES Improvement v2.0 (Improvement PRD §21). Each destination is
+              guarded by the same permission id the API's route table uses, so
+              a pasted URL is refused by the server as well as hidden here.
+            */}
+            <Route
+              path="/mrp"
+              element={
+                <Guarded need="mrp:view">
+                  <MrpPage />
+                </Guarded>
+              }
+            />
+            <Route
+              path="/material-readiness"
+              element={
+                <Guarded need="material:view">
+                  <MaterialReadinessPage />
+                </Guarded>
+              }
+            />
+            <Route
+              path="/material-inventory"
+              element={
+                <Guarded need="material:view">
+                  <MaterialsPage />
+                </Guarded>
+              }
+            />
+            <Route
+              path="/production-board"
+              element={
+                <Guarded need="production_board:view">
+                  <ProductionBoardPage />
+                </Guarded>
+              }
+            />
+            <Route
+              path="/wip"
+              element={
+                <Guarded need="wip:view">
+                  <WipPage />
+                </Guarded>
+              }
+            />
+            <Route
+              path="/quality"
+              element={
+                <Guarded need="quality:view">
+                  <QualityPage />
+                </Guarded>
+              }
+            />
+            <Route
+              path="/maintenance"
+              element={
+                <Guarded need="maintenance:view">
+                  <MaintenancePage />
+                </Guarded>
+              }
+            />
+            <Route
+              path="/workforce"
+              element={
+                <Guarded need="workforce:view">
+                  <WorkforcePage />
+                </Guarded>
+              }
+            />
+            <Route
+              path="/event-history"
+              element={
+                <Guarded need="event:view">
+                  <EventHistoryPage />
                 </Guarded>
               }
             />

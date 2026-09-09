@@ -54,6 +54,7 @@ const RULES: Rule[] = [
   { method: 'PUT', pattern: '/api/v1/roles/:id', permission: 'role:edit' },
   { method: 'DELETE', pattern: '/api/v1/roles/:id', permission: 'role:edit' },
   { method: 'GET', pattern: '/api/v1/permissions', permission: 'role:view' },
+  { method: 'GET', pattern: '/api/v1/security/summary', permission: 'configuration:manage' },
   { method: 'GET', pattern: '/api/v1/sessions', permission: 'user:view' },
   { method: 'DELETE', pattern: '/api/v1/sessions*', permission: 'user:deactivate' },
   { method: 'POST', pattern: '/api/v1/operators/:id/pin', permission: 'user:edit' },
@@ -154,6 +155,99 @@ const RULES: Rule[] = [
   { method: 'POST', pattern: '/api/v1/corrections/:id/reject', permission: 'correction:approve' },
   { method: 'POST', pattern: '/api/v1/corrections', permission: 'production_record:correct' },
   { method: 'GET', pattern: '/api/v1/audit-logs*', permission: 'audit:view' },
+
+  // --- Self-service and tenant setup ------------------------------
+  //
+  // Enrolling a second factor is something an account does to itself, so the
+  // only right it can require is a valid session — `dashboard:view` is the
+  // narrowest permission every signed-in role holds. The middleware still
+  // refuses an unauthenticated caller; these rules exist so that is a decision
+  // rather than a fallback nobody chose.
+  { method: 'POST', pattern: '/api/v1/auth/mfa/enroll', permission: 'dashboard:view' },
+  { method: 'POST', pattern: '/api/v1/auth/mfa/confirm', permission: 'dashboard:view' },
+  { method: 'POST', pattern: '/api/v1/auth/mfa/disable', permission: 'dashboard:view' },
+
+  // Onboarding writes the tenant's first master data and its guidance state.
+  // Applying an industry template creates plants, lines, machines and products
+  // wholesale, which is exactly `master_data:manage`; the wizard's own progress
+  // is a per-user preference and needs no more than a session.
+  { method: 'PUT', pattern: '/api/v1/onboarding/step', permission: 'dashboard:view' },
+  { method: 'PUT', pattern: '/api/v1/onboarding/guidance', permission: 'dashboard:view' },
+  { method: 'POST', pattern: '/api/v1/onboarding/events', permission: 'dashboard:view' },
+  { method: 'POST', pattern: '/api/v1/onboarding/upgrade', permission: 'configuration:manage' },
+  { method: '*', pattern: '/api/v1/onboarding/*', permission: 'master_data:manage' },
+
+  // --- MES Improvement v2.0 (Improvement PRD §34) -----------------
+  //
+  // Ordered narrowest-first within each block. The sort below is by pattern
+  // depth, so a `*` rule at the end of a block is the fallback for anything
+  // the specific rules above it did not claim, never an accidental override.
+
+  // Material. Reads are wide (an operator has to see what a work order needs);
+  // writes split by what they do to stock, not by which screen calls them.
+  { method: 'POST', pattern: '/api/v1/materials/inventory/adjust', permission: 'material:adjust' },
+  { method: 'POST', pattern: '/api/v1/materials/inventory/receive', permission: 'material:adjust' },
+  { method: 'POST', pattern: '/api/v1/materials/inventory/incoming', permission: 'material:adjust' },
+  { method: 'POST', pattern: '/api/v1/materials/reservations/work-order/:id', permission: 'material:reserve' },
+  { method: 'DELETE', pattern: '/api/v1/materials/reservations/:id', permission: 'material:reserve' },
+  { method: 'POST', pattern: '/api/v1/materials/consumption', permission: 'material:consume' },
+  { method: '*', pattern: '/api/v1/materials/warehouses*', permission: 'master_data:manage' },
+  { method: 'GET', pattern: '/api/v1/materials/*', permission: 'material:view' },
+  { method: 'POST', pattern: '/api/v1/materials/availability*', permission: 'material:view' },
+
+  // MRP.
+  { method: 'POST', pattern: '/api/v1/mrp/run', permission: 'mrp:run' },
+  { method: 'GET', pattern: '/api/v1/mrp/*', permission: 'mrp:view' },
+
+  // Quality.
+  { method: 'POST', pattern: '/api/v1/quality/inspections', permission: 'quality:inspect' },
+  { method: 'POST', pattern: '/api/v1/quality/holds/:id/release', permission: 'quality:release' },
+  { method: 'POST', pattern: '/api/v1/quality/holds', permission: 'quality:hold' },
+  { method: 'POST', pattern: '/api/v1/quality/dispositions', permission: 'quality:disposition' },
+  { method: 'POST', pattern: '/api/v1/quality/ncr', permission: 'quality:ncr:create' },
+  { method: '*', pattern: '/api/v1/quality/ncr*', permission: 'quality:ncr:manage' },
+  { method: '*', pattern: '/api/v1/quality/inspection-plans*', permission: 'quality:ncr:manage' },
+  { method: 'GET', pattern: '/api/v1/quality/*', permission: 'quality:view' },
+
+  // Maintenance.
+  { method: 'POST', pattern: '/api/v1/maintenance/records/:id/start', permission: 'maintenance:execute' },
+  { method: 'POST', pattern: '/api/v1/maintenance/records/:id/complete', permission: 'maintenance:complete' },
+  { method: 'POST', pattern: '/api/v1/maintenance/records/:id/assign', permission: 'maintenance:assign' },
+  { method: 'POST', pattern: '/api/v1/maintenance/requests/:id/accept', permission: 'maintenance:assign' },
+  { method: 'POST', pattern: '/api/v1/maintenance/requests/:id/reject', permission: 'maintenance:assign' },
+  { method: 'POST', pattern: '/api/v1/maintenance/requests', permission: 'maintenance:create' },
+  { method: 'POST', pattern: '/api/v1/maintenance/emergency', permission: 'maintenance:execute' },
+  { method: '*', pattern: '/api/v1/maintenance/plans*', permission: 'maintenance:create' },
+  { method: 'GET', pattern: '/api/v1/maintenance/*', permission: 'maintenance:view' },
+
+  // Workforce.
+  { method: '*', pattern: '/api/v1/workforce/skills*', permission: 'workforce:manage' },
+  { method: '*', pattern: '/api/v1/workforce/requirements*', permission: 'workforce:manage' },
+  { method: '*', pattern: '/api/v1/workforce/qualifications*', permission: 'workforce:qualification' },
+  { method: '*', pattern: '/api/v1/workforce/shift-assignments*', permission: 'workforce:assignment' },
+  { method: '*', pattern: '/api/v1/workforce/assignments*', permission: 'workforce:assignment' },
+  { method: '*', pattern: '/api/v1/workforce/availability*', permission: 'workforce:availability' },
+  // How many operators a work order needs is a planning decision about that
+  // work order, and clocked time is what the assignment produced — both belong
+  // to whoever assigns, not to whoever administers the skill master.
+  { method: '*', pattern: '/api/v1/workforce/labor-requirements*', permission: 'workforce:assignment' },
+  { method: '*', pattern: '/api/v1/workforce/time-records*', permission: 'workforce:assignment' },
+  { method: 'GET', pattern: '/api/v1/workforce/*', permission: 'workforce:view' },
+
+  // WIP and handoff.
+  { method: 'POST', pattern: '/api/v1/wip/transfers/:id/receive', permission: 'wip:receive' },
+  { method: 'POST', pattern: '/api/v1/wip/transfers', permission: 'wip:transfer' },
+  { method: 'POST', pattern: '/api/v1/wip/records/:id/hold', permission: 'wip:hold' },
+  { method: 'POST', pattern: '/api/v1/wip/records/:id/release', permission: 'wip:release' },
+  { method: 'POST', pattern: '/api/v1/wip/records', permission: 'wip:create' },
+  { method: 'GET', pattern: '/api/v1/wip/*', permission: 'wip:view' },
+
+  // Production board.
+  { method: 'POST', pattern: '/api/v1/production-board/dispatch', permission: 'production_board:reschedule' },
+  { method: 'GET', pattern: '/api/v1/production-board*', permission: 'production_board:view' },
+
+  // Event history is read-only by design (BR-E02).
+  { method: 'GET', pattern: '/api/v1/events*', permission: 'event:view' },
 ];
 
 /** Longer patterns are more specific, so they are tried first. */
@@ -190,12 +284,28 @@ export const PUBLIC_API_PATHS = new Set([
   '/api/v1/auth/login',
   '/api/v1/auth/trial-register',
   '/api/v1/auth/operator-login',
+  // The second half of a login: it carries a single-use challenge token, not
+  // a session, so it cannot require one (§5).
+  '/api/v1/auth/mfa/verify',
   '/api/v1/auth/session',
   '/api/v1/auth/logout',
   '/api/v1/meta/deployment',
-  '/api/v1/meta/openapi.json',
-  '/api/v1/docs',
 ]);
+
+/**
+ * The endpoint inventory and the API documentation (§16).
+ *
+ * Public by default handed an unauthenticated caller a map of every endpoint
+ * in the product plus its version — useful to an integrator, and just as
+ * useful to somebody deciding what to try. They stay reachable with any
+ * session; `API_DOCS_PUBLIC=true` puts them back on the open internet for a
+ * deployment that publishes its API deliberately.
+ */
+const DOC_PATHS = new Set(['/api/v1/meta/openapi.json', '/api/v1/docs']);
+
+function docsArePublic(): boolean {
+  return /^(1|true|yes)$/i.test(process.env.API_DOCS_PUBLIC ?? '');
+}
 
 /**
  * Enforces the table above on every request.
@@ -208,6 +318,7 @@ export function authorizeRoutes(options: { enabled: boolean }): RequestHandler {
     if (!options.enabled) return next();
     if (!req.path.startsWith('/api/v1')) return next();
     if (PUBLIC_API_PATHS.has(req.path)) return next();
+    if (DOC_PATHS.has(req.path) && docsArePublic()) return next();
 
     const principal = req.principal;
     if (!principal) return next(ApiError.unauthenticated());

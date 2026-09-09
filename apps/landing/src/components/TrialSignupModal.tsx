@@ -256,12 +256,12 @@ export const TrialSignupModal: React.FC<TrialSignupModalProps> = ({ isOpen, onCl
 
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: 'var(--space-1)', color: 'var(--color-on-surface)' }}>
-                    Kata Sandi (min 8 karakter) *
+                    Kata Sandi (min 12 karakter) *
                   </label>
                   <input
                     type="password"
                     required
-                    minLength={8}
+                    minLength={12}
                     placeholder="••••••••"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}

@@ -4,6 +4,7 @@ import { FactoryVisionApiClient, ApiRequestError } from '@factory-vision/api-cli
 import { Button, Icon } from '@factory-vision/ui';
 import { SurfaceCard } from '@factory-vision/ui/fv';
 import { useSession } from '../../../app/SessionContext.js';
+import { MfaCard } from './MfaCard.js';
 
 const api = new FactoryVisionApiClient({ baseUrl: '' });
 
@@ -39,6 +40,10 @@ export const SessionsTab: React.FC<{ onToast: (message: string) => void }> = ({ 
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+      {/* The account's own second factor sits above the session list: both
+          answer "who is holding a key to this workspace right now". */}
+      <MfaCard onToast={onToast} />
+
       <p style={{ margin: 0, fontSize: '12px', color: 'var(--color-on-surface-variant)', lineHeight: 1.6 }}>
         Sesi aplikasi berakhir setelah 12 jam atau 60 menit tanpa aktivitas. Sesi operator jauh lebih pendek, 8
         jam absolut dan 15 menit idle, karena terminal shop floor dipakai bergantian.

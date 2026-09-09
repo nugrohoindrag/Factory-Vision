@@ -3910,7 +3910,7 @@ export const SettingsPage: React.FC = () => {
         maxWidth="440px"
       >
         <p style={{ margin: `0 0 var(--space-4)`, fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
-          PIN 4–8 digit untuk masuk ke terminal shop floor dengan nomor karyawan{' '}
+          PIN 6–12 digit untuk masuk ke terminal shop floor dengan nomor karyawan{' '}
           <strong>{pinOperator?.employeeNumber}</strong>. PIN lama langsung tidak berlaku, dan
           perubahan tercatat di audit log.
         </p>
@@ -3974,7 +3974,7 @@ export const SettingsPage: React.FC = () => {
             variant="filled"
             disabled={
               setOperatorPin.isPending ||
-              pinValue.length < 4 ||
+              pinValue.length < 6 ||
               pinValue !== pinConfirm
             }
             onClick={() => setOperatorPin.mutate()}
