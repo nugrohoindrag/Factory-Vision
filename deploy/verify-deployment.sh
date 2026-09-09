@@ -103,15 +103,36 @@ expect "tidak ada permission id malformed (US-006)" \
 
 # ------------------------------------------------------------------ endpoint
 printf '\n5. API\n'
-base="${VERIFY_BASE_URL:-http://localhost:4000}"
-health=$(curl -s -o /dev/null -w '%{http_code}' "$base/health" 2>/dev/null)
-expect "GET /health" "$health" "200"
+
+# Asked from inside the api container, not from the host.
+#
+# The API's port is deliberately not published: traefik is the front door, so
+# `curl localhost:4000` on the host returns nothing and every check below would
+# report a failure against a perfectly healthy API. That is what the first
+# version of this script did on the pilot host.
+#
+# `node -e` rather than curl because the runtime image carries node and not
+# much else — it is the same call the container's own HEALTHCHECK makes.
+# VERIFY_BASE_URL still overrides, for a host that does publish the port.
+api_probe() { # path -> status code, or 000
+  if [ -n "${VERIFY_BASE_URL:-}" ]; then
+    curl -s -o /dev/null -w '%{http_code}' "${VERIFY_BASE_URL}$1" 2>/dev/null
+  else
+    $COMPOSE exec -T api node -e "
+      fetch('http://127.0.0.1:4000$1')
+        .then(r => console.log(r.status))
+        .catch(() => console.log('000'));
+    " 2>/dev/null | tr -d '\r' | head -1
+  fi
+}
+
+expect "GET /health" "$(api_probe /health)" "200"
 
 # Unauthenticated must be refused, not served. 401 is the pass here: a 200
 # would mean the improvement endpoints are open.
 for path in /api/v1/materials/inventory /api/v1/quality/dashboard /api/v1/maintenance/kpi \
             /api/v1/workforce/dashboard /api/v1/wip/dashboard /api/v1/production-board /api/v1/events; do
-  code=$(curl -s -o /dev/null -w '%{http_code}' "$base$path" 2>/dev/null)
+  code=$(api_probe "$path")
   if [ "$code" = "401" ]; then
     ok "$path menolak permintaan tanpa sesi (401)"
   else
