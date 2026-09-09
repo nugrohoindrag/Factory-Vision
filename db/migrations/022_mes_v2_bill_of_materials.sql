@@ -43,9 +43,24 @@ CREATE TABLE IF NOT EXISTS bill_of_material_item (
 ALTER TABLE bill_of_material ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bill_of_material_item ENABLE ROW LEVEL SECURITY;
 
+-- Dropped first, as 002, 015 and 016 all do.
+--
+-- The runner inside the API image keeps no `schema_migrations` table — a
+-- pull-based host has no checkout to record state in, so it replays every file
+-- on every deploy. That makes idempotence a requirement of each migration, not
+-- a nicety. These two were the only unguarded CREATE POLICY statements in the
+-- tree: they succeeded the day 022 landed and failed on the next deploy with
+-- `policy "rls_bill_of_material" ... already exists`, taking the whole deploy
+-- down before any later migration could run.
+--
+-- Migration 026 replaces both with `tenant_isolation` — these were keyed on
+-- `app.current_tenant_id`, a setting nothing sets. They are recreated here
+-- anyway so that a replay reaches 026 in the state 026 expects.
+DROP POLICY IF EXISTS rls_bill_of_material ON bill_of_material;
 CREATE POLICY rls_bill_of_material ON bill_of_material
   USING (tenant_id = current_setting('app.current_tenant_id', true));
 
+DROP POLICY IF EXISTS rls_bill_of_material_item ON bill_of_material_item;
 CREATE POLICY rls_bill_of_material_item ON bill_of_material_item
   USING (tenant_id = current_setting('app.current_tenant_id', true));
 
