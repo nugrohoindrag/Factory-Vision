@@ -212,6 +212,26 @@ jobs:
           DATABASE_URL: postgresql://factory_app:ci-app-role-password@localhost:5432/factory_vision
         run: pnpm verify:persistence
 
+      # MES Improvement acceptance (Improvement PRD §50). Eight end-to-end
+      # scenarios — material, quality, maintenance, workforce, WIP, board,
+      # events, offline — asserted through HTTP and then read back as the
+      # database owner, so the API is never asked to vouch for itself.
+      #
+      # It belongs in this job rather than beside the 54 user stories because
+      # it needs both connections: the application role to drive the API, and
+      # the owner to read rows back through FORCE ROW LEVEL SECURITY. It runs
+      # last because it starts and stops an API of its own on its own port.
+      #
+      # The release shipped without this step, which is how two regressions in
+      # the v1.7 acceptance suite reached staging: the improvement's own gate
+      # was something a person remembered to run, and the suite that would have
+      # caught them was something CI ran. Both are CI's job now.
+      - name: MES Improvement acceptance (PRD §50)
+        env:
+          OWNER_DATABASE_URL: postgresql://factory:factory@localhost:5432/factory_vision
+          DATABASE_URL: postgresql://factory_app:ci-app-role-password@localhost:5432/factory_vision
+        run: pnpm verify:improvement
+
   # Security scanning (§47, §49, §50). Separate from `verify` so a scanner
   # being slow, or its feed being down, never blocks the acceptance signal —
   # and separate from `publish` so nothing reaches the registry unscanned.

@@ -758,9 +758,41 @@ async function main() {
   // Scenario 7 — Event History
   // ==================================================================
   {
-    const timeline = await get(`/api/v1/events/timeline/WORK_ORDER/${workOrder.id}`);
-    const events = timeline.body ?? [];
-    const types = new Set(events.map((event) => event.eventType));
+    /*
+     * Wait for the timeline to contain what the earlier scenarios caused.
+     *
+     * Events are written with `recordDetached`, which is deliberate: a failed
+     * timeline write must never fail the production record that caused it. The
+     * consequence is that the write is in flight when the call that triggered
+     * it has already returned, so reading the timeline immediately is a race —
+     * and asserting a detached write synchronously is a flaky test, not a
+     * strict one. It failed exactly this way on a second consecutive run.
+     *
+     * Bounded polling keeps the assertion honest: the event still has to
+     * arrive, and within a few seconds, or the check fails as it should.
+     */
+    const expectedTypes = [
+      'MATERIAL_CONSUMED',
+      'QUALITY_INSPECTION',
+      'QUALITY_HOLD',
+      'REWORK_STARTED',
+      'WIP_CREATED',
+      'WIP_TRANSFERRED',
+      'WIP_RECEIVED',
+      'OPERATOR_ASSIGNED',
+      'SCHEDULE_CHANGED',
+    ];
+
+    let timeline = { status: 0, body: [] };
+    let events = [];
+    let types = new Set();
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      timeline = await get(`/api/v1/events/timeline/WORK_ORDER/${workOrder.id}`);
+      events = timeline.body ?? [];
+      types = new Set(events.map((event) => event.eventType));
+      if (expectedTypes.every((type) => types.has(type))) break;
+      await sleep(250);
+    }
 
     check(
       '7 Events',
@@ -774,17 +806,7 @@ async function main() {
       `${events.length} event`
     );
 
-    for (const expected of [
-      'MATERIAL_CONSUMED',
-      'QUALITY_INSPECTION',
-      'QUALITY_HOLD',
-      'REWORK_STARTED',
-      'WIP_CREATED',
-      'WIP_TRANSFERRED',
-      'WIP_RECEIVED',
-      'OPERATOR_ASSIGNED',
-      'SCHEDULE_CHANGED',
-    ]) {
+    for (const expected of expectedTypes) {
       check('7 Events', `Event ${expected} tercatat`, types.has(expected), [...types].join(', '));
     }
 
