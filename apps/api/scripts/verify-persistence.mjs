@@ -352,9 +352,13 @@ async function main() {
     }),
   });
   ids.operatorId = opCreated.body?.id;
+  // Six digits and not a sequence: the credential policy now requires 6-12
+  // digits and rejects runs and repeats, so the old four-digit '4321' was
+  // refused with a 422 and this check failed for the credential rather than
+  // for the persistence it exists to prove.
   const pinSet = await api(`/api/v1/operators/${ids.operatorId}/pin`, {
     method: 'POST',
-    body: JSON.stringify({ pin: '4321' }),
+    body: JSON.stringify({ pin: '493028' }),
   });
   check(
     'operator created and given a PIN',

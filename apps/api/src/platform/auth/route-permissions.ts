@@ -204,9 +204,9 @@ const RULES: Rule[] = [
   { method: 'POST', pattern: '/api/v1/quality/holds/:id/release', permission: 'quality:release' },
   { method: 'POST', pattern: '/api/v1/quality/holds', permission: 'quality:hold' },
   { method: 'POST', pattern: '/api/v1/quality/dispositions', permission: 'quality:disposition' },
-  { method: 'POST', pattern: '/api/v1/quality/ncr', permission: 'quality:ncr:create' },
-  { method: '*', pattern: '/api/v1/quality/ncr*', permission: 'quality:ncr:manage' },
-  { method: '*', pattern: '/api/v1/quality/inspection-plans*', permission: 'quality:ncr:manage' },
+  { method: 'POST', pattern: '/api/v1/quality/ncr', permission: 'ncr:create' },
+  { method: '*', pattern: '/api/v1/quality/ncr*', permission: 'ncr:manage' },
+  { method: '*', pattern: '/api/v1/quality/inspection-plans*', permission: 'ncr:manage' },
   { method: 'GET', pattern: '/api/v1/quality/*', permission: 'quality:view' },
 
   // Maintenance.

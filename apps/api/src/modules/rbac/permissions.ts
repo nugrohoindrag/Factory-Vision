@@ -112,8 +112,13 @@ export const PERMISSION_CATALOG: PermissionDefinition[] = [
   perm('quality:hold', 'Menahan kuantitas karena masalah kualitas'),
   perm('quality:release', 'Melepas hold kualitas'),
   perm('quality:disposition', 'Menetapkan disposition atas kuantitas gagal'),
-  perm('quality:ncr:create', 'Membuat Non-Conformance Record'),
-  perm('quality:ncr:manage', 'Mengelola NCR dan corrective action'),
+  // The PRD writes these `quality:ncr:create` and `quality:ncr:manage`, but
+  // every identifier in this catalogue is `module:action` and US-006 asserts
+  // it — a third segment makes the id malformed and leaves `perm()` parsing
+  // the action as "ncr". NCR is its own entity in §13, so it becomes the
+  // module and the meaning is unchanged.
+  perm('ncr:create', 'Membuat Non-Conformance Record'),
+  perm('ncr:manage', 'Mengelola NCR dan corrective action'),
 
   perm('maintenance:view', 'Melihat rencana, permintaan, dan riwayat maintenance'),
   perm('maintenance:create', 'Membuat rencana dan permintaan maintenance'),
@@ -241,8 +246,8 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<UserRole, PermissionId[]> = {
     'quality:view',
     'quality:hold',
     'quality:disposition',
-    'quality:ncr:create',
-    'quality:ncr:manage',
+    'ncr:create',
+    'ncr:manage',
     'maintenance:view',
     'maintenance:create',
     'workforce:view',
@@ -295,7 +300,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<UserRole, PermissionId[]> = {
     'quality:view',
     'quality:inspect',
     'quality:hold',
-    'quality:ncr:create',
+    'ncr:create',
     'maintenance:view',
     'maintenance:create',
     'workforce:view',
@@ -417,8 +422,8 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<UserRole, PermissionId[]> = {
     'quality:hold',
     'quality:release',
     'quality:disposition',
-    'quality:ncr:create',
-    'quality:ncr:manage',
+    'ncr:create',
+    'ncr:manage',
     'material:view',
     'wip:view',
     'wip:hold',

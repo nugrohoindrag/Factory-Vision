@@ -208,9 +208,18 @@ async function userManagement() {
   await check('US-006', 'System roles exist and are immutable', async () => {
     const { body } = await api('/api/v1/roles', { token: adminToken, expect: 200 });
     const system = body.filter((r) => r.system);
-    // Eight since migration 017 added SALES (ADR-32). The count is asserted so
-    // that a role appearing or vanishing is a deliberate change, not a drift.
-    assert(system.length === 8, `expected 8 system roles, got ${system.length}`);
+    // Eight since migration 017 added SALES (ADR-32); eleven since migration
+    // 032 added MAINTENANCE, WAREHOUSE and WORKFORCE_ADMIN, the three groups
+    // Improvement PRD §35 gives work of their own. The count is asserted so
+    // that a role appearing or vanishing is a deliberate change, not a drift —
+    // so it is updated here deliberately rather than relaxed.
+    assert(system.length === 11, `expected 11 system roles, got ${system.length}`);
+    for (const expected of ['MAINTENANCE', 'WAREHOUSE', 'WORKFORCE_ADMIN']) {
+      assert(
+        system.some((r) => r.key === expected),
+        `system role ${expected} is missing`
+      );
+    }
     const { status } = await api(`/api/v1/roles/${system[0].id}`, {
       token: adminToken,
       method: 'PUT',
