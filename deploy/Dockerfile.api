@@ -50,6 +50,34 @@ FROM node:22-alpine AS runtime
 ENV NODE_ENV=production
 ENV PORT=4000
 
+# Patch the base image's OS packages.
+#
+# `node:22-alpine` is rebuilt on its own schedule, so between rebuilds it
+# carries whatever Alpine packages it was built with — currently libssl3 and
+# libcrypto3 at 3.5.7-r0, against which CVE-2026-14456 has a fix. Upgrading
+# rather than pinning the two by name because the next base image will be
+# behind on something else, and a gate that has to be edited for each new CVE
+# is a gate people learn to edit rather than to satisfy.
+RUN apk --no-cache upgrade
+
+# Remove npm and corepack from the runtime image.
+#
+# The container starts `node apps/api/dist/main.js`; it never installs a
+# package, so npm is only an attack surface here. It is a large one: npm
+# vendors its own dependency tree under `lib/node_modules/npm/node_modules`,
+# and that tree is where the image scan's entire CRITICAL/HIGH list lives —
+# tar, pacote, sigstore, brace-expansion, ip-address, picomatch. None is an
+# application dependency; `/app` contains not one of them.
+#
+# Deleting them is a real fix rather than a suppression: the vulnerable code
+# is gone from the deployed image, which is what SECURITY-EXCEPTIONS.md means
+# by "anything reachable from a deployed image gets fixed, or the release
+# waits". Waiting for a base image whose bundled npm has caught up would park
+# the release behind someone else's release schedule.
+RUN rm -rf /usr/local/lib/node_modules/npm \
+           /usr/local/lib/node_modules/corepack \
+           /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack
+
 # Never run the API as root: an on-premise install often lands on shared
 # factory infrastructure where that matters more, not less.
 RUN addgroup -S factory && adduser -S factory -G factory

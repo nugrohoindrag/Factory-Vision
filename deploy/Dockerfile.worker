@@ -57,6 +57,18 @@ FROM node:22-alpine AS runtime
 
 ENV NODE_ENV=production
 
+# Same reasoning as the API image, for the same base and the same CVEs.
+RUN apk --no-cache upgrade
+
+# Same reasoning as the API image: the worker starts a built entrypoint and
+# never installs a package, so npm's vendored dependency tree is attack
+# surface and nothing else. CI only scans the API image, but this one is
+# deployed too, and the register's rule is about what reaches a deployed
+# image rather than about what the scanner happens to look at.
+RUN rm -rf /usr/local/lib/node_modules/npm \
+           /usr/local/lib/node_modules/corepack \
+           /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack
+
 # Same reasoning as the API: never run as root on infrastructure that is often
 # shared, which an on-premise install usually is.
 RUN addgroup -S factory && adduser -S factory -G factory
