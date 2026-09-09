@@ -37,7 +37,17 @@ q() {
 }
 
 expect() { # label, actual, wanted
-  if [ "$2" = "$3" ]; then ok "$1"; else bad "$1" "expected $3, got '$2'"; fi
+  if [ "$2" = "$3" ]; then
+    ok "$1"
+  elif [ -z "$2" ]; then
+    # A count query that returns nothing did not return zero — it did not run.
+    # psql's stderr is discarded in q(), so without this an unknown relation, a
+    # bad column or a refused connection all arrive looking like a data
+    # failure, and the reader goes hunting in the wrong place.
+    bad "$1" "query tidak menghasilkan apa pun (kemungkinan tabel/kolom tidak ada atau koneksi psql gagal), harusnya $3"
+  else
+    bad "$1" "expected $3, got '$2'"
+  fi
 }
 
 printf '\nMES Improvement — verifikasi setelah deploy\n\n'
@@ -58,11 +68,24 @@ done
 
 # ---------------------------------------------------------------- migrations
 printf '\n2. Migrasi\n'
-expect "migrasi 023-032 diterapkan" \
-  "$(q "SELECT count(*) FROM schema_migrations WHERE version >= '023' AND version < '033'")" "10"
+# Not `SELECT count(*) FROM schema_migrations`. That table is written by
+# `pnpm db:migrate`, which needs a source checkout. A pull-based host has none:
+# it runs the migration runner inside the API image, and that runner keeps no
+# state table at all — it replays the whole directory on every deploy, which is
+# precisely why every migration has to be idempotent. Asking for the
+# bookkeeping asks for a table that will never exist on this host, and psql's
+# error arrives here as an empty string.
+#
+# So ask the schema what the migrations built, which is the thing that actually
+# matters. 023 and 032 create no table; they are checked just below and under
+# RBAC respectively.
+expect "tabel improvement ada (024-031)" \
+  "$(q "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('app_session','user_mfa','operational_event','material_inventory','mrp_run','inspection','quality_hold','maintenance_plan','maintenance_record','skill','operator_qualification','wip_record','wip_transfer')")" "13"
 
-expect "tabel improvement ada" \
-  "$(q "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('operational_event','material_inventory','inspection','maintenance_record','operator_qualification','wip_record','mrp_run')")" "7"
+# 023 makes audit_log append-only by privilege — the same control 026 applies
+# to operational_event. It creates no table, so this grant is its only trace.
+expect "audit_log append-only (023)" \
+  "$(q "SELECT count(*) FROM information_schema.role_table_grants WHERE table_name='audit_log' AND grantee='${APP_DB_USER:-factory_app}' AND privilege_type IN ('UPDATE','DELETE')")" "0"
 
 # ------------------------------------------------------------------ security
 printf '\n3. Isolasi & hak akses\n'
