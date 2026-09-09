@@ -44,7 +44,8 @@
     "qa:db": "pnpm --filter @factory-vision/api run qa:db",
     "qa:routes": "pnpm --filter @factory-vision/api run qa:routes",
     "qa:security": "pnpm --filter @factory-vision/api run qa:security",
-    "qa:sales-boundary": "pnpm --filter @factory-vision/api run qa:sales-boundary"
+    "qa:sales-boundary": "pnpm --filter @factory-vision/api run qa:sales-boundary",
+    "db:replay-check": "node db/verify-replay.mjs"
   },
   "devDependencies": {
     "dotenv": "^16.6.1",

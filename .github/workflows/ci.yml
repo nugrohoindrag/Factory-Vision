@@ -194,6 +194,22 @@ jobs:
           DATABASE_URL: postgresql://factory:factory@localhost:5432/factory_vision
         run: pnpm db:seed
 
+      # Every migration must survive being applied twice.
+      #
+      # The runner inside the API image keeps no `schema_migrations` table — a
+      # pull-based host has no checkout to record state in — so it replays the
+      # whole directory on every deploy. Nothing here could catch a violation
+      # before: every job above migrates a database created seconds earlier, so
+      # only the first application was ever exercised. Migration 022 shipped
+      # two unguarded CREATE POLICY statements on that blind spot and broke the
+      # first deployment that followed it, taking ten later migrations with it.
+      #
+      # Runs against its own throwaway database, which it creates and drops.
+      - name: Migration replay guard
+        env:
+          DATABASE_URL: postgresql://factory:factory@localhost:5432/factory_vision
+        run: pnpm db:replay-check
+
       # The application role, not the owner: connecting as the superuser is
       # exactly the defect this job exists to catch, and the first check in the
       # script asserts the role is one the policies bind.
