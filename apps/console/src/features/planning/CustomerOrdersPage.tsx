@@ -4,9 +4,10 @@ import { FactoryVisionApiClient, ApiRequestError } from '@factory-vision/api-cli
 import type { CustomerOrderDetailView } from '@factory-vision/api-client';
 import { ColumnDef, Button, Icon, Select, FilledTextField, EmptyState, ErrorState } from '@factory-vision/ui';
 import { DataTable, DateField, Page, Section, SurfaceCard, Dialog, toneContainer, toneOnContainer, type Tone } from '@factory-vision/ui/fv';
-import { useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useSession } from '../../app/SessionContext.js';
 import { useNewlyCreated } from '../common/useNewlyCreated.js';
+import { AddOrderDialog } from './AddOrderDialog.js';
 
 /**
  * An order's lines, read the same way under the row in the list and in the
@@ -124,7 +125,16 @@ function readAsBase64(file: File): Promise<string> {
 export const CustomerOrdersPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { can } = useSession();
-  const navigate = useNavigate();
+  // `?add=1` opens the dialog, so the old /order-receiving bookmark and a
+  // shared link both land on the form and not just the list.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const adding = searchParams.get('add') === '1';
+  const setAdding = (open: boolean) => {
+    const next = new URLSearchParams(searchParams);
+    if (open) next.set('add', '1');
+    else next.delete('add');
+    setSearchParams(next, { replace: true });
+  };
   const { isNewlyCreated, sortWithNewlyCreated, NewlyCreatedBadge } =
     useNewlyCreated<CustomerOrderDetailView & { id: string }>('fv_new_customer_order');
 
@@ -288,7 +298,7 @@ export const CustomerOrdersPage: React.FC = () => {
           {/* Adding an order is this screen's primary action, not a sibling
               screen: an order arrives, is recorded, and shows up in this list. */}
           {can('customer_order:create') && (
-            <Button variant="filled" icon={<Icon name="add" size={18} />} onClick={() => navigate('/customer-orders/new')}>
+            <Button variant="filled" icon={<Icon name="add" size={18} />} onClick={() => setAdding(true)}>
               Add Order
             </Button>
           )}
@@ -361,7 +371,7 @@ export const CustomerOrdersPage: React.FC = () => {
             title="Belum ada customer order"
             description="Order yang ditambahkan akan muncul di sini beserta status produksinya."
             actionLabel={can('customer_order:create') ? 'Add Order' : ''}
-            onAction={() => navigate('/customer-orders/new')}
+            onAction={() => setAdding(true)}
           />
         ) : (
           <DataTable
@@ -373,6 +383,8 @@ export const CustomerOrdersPage: React.FC = () => {
           />
         )}
       </Section>
+
+      {can('customer_order:create') && <AddOrderDialog isOpen={adding} onClose={() => setAdding(false)} />}
 
       <Dialog
         isOpen={Boolean(selectedId)}

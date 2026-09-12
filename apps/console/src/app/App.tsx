@@ -20,7 +20,6 @@ import { BottleneckPage } from '../features/oee/BottleneckPage.js';
 import { OeeValidationPage } from '../features/oee/OeeValidationPage.js';
 import { TargetVsActualPage } from '../features/target-actual/TargetVsActualPage.js';
 import { ShiftHandoverPage } from '../features/shift/ShiftHandoverPage.js';
-import { OrderReceivingPage } from '../features/planning/OrderReceivingPage.js';
 import { CustomerOrdersPage } from '../features/planning/CustomerOrdersPage.js';
 import { CustomerMasterPage } from '../features/planning/CustomerMasterPage.js';
 import { DemandForecastPage } from '../features/planning/DemandForecastPage.js';
@@ -1449,16 +1448,9 @@ export const App: React.FC = () => {
                 </Guarded>
               }
             />
-            <Route
-              path="/customer-orders/new"
-              element={
-                <Guarded need="customer_order:create">
-                  <OrderReceivingPage />
-                </Guarded>
-              }
-            />
-            {/* The form used to be its own destination; bookmarks still land. */}
-            <Route path="/order-receiving" element={<Navigate to="/customer-orders/new" replace />} />
+            {/* The form used to be its own destination; bookmarks land on the list with the dialog open. */}
+            <Route path="/order-receiving" element={<Navigate to="/customer-orders?add=1" replace />} />
+            <Route path="/customer-orders/new" element={<Navigate to="/customer-orders?add=1" replace />} />
             <Route
               path="/master-customers"
               element={
