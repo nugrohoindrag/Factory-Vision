@@ -13,7 +13,7 @@ const inputStyle: React.CSSProperties = {
   padding: `var(--space-3) var(--space-3)`,
   borderRadius: 'var(--radius-md, 8px)',
   backgroundColor: 'var(--color-surface-container-high)',
-  border: '1px solid var(--color-outline-variant)',
+  border: '1px solid var(--color-border)',
   color: 'var(--color-on-surface)',
   fontSize: '13px',
   boxSizing: 'border-box',
@@ -162,7 +162,7 @@ export const WorkCentersTab: React.FC<{ onToast: (message: string) => void }> = 
                         gap: 'var(--space-3)',
                         padding: `var(--space-3) var(--space-3)`,
                         borderRadius: 'var(--radius-sm, 8px)',
-                        border: '1px solid var(--color-outline-variant)',
+                        border: '1px solid var(--color-border)',
                         backgroundColor: 'var(--color-surface-container)',
                       }}
                     >

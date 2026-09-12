@@ -131,7 +131,7 @@ export const WelcomeTourModal: React.FC<WelcomeTourModalProps> = ({ isOpen, onCl
           maxWidth: '680px',
           backgroundColor: 'var(--color-surface)',
           borderRadius: 'var(--radius-xl, 16px)',
-          border: '1px solid var(--color-outline-variant)',
+          border: '1px solid var(--color-border)',
           boxShadow: 'var(--elevation-5)',
           display: 'flex',
           flexDirection: 'column',
@@ -142,7 +142,7 @@ export const WelcomeTourModal: React.FC<WelcomeTourModalProps> = ({ isOpen, onCl
         <div
           style={{
             padding: `var(--space-4) var(--space-6)`,
-            borderBottom: '1px solid var(--color-outline-variant)',
+            borderBottom: '1px solid var(--color-border)',
             backgroundColor: 'var(--color-surface-container)',
             display: 'flex',
             alignItems: 'center',
@@ -257,7 +257,7 @@ export const WelcomeTourModal: React.FC<WelcomeTourModalProps> = ({ isOpen, onCl
         <div
           style={{
             padding: `var(--space-4) var(--space-6)`,
-            borderTop: '1px solid var(--color-outline-variant)',
+            borderTop: '1px solid var(--color-border)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',

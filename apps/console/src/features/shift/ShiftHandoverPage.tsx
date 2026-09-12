@@ -216,7 +216,7 @@ export const ShiftHandoverPage: React.FC = () => {
                         gap: 'var(--space-3)',
                         padding: `var(--space-3) var(--space-3)`,
                         borderRadius: 'var(--radius-sm, 8px)',
-                        border: '1px solid var(--color-outline-variant)',
+                        border: '1px solid var(--color-border)',
                         backgroundColor: 'var(--color-surface-container)',
                       }}
                     >
@@ -288,7 +288,7 @@ export const ShiftHandoverPage: React.FC = () => {
                       fontFamily: 'var(--font-family)',
                       color: 'var(--color-on-surface)',
                       backgroundColor: 'var(--color-surface-container)',
-                      border: '1px solid var(--color-outline-variant)',
+                      border: '1px solid var(--color-border)',
                       borderRadius: 'var(--radius-sm, 8px)',
                       resize: 'vertical',
                     }}
@@ -312,7 +312,7 @@ export const ShiftHandoverPage: React.FC = () => {
                         fontFamily: 'var(--font-family)',
                         color: 'var(--color-on-surface)',
                         backgroundColor: 'var(--color-surface-container)',
-                        border: '1px solid var(--color-outline-variant)',
+                        border: '1px solid var(--color-border)',
                         borderRadius: 'var(--radius-sm, 8px)',
                       }}
                     />
@@ -401,7 +401,7 @@ export const ShiftHandoverPage: React.FC = () => {
                       style={{
                         padding: `var(--space-3) var(--space-3)`,
                         borderRadius: 'var(--radius-sm, 8px)',
-                        border: '1px solid var(--color-outline-variant)',
+                        border: '1px solid var(--color-border)',
                         backgroundColor: 'var(--color-surface-container)',
                       }}
                     >
@@ -472,7 +472,7 @@ const SelectField: React.FC<{
         fontSize: '12px',
         fontFamily: 'var(--font-family)',
         borderRadius: 'var(--radius-sm, 8px)',
-        border: '1px solid var(--color-outline-variant)',
+        border: '1px solid var(--color-border)',
         backgroundColor: 'var(--color-surface-container)',
         color: 'var(--color-on-surface)',
         minWidth: '220px',

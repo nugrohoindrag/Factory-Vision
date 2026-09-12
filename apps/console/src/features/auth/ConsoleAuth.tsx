@@ -155,7 +155,7 @@ const inputStyle: React.CSSProperties = {
   fontFamily: 'var(--font-family)',
   color: 'var(--color-on-surface)',
   backgroundColor: 'var(--color-surface-container)',
-  border: '1px solid var(--color-outline-variant)',
+  border: '1px solid var(--color-border)',
   borderRadius: 'var(--radius-sm, 8px)',
   outline: 'none',
   boxSizing: 'border-box',
@@ -285,7 +285,7 @@ export const ConsoleAuth: React.FC = () => {
               padding: 'var(--space-1)',
               borderRadius: 'var(--radius-md, 12px)',
               backgroundColor: 'var(--color-surface-container)',
-              border: '1px solid var(--color-outline-variant)',
+              border: '1px solid var(--color-border)',
             }}
           >
             {[
@@ -331,7 +331,7 @@ export const ConsoleAuth: React.FC = () => {
                   padding: 'var(--space-3)',
                   borderRadius: 'var(--radius-sm, 8px)',
                   backgroundColor: 'var(--color-surface-container)',
-                  border: '1px solid var(--color-outline-variant)',
+                  border: '1px solid var(--color-border)',
                 }}
               >
                 <Icon name="encrypted" size={18} />
@@ -418,7 +418,7 @@ export const ConsoleAuth: React.FC = () => {
                     placeholder="nama@pabrik.co.id"
                     style={{
                       ...inputStyle,
-                      borderColor: fieldErrors.email ? 'var(--color-error)' : 'var(--color-outline-variant)',
+                      borderColor: fieldErrors.email ? 'var(--color-error)' : 'var(--color-border)',
                     }}
                   />
                   {fieldErrors.email && (
@@ -444,7 +444,7 @@ export const ConsoleAuth: React.FC = () => {
                         paddingRight: 'var(--space-12)',
                         borderColor: fieldErrors.password
                           ? 'var(--color-error)'
-                          : 'var(--color-outline-variant)',
+                          : 'var(--color-border)',
                       }}
                     />
                     <button
@@ -742,7 +742,7 @@ export const ConsoleAuth: React.FC = () => {
                   gap: 'var(--space-2)',
                   padding: `var(--space-2) var(--space-3)`,
                   borderRadius: 'var(--radius-sm, 8px)',
-                  border: '1px solid var(--color-outline-variant)',
+                  border: '1px solid var(--color-border)',
                   backgroundColor: 'var(--color-surface-container)',
                   color: 'var(--color-on-surface-variant)',
                   fontSize: '11.5px',
@@ -765,7 +765,7 @@ export const ConsoleAuth: React.FC = () => {
                     padding: 'var(--space-3)',
                     borderRadius: 'var(--radius-md, 12px)',
                     backgroundColor: 'var(--color-surface-container)',
-                    border: '1px solid var(--color-outline-variant)',
+                    border: '1px solid var(--color-border)',
                     borderLeft: `3px solid ${toneColor[kpi.tone]}`,
                   }}
                 >

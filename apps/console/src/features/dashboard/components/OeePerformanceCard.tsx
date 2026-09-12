@@ -60,7 +60,7 @@ export const OeePerformanceCard: React.FC<OeePerformanceCardProps> = ({
               gap: 'var(--space-1)',
               padding: `var(--space-1) var(--space-3)`,
               borderRadius: 'var(--radius-pill)',
-              border: '1px solid var(--color-outline-variant)',
+              border: '1px solid var(--color-border)',
               backgroundColor: 'transparent',
               color: 'var(--color-primary)',
               fontSize: '11px',

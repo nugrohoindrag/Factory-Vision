@@ -708,7 +708,7 @@ export const WorkOrdersPage: React.FC = () => {
       </Section>
 
       {/* Navigation Tabs (WO vs PO) */}
-      <Section style={{ display: 'flex', borderBottom: '1px solid var(--color-outline-variant)', gap: 'var(--space-4)' }}>
+      <Section style={{ display: 'flex', borderBottom: '1px solid var(--color-border)', gap: 'var(--space-4)' }}>
         <button
           onClick={() => setActiveTab('WO')}
           style={{
@@ -808,7 +808,7 @@ export const WorkOrdersPage: React.FC = () => {
                   padding: `var(--space-2) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
-                  border: '1px solid var(--color-outline-variant)',
+                  border: '1px solid var(--color-border)',
                   color: 'var(--color-on-surface)',
                   fontSize: '12px',
                   fontWeight: 600,
@@ -832,7 +832,7 @@ export const WorkOrdersPage: React.FC = () => {
                   padding: `var(--space-2) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
-                  border: '1px solid var(--color-outline-variant)',
+                  border: '1px solid var(--color-border)',
                   color: 'var(--color-on-surface)',
                   fontSize: '12px',
                   outline: 'none',
@@ -921,7 +921,7 @@ export const WorkOrdersPage: React.FC = () => {
                     backgroundColor: 'var(--color-surface)',
                     border: isPoHighlighted
                       ? '1.5px solid var(--color-success)'
-                      : '1px solid var(--color-outline-variant)',
+                      : '1px solid var(--color-border)',
                     borderRadius: 'var(--radius-lg)',
                     padding: `var(--space-5) var(--space-5)`,
                     display: 'flex',
@@ -1079,7 +1079,7 @@ export const WorkOrdersPage: React.FC = () => {
                                   backgroundColor: stepWo
                                     ? 'var(--color-surface)'
                                     : 'var(--color-surface-container-high)',
-                                  border: `1px solid ${stepWo ? 'var(--color-primary)' : 'var(--color-outline-variant)'}`,
+                                  border: `1px solid ${stepWo ? 'var(--color-primary)' : 'var(--color-border)'}`,
                                   display: 'flex',
                                   flexDirection: 'column',
                                   gap: 'var(--space-1)',
@@ -1192,7 +1192,7 @@ export const WorkOrdersPage: React.FC = () => {
                 padding: `var(--space-3) var(--space-3)`,
                 borderRadius: 'var(--radius-md)',
                 backgroundColor: 'var(--color-surface-container-high)',
-                border: '1px solid var(--color-outline-variant)',
+                border: '1px solid var(--color-border)',
                 color: 'var(--color-on-surface)',
                 fontSize: '13px',
               }}
@@ -1226,7 +1226,7 @@ export const WorkOrdersPage: React.FC = () => {
                 padding: `var(--space-3) var(--space-3)`,
                 borderRadius: 'var(--radius-md)',
                 backgroundColor: 'var(--color-surface-container-high)',
-                border: '1px solid var(--color-outline-variant)',
+                border: '1px solid var(--color-border)',
                 color: 'var(--color-on-surface)',
                 fontSize: '13px',
               }}
@@ -1261,7 +1261,7 @@ export const WorkOrdersPage: React.FC = () => {
                   padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
-                  border: '1px solid var(--color-outline-variant)',
+                  border: '1px solid var(--color-border)',
                   color: 'var(--color-on-surface)',
                   fontSize: '13px',
                 }}
@@ -1294,7 +1294,7 @@ export const WorkOrdersPage: React.FC = () => {
                   padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
-                  border: '1px solid var(--color-outline-variant)',
+                  border: '1px solid var(--color-border)',
                   color: 'var(--color-on-surface)',
                   fontSize: '13px',
                 }}
@@ -1333,7 +1333,7 @@ export const WorkOrdersPage: React.FC = () => {
                   padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
-                  border: '1px solid var(--color-outline-variant)',
+                  border: '1px solid var(--color-border)',
                   color: 'var(--color-on-surface)',
                   fontSize: '13px',
                   fontWeight: 700,
@@ -1362,7 +1362,7 @@ export const WorkOrdersPage: React.FC = () => {
                   padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
-                  border: '1px solid var(--color-outline-variant)',
+                  border: '1px solid var(--color-border)',
                   color: 'var(--color-on-surface)',
                   fontSize: '13px',
                 }}
@@ -1399,7 +1399,7 @@ export const WorkOrdersPage: React.FC = () => {
                   padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
-                  border: '1px solid var(--color-outline-variant)',
+                  border: '1px solid var(--color-border)',
                   color: 'var(--color-on-surface)',
                   fontSize: '12.5px',
                   outline: 'none',
@@ -1429,7 +1429,7 @@ export const WorkOrdersPage: React.FC = () => {
                   padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
-                  border: '1px solid var(--color-outline-variant)',
+                  border: '1px solid var(--color-border)',
                   color: 'var(--color-on-surface)',
                   fontSize: '12.5px',
                   outline: 'none',
@@ -1497,7 +1497,7 @@ export const WorkOrdersPage: React.FC = () => {
                 padding: `var(--space-3) var(--space-3)`,
                 borderRadius: 'var(--radius-md)',
                 backgroundColor: 'var(--color-surface-container-high)',
-                border: '1px solid var(--color-outline-variant)',
+                border: '1px solid var(--color-border)',
                 color: 'var(--color-on-surface)',
                 fontSize: '13px',
               }}
@@ -1531,7 +1531,7 @@ export const WorkOrdersPage: React.FC = () => {
                   padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
-                  border: '1px solid var(--color-outline-variant)',
+                  border: '1px solid var(--color-border)',
                   color: 'var(--color-on-surface)',
                   fontSize: '13px',
                 }}
@@ -1564,7 +1564,7 @@ export const WorkOrdersPage: React.FC = () => {
                   padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
-                  border: '1px solid var(--color-outline-variant)',
+                  border: '1px solid var(--color-border)',
                   color: 'var(--color-on-surface)',
                   fontSize: '13px',
                 }}
@@ -1602,7 +1602,7 @@ export const WorkOrdersPage: React.FC = () => {
                   padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
-                  border: '1px solid var(--color-outline-variant)',
+                  border: '1px solid var(--color-border)',
                   color: 'var(--color-on-surface)',
                   fontSize: '13px',
                   fontWeight: 700,
@@ -1632,7 +1632,7 @@ export const WorkOrdersPage: React.FC = () => {
                   padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
-                  border: '1px solid var(--color-outline-variant)',
+                  border: '1px solid var(--color-border)',
                   color: 'var(--color-on-surface)',
                   fontSize: '13px',
                 }}
@@ -1663,7 +1663,7 @@ export const WorkOrdersPage: React.FC = () => {
                   padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
-                  border: '1px solid var(--color-outline-variant)',
+                  border: '1px solid var(--color-border)',
                   color: 'var(--color-on-surface)',
                   fontSize: '12.5px',
                   outline: 'none',
@@ -1693,7 +1693,7 @@ export const WorkOrdersPage: React.FC = () => {
                   padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
-                  border: '1px solid var(--color-outline-variant)',
+                  border: '1px solid var(--color-border)',
                   color: 'var(--color-on-surface)',
                   fontSize: '12.5px',
                   outline: 'none',
@@ -1845,7 +1845,7 @@ export const WorkOrdersPage: React.FC = () => {
                 alignItems: 'center',
                 marginTop: 'var(--space-3)',
                 paddingTop: 'var(--space-4)',
-                borderTop: '1px solid var(--color-outline-variant)',
+                borderTop: '1px solid var(--color-border)',
               }}
             >
               <Button
@@ -1966,7 +1966,7 @@ export const WorkOrdersPage: React.FC = () => {
                 padding: `var(--space-3) var(--space-3)`,
                 borderRadius: 'var(--radius-md)',
                 backgroundColor: 'var(--color-surface-container-high)',
-                border: '1px solid var(--color-outline-variant)',
+                border: '1px solid var(--color-border)',
                 color: 'var(--color-on-surface)',
                 fontSize: '13px',
                 fontWeight: 700,
@@ -1995,7 +1995,7 @@ export const WorkOrdersPage: React.FC = () => {
                 padding: `var(--space-3) var(--space-3)`,
                 borderRadius: 'var(--radius-md)',
                 backgroundColor: 'var(--color-surface-container-high)',
-                border: '1px solid var(--color-outline-variant)',
+                border: '1px solid var(--color-border)',
                 color: 'var(--color-on-surface)',
                 fontSize: '13px',
               }}
@@ -2032,7 +2032,7 @@ export const WorkOrdersPage: React.FC = () => {
                   padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
-                  border: '1px solid var(--color-outline-variant)',
+                  border: '1px solid var(--color-border)',
                   color: 'var(--color-on-surface)',
                   fontSize: '13px',
                   fontWeight: 700,
@@ -2063,7 +2063,7 @@ export const WorkOrdersPage: React.FC = () => {
                   padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
-                  border: '1px solid var(--color-outline-variant)',
+                  border: '1px solid var(--color-border)',
                   color: 'var(--color-on-surface)',
                   fontSize: '13px',
                   outline: 'none',

@@ -36,7 +36,7 @@ export const ContextualTip: React.FC<ContextualTipProps> = ({
         marginBottom: 'var(--space-4)',
         borderRadius: 'var(--radius-lg, 12px)',
         backgroundColor: 'var(--color-surface-container)',
-        border: '1px solid var(--color-outline-variant)',
+        border: '1px solid var(--color-border)',
         ...style,
       }}
     >

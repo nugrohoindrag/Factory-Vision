@@ -286,7 +286,7 @@ export const ImportExportTab: React.FC<{ onToast: (message: string) => void }> =
                   style={{
                     maxHeight: '260px',
                     overflowY: 'auto',
-                    border: '1px solid var(--color-outline-variant)',
+                    border: '1px solid var(--color-border)',
                     borderRadius: 'var(--radius-sm, 8px)',
                   }}
                 >

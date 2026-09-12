@@ -252,7 +252,7 @@ export const OeeValidationPage: React.FC = () => {
                   style={{
                     marginTop: 'var(--space-4)',
                     paddingTop: 'var(--space-4)',
-                    borderTop: '1px solid var(--color-outline-variant)',
+                    borderTop: '1px solid var(--color-border)',
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
                     gap: 'var(--space-3)',
@@ -386,7 +386,7 @@ const inputStyle: React.CSSProperties = {
   fontFamily: 'var(--font-family)',
   color: 'var(--color-on-surface)',
   backgroundColor: 'var(--color-surface-container)',
-  border: '1px solid var(--color-outline-variant)',
+  border: '1px solid var(--color-border)',
   borderRadius: 'var(--radius-sm, 8px)',
 };
 

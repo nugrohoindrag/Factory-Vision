@@ -180,7 +180,7 @@ export const PortfolioPage: React.FC = () => {
               fontFamily: 'var(--font-family)',
               color: 'var(--color-on-surface)',
               backgroundColor: 'var(--color-surface-container)',
-              border: '1px solid var(--color-outline-variant)',
+              border: '1px solid var(--color-border)',
               borderRadius: 'var(--radius-sm, 8px)',
               outline: 'none',
             }}
@@ -195,7 +195,7 @@ export const PortfolioPage: React.FC = () => {
                 style={{
                   padding: `var(--space-2) var(--space-4)`,
                   borderRadius: 'var(--radius-full, 999px)',
-                  border: '1px solid var(--color-outline-variant)',
+                  border: '1px solid var(--color-border)',
                   cursor: 'pointer',
                   fontFamily: 'var(--font-family)',
                   fontSize: '12px',

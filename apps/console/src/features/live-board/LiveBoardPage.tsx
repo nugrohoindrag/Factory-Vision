@@ -279,7 +279,7 @@ export const LiveBoardPage: React.FC = () => {
                       backgroundColor: 'var(--color-surface-container)',
                       borderRadius: 'var(--radius-md)',
                       padding: `var(--space-3) var(--space-3)`,
-                      border: '1px solid var(--color-outline-variant)',
+                      border: '1px solid var(--color-border)',
                     }}
                   >
                     <div
@@ -349,7 +349,7 @@ export const LiveBoardPage: React.FC = () => {
                       backgroundColor: 'var(--color-surface-container)',
                       padding: `var(--space-2) var(--space-1)`,
                       borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--color-outline-variant)',
+                      border: '1px solid var(--color-border)',
                     }}
                   >
                     <div style={{ fontSize: '10px', color: 'var(--color-on-surface-variant)' }}>OEE</div>
@@ -369,7 +369,7 @@ export const LiveBoardPage: React.FC = () => {
                       backgroundColor: 'var(--color-surface-container)',
                       padding: `var(--space-2) var(--space-1)`,
                       borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--color-outline-variant)',
+                      border: '1px solid var(--color-border)',
                     }}
                   >
                     <div style={{ fontSize: '10px', color: 'var(--color-on-surface-variant)' }}>Avail</div>
@@ -389,7 +389,7 @@ export const LiveBoardPage: React.FC = () => {
                       backgroundColor: 'var(--color-surface-container)',
                       padding: `var(--space-2) var(--space-1)`,
                       borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--color-outline-variant)',
+                      border: '1px solid var(--color-border)',
                     }}
                   >
                     <div style={{ fontSize: '10px', color: 'var(--color-on-surface-variant)' }}>Perf</div>
@@ -409,7 +409,7 @@ export const LiveBoardPage: React.FC = () => {
                       backgroundColor: 'var(--color-surface-container)',
                       padding: `var(--space-2) var(--space-1)`,
                       borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--color-outline-variant)',
+                      border: '1px solid var(--color-border)',
                     }}
                   >
                     <div style={{ fontSize: '10px', color: 'var(--color-on-surface-variant)' }}>Qual</div>

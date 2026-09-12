@@ -368,7 +368,7 @@ export const ProductionPlanWizardPage: React.FC = () => {
                     gap: 'var(--space-2)',
                     padding: `var(--space-2) var(--space-4)`,
                     borderRadius: 'var(--radius-pill)',
-                    border: '1px solid var(--color-outline-variant)',
+                    border: '1px solid var(--color-border)',
                     cursor: locked ? 'not-allowed' : 'pointer',
                     fontSize: '12px',
                     fontWeight: 700,

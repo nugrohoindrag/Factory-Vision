@@ -252,7 +252,7 @@ const fieldStyle: React.CSSProperties = {
   fontFamily: 'var(--font-family)',
   color: 'var(--color-on-surface)',
   backgroundColor: 'var(--color-surface-container)',
-  border: '1px solid var(--color-outline-variant)',
+  border: '1px solid var(--color-border)',
   borderRadius: 'var(--radius-sm)',
   outline: 'none',
   boxSizing: 'border-box',
@@ -285,7 +285,7 @@ const Field: React.FC<{
       value={value}
       placeholder={placeholder}
       onChange={(e) => onChange(e.target.value)}
-      style={{ ...fieldStyle, borderColor: error ? 'var(--color-error)' : 'var(--color-outline-variant)' }}
+      style={{ ...fieldStyle, borderColor: error ? 'var(--color-error)' : 'var(--color-border)' }}
     />
     {error && <span style={{ fontSize: '10.5px', color: 'var(--color-error)' }}>{error}</span>}
   </div>
@@ -307,7 +307,7 @@ const Select: React.FC<{
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      style={{ ...fieldStyle, borderColor: error ? 'var(--color-error)' : 'var(--color-outline-variant)' }}
+      style={{ ...fieldStyle, borderColor: error ? 'var(--color-error)' : 'var(--color-border)' }}
     >
       {options.map((option) => (
         <option key={option.value} value={option.value}>

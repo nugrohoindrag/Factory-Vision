@@ -361,7 +361,7 @@ export const TabStrip: React.FC<{
       display: 'flex',
       gap: 'var(--space-1)',
       flexWrap: 'wrap',
-      borderBottom: '1px solid var(--color-outline-variant)',
+      borderBottom: '1px solid var(--color-border)',
       paddingBottom: 'var(--space-2)',
     }}
   >

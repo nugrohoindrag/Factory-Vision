@@ -66,7 +66,7 @@ export const OnboardingChecklistDrawer: React.FC<OnboardingChecklistDrawerProps>
           maxWidth: '460px',
           height: '100%',
           backgroundColor: 'var(--color-surface)',
-          borderLeft: '1px solid var(--color-outline-variant)',
+          borderLeft: '1px solid var(--color-border)',
           boxShadow: 'var(--elevation-5)',
           display: 'flex',
           flexDirection: 'column',
@@ -78,7 +78,7 @@ export const OnboardingChecklistDrawer: React.FC<OnboardingChecklistDrawerProps>
         <div
           style={{
             padding: `var(--space-5) var(--space-6)`,
-            borderBottom: '1px solid var(--color-outline-variant)',
+            borderBottom: '1px solid var(--color-border)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -115,7 +115,7 @@ export const OnboardingChecklistDrawer: React.FC<OnboardingChecklistDrawerProps>
           style={{
             padding: `var(--space-4) var(--space-6)`,
             backgroundColor: 'var(--color-surface-container-low)',
-            borderBottom: '1px solid var(--color-outline-variant)',
+            borderBottom: '1px solid var(--color-border)',
           }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
@@ -157,7 +157,7 @@ export const OnboardingChecklistDrawer: React.FC<OnboardingChecklistDrawerProps>
                 style={{
                   padding: 'var(--space-3) var(--space-4)',
                   borderRadius: 'var(--radius-md, 10px)',
-                  border: '1px solid var(--color-outline-variant)',
+                  border: '1px solid var(--color-border)',
                   backgroundColor: isCompleted ? 'var(--color-surface-container)' : 'var(--color-surface)',
                   display: 'flex',
                   alignItems: 'flex-start',
@@ -215,7 +215,7 @@ export const OnboardingChecklistDrawer: React.FC<OnboardingChecklistDrawerProps>
         <div
           style={{
             padding: `var(--space-4) var(--space-6)`,
-            borderTop: '1px solid var(--color-outline-variant)',
+            borderTop: '1px solid var(--color-border)',
             backgroundColor: 'var(--color-surface-container)',
           }}
         >

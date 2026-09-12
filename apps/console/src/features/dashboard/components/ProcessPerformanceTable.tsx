@@ -14,7 +14,7 @@ export const ProcessPerformanceTable: React.FC<ProcessPerformanceTableProps> = (
         style={{
           backgroundColor: 'var(--color-surface)',
           borderRadius: 'var(--radius-lg, 16px)',
-          border: '1px solid var(--color-outline-variant)',
+          border: '1px solid var(--color-border)',
           padding: 'var(--space-6)',
           textAlign: 'center',
           color: 'var(--color-on-surface-variant)',
@@ -37,7 +37,7 @@ export const ProcessPerformanceTable: React.FC<ProcessPerformanceTableProps> = (
       style={{
         backgroundColor: 'var(--color-surface)',
         borderRadius: 'var(--radius-lg, 16px)',
-        border: '1px solid var(--color-outline-variant)',
+        border: '1px solid var(--color-border)',
         overflow: 'hidden',
         boxShadow: 'var(--elevation-1)',
       }}
@@ -45,7 +45,7 @@ export const ProcessPerformanceTable: React.FC<ProcessPerformanceTableProps> = (
       <div
         style={{
           padding: `var(--space-4) var(--space-5)`,
-          borderBottom: '1px solid var(--color-outline-variant)',
+          borderBottom: '1px solid var(--color-border)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',

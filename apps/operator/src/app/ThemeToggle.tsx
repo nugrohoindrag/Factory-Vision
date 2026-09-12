@@ -28,7 +28,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ mode, onToggle }) => (
       justifyContent: 'center',
       borderRadius: 'var(--radius-md)',
       backgroundColor: 'var(--color-surface-container-high)',
-      border: '1px solid var(--color-outline-variant)',
+      border: '1px solid var(--color-border)',
       color: 'var(--color-on-surface-variant)',
       cursor: 'pointer',
     }}

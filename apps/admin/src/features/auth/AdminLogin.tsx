@@ -42,7 +42,7 @@ export const AdminLogin: React.FC = () => {
     fontFamily: 'var(--font-family)',
     color: 'var(--color-on-surface)',
     backgroundColor: 'var(--color-surface-container)',
-    border: '1px solid var(--color-outline-variant)',
+    border: '1px solid var(--color-border)',
     borderRadius: 'var(--radius-sm, 8px)',
     outline: 'none',
     boxSizing: 'border-box',

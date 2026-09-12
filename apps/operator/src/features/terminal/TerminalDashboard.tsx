@@ -185,7 +185,7 @@ const MiniStat: React.FC<{
   <div
     style={{
       backgroundColor: 'var(--color-surface-container-low)',
-      border: '1px solid var(--color-outline-variant)',
+      border: '1px solid var(--color-border)',
       borderRadius: 'var(--radius-md, 12px)',
       padding: 'var(--space-2) var(--space-3)',
       minWidth: 0,
@@ -249,7 +249,7 @@ const DetailRow: React.FC<{ label: string; value: React.ReactNode; tone?: Tone }
       alignItems: 'baseline',
       justifyContent: 'space-between',
       gap: 'var(--space-3)',
-      borderBottom: '1px solid var(--color-outline-variant)',
+      borderBottom: '1px solid var(--color-border)',
       paddingBottom: '4px',
     }}
   >
@@ -533,7 +533,7 @@ export const TerminalDashboard: React.FC<TerminalDashboardProps> = ({
         style={{
           flexShrink: 0,
           backgroundColor: 'var(--color-surface)',
-          borderBottom: '1px solid var(--color-outline-variant)',
+          borderBottom: '1px solid var(--color-border)',
           display: 'flex',
           flexWrap: 'nowrap',
           alignItems: 'center',
@@ -613,7 +613,7 @@ export const TerminalDashboard: React.FC<TerminalDashboardProps> = ({
               minHeight: '40px',
               padding: '0 var(--space-3)',
               borderRadius: 'var(--radius-md, 12px)',
-              border: '1px solid var(--color-outline-variant)',
+              border: '1px solid var(--color-border)',
               backgroundColor: 'var(--color-surface-container-low)',
               color: 'var(--color-on-surface-variant)',
               fontSize: '12px',
@@ -768,7 +768,7 @@ export const TerminalDashboard: React.FC<TerminalDashboardProps> = ({
                 </div>
               </div>
 
-              <div style={{ width: '1px', alignSelf: 'stretch', backgroundColor: 'var(--color-outline-variant)' }} />
+              <div style={{ width: '1px', alignSelf: 'stretch', backgroundColor: 'var(--color-border)' }} />
 
               <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                 <div>
@@ -827,7 +827,7 @@ export const TerminalDashboard: React.FC<TerminalDashboardProps> = ({
             <div
               style={{
                 flexShrink: 0,
-                borderTop: '1px solid var(--color-outline-variant)',
+                borderTop: '1px solid var(--color-border)',
                 paddingTop: 'var(--space-3)',
                 marginTop: 'var(--space-2)',
                 display: 'flex',
@@ -940,7 +940,7 @@ export const TerminalDashboard: React.FC<TerminalDashboardProps> = ({
                     marginTop: 'var(--space-3)',
                     minHeight: '44px',
                     borderRadius: 'var(--radius-md, 12px)',
-                    border: '1px solid var(--color-outline-variant)',
+                    border: '1px solid var(--color-border)',
                     backgroundColor: 'var(--color-surface-container-low)',
                     color: 'var(--color-on-surface)',
                     fontSize: '13px',
@@ -1257,7 +1257,7 @@ export const TerminalDashboard: React.FC<TerminalDashboardProps> = ({
               style={{
                 minHeight: '78px',
                 borderRadius: 'var(--radius-lg, 16px)',
-                border: '1px solid var(--color-outline-variant)',
+                border: '1px solid var(--color-border)',
                 backgroundColor: action.disabled ? 'var(--color-surface-container)' : toneContainer[action.tone],
                 color: action.disabled ? 'var(--color-on-surface-variant)' : toneOnContainer[action.tone],
                 display: 'flex',
@@ -1293,7 +1293,7 @@ export const TerminalDashboard: React.FC<TerminalDashboardProps> = ({
           flexShrink: 0,
           height: '38px',
           backgroundColor: 'var(--color-surface)',
-          borderTop: '1px solid var(--color-outline-variant)',
+          borderTop: '1px solid var(--color-border)',
           display: 'flex',
           alignItems: 'center',
           gap: 'var(--space-5)',

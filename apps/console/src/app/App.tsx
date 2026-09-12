@@ -1346,7 +1346,7 @@ export const App: React.FC = () => {
             {/* Decorative divider, not content: it carries no meaning a screen
                 reader should announce, and holding it to text contrast would
                 make it read as text. */}
-            <span aria-hidden="true" style={{ color: 'var(--color-outline-variant)' }}>
+            <span aria-hidden="true" style={{ color: 'var(--color-border)' }}>
               |
             </span>
             <span style={{ fontSize: '11.5px', color: 'var(--color-on-surface-variant)' }}>

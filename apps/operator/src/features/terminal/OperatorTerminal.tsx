@@ -743,7 +743,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
               style={{
                 backgroundColor: 'var(--color-surface)',
                 borderRadius: 'var(--radius-xl, 18px)',
-                border: '1px solid var(--color-outline-variant)',
+                border: '1px solid var(--color-border)',
                 width: '100%',
                 maxWidth: '460px',
                 padding: 'var(--space-6)',
@@ -769,7 +769,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
                       padding: `var(--space-2) var(--space-4)`,
                       borderRadius: 'var(--radius-md, 8px)',
                       backgroundColor: 'var(--color-surface-container-high)',
-                      border: '1px solid var(--color-outline-variant)',
+                      border: '1px solid var(--color-border)',
                       color: 'var(--color-on-surface)',
                       fontWeight: 700,
                       fontSize: '13px',
@@ -831,7 +831,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
               style={{
                 backgroundColor: 'var(--color-surface)',
                 borderRadius: 'var(--radius-xl, 18px)',
-                border: '1px solid var(--color-outline-variant)',
+                border: '1px solid var(--color-border)',
                 width: '100%',
                 maxWidth: '480px',
                 padding: 'var(--space-6)',
@@ -861,7 +861,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
                         backgroundColor: isSelected
                           ? 'var(--color-primary)'
                           : 'var(--color-surface-container-high)',
-                        border: isSelected ? 'none' : '1px solid var(--color-outline-variant)',
+                        border: isSelected ? 'none' : '1px solid var(--color-border)',
                         color: isSelected ? 'var(--color-on-primary)' : 'var(--color-on-surface)',
                         fontWeight: 700,
                         fontSize: '13px',
@@ -945,7 +945,7 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
               style={{
                 backgroundColor: 'var(--color-surface)',
                 borderRadius: 'var(--radius-xl, 18px)',
-                border: '1px solid var(--color-outline-variant)',
+                border: '1px solid var(--color-border)',
                 width: '100%',
                 maxWidth: '380px',
                 padding: 'var(--space-6)',

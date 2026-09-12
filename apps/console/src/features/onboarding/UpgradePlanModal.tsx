@@ -51,7 +51,7 @@ export const UpgradePlanModal: React.FC<UpgradePlanModalProps> = ({ isOpen, onCl
           maxHeight: '90vh',
           backgroundColor: 'var(--color-surface)',
           borderRadius: 'var(--radius-xl, 16px)',
-          border: '1px solid var(--color-outline-variant)',
+          border: '1px solid var(--color-border)',
           boxShadow: 'var(--elevation-5)',
           display: 'flex',
           flexDirection: 'column',
@@ -62,7 +62,7 @@ export const UpgradePlanModal: React.FC<UpgradePlanModalProps> = ({ isOpen, onCl
         <div
           style={{
             padding: `var(--space-5) var(--space-6)`,
-            borderBottom: '1px solid var(--color-outline-variant)',
+            borderBottom: '1px solid var(--color-border)',
             backgroundColor: 'var(--color-surface-container)',
             display: 'flex',
             alignItems: 'center',

@@ -324,7 +324,7 @@ export const OeeInvestigationPage: React.FC = () => {
                       alignItems: 'center',
                       padding: `var(--space-3) var(--space-4)`,
                       borderRadius: 'var(--radius-sm, 8px)',
-                      border: '1px solid var(--color-outline-variant)',
+                      border: '1px solid var(--color-border)',
                       backgroundColor: 'var(--color-surface)',
                     }}
                   >
@@ -405,7 +405,7 @@ export const OeeInvestigationPage: React.FC = () => {
                       alignItems: 'center',
                       padding: `var(--space-3) var(--space-4)`,
                       borderRadius: 'var(--radius-sm, 8px)',
-                      border: '1px solid var(--color-outline-variant)',
+                      border: '1px solid var(--color-border)',
                       backgroundColor: 'var(--color-surface)',
                     }}
                   >

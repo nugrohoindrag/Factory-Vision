@@ -132,7 +132,7 @@ export const OeeConfigTab: React.FC<{ onToast: (message: string) => void }> = ({
               fontSize: '12px',
               fontFamily: 'var(--font-family)',
               borderRadius: 'var(--radius-sm, 8px)',
-              border: '1px solid var(--color-outline-variant)',
+              border: '1px solid var(--color-border)',
               backgroundColor: 'var(--color-surface-container-high)',
               color: 'var(--color-on-surface)',
             }}
@@ -203,7 +203,7 @@ const Setting: React.FC<{
       gap: 'var(--space-4)',
       alignItems: 'flex-start',
       paddingBottom: 'var(--space-3)',
-      borderBottom: '1px solid var(--color-outline-variant)',
+      borderBottom: '1px solid var(--color-border)',
     }}
   >
     <div style={{ maxWidth: '560px' }}>

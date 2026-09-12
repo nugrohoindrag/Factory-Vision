@@ -194,7 +194,7 @@ export const RowActionMenu: React.FC<RowActionMenuProps> = ({
                 padding: 'var(--space-1)',
                 borderRadius: 'var(--radius-md)',
                 backgroundColor: 'var(--color-surface-container)',
-                border: '1px solid var(--color-outline-variant)',
+                border: '1px solid var(--color-border)',
                 boxShadow: 'var(--elevation-3)',
                 display: 'flex',
                 flexDirection: 'column',
@@ -209,7 +209,7 @@ export const RowActionMenu: React.FC<RowActionMenuProps> = ({
                       style={{
                         height: '1px',
                         margin: 'var(--space-1) 0',
-                        backgroundColor: 'var(--color-outline-variant)',
+                        backgroundColor: 'var(--color-border)',
                       }}
                     />
                   )}

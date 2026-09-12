@@ -61,7 +61,7 @@ export const App: React.FC = () => {
           padding: `0 var(--space-5)`,
           height: '54px',
           backgroundColor: 'var(--color-surface)',
-          borderBottom: '1px solid var(--color-outline-variant)',
+          borderBottom: '1px solid var(--color-border)',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-5)' }}>
@@ -125,7 +125,7 @@ export const App: React.FC = () => {
             style={{
               padding: `var(--space-2) var(--space-3)`,
               borderRadius: 'var(--radius-sm, 8px)',
-              border: '1px solid var(--color-outline-variant)',
+              border: '1px solid var(--color-border)',
               backgroundColor: 'var(--color-surface-container)',
               color: 'var(--color-on-surface-variant)',
               fontSize: '12px',

@@ -22,7 +22,7 @@ export const FilterChip: React.FC<ChipProps> = ({ selected, style, ...props }) =
     style={{
       backgroundColor: selected ? 'var(--color-primary)' : 'var(--color-surface-container-low)',
       color: selected ? 'var(--color-on-primary)' : 'var(--color-on-surface-variant)',
-      border: selected ? 'none' : '1px solid var(--color-outline-variant)',
+      border: selected ? 'none' : '1px solid var(--color-border)',
       ...style,
     }}
     {...props}

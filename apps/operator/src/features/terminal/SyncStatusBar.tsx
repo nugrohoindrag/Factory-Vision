@@ -107,7 +107,7 @@ export const SyncStatusBar: React.FC = () => {
               padding: 'var(--space-4)',
               borderRadius: 'var(--radius-md, 12px)',
               backgroundColor: 'var(--color-surface-container-high)',
-              border: '1px solid var(--color-outline-variant)',
+              border: '1px solid var(--color-border)',
               boxShadow: 'var(--elevation-3)',
               fontFamily: 'var(--font-family)',
             }}

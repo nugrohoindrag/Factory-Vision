@@ -99,7 +99,7 @@ export const BottleneckPage: React.FC = () => {
             fontSize: '12px',
             fontFamily: 'var(--font-family)',
             borderRadius: 'var(--radius-full, 999px)',
-            border: '1px solid var(--color-outline-variant)',
+            border: '1px solid var(--color-border)',
             backgroundColor: 'var(--color-surface-container)',
             color: 'var(--color-on-surface)',
           }}
@@ -172,7 +172,7 @@ export const BottleneckPage: React.FC = () => {
                       alignItems: 'center',
                       padding: `var(--space-3) var(--space-4)`,
                       borderRadius: 'var(--radius-sm, 8px)',
-                      border: '1px solid var(--color-outline-variant)',
+                      border: '1px solid var(--color-border)',
                       backgroundColor: 'var(--color-surface)',
                     }}
                   >

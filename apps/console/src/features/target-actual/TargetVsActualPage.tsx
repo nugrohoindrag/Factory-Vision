@@ -174,7 +174,7 @@ export const TargetVsActualPage: React.FC = () => {
                       alignItems: 'center',
                       padding: `var(--space-3) var(--space-4)`,
                       borderRadius: 'var(--radius-sm, 8px)',
-                      border: '1px solid var(--color-outline-variant)',
+                      border: '1px solid var(--color-border)',
                       backgroundColor: 'var(--color-surface)',
                     }}
                   >
@@ -203,7 +203,7 @@ export const TargetVsActualPage: React.FC = () => {
                           style={{
                             width: `${(row.targetQuantity / maxValue) * 100}%`,
                             height: '100%',
-                            backgroundColor: 'var(--color-outline-variant)',
+                            backgroundColor: 'var(--color-border)',
                           }}
                         />
                         <div

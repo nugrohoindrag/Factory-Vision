@@ -104,7 +104,7 @@ export const ShopFloorTransactionModal: React.FC<{
         style={{
           backgroundColor: 'var(--color-surface)',
           borderRadius: 'var(--radius-xl, 18px)',
-          border: '1px solid var(--color-outline-variant)',
+          border: '1px solid var(--color-border)',
           width: '100%',
           maxWidth: '460px',
           maxHeight: '90vh',
@@ -213,7 +213,7 @@ export const ShopFloorTransactionModal: React.FC<{
               height: '44px',
               padding: `0 var(--space-3)`,
               borderRadius: 'var(--radius-md, 8px)',
-              border: '1px solid var(--color-outline-variant)',
+              border: '1px solid var(--color-border)',
               backgroundColor: 'var(--color-surface-container)',
               color: 'var(--color-on-surface)',
               fontSize: '14px',

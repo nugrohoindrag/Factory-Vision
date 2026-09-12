@@ -21,7 +21,7 @@ const inputStyle: React.CSSProperties = {
   padding: 'var(--space-3)',
   borderRadius: 'var(--radius-md, 8px)',
   backgroundColor: 'var(--color-surface-container-high)',
-  border: '1px solid var(--color-outline-variant)',
+  border: '1px solid var(--color-border)',
   color: 'var(--color-on-surface)',
   fontSize: '13px',
   boxSizing: 'border-box',
@@ -355,7 +355,7 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
             gap: 'var(--space-3)',
             marginTop: 'var(--space-4)',
             paddingTop: 'var(--space-3)',
-            borderTop: '1px solid var(--color-outline-variant)',
+            borderTop: '1px solid var(--color-border)',
           }}
         >
           {/* Search */}
@@ -468,7 +468,7 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
                 style={{
                   border: isHighlighted
                     ? '1.5px solid var(--color-success)'
-                    : '1px solid var(--color-outline-variant)',
+                    : '1px solid var(--color-border)',
                   backgroundColor: isHighlighted
                     ? 'color-mix(in srgb, var(--color-success) 4%, var(--color-surface))'
                     : undefined,
@@ -590,7 +590,7 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
                             ? '1px solid color-mix(in srgb, var(--color-success) 30%, transparent)'
                             : bom.status === 'DRAFT'
                               ? '1px solid color-mix(in srgb, var(--color-warning) 30%, transparent)'
-                              : '1px solid var(--color-outline-variant)',
+                              : '1px solid var(--color-border)',
                       }}
                     >
                       {bom.status === 'ACTIVE'
@@ -677,7 +677,7 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
                     style={{
                       marginTop: 'var(--space-3)',
                       paddingTop: 'var(--space-3)',
-                      borderTop: '1px solid var(--color-outline-variant)',
+                      borderTop: '1px solid var(--color-border)',
                     }}
                   >
                     <div
@@ -898,7 +898,7 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
                 padding: 'var(--space-3)',
                 borderRadius: 'var(--radius-md, 8px)',
                 backgroundColor: 'var(--color-surface-container-low)',
-                border: '1px solid var(--color-outline-variant)',
+                border: '1px solid var(--color-border)',
               }}
             >
               <div
@@ -936,7 +936,7 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
                       padding: 'var(--space-3)',
                       borderRadius: 'var(--radius-sm, 6px)',
                       backgroundColor: 'var(--color-surface-container-high)',
-                      border: '1px solid var(--color-outline-variant)',
+                      border: '1px solid var(--color-border)',
                       display: 'flex',
                       flexDirection: 'column',
                       gap: 'var(--space-2)',
@@ -1104,7 +1104,7 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
                 gap: 'var(--space-2)',
                 marginTop: 'var(--space-3)',
                 paddingTop: 'var(--space-3)',
-                borderTop: '1px solid var(--color-outline-variant)',
+                borderTop: '1px solid var(--color-border)',
               }}
             >
               <Button type="button" variant="outlined" onClick={() => setForm(null)}>

@@ -122,7 +122,7 @@ export const ClientDetailPage: React.FC = () => {
                 fontSize: '12px',
                 fontFamily: 'var(--font-family)',
                 borderRadius: 'var(--radius-sm, 8px)',
-                border: '1px solid var(--color-outline-variant)',
+                border: '1px solid var(--color-border)',
                 backgroundColor: 'var(--color-surface-container)',
                 color: 'var(--color-on-surface)',
               }}
@@ -263,7 +263,7 @@ export const ClientDetailPage: React.FC = () => {
               </thead>
               <tbody>
                 {[...usage.data].reverse().map((row) => (
-                  <tr key={row.capturedOn} style={{ borderTop: '1px solid var(--color-outline-variant)' }}>
+                  <tr key={row.capturedOn} style={{ borderTop: '1px solid var(--color-border)' }}>
                     <td style={cellStyle}>{row.capturedOn}</td>
                     <td style={cellStyle}>{num(row.workOrdersCreated)}</td>
                     <td style={cellStyle}>{num(row.productionRecords)}</td>

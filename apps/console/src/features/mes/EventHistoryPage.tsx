@@ -149,7 +149,7 @@ export const EventHistoryPage: React.FC = () => {
                 marginLeft: 'auto',
                 padding: `var(--space-2) var(--space-3)`,
                 borderRadius: 'var(--radius-pill)',
-                border: '1px solid var(--color-outline-variant)',
+                border: '1px solid var(--color-border)',
                 backgroundColor: 'var(--color-surface-container-low)',
                 color: 'var(--color-on-surface)',
                 fontFamily: 'var(--font-family)',
@@ -220,7 +220,7 @@ export const EventHistoryPage: React.FC = () => {
                                 flex: 1,
                                 width: '2px',
                                 minHeight: '16px',
-                                backgroundColor: 'var(--color-outline-variant)',
+                                backgroundColor: 'var(--color-border)',
                               }}
                             />
                           ) : null}

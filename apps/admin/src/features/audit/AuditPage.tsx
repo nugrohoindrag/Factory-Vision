@@ -69,7 +69,7 @@ export const AuditPage: React.FC = () => {
             </thead>
             <tbody>
               {entries.data?.map((entry) => (
-                <tr key={entry.id} style={{ borderTop: '1px solid var(--color-outline-variant)' }}>
+                <tr key={entry.id} style={{ borderTop: '1px solid var(--color-border)' }}>
                   <td style={cell}>{new Date(entry.occurredAt).toLocaleString('id-ID')}</td>
                   <td style={cell}>{entry.actorEmail}</td>
                   <td style={cell}>

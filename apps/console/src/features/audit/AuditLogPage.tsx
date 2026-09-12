@@ -218,7 +218,7 @@ export const AuditLogPage: React.FC = () => {
           style={{
             backgroundColor: 'var(--color-surface)',
             borderRadius: 'var(--radius-lg, 16px)',
-            border: '1px solid var(--color-outline-variant)',
+            border: '1px solid var(--color-border)',
             padding: 'var(--space-5)',
             height: 'fit-content',
           }}

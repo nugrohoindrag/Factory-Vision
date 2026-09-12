@@ -27,7 +27,7 @@ export const TrialCommandCenter: React.FC = () => {
         padding="none"
         style={{
           borderRadius: 'var(--radius-lg, 12px)',
-          border: '1px solid var(--color-primary-soft, var(--color-outline-variant))',
+          border: '1px solid var(--color-primary-soft, var(--color-border))',
           backgroundColor: 'var(--color-surface)',
           boxShadow: 'var(--elevation-1)',
           overflow: 'hidden',
@@ -42,7 +42,7 @@ export const TrialCommandCenter: React.FC = () => {
             justifyContent: 'space-between',
             padding: `var(--space-2) var(--space-4)`,
             backgroundColor: 'var(--color-surface-container)',
-            borderBottom: collapsed ? 'none' : '1px solid var(--color-outline-variant)',
+            borderBottom: collapsed ? 'none' : '1px solid var(--color-border)',
             flexWrap: 'wrap',
             gap: 'var(--space-2)',
           }}

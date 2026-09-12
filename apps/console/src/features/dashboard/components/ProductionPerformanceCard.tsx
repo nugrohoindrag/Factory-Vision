@@ -66,7 +66,7 @@ export const ProductionPerformanceCard: React.FC<ProductionPerformanceCardProps>
           gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))',
           gap: 'var(--space-3)',
           paddingBottom: 'var(--space-1)',
-          borderBottom: '1px solid var(--color-outline-variant)',
+          borderBottom: '1px solid var(--color-border)',
         }}
       >
         <Figure label="Target" value={target.toLocaleString('en-US')} />

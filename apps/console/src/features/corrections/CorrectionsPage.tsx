@@ -214,7 +214,7 @@ export const CorrectionsPage: React.FC<CorrectionsPageProps> = ({
           style={{
             backgroundColor: 'var(--color-surface)',
             borderRadius: 'var(--radius-lg, 16px)',
-            border: '1px solid var(--color-outline-variant)',
+            border: '1px solid var(--color-border)',
             padding: 'var(--space-5)',
             height: 'fit-content',
           }}
@@ -277,7 +277,7 @@ export const CorrectionsPage: React.FC<CorrectionsPageProps> = ({
                   padding: `var(--space-3) var(--space-3)`,
                   borderRadius: 'var(--radius-md, 8px)',
                   backgroundColor: 'var(--color-surface-container-high)',
-                  border: '1px solid var(--color-outline-variant)',
+                  border: '1px solid var(--color-border)',
                   color: 'var(--color-on-surface)',
                   fontSize: '12px',
                   fontFamily: 'inherit',

@@ -74,7 +74,7 @@ export const FirstWorkflowGuideModal: React.FC<FirstWorkflowGuideModalProps> = (
           maxWidth: '680px',
           backgroundColor: 'var(--color-surface)',
           borderRadius: 'var(--radius-xl, 16px)',
-          border: '1px solid var(--color-outline-variant)',
+          border: '1px solid var(--color-border)',
           boxShadow: 'var(--elevation-5)',
           display: 'flex',
           flexDirection: 'column',
@@ -85,7 +85,7 @@ export const FirstWorkflowGuideModal: React.FC<FirstWorkflowGuideModalProps> = (
         <div
           style={{
             padding: `var(--space-4) var(--space-6)`,
-            borderBottom: '1px solid var(--color-outline-variant)',
+            borderBottom: '1px solid var(--color-border)',
             backgroundColor: 'var(--color-surface-container)',
             display: 'flex',
             alignItems: 'center',
@@ -155,7 +155,7 @@ export const FirstWorkflowGuideModal: React.FC<FirstWorkflowGuideModalProps> = (
                         padding: `var(--space-3) var(--space-4)`,
                         borderRadius: '8px',
                         backgroundColor: 'var(--color-surface-container)',
-                        border: '1px solid var(--color-outline-variant)',
+                        border: '1px solid var(--color-border)',
                         fontSize: '13.5px',
                         fontWeight: 700,
                         color: 'var(--color-on-surface)',
@@ -181,7 +181,7 @@ export const FirstWorkflowGuideModal: React.FC<FirstWorkflowGuideModalProps> = (
                           padding: `var(--space-3) var(--space-4)`,
                           fontSize: '14px',
                           borderRadius: '8px',
-                          border: '1px solid var(--color-outline-variant)',
+                          border: '1px solid var(--color-border)',
                           backgroundColor: 'var(--color-surface-container)',
                           color: 'var(--color-on-surface)',
                           outline: 'none',
@@ -203,7 +203,7 @@ export const FirstWorkflowGuideModal: React.FC<FirstWorkflowGuideModalProps> = (
                           padding: `var(--space-3) var(--space-4)`,
                           fontSize: '14px',
                           borderRadius: '8px',
-                          border: '1px solid var(--color-outline-variant)',
+                          border: '1px solid var(--color-border)',
                           backgroundColor: 'var(--color-surface-container)',
                           color: 'var(--color-on-surface)',
                           outline: 'none',
@@ -240,7 +240,7 @@ export const FirstWorkflowGuideModal: React.FC<FirstWorkflowGuideModalProps> = (
                       padding: `var(--space-3) var(--space-4)`,
                       borderRadius: '8px',
                       backgroundColor: 'var(--color-surface-container)',
-                      border: '1px solid var(--color-outline-variant)',
+                      border: '1px solid var(--color-border)',
                       fontSize: '13px',
                     }}
                   >
@@ -370,7 +370,7 @@ export const FirstWorkflowGuideModal: React.FC<FirstWorkflowGuideModalProps> = (
         <div
           style={{
             padding: `var(--space-4) var(--space-6)`,
-            borderTop: '1px solid var(--color-outline-variant)',
+            borderTop: '1px solid var(--color-border)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',

@@ -114,7 +114,7 @@ export const SplitWorkOrderDialog: React.FC<SplitWorkOrderDialogProps> = ({
     minHeight: '40px',
     padding: `var(--space-2) var(--space-3)`,
     borderRadius: 'var(--radius-sm, 8px)',
-    border: '1px solid var(--color-outline-variant)',
+    border: '1px solid var(--color-border)',
     backgroundColor: 'var(--color-surface-container)',
     color: 'var(--color-on-surface)',
     fontFamily: 'var(--font-family)',

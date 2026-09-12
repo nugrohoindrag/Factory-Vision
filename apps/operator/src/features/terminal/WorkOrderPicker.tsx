@@ -108,7 +108,7 @@ export const WorkOrderPicker: React.FC<WorkOrderPickerProps> = ({
           gap: 'var(--space-3)',
           padding: 'var(--space-4) var(--space-5)',
           backgroundColor: 'var(--color-surface)',
-          borderBottom: '1px solid var(--color-outline-variant)',
+          borderBottom: '1px solid var(--color-border)',
         }}
       >
         {onCancel && (
@@ -119,7 +119,7 @@ export const WorkOrderPicker: React.FC<WorkOrderPickerProps> = ({
               minHeight: '48px',
               padding: '0 var(--space-4)',
               borderRadius: 'var(--radius-md, 12px)',
-              border: '1px solid var(--color-outline-variant)',
+              border: '1px solid var(--color-border)',
               backgroundColor: 'var(--color-surface-container-low)',
               color: 'var(--color-on-surface-variant)',
               fontSize: '13px',
@@ -150,7 +150,7 @@ export const WorkOrderPicker: React.FC<WorkOrderPickerProps> = ({
             display: 'flex',
             alignItems: 'center',
             gap: 'var(--space-2)',
-            border: '1px solid var(--color-outline-variant)',
+            border: '1px solid var(--color-border)',
             borderRadius: 'var(--radius-md, 12px)',
             backgroundColor: 'var(--color-surface-container-low)',
             padding: 'var(--space-2) var(--space-3)',
@@ -182,7 +182,7 @@ export const WorkOrderPicker: React.FC<WorkOrderPickerProps> = ({
             minHeight: '48px',
             padding: '0 var(--space-4)',
             borderRadius: 'var(--radius-md, 12px)',
-            border: '1px solid var(--color-outline-variant)',
+            border: '1px solid var(--color-border)',
             backgroundColor: 'var(--color-surface-container-low)',
             color: 'var(--color-on-surface-variant)',
             fontSize: '13px',
@@ -373,7 +373,7 @@ export const WorkOrderPicker: React.FC<WorkOrderPickerProps> = ({
           gap: 'var(--space-4)',
           padding: 'var(--space-3) var(--space-5)',
           backgroundColor: 'var(--color-surface)',
-          borderTop: '1px solid var(--color-outline-variant)',
+          borderTop: '1px solid var(--color-border)',
         }}
       >
         <div style={{ flex: 1, minWidth: 0, fontSize: '14px', fontWeight: 700, color: 'var(--color-on-surface-variant)' }}>

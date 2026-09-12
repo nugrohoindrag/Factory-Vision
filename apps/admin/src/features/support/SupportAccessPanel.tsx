@@ -175,7 +175,7 @@ export const SupportAccessPanel: React.FC<{ clientId: string }> = ({ clientId })
                 padding: `var(--space-3) var(--space-3)`,
                 borderRadius: 'var(--radius-sm, 8px)',
                 backgroundColor: 'var(--color-surface-container)',
-                border: '1px solid var(--color-outline-variant)',
+                border: '1px solid var(--color-border)',
               }}
             >
               <div style={{ minWidth: '220px' }}>
@@ -234,7 +234,7 @@ const inputStyle: React.CSSProperties = {
   fontFamily: 'var(--font-family)',
   color: 'var(--color-on-surface)',
   backgroundColor: 'var(--color-surface-container)',
-  border: '1px solid var(--color-outline-variant)',
+  border: '1px solid var(--color-border)',
   borderRadius: 'var(--radius-sm, 8px)',
   outline: 'none',
   boxSizing: 'border-box',

@@ -13,7 +13,7 @@ const inputStyle: React.CSSProperties = {
   padding: `var(--space-3) var(--space-3)`,
   borderRadius: 'var(--radius-md, 8px)',
   backgroundColor: 'var(--color-surface-container-high)',
-  border: '1px solid var(--color-outline-variant)',
+  border: '1px solid var(--color-border)',
   color: 'var(--color-on-surface)',
   fontSize: '13px',
   boxSizing: 'border-box',
@@ -314,7 +314,7 @@ export const MoldsTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
                     style={{
                       marginTop: 'var(--space-3)',
                       paddingTop: 'var(--space-3)',
-                      borderTop: '1px solid var(--color-outline-variant)',
+                      borderTop: '1px solid var(--color-border)',
                     }}
                   >
                     <div
@@ -374,7 +374,7 @@ export const MoldsTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
                               gap: 'var(--space-3)',
                               padding: `var(--space-2) var(--space-3)`,
                               borderRadius: 'var(--radius-sm, 8px)',
-                              border: '1px solid var(--color-outline-variant)',
+                              border: '1px solid var(--color-border)',
                               backgroundColor: 'var(--color-surface-container)',
                             }}
                           >

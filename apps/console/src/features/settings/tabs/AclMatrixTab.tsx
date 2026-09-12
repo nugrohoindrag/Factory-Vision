@@ -288,7 +288,7 @@ export const AclMatrixTab: React.FC<{ onToast: (message: string) => void }> = ({
                   {list.map((permission) => (
                     <tr
                       key={permission.id}
-                      style={{ borderBottom: '1px solid var(--color-outline-variant)' }}
+                      style={{ borderBottom: '1px solid var(--color-border)' }}
                     >
                       <td
                         style={{

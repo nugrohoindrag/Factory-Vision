@@ -78,7 +78,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
       style={{
         borderRadius: 'var(--radius-lg, 16px)',
         backgroundColor: 'var(--color-surface)',
-        border: '1px solid var(--color-outline-variant)',
+        border: '1px solid var(--color-border)',
         padding: '12px 14px',
         color: 'var(--color-on-surface)',
         display: 'flex',

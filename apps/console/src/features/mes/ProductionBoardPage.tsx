@@ -229,7 +229,7 @@ const BoardTimeline: React.FC<{ board: ProductionBoard; onSelect: (item: BoardIt
           <div
             style={{
               display: 'flex',
-              borderBottom: '1px solid var(--color-outline-variant)',
+              borderBottom: '1px solid var(--color-border)',
               backgroundColor: 'var(--color-surface-container-low)',
             }}
           >
@@ -280,14 +280,14 @@ const BoardTimeline: React.FC<{ board: ProductionBoard; onSelect: (item: BoardIt
           {board.lanes.map((lane) => (
             <div
               key={lane.id}
-              style={{ display: 'flex', borderBottom: '1px solid var(--color-outline-variant)' }}
+              style={{ display: 'flex', borderBottom: '1px solid var(--color-border)' }}
             >
               <div
                 style={{
                   width: '180px',
                   flexShrink: 0,
                   padding: 'var(--space-3)',
-                  borderRight: '1px solid var(--color-outline-variant)',
+                  borderRight: '1px solid var(--color-border)',
                 }}
               >
                 <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-on-surface)' }}>
@@ -311,7 +311,7 @@ const BoardTimeline: React.FC<{ board: ProductionBoard; onSelect: (item: BoardIt
                       top: 0,
                       bottom: 0,
                       width: '1px',
-                      backgroundColor: 'var(--color-outline-variant)',
+                      backgroundColor: 'var(--color-border)',
                       opacity: 0.5,
                     }}
                   />
