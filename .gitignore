@@ -69,3 +69,11 @@ qa-evidence/
 # every regeneration would add another copy to the history of a clone.
 /Factory_Vision_Product_Deck.pptx
 /scripts/generate_product_deck.py
+
+# The landing tsconfig has no outDir, so a `tsc` run without noEmit drops its
+# output beside the sources, where Vite resolves `.js` ahead of `.tsx` and a
+# stale copy silently shadows the real component.
+apps/landing/src/**/*.js
+apps/landing/src/**/*.js.map
+apps/landing/src/**/*.d.ts
+apps/landing/src/**/*.d.ts.map
