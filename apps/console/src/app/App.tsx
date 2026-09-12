@@ -735,7 +735,6 @@ export const App: React.FC = () => {
           height: '100vh',
           transition: 'width 0.22s cubic-bezier(0.2, 0, 0, 1)',
           backgroundColor: 'var(--color-surface)',
-          borderRight: '1px solid var(--color-outline-variant)',
           display: 'flex',
           flexDirection: 'column',
           flexShrink: 0,
@@ -747,7 +746,6 @@ export const App: React.FC = () => {
         <div
           style={{
             padding: isCollapsed ? '12px 8px' : '16px 16px',
-            borderBottom: '1px solid var(--color-outline-variant)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: isCollapsed ? 'center' : 'flex-start',
@@ -902,7 +900,6 @@ export const App: React.FC = () => {
                           boxSizing: 'border-box',
                           backgroundColor: 'var(--color-surface-container-highest)',
                           borderRadius: 'var(--radius-md)',
-                          border: '1px solid var(--color-outline-variant)',
                           boxShadow: 'var(--elevation-3)',
                           padding: 'var(--space-2)',
                           display: 'flex',
@@ -916,7 +913,6 @@ export const App: React.FC = () => {
                             fontSize: '11px',
                             fontWeight: 800,
                             color: 'var(--color-primary)',
-                            borderBottom: '1px solid var(--color-outline-variant)',
                             marginBottom: 'var(--space-1)',
                             letterSpacing: '0.02em',
                           }}
@@ -1031,10 +1027,8 @@ export const App: React.FC = () => {
                         display: 'flex',
                         flexDirection: 'column',
                         gap: 'var(--space-1)',
-                        paddingLeft: 'var(--space-4)',
+                        paddingLeft: 'var(--space-6)',
                         marginTop: 'var(--space-1)',
-                        borderLeft: '2px solid var(--color-outline-variant)',
-                        marginLeft: 'var(--space-4)',
                       }}
                     >
                       {group.children.map((sub, subIndex) => {
@@ -1093,7 +1087,6 @@ export const App: React.FC = () => {
         <div
           style={{
             padding: isCollapsed ? '10px 8px' : '12px 14px',
-            borderTop: '1px solid var(--color-outline-variant)',
             backgroundColor: 'var(--color-surface-container-low)',
             display: 'flex',
             flexDirection: 'column',
@@ -1122,7 +1115,7 @@ export const App: React.FC = () => {
                   height: '38px',
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container-high)',
-                  border: '1px solid var(--color-outline-variant)',
+                  border: 'none',
                   color: 'var(--color-primary)',
                   display: 'flex',
                   alignItems: 'center',
@@ -1170,7 +1163,7 @@ export const App: React.FC = () => {
                   height: '38px',
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--color-surface-container)',
-                  border: '1px solid var(--color-outline-variant)',
+                  border: 'none',
                   color: 'var(--color-on-surface-variant)',
                   display: 'flex',
                   alignItems: 'center',
@@ -1263,7 +1256,7 @@ export const App: React.FC = () => {
                     height: '28px',
                     borderRadius: 'var(--radius-sm)',
                     backgroundColor: 'var(--color-surface-container)',
-                    border: '1px solid var(--color-outline-variant)',
+                    border: 'none',
                     color: 'var(--color-on-surface-variant)',
                     display: 'flex',
                     alignItems: 'center',
@@ -1284,7 +1277,7 @@ export const App: React.FC = () => {
                     padding: `var(--space-1) var(--space-2)`,
                     borderRadius: 'var(--radius-sm)',
                     backgroundColor: 'var(--color-surface-container)',
-                    border: '1px solid var(--color-outline-variant)',
+                    border: 'none',
                     color: 'var(--color-on-surface-variant)',
                     fontSize: '11px',
                     fontWeight: 700,
@@ -1310,7 +1303,6 @@ export const App: React.FC = () => {
           style={{
             height: '52px',
             backgroundColor: 'var(--color-surface)',
-            borderBottom: '1px solid var(--color-outline-variant)',
             padding: `0 var(--space-5)`,
             display: 'flex',
             alignItems: 'center',
@@ -1329,7 +1321,7 @@ export const App: React.FC = () => {
                 width: '32px',
                 height: '32px',
                 borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--color-outline-variant)',
+                border: 'none',
                 backgroundColor: 'var(--color-surface-container)',
                 color: 'var(--color-primary)',
                 display: 'flex',
@@ -1383,7 +1375,7 @@ export const App: React.FC = () => {
                 height: '32px',
                 borderRadius: 'var(--radius-md)',
                 backgroundColor: 'var(--color-surface-container)',
-                border: '1px solid var(--color-outline-variant)',
+                border: 'none',
                 color: 'var(--color-on-surface)',
                 cursor: 'pointer',
               }}
