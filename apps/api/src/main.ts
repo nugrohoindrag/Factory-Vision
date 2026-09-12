@@ -37,7 +37,7 @@ import { internalRoutes } from './routes/internal.routes.js';
 import { ClientManagementService } from './modules/client-management/client.service.js';
 import { ClientAdminService } from './modules/client-management/client.admin.service.js';
 import { InternalAuthService } from './modules/client-management/internal-auth.service.js';
-import { checkDatabase, isDatabaseConfigured } from './platform/db/pool.js';
+import { checkDatabase, isDatabaseConfigured, query } from './platform/db/pool.js';
 import {
   assertDatabaseReady,
   ensureTenant,
@@ -342,6 +342,30 @@ const reference = await hydrateReferenceData(PILOT_TENANT, {
 });
 await authService.bootstrapAdminCredential();
 const credentials = authService.hydrateCredentials(PILOT_TENANT);
+
+// Every other tenant — a self-serve trial, an onboarded customer — has a
+// client_account row, and that table carries no row-level security, so it is
+// the one place a process with no tenant can learn which tenants exist. Each
+// is hydrated the way the pilot is. Before this only the pilot was loaded at
+// boot, so a trial admin could not log in after any API restart: their user
+// and password hash were in the database and nowhere in memory.
+if (isDatabaseConfigured()) {
+  const others = (
+    await query<{ tenant_id: string }>('SELECT DISTINCT tenant_id FROM client_account WHERE tenant_id <> $1', [PILOT_TENANT])
+  ).map((row) => row.tenant_id);
+  for (const tenantId of others) {
+    try {
+      await hydrateReferenceData(tenantId, { masterData: masterDataService, rbac: rbacService, auth: authService });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(`[db] tenant ${tenantId} could not be hydrated:`, error instanceof Error ? error.message : error);
+    }
+  }
+  if (others.length > 0) {
+    // eslint-disable-next-line no-console
+    console.log(`[db] hydrated ${others.length} additional tenant(s)`);
+  }
+}
 
 // eslint-disable-next-line no-console
 console.log(

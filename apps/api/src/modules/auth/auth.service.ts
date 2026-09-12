@@ -206,6 +206,23 @@ export class AuthService {
   // US-001, Application login
   // ---------------------------------------------------------
 
+  /**
+   * The tenants an application user with this email belongs to.
+   *
+   * The console does not know its tenant before login — a trial admin signs
+   * in at the same address as everyone else — so the login route resolves
+   * it from the email across the tenants loaded in memory. An email is
+   * usually in one tenant; if it is in several, the caller tries each.
+   */
+  tenantsForEmail(email: string): string[] {
+    const wanted = email.trim().toLowerCase();
+    const seen = new Set<string>();
+    for (const user of this.masterData.getAllUsers()) {
+      if (user.accountType === 'APPLICATION_USER' && user.email.toLowerCase() === wanted) seen.add(user.tenantId);
+    }
+    return [...seen];
+  }
+
   async login(tenantId: string, email: string, password: string, ctx: AuthContext = {}): Promise<LoginOutcome> {
     // Brute-force protection is keyed on the account being attacked, and the
     // lock is temporary: a permanent one keyed on something the attacker

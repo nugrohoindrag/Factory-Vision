@@ -1296,6 +1296,11 @@ export class MasterDataService {
     return this.users.filter((u) => u.tenantId === tenantId);
   }
 
+  /** Every loaded user regardless of tenant — for resolving a login's tenant from its email only. */
+  getAllUsers(): AppUser[] {
+    return this.users;
+  }
+
   getDevices(tenantId: string): DeviceTerminal[] {
     return this.devices.filter((d) => d.tenantId === tenantId);
   }

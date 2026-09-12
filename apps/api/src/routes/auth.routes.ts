@@ -36,8 +36,29 @@ export function authRoutes(auth: AuthService, masterData: MasterDataService): Ro
       const password = v.string('password', { min: 1 });
       v.done('Email dan kata sandi wajib diisi.');
 
-      const tenantId = req.context?.tenantId ?? 'tenant-pilot-factory-01';
-      res.json(await auth.login(tenantId, email!, password!, clientContext(req)));
+      // The console names no tenant: a trial admin and the pilot's supervisor
+      // sign in at the same address. So the tenant comes from the email when
+      // the client did not say. The header still wins when present (the
+      // operator terminal and integrations set it), and an unknown email
+      // falls through to the default tenant so the failure reads the same as
+      // a wrong password — the form must not reveal who exists.
+      const headerTenant = typeof req.headers['x-tenant-id'] === 'string' ? req.headers['x-tenant-id'] : undefined;
+      const candidates = headerTenant ? [headerTenant] : auth.tenantsForEmail(email!);
+      const tenants = candidates.length > 0 ? candidates : [req.context?.tenantId ?? 'tenant-pilot-factory-01'];
+
+      let outcome: unknown;
+      let lastError: unknown;
+      for (const tenantId of tenants) {
+        try {
+          outcome = await auth.login(tenantId, email!, password!, clientContext(req));
+          lastError = undefined;
+          break;
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      if (lastError) throw lastError;
+      res.json(outcome);
     })
   );
 

@@ -995,16 +995,19 @@ async function main() {
       : { status: 0 };
     check('9 Trial', 'Token dari pendaftaran diterima sebagai sesi', session.status === 200, `HTTP ${session.status}`);
 
+    // No X-Tenant-Id: the console never sends one. With the header this check
+    // passed while every real re-login failed — the route fell back to the
+    // pilot tenant and looked for the trial admin there.
     const relogin = body?.token
       ? await fetch(`${BASE}/api/v1/auth/login`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Tenant-Id': trialTenant },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password: 'RahasiaKuat2026' }),
         })
       : { status: 0 };
     check(
       '9 Trial',
-      'Admin trial dapat login ulang dengan email dan sandi yang didaftarkan',
+      'Admin trial dapat login ulang dengan email dan sandi, tanpa menyebut tenant (seperti console)',
       relogin.status === 200,
       `HTTP ${relogin.status} ${(await relogin.text?.())?.slice(0, 120) ?? ''}`
     );
