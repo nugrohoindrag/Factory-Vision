@@ -149,6 +149,7 @@ langsung bisa dipakai sebagai `Bearer` untuk endpoint §3.
 | HTTP | `code` | Kapan |
 |---|---|---|
 | 422 | `VALIDATION_ERROR` | Field wajib hilang/salah bentuk. `message`: `Lengkapi semua kolom formulir trial.`; rincian di `fields` |
+| 422 | `VALIDATION_ERROR` | `Data yang direferensikan tidak ditemukan.` — pelanggaran foreign key di server, bukan kesalahan klien. Sejak 033 seharusnya tidak terjadi lagi; kalau muncul, `subscription_plan` kehilangan baris `plan-trial` (cek `deploy/verify-deployment.sh`) |
 | 422 | `VALIDATION_ERROR` | Kata sandi di bawah kebijakan. `message`: `Kata sandi minimal 12 karakter.`, `fields[0].field = "password"` |
 | 429 | `RATE_LIMITED` | Lihat §2.5 |
 | 404 | `NOT_FOUND` | Metode selain `POST` |
@@ -271,5 +272,6 @@ Bentuk `OnboardingProgress`, `GuidanceState`, `IndustryTemplateInfo`, dan
 
 | Tanggal | Perubahan |
 |---|---|
+| 2026-09-12 | Migrasi 033 menambahkan `subscription_plan` `plan-trial`. Sebelumnya `registerTrial` merujuk plan yang tidak pernah ada, sehingga setiap pendaftaran yang lolos validasi gagal 422 `Data yang direferensikan tidak ditemukan.` (foreign key) — endpoint ini belum pernah berhasil di database sungguhan. |
 | 2026-09-12 | `plantScale` (opsional, maks 64) ditambahkan ke `TrialRegistrationPayload`. Batas laju `trial-register` diubah dari 5/jam/IP menjadi 5/jam/(email+IP) dan 30/jam/IP. Dokumen ini dibuat. |
 | 2026-09-06 | Endpoint `trial-register` dan modul onboarding dirilis (commit `939c7ff`). Kebijakan sandi disamakan dengan produk (min 12). |

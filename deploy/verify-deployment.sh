@@ -103,6 +103,12 @@ expect "operational_event dapat ditulis" \
 expect "role aplikasi tunduk pada RLS" \
   "$(q "SELECT count(*) FROM pg_roles WHERE rolname='${APP_DB_USER:-factory_app}' AND NOT rolsuper AND NOT rolbypassrls")" "1"
 
+# 033. Without this row every trial registration fails on a foreign key after
+# the form has validated, and the public endpoint check below cannot see it
+# because it sends an empty body on purpose.
+expect "paket trial ada (033)" \
+  "$(q "SELECT count(*) FROM subscription_plan WHERE id='plan-trial'")" "1"
+
 # ---------------------------------------------------------------------- rbac
 printf '\n4. Peran & permission (PRD §34, §35)\n'
 expect "11 system role" "$(q "SELECT count(*) FROM role_definition WHERE is_system")" "11"
