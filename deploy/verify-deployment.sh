@@ -117,7 +117,10 @@ expect "policy runner_without_tenant pada queue (034)" \
 
 # ---------------------------------------------------------------------- rbac
 printf '\n4. Peran & permission (PRD §34, §35)\n'
-expect "11 system role" "$(q "SELECT count(*) FROM role_definition WHERE is_system")" "11"
+# Counted by key, not by row: every tenant materialises its own copy of the
+# system roles, so a second tenant (a trial) doubles the row count while the
+# set of roles is unchanged.
+expect "11 system role" "$(q "SELECT count(DISTINCT key) FROM role_definition WHERE is_system")" "11"
 
 expect "peran baru MAINTENANCE/WAREHOUSE/WORKFORCE_ADMIN" \
   "$(q "SELECT count(DISTINCT key) FROM role_definition WHERE key IN ('MAINTENANCE','WAREHOUSE','WORKFORCE_ADMIN')")" "3"
