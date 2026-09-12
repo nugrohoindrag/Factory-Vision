@@ -64,6 +64,23 @@ export interface FactoryProfileInput {
   workingCalendar: string;
 }
 
+/**
+ * One thing the trial needs before a bar reaches 100%, with where to do it.
+ * The bar's percentage is the sum of `weight` over items that are `done`, so
+ * the number and the list can never disagree.
+ */
+export interface OnboardingChecklistItem {
+  id: string;
+  label: string;
+  /** Points this item contributes; items of one bar sum to 100. */
+  weight: number;
+  done: boolean;
+  /** Console route where the item is completed. */
+  path?: string;
+  /** One line on what "done" means, for the tooltip. */
+  hint?: string;
+}
+
 export interface OnboardingProgress {
   tenantId: string;
   userId: string;
@@ -73,6 +90,10 @@ export interface OnboardingProgress {
   daysRemaining: number;
   readinessPercent: number;
   activationPercent: number;
+  /** What readinessPercent is made of; absent only on a very old cache. */
+  readinessItems?: OnboardingChecklistItem[];
+  /** What activationPercent is made of. */
+  activationItems?: OnboardingChecklistItem[];
   experienceType?: 'template' | 'blank' | 'demo';
   templateApplied?: string;
   factoryProfile?: FactoryProfileInput;

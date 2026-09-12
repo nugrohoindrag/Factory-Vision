@@ -1,7 +1,68 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import type { OnboardingChecklistItem } from '@factory-vision/domain-types';
 import { Button, Icon } from '@factory-vision/ui';
 import { SurfaceCard, toneColor, toneContainer, toneOnContainer } from '@factory-vision/ui/fv';
 import { useOnboarding } from './OnboardingContext.js';
+
+/**
+ * What a bar is still missing, as links to where each item gets done.
+ *
+ * A percentage on its own sends the user to guess; the list under it is what
+ * the number is made of, so "70%" and "Shift, Operator belum ada" are the same
+ * fact said twice. Done items are folded into a count rather than listed —
+ * the bar already shows them.
+ */
+const MissingItems: React.FC<{ items?: OnboardingChecklistItem[]; completeText: string; fallbackText: string }> = ({
+  items,
+  completeText,
+  fallbackText,
+}) => {
+  const navigate = useNavigate();
+  if (!items || items.length === 0) {
+    return <span>{fallbackText}</span>;
+  }
+  const missing = items.filter((item) => !item.done);
+  if (missing.length === 0) {
+    return (
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+        <Icon name="check_circle" size={13} style={{ color: toneColor.success }} />
+        {completeText}
+      </span>
+    );
+  }
+  return (
+    <span style={{ display: 'inline-flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px 6px' }}>
+      <span>Belum lengkap ({missing.length} dari {items.length}):</span>
+      {missing.map((item) => (
+        <button
+          key={item.id}
+          type="button"
+          onClick={item.path ? () => navigate(item.path!) : undefined}
+          title={item.hint ? `${item.hint} (+${item.weight}%)` : `+${item.weight}%`}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '3px',
+            padding: '1px 8px',
+            borderRadius: 'var(--radius-pill)',
+            border: 'none',
+            backgroundColor: 'var(--color-surface-container-high)',
+            color: 'var(--color-primary)',
+            fontSize: '10.5px',
+            fontWeight: 700,
+            cursor: item.path ? 'pointer' : 'default',
+            fontFamily: 'inherit',
+          }}
+        >
+          {item.label}
+          <span style={{ color: 'var(--color-on-surface-variant)', fontWeight: 600 }}>+{item.weight}%</span>
+          {item.path && <Icon name="arrow_forward" size={11} />}
+        </button>
+      ))}
+    </span>
+  );
+};
 
 export const TrialCommandCenter: React.FC = () => {
   const { progress, openChecklist, openUpgrade, openWizard } = useOnboarding();
@@ -186,7 +247,7 @@ export const TrialCommandCenter: React.FC = () => {
                   style={{
                     fontSize: '12px',
                     fontWeight: 800,
-                    color: readiness >= 70 ? toneColor.success : toneColor.primary,
+                    color: readiness >= 100 ? toneColor.success : toneColor.primary,
                   }}
                 >
                   {readiness}%
@@ -204,16 +265,18 @@ export const TrialCommandCenter: React.FC = () => {
                   style={{
                     height: '100%',
                     width: `${readiness}%`,
-                    backgroundColor: readiness >= 70 ? toneColor.success : 'var(--color-primary)',
+                    backgroundColor: readiness >= 100 ? toneColor.success : 'var(--color-primary)',
                     borderRadius: 'var(--radius-full, 9999px)',
                     transition: 'width 400ms cubic-bezier(0.2, 0, 0, 1)',
                   }}
                 />
               </div>
               <div style={{ fontSize: '10.5px', color: 'var(--color-on-surface-variant)', marginTop: '4px' }}>
-                {readiness >= 70
-                  ? 'Master data starter, mesin, dan alur proses siap digunakan.'
-                  : 'Terapkan Industry Template untuk melengkapi master data secara otomatis.'}
+                <MissingItems
+                  items={progress.readinessItems}
+                  completeText="Master data pabrik lengkap: plant, produk, line, mesin, proses, routing, shift, operator."
+                  fallbackText="Terapkan Industry Template untuk melengkapi master data secara otomatis."
+                />
               </div>
             </div>
 
@@ -237,7 +300,7 @@ export const TrialCommandCenter: React.FC = () => {
                   style={{
                     fontSize: '12px',
                     fontWeight: 800,
-                    color: activation >= 70 ? toneColor.success : toneColor.info,
+                    color: activation >= 100 ? toneColor.success : toneColor.info,
                   }}
                 >
                   {activation}%
@@ -255,16 +318,18 @@ export const TrialCommandCenter: React.FC = () => {
                   style={{
                     height: '100%',
                     width: `${activation}%`,
-                    backgroundColor: activation >= 70 ? toneColor.success : toneColor.info,
+                    backgroundColor: activation >= 100 ? toneColor.success : toneColor.info,
                     borderRadius: 'var(--radius-full, 9999px)',
                     transition: 'width 400ms cubic-bezier(0.2, 0, 0, 1)',
                   }}
                 />
               </div>
               <div style={{ fontSize: '10.5px', color: 'var(--color-on-surface-variant)', marginTop: '4px' }}>
-                {activation >= 70
-                  ? 'Workflow produksi telah berjalan dan menghasilkan KPI real-time.'
-                  : 'Selesaikan pesanan produksi pertama untuk mengaktifkan metrik OEE.'}
+                <MissingItems
+                  items={progress.activationItems}
+                  completeText="Alur produksi lengkap: order → plan → work order → hasil produksi → KPI."
+                  fallbackText="Selesaikan pesanan produksi pertama untuk mengaktifkan metrik OEE."
+                />
               </div>
             </div>
           </div>

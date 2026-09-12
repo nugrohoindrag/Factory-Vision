@@ -7,6 +7,7 @@ import type {
   IndustryTemplateInfo,
   IndustryType,
   OnboardingAnalyticsEvent,
+  OnboardingChecklistItem,
   OnboardingProgress,
   OnboardingStepId,
   OnboardingStepState,
@@ -620,42 +621,67 @@ export class OnboardingService {
       this.progressStore.set(tenantId, progress);
     }
 
-    // Calculate dynamic counts from actual data
+    // Each bar is a weighted checklist that sums to 100, and the percentage is
+    // derived from the list — so the number can never say 70% while the
+    // screen cannot say which 30% is missing. (The previous formula's weights
+    // summed to 70: a fully seeded trial read "70% ready" for ever.)
     const plants = this.masterData.getPlants(tenantId);
     const products = this.masterData.getProducts(tenantId);
     const machines = this.masterData.getMachines(tenantId);
     const lines = this.masterData.getLines(tenantId);
     const workCenters = this.masterData.getWorkCenters(tenantId);
+    const processes = this.masterData.getProcesses(tenantId);
+    const routings = this.masterData.getProductRoutings(tenantId);
+    const shifts = this.masterData.getShifts(tenantId);
+    const operators = this.masterData.getOperators(tenantId);
 
-    // Readiness evaluation
-    let readiness = 0;
-    if (plants.length > 0) readiness += 20;
-    if (products.length > 0) readiness += 20;
-    if (machines.length > 0 && workCenters.length > 0) readiness += 15;
-    if (lines.length > 0) readiness += 15;
-    progress.readinessPercent = Math.min(100, Math.max(progress.readinessPercent, readiness));
+    const readinessItems: OnboardingChecklistItem[] = [
+      { id: 'plant', label: 'Plant', weight: 10, done: plants.length > 0, path: '/settings?tab=lines', hint: 'Minimal satu plant terdaftar.' },
+      { id: 'products', label: 'Produk', weight: 15, done: products.length > 0, path: '/settings?tab=products', hint: 'Minimal satu produk aktif.' },
+      { id: 'lines', label: 'Production Line', weight: 15, done: lines.length > 0, path: '/settings?tab=lines', hint: 'Minimal satu production line.' },
+      { id: 'work-centers', label: 'Work Center', weight: 10, done: workCenters.length > 0, path: '/settings?tab=work-centers', hint: 'Minimal satu work center pada sebuah line.' },
+      { id: 'machines', label: 'Mesin', weight: 15, done: machines.length > 0, path: '/settings?tab=machines', hint: 'Minimal satu mesin pada sebuah work center.' },
+      { id: 'processes', label: 'Proses Produksi', weight: 10, done: processes.length > 0, path: '/settings?tab=processes', hint: 'Tahapan proses yang dilalui produk.' },
+      { id: 'routings', label: 'Routing Produk', weight: 10, done: routings.length > 0, path: '/settings?tab=routings', hint: 'Urutan proses untuk minimal satu produk.' },
+      { id: 'shifts', label: 'Shift', weight: 8, done: shifts.length > 0, path: '/settings?tab=shifts', hint: 'Kalender shift produksi.' },
+      { id: 'operators', label: 'Operator', weight: 7, done: operators.length > 0, path: '/settings?tab=operators', hint: 'Operator yang akan mencatat produksi.' },
+    ];
+    progress.readinessItems = readinessItems;
+    progress.readinessPercent = Math.min(100, readinessItems.filter((i) => i.done).reduce((sum, i) => sum + i.weight, 0));
 
-    // Dynamic activation evaluation
+    // Activation follows the order-to-production chain (§45): an order, a plan,
+    // a work order, a recorded run, a KPI that resulted. Counts come from the
+    // tenant's own rows, so the list is true even for data that arrived by
+    // import or seed rather than through the onboarding steps.
+    let counts = { orders: 0, plans: 0, workOrders: 0, records: 0 };
     try {
-      const orders = await this.production.getProductionOrders(tenantId);
-      const workOrders = await this.production.getWorkOrders(tenantId);
-
-      if (orders.length > 0) {
-        progress.steps.first_production_order.status = 'completed';
+      if (isDatabaseConfigured()) {
+        counts = await withTenant(tenantId, async (client) => {
+          const q = async (table: string) =>
+            Number((await client.query<{ n: string }>(`SELECT count(*)::text AS n FROM ${table} WHERE tenant_id = $1`, [tenantId])).rows[0]?.n ?? 0);
+          return { orders: await q('customer_order'), plans: await q('production_plan'), workOrders: await q('work_order'), records: await q('production_record') };
+        });
+      } else {
+        const workOrders = await this.production.getWorkOrders(tenantId);
+        counts = { orders: 0, plans: 0, workOrders: workOrders.length, records: 0 };
       }
-      if (workOrders.length > 0) {
-        progress.steps.first_work_order.status = 'completed';
-      }
-
-      let activation = 0;
-      if (orders.length > 0) activation += 35;
-      if (workOrders.length > 0) activation += 35;
-      if (progress.steps.first_production_run.status === 'completed') activation += 15;
-      if (progress.steps.first_production_result.status === 'completed') activation += 15;
-      progress.activationPercent = Math.min(100, activation);
     } catch {
-      // Keep existing
+      // Keep zeros; the step statuses below still carry what the wizard recorded.
     }
+
+    if (counts.orders > 0) progress.steps.first_production_order.status = 'completed';
+    if (counts.workOrders > 0) progress.steps.first_work_order.status = 'completed';
+    if (counts.records > 0) progress.steps.first_production_run.status = 'completed';
+
+    const activationItems: OnboardingChecklistItem[] = [
+      { id: 'customer-order', label: 'Customer Order pertama', weight: 25, done: counts.orders > 0, path: '/customer-orders?add=1', hint: 'Buat order pertama lewat Buat Order.' },
+      { id: 'production-plan', label: 'Production Plan pertama', weight: 20, done: counts.plans > 0, path: '/production-plans', hint: 'Turunkan order menjadi rencana produksi.' },
+      { id: 'work-order', label: 'Work Order pertama', weight: 25, done: counts.workOrders > 0, path: '/work-orders', hint: 'Generate work order dari plan.' },
+      { id: 'production-run', label: 'Hasil produksi pertama dicatat', weight: 15, done: counts.records > 0, path: '/work-orders', hint: 'Operator mencatat good/reject di terminal shop floor.' },
+      { id: 'production-result', label: 'KPI & OEE terbentuk', weight: 15, done: progress.steps.first_production_result.status === 'completed' || counts.records > 0, path: '/', hint: 'Dashboard menampilkan OEE dari hasil produksi.' },
+    ];
+    progress.activationItems = activationItems;
+    progress.activationPercent = Math.min(100, activationItems.filter((i) => i.done).reduce((sum, i) => sum + i.weight, 0));
 
     // Days remaining calculation
     if (progress.trialEnd) {
