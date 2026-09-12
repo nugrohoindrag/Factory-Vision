@@ -4,6 +4,7 @@ import { FactoryVisionApiClient, ApiRequestError } from '@factory-vision/api-cli
 import type { CustomerOrderDetailView } from '@factory-vision/api-client';
 import { ColumnDef, Button, Icon, Select, FilledTextField, EmptyState, ErrorState } from '@factory-vision/ui';
 import { DataTable, DateField, Page, Section, SurfaceCard, Dialog, toneContainer, toneOnContainer, type Tone } from '@factory-vision/ui/fv';
+import { useNavigate } from 'react-router-dom';
 import { useSession } from '../../app/SessionContext.js';
 import { useNewlyCreated } from '../common/useNewlyCreated.js';
 
@@ -123,6 +124,7 @@ function readAsBase64(file: File): Promise<string> {
 export const CustomerOrdersPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { can } = useSession();
+  const navigate = useNavigate();
   const { isNewlyCreated, sortWithNewlyCreated, NewlyCreatedBadge } =
     useNewlyCreated<CustomerOrderDetailView & { id: string }>('fv_new_customer_order');
 
@@ -273,13 +275,24 @@ export const CustomerOrdersPage: React.FC = () => {
   return (
     <Page>
       <Section>
-        <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
-          Customer Order
-        </h1>
-        <p style={{ margin: `var(--space-1) 0 0`, fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
-          Daftar order beserta status produksinya. Status Received sampai Produced diturunkan sistem
-          dari fakta produksi, bukan diketik.
-        </p>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 'var(--space-4)' }}>
+          <div>
+            <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
+              Customer Order
+            </h1>
+            <p style={{ margin: `var(--space-1) 0 0`, fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
+              Daftar order beserta status produksinya. Status Received sampai Produced diturunkan sistem
+              dari fakta produksi, bukan diketik.
+            </p>
+          </div>
+          {/* Adding an order is this screen's primary action, not a sibling
+              screen: an order arrives, is recorded, and shows up in this list. */}
+          {can('customer_order:create') && (
+            <Button variant="filled" icon={<Icon name="add" size={18} />} onClick={() => navigate('/customer-orders/new')}>
+              Add Order
+            </Button>
+          )}
+        </div>
       </Section>
 
       <Section>
@@ -346,8 +359,9 @@ export const CustomerOrdersPage: React.FC = () => {
           <EmptyState
             icon="description"
             title="Belum ada customer order"
-            description="Order yang dicatat lewat Penerimaan Order akan muncul di sini beserta status produksinya."
-            actionLabel=""
+            description="Order yang ditambahkan akan muncul di sini beserta status produksinya."
+            actionLabel={can('customer_order:create') ? 'Add Order' : ''}
+            onAction={() => navigate('/customer-orders/new')}
           />
         ) : (
           <DataTable

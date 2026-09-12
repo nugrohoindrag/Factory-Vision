@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Routes, Route, Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Icon, StatusBadge } from '@factory-vision/ui';
 import { FactoryVisionLogo, FactoryVisionIcon } from '@factory-vision/ui/fv';
@@ -310,12 +310,8 @@ export const App: React.FC = () => {
       basePath: '/customer-orders',
       children: [
         {
-          label: 'Penerimaan Order',
-          path: '/order-receiving',
-          icon: 'add',
-          permission: 'customer_order:create',
-        },
-        {
+          // Adding an order is the list's primary action ("Add Order"), not a
+          // menu of its own: one place to go for orders.
           label: 'Customer Order',
           path: '/customer-orders',
           icon: 'description',
@@ -925,7 +921,8 @@ export const App: React.FC = () => {
                             sub.section && sub.section !== group.children[subIndex - 1]?.section;
                           const isSubActive =
                             sub.path === currentFullUrl ||
-                            (sub.path === location.pathname && !location.search && !sub.tabKey);
+                            (sub.path === location.pathname && !location.search && !sub.tabKey) ||
+                            (!sub.tabKey && location.pathname.startsWith(`${sub.path}/`));
 
                           return (
                             <React.Fragment key={sub.path}>
@@ -1036,7 +1033,8 @@ export const App: React.FC = () => {
                             sub.section && sub.section !== group.children[subIndex - 1]?.section;
                         const isSubActive =
                           sub.path === currentFullUrl ||
-                          (sub.path === location.pathname && !location.search && !sub.tabKey);
+                          (sub.path === location.pathname && !location.search && !sub.tabKey) ||
+                          (!sub.tabKey && location.pathname.startsWith(`${sub.path}/`));
 
                         return (
                           <React.Fragment key={sub.path}>
@@ -1444,14 +1442,6 @@ export const App: React.FC = () => {
               }
             />
             <Route
-              path="/order-receiving"
-              element={
-                <Guarded need="customer_order:create">
-                  <OrderReceivingPage />
-                </Guarded>
-              }
-            />
-            <Route
               path="/customer-orders"
               element={
                 <Guarded need="customer_order:view">
@@ -1459,6 +1449,16 @@ export const App: React.FC = () => {
                 </Guarded>
               }
             />
+            <Route
+              path="/customer-orders/new"
+              element={
+                <Guarded need="customer_order:create">
+                  <OrderReceivingPage />
+                </Guarded>
+              }
+            />
+            {/* The form used to be its own destination; bookmarks still land. */}
+            <Route path="/order-receiving" element={<Navigate to="/customer-orders/new" replace />} />
             <Route
               path="/master-customers"
               element={

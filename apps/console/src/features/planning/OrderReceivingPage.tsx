@@ -6,6 +6,7 @@ import { Button, Icon, FilledTextField, Select, EmptyState } from '@factory-visi
 import { DateField, Page, Section, SurfaceCard } from '@factory-vision/ui/fv';
 import { OrderChannel, ORDER_CHANNEL_LABEL } from '@factory-vision/domain-types';
 import type { ApiFieldError } from '@factory-vision/domain-types';
+import { Link, useNavigate } from 'react-router-dom';
 import { useNewlyCreated } from '../common/useNewlyCreated.js';
 
 const api = new FactoryVisionApiClient({ baseUrl: '' });
@@ -38,6 +39,7 @@ const today = () => new Date().toISOString().slice(0, 10);
 
 export const OrderReceivingPage: React.FC = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { markNewlyCreated } = useNewlyCreated('fv_new_customer_order');
 
   const [customerId, setCustomerId] = useState('');
@@ -103,10 +105,12 @@ export const OrderReceivingPage: React.FC = () => {
         })),
       }),
     onSuccess: (order) => {
+      // The list is where the order lives; it opens with this one marked as
+      // new, which is a better receipt than a banner over an emptied form.
       markNewlyCreated(order.id);
-      setBanner({ text: `Order ${order.orderNumber} tersimpan dengan status Received.`, tone: 'success' });
       resetForm();
       void queryClient.invalidateQueries({ queryKey: ['planning', 'orders'] });
+      navigate('/customer-orders');
     },
     onError: (error: unknown) => {
       if (error instanceof ApiRequestError) {
@@ -185,8 +189,24 @@ export const OrderReceivingPage: React.FC = () => {
       <Section>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 'var(--space-4)' }}>
           <div>
+            <Link
+              to="/customer-orders"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 'var(--space-1)',
+                fontSize: '12px',
+                fontWeight: 600,
+                color: 'var(--color-primary)',
+                textDecoration: 'none',
+                marginBottom: 'var(--space-2)',
+              }}
+            >
+              <Icon name="arrow_back" size={16} />
+              Customer Order
+            </Link>
             <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
-              Penerimaan Order
+              Add Order
             </h1>
             <p
               style={{
