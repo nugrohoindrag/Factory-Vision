@@ -17,7 +17,7 @@ Product language is **Indonesian** — UI copy, labels and empty states are in B
 ## MES Improvement v2.0
 
 The Improvement PRD (`Docs/Factory Vision — MES Improvement PRD.md`) adds six operational
-capabilities on top of the v1.7 baseline. Each is one API module, one console screen and one
+capabilities on top of the v1.7 baseline (the current PRD is `Docs/PRD-MES-Indonesia-MVP-v1.8.md`; v1.8 is additive over v1.7). Each is one API module, one console screen and one
 migration:
 
 | Capability | API module | Console route | Migration |
