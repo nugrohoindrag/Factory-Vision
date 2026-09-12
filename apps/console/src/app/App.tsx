@@ -309,7 +309,7 @@ export const App: React.FC = () => {
       basePath: '/customer-orders',
       children: [
         {
-          // Adding an order is the list's primary action ("Add Order"), not a
+          // Creating an order is the list's primary action ("Buat Order"), not a
           // menu of its own: one place to go for orders.
           label: 'Customer Order',
           path: '/customer-orders',

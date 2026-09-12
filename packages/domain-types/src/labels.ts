@@ -104,13 +104,35 @@ export const CUSTOMER_ORDER_STATUS_LABEL: Record<CustomerOrderStatus, string> = 
   [CustomerOrderStatus.CANCELLED]: 'Cancelled',
 };
 
-/** Where an order came from. Mandatory on every order, so it is never blank. */
+/**
+ * Where an order came from ("Sumber Order"). Mandatory on every order, so it
+ * is never blank. The wizard offers four sources and stores "Email / Invoice"
+ * as EMAIL; INVOICE stays in the enum for the orders that already carry it and
+ * reads the same, so nothing needs migrating.
+ */
 export const ORDER_CHANNEL_LABEL: Record<OrderChannel, string> = {
-  [OrderChannel.KANBAN_CARD]: 'Kartu Kanban',
-  [OrderChannel.EMAIL]: 'Email',
-  [OrderChannel.INVOICE]: 'Invoice',
-  [OrderChannel.PO_DOCUMENT]: 'Dokumen PO',
-  [OrderChannel.MANUAL]: 'Input Manual',
+  [OrderChannel.PO_DOCUMENT]: 'Customer PO',
+  [OrderChannel.KANBAN_CARD]: 'Kanban',
+  [OrderChannel.EMAIL]: 'Email / Invoice',
+  [OrderChannel.INVOICE]: 'Email / Invoice',
+  [OrderChannel.MANUAL]: 'Manual',
+};
+
+/** The sources the wizard offers, in the order a planner meets them. */
+export const ORDER_SOURCE_OPTIONS: readonly OrderChannel[] = [
+  OrderChannel.PO_DOCUMENT,
+  OrderChannel.KANBAN_CARD,
+  OrderChannel.EMAIL,
+  OrderChannel.MANUAL,
+];
+
+/** What the reference field is called for each source, and whether it must be filled. */
+export const ORDER_REFERENCE_FIELD: Record<OrderChannel, { label: string; required: boolean }> = {
+  [OrderChannel.PO_DOCUMENT]: { label: 'Nomor PO Customer', required: true },
+  [OrderChannel.KANBAN_CARD]: { label: 'Referensi Kanban', required: true },
+  [OrderChannel.EMAIL]: { label: 'Referensi Email / Invoice', required: true },
+  [OrderChannel.INVOICE]: { label: 'Referensi Email / Invoice', required: true },
+  [OrderChannel.MANUAL]: { label: 'Nomor Referensi', required: false },
 };
 
 export const PRODUCTION_PLAN_STATUS_LABEL: Record<ProductionPlanStatus, string> = {

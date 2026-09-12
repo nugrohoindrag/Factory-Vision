@@ -7,7 +7,7 @@ import { DataTable, DateField, Page, Section, SurfaceCard, Dialog, toneContainer
 import { useSearchParams } from 'react-router-dom';
 import { useSession } from '../../app/SessionContext.js';
 import { useNewlyCreated } from '../common/useNewlyCreated.js';
-import { AddOrderDialog } from './AddOrderDialog.js';
+import { AddOrderWizard } from './AddOrderWizard.js';
 
 /**
  * An order's lines, read the same way under the row in the list and in the
@@ -249,7 +249,7 @@ export const CustomerOrdersPage: React.FC = () => {
       { key: 'customerId', header: 'Customer', sortable: true, render: (row) => customerName(row.customerId) },
       {
         key: 'orderChannel',
-        header: 'Channel',
+        header: 'Sumber Order',
         render: (row) => ORDER_CHANNEL_LABEL[row.orderChannel] ?? row.orderChannel,
       },
       { key: 'requestedDeliveryDate', header: 'Kirim', sortable: true },
@@ -295,11 +295,11 @@ export const CustomerOrdersPage: React.FC = () => {
               dari fakta produksi, bukan diketik.
             </p>
           </div>
-          {/* Adding an order is this screen's primary action, not a sibling
+          {/* Creating an order is this screen's primary action, not a sibling
               screen: an order arrives, is recorded, and shows up in this list. */}
           {can('customer_order:create') && (
             <Button variant="filled" icon={<Icon name="add" size={18} />} onClick={() => setAdding(true)}>
-              Add Order
+              Buat Order
             </Button>
           )}
         </div>
@@ -369,8 +369,8 @@ export const CustomerOrdersPage: React.FC = () => {
           <EmptyState
             icon="description"
             title="Belum ada customer order"
-            description="Order yang ditambahkan akan muncul di sini beserta status produksinya."
-            actionLabel={can('customer_order:create') ? 'Add Order' : ''}
+            description="Order yang dibuat akan muncul di sini beserta status produksinya."
+            actionLabel={can('customer_order:create') ? 'Buat Order' : ''}
             onAction={() => setAdding(true)}
           />
         ) : (
@@ -384,7 +384,9 @@ export const CustomerOrdersPage: React.FC = () => {
         )}
       </Section>
 
-      {can('customer_order:create') && <AddOrderDialog isOpen={adding} onClose={() => setAdding(false)} />}
+      {can('customer_order:create') && (
+        <AddOrderWizard isOpen={adding} onClose={() => setAdding(false)} onView={(id) => setSelectedId(id)} />
+      )}
 
       <Dialog
         isOpen={Boolean(selectedId)}
@@ -408,7 +410,7 @@ export const CustomerOrdersPage: React.FC = () => {
               }}
             >
               <Field label="Customer" value={customerName(detail.customerId)} />
-              <Field label="Channel" value={ORDER_CHANNEL_LABEL[detail.orderChannel] ?? detail.orderChannel} />
+              <Field label="Sumber Order" value={ORDER_CHANNEL_LABEL[detail.orderChannel] ?? detail.orderChannel} />
               <Field label="PO Customer" value={detail.poNumber ?? '—'} />
               <Field label="Tanggal Order" value={detail.orderDate} />
               <Field label="Kirim" value={detail.requestedDeliveryDate} />
