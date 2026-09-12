@@ -137,12 +137,21 @@ printf '\n5. API\n'
 # `node -e` rather than curl because the runtime image carries node and not
 # much else — it is the same call the container's own HEALTHCHECK makes.
 # VERIFY_BASE_URL still overrides, for a host that does publish the port.
-api_probe() { # path -> status code, or 000
+api_probe() { # path [method] -> status code, or 000
+  local method="${2:-GET}"
   if [ -n "${VERIFY_BASE_URL:-}" ]; then
-    curl -s -o /dev/null -w '%{http_code}' "${VERIFY_BASE_URL}$1" 2>/dev/null
+    if [ "$method" = "GET" ]; then
+      curl -s -o /dev/null -w '%{http_code}' "${VERIFY_BASE_URL}$1" 2>/dev/null
+    else
+      curl -s -o /dev/null -w '%{http_code}' -X "$method" \
+        -H 'Content-Type: application/json' -d '{}' "${VERIFY_BASE_URL}$1" 2>/dev/null
+    fi
   else
     $COMPOSE exec -T api node -e "
-      fetch('http://127.0.0.1:4000$1')
+      const init = '$method' === 'GET'
+        ? {}
+        : { method: '$method', headers: { 'content-type': 'application/json' }, body: '{}' };
+      fetch('http://127.0.0.1:4000$1', init)
         .then(r => console.log(r.status))
         .catch(() => console.log('000'));
     " 2>/dev/null | tr -d '\r' | head -1
@@ -162,6 +171,13 @@ for path in /api/v1/materials/inventory /api/v1/quality/dashboard /api/v1/mainte
     bad "$path menolak permintaan tanpa sesi" "HTTP $code"
   fi
 done
+
+# The public trial form is the one endpoint a prospect reaches with no account,
+# so a release that loses it fails silently until somebody tries to sign up.
+# An empty body must come back as a 422 from the route's own validator: a 404
+# means the route is not mounted, a 5xx that the API cannot serve it, and a
+# 429 that this source has already used up its registrations for the hour.
+expect "POST /api/v1/auth/trial-register (formulir kosong)"   "$(api_probe /api/v1/auth/trial-register POST)" "422"
 
 # ------------------------------------------------------------------- summary
 printf '\n%d lulus, %d gagal.\n\n' "$PASS" "$FAIL"

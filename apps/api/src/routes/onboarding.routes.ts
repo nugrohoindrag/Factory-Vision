@@ -24,6 +24,7 @@ export function onboardingRoutes(service: OnboardingService): Router {
       const factoryName = v.string('factoryName', { min: 2 });
       const industry = v.string('industry', { min: 2 }) as any;
       const city = typeof req.body.city === 'string' ? req.body.city : undefined;
+      const plantScale = v.string('plantScale', { optional: true, max: 64 });
       v.done('Lengkapi semua kolom formulir trial.');
 
       const result = await service.registerTrial(
@@ -34,6 +35,7 @@ export function onboardingRoutes(service: OnboardingService): Router {
           factoryName: factoryName!,
           industry: industry || 'general',
           city,
+          plantScale,
         },
         clientContext(req)
       );

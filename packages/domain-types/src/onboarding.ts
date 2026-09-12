@@ -135,13 +135,24 @@ export interface OnboardingAnalyticsEvent {
   metadata?: Record<string, unknown>;
 }
 
+/**
+ * The public trial form (`POST /auth/trial-register`). The landing page and the
+ * API both build from this type, so a renamed field fails at `tsc` on either
+ * side instead of as a 422 in production.
+ */
 export interface TrialRegistrationPayload {
   fullName: string;
   email: string;
   password: string;
+  /** The company or plant name; becomes the tenant and client account name. */
   factoryName: string;
   industry: IndustryType;
   city?: string;
+  /**
+   * Free-text sizing hint from the form ("4-10 Lini Produksi"). Kept on the
+   * client account for sales; it shapes nothing in the product.
+   */
+  plantScale?: string;
 }
 
 export interface TrialRegistrationResponse {

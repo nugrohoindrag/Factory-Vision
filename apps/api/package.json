@@ -13,7 +13,7 @@
     "build": "tsc",
     "start": "node dist/main.js",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test test/sprint-3-domain.test.ts test/security-controls.test.ts",
+    "test": "node --import tsx --test test/sprint-3-domain.test.ts test/security-controls.test.ts test/trial-signup-contract.test.ts",
     "test:db": "node --import tsx --test test/*.test.ts",
     "verify:isolation": "node scripts/verify-tenant-isolation.mjs",
     "verify:persistence": "node scripts/verify-persistence.mjs",

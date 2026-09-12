@@ -248,10 +248,21 @@ app.use(
     key: (req) => `mfa:${bodyKey(req, 'challengeToken')}`,
   })
 );
+// Two limits, because one number cannot serve both cases. Keyed on the IP
+// alone, five an hour locked out a whole office behind one NAT after a few
+// colleagues tried the form; keyed on the email alone, an attacker spraying
+// addresses is never throttled. So: a few retries per address, and a ceiling
+// per source that a sales floor will not reach but a script will.
 app.use(
   '/api/v1/auth/trial-register',
   rateLimit({
     limit: 5,
+    windowMs: 60 * 60_000,
+    message: 'Terlalu banyak pendaftaran untuk email ini. Coba lagi nanti.',
+    key: (req) => `trial:${bodyKey(req, 'email')}:${clientKey(req)}`,
+  }),
+  rateLimit({
+    limit: 30,
     windowMs: 60 * 60_000,
     message: 'Terlalu banyak pendaftaran dari alamat ini. Coba lagi nanti.',
   })

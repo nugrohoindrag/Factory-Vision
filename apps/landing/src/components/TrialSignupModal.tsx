@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Icon } from '@factory-vision/ui';
-import type { IndustryType } from '@factory-vision/domain-types';
+import type { IndustryType, TrialRegistrationPayload } from '@factory-vision/domain-types';
+import { consoleUrl } from '../console-url';
 
 interface TrialSignupModalProps {
   isOpen: boolean;
@@ -37,24 +38,33 @@ export const TrialSignupModal: React.FC<TrialSignupModalProps> = ({ isOpen, onCl
     setSubmitting(true);
 
     try {
+      // The API contract is TrialRegistrationPayload: the company field is
+      // `factoryName` there, so the form state is mapped rather than sent as-is.
+      const payload: TrialRegistrationPayload = {
+        fullName: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        factoryName: formData.companyName,
+        industry: formData.industry,
+        plantScale: formData.plantScale,
+      };
       const res = await fetch('/api/v1/auth/trial-register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.message || 'Gagal mendaftarkan akun uji coba. Silakan coba lagi.');
+        // Errors arrive in the API envelope: { error: { code, message } }.
+        throw new Error(data?.error?.message || 'Gagal mendaftarkan akun uji coba. Silakan coba lagi.');
       }
 
       setSuccess(true);
-      // Redirect to console with trial token and onboarding trigger
+      // Hand the session to the console; `trial=1` opens onboarding there and
+      // the console strips the token from the address bar on arrival.
       setTimeout(() => {
-        const consoleUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-          ? 'http://localhost:3100'
-          : '/console';
-        window.location.href = `${consoleUrl}/?token=${encodeURIComponent(data.token)}&trial=1`;
+        window.location.href = `${consoleUrl()}/?token=${encodeURIComponent(data.token)}&trial=1`;
       }, 1200);
     } catch (err: unknown) {
       setErrorMsg(err instanceof Error ? err.message : 'Terjadi kesalahan sistem');

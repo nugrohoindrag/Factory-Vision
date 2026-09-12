@@ -25,6 +25,12 @@ RUN pnpm install --frozen-lockfile --filter @factory-vision/${APP}...
 COPY packages packages
 COPY apps/${APP} apps/${APP}
 
+# Only the landing page reads this. Left empty, it sends a new trial account to
+# `dashboard.` beside whatever host served the page, which is the layout the
+# public deployment uses; a plant that puts the console elsewhere sets it.
+ARG VITE_CONSOLE_URL=
+ENV VITE_CONSOLE_URL=${VITE_CONSOLE_URL}
+
 # `^...` selects exactly the workspace packages this app depends on, in
 # topological order. The previous hardcoded list (domain-types, api-client,
 # i18n) broke `APP=admin`: admin does not depend on api-client, so the

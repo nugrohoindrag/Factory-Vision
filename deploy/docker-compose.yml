@@ -313,6 +313,9 @@ services:
       dockerfile: deploy/Dockerfile.web
       args:
         APP: landing
+        # Where "Coba Gratis" sends a new account. Unset means
+        # `https://dashboard.<apex>`; set it when the console is not there.
+        VITE_CONSOLE_URL: ${LANDING_CONSOLE_URL:-}
     restart: unless-stopped
     ports:
       - '${WEB_BIND:-0.0.0.0}:${LANDING_PORT:-3000}:80'

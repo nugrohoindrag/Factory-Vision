@@ -134,12 +134,14 @@ export class OnboardingService {
           [tenantId, payload.factoryName, 'Asia/Jakarta', 'TRIAL', 'ACTIVE']
         );
 
-        // 2. Client Account
+        // 2. Client Account. The plant scale the form asks for has no column
+        // of its own: it is a sales qualifier, not product configuration, so
+        // it goes in the account notes where an account manager reads it.
         await client.query(
           `INSERT INTO client_account
              (id, tenant_id, legal_name, display_name, industry, city, contact_name, contact_email,
-              lifecycle_status, deployment_mode, onboarded_at)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now())
+              lifecycle_status, deployment_mode, notes, onboarded_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, now())
            ON CONFLICT (tenant_id) DO NOTHING`,
           [
             clientId,
@@ -152,6 +154,7 @@ export class OnboardingService {
             payload.email.toLowerCase().trim(),
             'TRIAL',
             'CLOUD_MULTI_TENANT',
+            payload.plantScale ? `Skala pabrik (formulir trial): ${payload.plantScale}` : null,
           ]
         );
 
@@ -238,7 +241,7 @@ export class OnboardingService {
       tenantId,
       userId,
       timestamp: now.toISOString(),
-      metadata: { industry: payload.industry, factoryName: payload.factoryName },
+      metadata: { industry: payload.industry, factoryName: payload.factoryName, plantScale: payload.plantScale },
     });
 
     // A brand-new trial account cannot already carry a second factor, so the
