@@ -177,7 +177,7 @@ export class OnboardingService {
             email: payload.email.toLowerCase().trim(),
             name: payload.fullName,
             role: 'ADMIN',
-            accountType: 'APPLICATION',
+            accountType: 'APPLICATION_USER',
             scopeLevel: 'TENANT',
             status: 'ACTIVE',
             createdAt: now.toISOString(),

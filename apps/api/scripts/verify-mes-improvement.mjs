@@ -929,6 +929,107 @@ async function main() {
   }
 
   // ==================================================================
+  // Scenario 9 — Self-serve trial registration (public, no session)
+  // ==================================================================
+  //
+  // The one endpoint a stranger reaches without an account. It shipped twice
+  // in a state where a valid form could not succeed against a real database
+  // — a subscription on a plan no migration created, then a user written with
+  // an accountType the login path does not recognise — and nothing here
+  // noticed, because every other scenario starts from a session. This one
+  // starts from nothing and follows the token the way the console does.
+  {
+    const email = `verify-trial-${stamp}@example.invalid`;
+    const factoryName = `PT Verifikasi Trial ${stamp}`;
+    const res = await fetch(`${BASE}/api/v1/auth/trial-register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fullName: 'Verifikasi Trial',
+        email,
+        password: 'RahasiaKuat2026',
+        factoryName,
+        industry: 'general',
+        plantScale: '1-3 Lini Produksi',
+      }),
+    });
+    const body = await res.json().catch(() => undefined);
+    check(
+      '9 Trial',
+      'Formulir yang valid menghasilkan 201 dan token sesi',
+      res.status === 201 && typeof body?.token === 'string' && body.token.length > 0,
+      `${res.status} ${JSON.stringify(body).slice(0, 200)}`
+    );
+
+    const trialTenant = body?.tenantId;
+    const account = trialTenant
+      ? await rows(
+          `SELECT c.lifecycle_status, c.notes, s.plan_id, s.status AS sub_status, u.account_type, u.role
+             FROM client_account c
+             JOIN client_subscription s ON s.client_id = c.id
+             JOIN app_user u ON u.tenant_id = c.tenant_id
+            WHERE c.tenant_id = $1`,
+          [trialTenant]
+        )
+      : [];
+    check(
+      '9 Trial',
+      'Tenant, akun TRIAL, langganan plan-trial dan admin tersimpan',
+      account.length === 1 &&
+        account[0].lifecycle_status === 'TRIAL' &&
+        account[0].plan_id === 'plan-trial' &&
+        account[0].sub_status === 'ACTIVE' &&
+        account[0].role === 'ADMIN',
+      JSON.stringify(account)
+    );
+    check(
+      '9 Trial',
+      'Skala pabrik dari formulir tersimpan di catatan akun',
+      account[0]?.notes?.includes('1-3 Lini Produksi') === true,
+      JSON.stringify(account[0]?.notes)
+    );
+
+    // The console's first two calls with the token it was handed.
+    const session = body?.token
+      ? await fetch(`${BASE}/api/v1/auth/session`, { headers: { Authorization: `Bearer ${body.token}` } })
+      : { status: 0 };
+    check('9 Trial', 'Token dari pendaftaran diterima sebagai sesi', session.status === 200, `HTTP ${session.status}`);
+
+    const relogin = body?.token
+      ? await fetch(`${BASE}/api/v1/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Tenant-Id': trialTenant },
+          body: JSON.stringify({ email, password: 'RahasiaKuat2026' }),
+        })
+      : { status: 0 };
+    check(
+      '9 Trial',
+      'Admin trial dapat login ulang dengan email dan sandi yang didaftarkan',
+      relogin.status === 200,
+      `HTTP ${relogin.status} ${(await relogin.text?.())?.slice(0, 120) ?? ''}`
+    );
+
+    const legacy = await fetch(`${BASE}/api/v1/auth/trial-register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fullName: 'Verifikasi Trial',
+        email: `verify-trial-legacy-${stamp}@example.invalid`,
+        password: 'RahasiaKuat2026',
+        companyName: factoryName,
+        industry: 'general',
+      }),
+    });
+    const legacyBody = await legacy.json().catch(() => undefined);
+    check(
+      '9 Trial',
+      'Bentuk lama (companyName) ditolak 422 dengan nama field yang hilang',
+      legacy.status === 422 && legacyBody?.error?.fields?.some((f) => f.field === 'factoryName'),
+      `${legacy.status} ${JSON.stringify(legacyBody).slice(0, 200)}`
+    );
+  }
+
+  // ==================================================================
   // Report
   // ==================================================================
   await stopApi();

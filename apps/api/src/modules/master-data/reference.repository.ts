@@ -221,7 +221,7 @@ function toUser(row: UserRow): StoredUser {
       email: row.email,
       name: row.name,
       role: row.role as AppUser['role'],
-      accountType: (row.account_type as AppUser['accountType']) ?? 'APPLICATION',
+      accountType: (row.account_type as AppUser['accountType']) ?? 'APPLICATION_USER',
       scopeLevel: (row.scope_level as AppUser['scopeLevel']) ?? 'TENANT',
       scopeId: orUndefined(row.scope_id),
       employeeNumber: orUndefined(row.employee_number),

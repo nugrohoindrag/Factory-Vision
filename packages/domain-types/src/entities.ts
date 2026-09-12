@@ -1104,7 +1104,7 @@ export interface AppUser {
   passwordHash?: string;
   name: string;
   role: UserRole | string;
-  accountType?: 'APPLICATION_USER' | 'OPERATOR' | 'APPLICATION' | string;
+  accountType?: 'APPLICATION_USER' | 'OPERATOR';
   scopeLevel?: 'TENANT' | 'PLANT' | 'LINE' | 'WORK_CENTER';
   scopeId?: string;
   employeeNumber?: string;
