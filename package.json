@@ -17,6 +17,7 @@
     "lint:boundaries": "node scripts/check-module-boundaries.mjs",
     "lint:design": "node scripts/check-design-system-compliance.mjs",
     "ds:check": "pnpm --filter @factory-vision/ui run ds:check",
+    "fonts:check": "pnpm --filter @factory-vision/ui run fonts:check",
     "ds:pull": "pnpm --filter @factory-vision/ui run ds:pull",
     "db:migrate": "tsx db/migrate.ts migrate",
     "db:seed": "tsx db/migrate.ts seed",

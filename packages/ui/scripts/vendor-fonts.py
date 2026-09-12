@@ -121,6 +121,36 @@ def collect_icon_names() -> list[str]:
     return sorted(n for n in found if re.fullmatch(r"[a-z][a-z0-9_]{2,}", n))
 
 
+def ligature_name(font: TTFont, first: str, lig) -> str:
+    """The text that types this ligature, e.g. `location_on`."""
+    rev = _reverse_cmap(font)
+    return rev.get(first, "?") + "".join(rev.get(component, "?") for component in lig.Component)
+
+
+def ligature_names(font: TTFont) -> dict[str, str]:
+    """Every ligature the font knows, as typed name -> glyph it produces."""
+    names: dict[str, str] = {}
+    for lookup in font["GSUB"].table.LookupList.Lookup:
+        for sub_table in lookup.SubTable:
+            inner = getattr(sub_table, "ExtSubTable", sub_table)
+            if not hasattr(inner, "ligatures"):
+                continue
+            for first, ligatures in inner.ligatures.items():
+                for lig in ligatures:
+                    names[ligature_name(font, first, lig)] = lig.LigGlyph
+    return names
+
+
+_REVERSE_CMAP: dict[int, dict[str, str]] = {}
+
+
+def _reverse_cmap(font: TTFont) -> dict[str, str]:
+    key = id(font)
+    if key not in _REVERSE_CMAP:
+        _REVERSE_CMAP[key] = {glyph: chr(code) for code, glyph in font.getBestCmap().items()}
+    return _REVERSE_CMAP[key]
+
+
 def build_icon_font(icon_names: list[str]) -> None:
     css = fetch(ICON_CSS).decode("utf-8")
     url = re.search(r"url\((https://fonts\.gstatic\.com/[^)]+)\)", css)
@@ -132,14 +162,23 @@ def build_icon_font(icon_names: list[str]) -> None:
     print(f"  downloaded full font        {full_path.stat().st_size / 1024 / 1024:.2f} MB")
 
     font = TTFont(full_path)
-    available = set(font.getGlyphOrder())
-    keep = sorted(set(icon_names) & available)
-    unknown = sorted(set(icon_names) - available)
+
+    # An icon is addressed by the *ligature* it types, and the ligature table
+    # is the only place that name is recorded. Reading glyph names instead
+    # loses every alias: `location_on` types the glyph named `place`,
+    # `warning_amber` and `report_problem` both type `warning`, and each of
+    # them was being reported as "not a real icon" and dropped — which is why
+    # those icons rendered as their own names in the console.
+    ligature_glyph = ligature_names(font)
+    keep = sorted(n for n in set(icon_names) if n in ligature_glyph)
+    unknown = sorted(set(icon_names) - set(keep))
     if unknown:
         print(f"  not real icon names, ignored: {', '.join(unknown)}")
+    keep_glyphs = sorted({ligature_glyph[n] for n in keep})
 
     # Prune the ligature table before subsetting, or layout closure re-adds
-    # every icon reachable from the same letters.
+    # every icon reachable from the same letters. Prune by ligature name, not
+    # glyph: `warning` the glyph must survive for `warning_amber` the alias.
     keep_set = set(keep)
     kept = dropped = 0
     for lookup in font["GSUB"].table.LookupList.Lookup:
@@ -148,7 +187,7 @@ def build_icon_font(icon_names: list[str]) -> None:
             if not hasattr(inner, "ligatures"):
                 continue
             for first, ligatures in list(inner.ligatures.items()):
-                survivors = [lig for lig in ligatures if lig.LigGlyph in keep_set]
+                survivors = [lig for lig in ligatures if ligature_name(font, first, lig) in keep_set]
                 dropped += len(ligatures) - len(survivors)
                 kept += len(survivors)
                 if survivors:
@@ -165,7 +204,7 @@ def build_icon_font(icon_names: list[str]) -> None:
     options.drop_tables = []
 
     subsetter = subset.Subsetter(options=options)
-    subsetter.populate(text="".join(sorted(set("".join(keep)))) + " ", glyphs=keep)
+    subsetter.populate(text="".join(sorted(set("".join(keep)))) + " ", glyphs=keep_glyphs)
     subsetter.subset(font)
 
     out = FONT_DIR / "material-symbols-rounded.woff2"

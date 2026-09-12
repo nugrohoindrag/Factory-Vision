@@ -177,6 +177,12 @@ export const App: React.FC = () => {
   // Sidebar Collapsed State
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   const [hoveredGroupId, setHoveredGroupId] = useState<string | null>(null);
+  // Where the hovered group's button sits on screen. The collapsed flyout is
+  // positioned `fixed` from this rather than `absolute` inside the nav: the
+  // nav scrolls (`overflow-y: auto`), and a scroll container clips on both
+  // axes whatever `overflow-x` says, so an absolute flyout was cut off at the
+  // sidebar's edge and showed as a sliver.
+  const [hoverAnchor, setHoverAnchor] = useState<{ top: number; bottom: number } | null>(null);
 
   // Track which sidebar groups are expanded (when in expanded mode)
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
@@ -803,7 +809,11 @@ export const App: React.FC = () => {
                 <div
                   key={group.id}
                   style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}
-                  onMouseEnter={() => setHoveredGroupId(group.id)}
+                  onMouseEnter={(e) => {
+                    const r = e.currentTarget.getBoundingClientRect();
+                    setHoverAnchor({ top: r.top, bottom: r.bottom });
+                    setHoveredGroupId(group.id);
+                  }}
                   onMouseLeave={() => setHoveredGroupId(null)}
                 >
                   <button
@@ -854,17 +864,42 @@ export const App: React.FC = () => {
 
                   {/* Flyout Sub-menu Popover on Hover (when Collapsed) */}
                   <AnimatePresence>
-                    {isHovered && (
+                    {isHovered && hoverAnchor && (
                       <motion.div
                         initial={{ opacity: 0, x: -6, scale: 0.96 }}
                         animate={{ opacity: 1, x: 0, scale: 1 }}
                         exit={{ opacity: 0, x: -6, scale: 0.96 }}
                         transition={{ duration: 0.15, ease: 'easeOut' }}
                         style={{
-                          position: 'absolute',
-                          left: '52px',
-                          top: 0,
+                          // Viewport-anchored so the nav's scroll box cannot
+                          // clip it. Still a child of the group's wrapper, so
+                          // moving the pointer onto it keeps the hover; the
+                          // transparent left padding covers the gap between
+                          // the sidebar edge and the panel for the same reason.
+                          position: 'fixed',
+                          left: '72px',
+                          paddingLeft: '8px',
+                          // Open downward from the button; near the bottom of
+                          // the viewport open upward instead, so the last
+                          // groups never spill below the screen.
+                          ...(hoverAnchor.top > window.innerHeight * 0.6
+                            ? { bottom: window.innerHeight - hoverAnchor.bottom }
+                            : { top: hoverAnchor.top }),
+                          zIndex: 100,
+                        }}
+                      >
+                      <div
+                        style={{
                           width: '210px',
+                          // The room left on the side it opens towards; a
+                          // long group (Master Data) scrolls inside the panel
+                          // rather than running off the screen.
+                          maxHeight:
+                            hoverAnchor.top > window.innerHeight * 0.6
+                              ? `${hoverAnchor.bottom - 16}px`
+                              : `calc(100vh - ${hoverAnchor.top + 16}px)`,
+                          overflowY: 'auto',
+                          boxSizing: 'border-box',
                           backgroundColor: 'var(--color-surface-container-highest)',
                           borderRadius: 'var(--radius-md)',
                           border: '1px solid var(--color-outline-variant)',
@@ -873,7 +908,6 @@ export const App: React.FC = () => {
                           display: 'flex',
                           flexDirection: 'column',
                           gap: 'var(--space-1)',
-                          zIndex: 100,
                         }}
                       >
                         <div
@@ -925,7 +959,7 @@ export const App: React.FC = () => {
                                 color={isSubActive ? 'var(--color-primary)' : 'var(--color-on-surface-variant)'}
                               />
                               <span
-                                style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                                style={{ minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
                               >
                                 {sub.label}
                               </span>
@@ -933,6 +967,7 @@ export const App: React.FC = () => {
                           </React.Fragment>
                           );
                         })}
+                      </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -963,13 +998,15 @@ export const App: React.FC = () => {
                     transition: 'all 0.15s ease',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', minWidth: 0 }}>
                     <Icon
                       name={group.icon}
                       size={17}
                       color={isGroupActive ? 'var(--color-primary)' : 'var(--color-on-surface-variant)'}
                     />
-                    <span style={{ whiteSpace: 'nowrap' }}>{group.label}</span>
+                    <span style={{ minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {group.label}
+                    </span>
                   </div>
 
                   <motion.div
@@ -1036,7 +1073,7 @@ export const App: React.FC = () => {
                               color={isSubActive ? 'var(--color-primary)' : 'var(--color-on-surface-variant)'}
                             />
                             <span
-                              style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                              style={{ minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
                             >
                               {sub.label}
                             </span>

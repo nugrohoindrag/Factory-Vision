@@ -11,7 +11,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "ds:check": "node scripts/sync-design-system.mjs check",
+    "ds:check": "node scripts/sync-design-system.mjs check && python scripts/check-icon-font.py",
+    "fonts:check": "python scripts/check-icon-font.py",
     "ds:pull": "node scripts/sync-design-system.mjs pull",
     "fonts:vendor": "python scripts/vendor-fonts.py"
   },

@@ -82,6 +82,18 @@ jobs:
       # against the upstream design system at a local path (D:\Design System),
       # which no runner has. It stays a pre-commit check on a workstation.
 
+      # The icon font is a subset generated from the source. An icon named
+      # after the last generation has no glyph and renders as its own name,
+      # in the icon's size and colour, overflowing the sidebar. Nothing in
+      # the build notices; this does. Needs only fontTools, so it runs here.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Icon font covers every referenced icon
+        run: |
+          pip install --quiet fonttools brotli
+          pnpm fonts:check
+
       - name: Migrate
         env:
           DATABASE_URL: postgresql://factory:factory@localhost:5432/factory_vision
