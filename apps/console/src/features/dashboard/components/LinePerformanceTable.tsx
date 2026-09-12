@@ -36,24 +36,9 @@ const StatusPill: React.FC<{ status: LinePerformanceRow['status'] }> = ({ status
   );
 };
 
-const HEAD: React.CSSProperties = {
-  padding: `var(--space-2) var(--space-2)`,
-  fontSize: '10px',
-  fontWeight: 700,
-  textTransform: 'uppercase',
-  letterSpacing: '0.04em',
-  color: 'var(--color-on-surface-variant)',
-  textAlign: 'right',
-  whiteSpace: 'nowrap',
-};
-
-const CELL: React.CSSProperties = {
-  padding: `var(--space-2) var(--space-2)`,
-  fontSize: '11.5px',
-  textAlign: 'right',
-  fontFeatureSettings: '"tnum" 1',
-  whiteSpace: 'nowrap',
-};
+// Header fill, cell rhythm and numeric alignment come from `.fv-table`; only
+// what that rule does not decide is set here.
+const CELL: React.CSSProperties = { whiteSpace: 'nowrap' };
 
 /**
  * Plant / Production Line Performance, "Where is the biggest problem?"
@@ -110,17 +95,17 @@ export const LinePerformanceTable: React.FC<LinePerformanceTableProps> = ({
         Belum ada data performa lini untuk periode ini.
       </div>
     ) : (
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '620px' }}>
+      <div className="fv-table-scroll">
+        <table className="fv-table" style={{ minWidth: '620px' }}>
           <thead>
-            <tr style={{ borderBottom: '1px solid var(--color-outline-variant)' }}>
-              <th style={{ ...HEAD, textAlign: 'left' }}>Line</th>
-              <th style={HEAD}>OEE</th>
-              <th style={HEAD}>Output</th>
-              <th style={HEAD}>Achievement</th>
-              <th style={HEAD}>Downtime</th>
-              <th style={HEAD}>Reject</th>
-              <th style={{ ...HEAD, textAlign: 'center' }}>Status</th>
+            <tr>
+              <th>Line</th>
+              <th className="fv-num">OEE</th>
+              <th className="fv-num">Output</th>
+              <th className="fv-num">Achievement</th>
+              <th className="fv-num">Downtime</th>
+              <th className="fv-num">Reject</th>
+              <th style={{ textAlign: 'center' }}>Status</th>
             </tr>
           </thead>
           <tbody>
@@ -128,12 +113,9 @@ export const LinePerformanceTable: React.FC<LinePerformanceTableProps> = ({
               <tr
                 key={line.lineId}
                 onClick={onSelectLine ? () => onSelectLine(line.lineId) : undefined}
-                style={{
-                  borderBottom: '1px solid var(--color-outline-variant)',
-                  cursor: onSelectLine ? 'pointer' : 'default',
-                }}
+                style={{ cursor: onSelectLine ? 'pointer' : 'default' }}
               >
-                <td style={{ ...CELL, textAlign: 'left', whiteSpace: 'normal' }}>
+                <td>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                     {line.hasActiveDowntime && (
                       <Icon name="warning" size={14} color="var(--color-error)" label="Sedang downtime" />
@@ -146,11 +128,11 @@ export const LinePerformanceTable: React.FC<LinePerformanceTableProps> = ({
                     </div>
                   </div>
                 </td>
-                <td style={{ ...CELL, fontWeight: 800 }}>{line.oee}%</td>
-                <td style={CELL}>{line.goodQuantity.toLocaleString('en-US')}</td>
-                <td style={CELL}>{line.achievementPct}%</td>
-                <td style={CELL}>{line.downtimeMinutes.toLocaleString('en-US')} min</td>
-                <td style={CELL}>{line.rejectRatePct}%</td>
+                <td className="fv-num" style={{ ...CELL, fontWeight: 800 }}>{line.oee}%</td>
+                <td className="fv-num" style={CELL}>{line.goodQuantity.toLocaleString('en-US')}</td>
+                <td className="fv-num" style={CELL}>{line.achievementPct}%</td>
+                <td className="fv-num" style={CELL}>{line.downtimeMinutes.toLocaleString('en-US')} min</td>
+                <td className="fv-num" style={CELL}>{line.rejectRatePct}%</td>
                 <td style={{ ...CELL, textAlign: 'center' }}>
                   <StatusPill status={line.status} />
                 </td>

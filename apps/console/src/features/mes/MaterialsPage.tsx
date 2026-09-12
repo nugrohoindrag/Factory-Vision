@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { FactoryVisionApiClient } from '@factory-vision/api-client';
-import { AdvancedDataTable, Button, ColumnDef, FilledTextField, Icon } from '@factory-vision/ui';
-import { Page, Section, SurfaceCard, Dialog } from '@factory-vision/ui/fv';
+import { Button, ColumnDef, FilledTextField, Icon } from '@factory-vision/ui';
+import { DataTable, Page, Section, SurfaceCard, Dialog } from '@factory-vision/ui/fv';
 import type {
   MaterialConsumption,
   MaterialInventory,
@@ -273,13 +273,12 @@ export const MaterialsPage: React.FC = () => {
               />
             </SurfaceCard>
           ) : (
-            <AdvancedDataTable
+            <DataTable
               columns={inventoryColumns}
               data={rows}
               title="Stok Material"
               subtitle="Available = On Hand − Reserved + Incoming. Baris merah berada pada atau di bawah reorder point."
               searchable
-              selectable={false}
               expandable
               renderExpandedRow={(row) => (
                 <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
@@ -299,35 +298,32 @@ export const MaterialsPage: React.FC = () => {
           ))}
 
         {tab === 'reservations' && (
-          <AdvancedDataTable
+          <DataTable
             columns={reservationColumns}
             data={reservations ?? []}
             title="Reservasi Material"
             subtitle="Reservasi tidak memindahkan stok fisik; ia mengurangi Available agar work order lain tidak menghitungnya dua kali."
             searchable
-            selectable={false}
           />
         )}
 
         {tab === 'consumption' && (
-          <AdvancedDataTable
+          <DataTable
             columns={consumptionColumns}
             data={consumption ?? []}
             title="Konsumsi Material"
             subtitle="Variance = Aktual − Rencana. Rencana diambil dari kebutuhan BOM work order terkait."
             searchable
-            selectable={false}
           />
         )}
 
         {tab === 'transactions' && (
-          <AdvancedDataTable
+          <DataTable
             columns={transactionColumns}
             data={transactions ?? []}
             title="Ledger Transaksi Material"
             subtitle="Append-only. Setiap baris mencatat saldo setelah pergerakan, sehingga riwayat stok terbaca tanpa memutar ulang seluruh histori."
             searchable
-            selectable={false}
           />
         )}
       </Section>

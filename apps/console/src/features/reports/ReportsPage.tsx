@@ -15,8 +15,8 @@ import type {
   OeeReportItem,
   WipRecord,
 } from '@factory-vision/domain-types';
-import { AdvancedDataTable, ColumnDef, Button, Icon } from '@factory-vision/ui';
-import { Page, Section, FilterChip } from '@factory-vision/ui/fv';
+import { ColumnDef, Button, Icon } from '@factory-vision/ui';
+import { DataTable, Page, Section, FilterChip } from '@factory-vision/ui/fv';
 import { useSession } from '../../app/SessionContext.js';
 import { StatusPill, fmt, fmtDate, fmtDateTime } from '../mes/shared.js';
 import { downloadCsv, reportFilename, toCsv, type CsvColumn } from './csv.js';
@@ -1036,13 +1036,12 @@ export const ReportsPage: React.FC = () => {
                 description={meta.emptyDescription}
               />
             ) : (
-              <AdvancedDataTable
+              <DataTable
                 columns={view.columns as ColumnDef<{ id: string }>[]}
                 data={rows as { id: string }[]}
                 title={meta.title}
                 subtitle={meta.subtitle}
                 searchable
-                selectable={false}
               />
             )}
           </Section>

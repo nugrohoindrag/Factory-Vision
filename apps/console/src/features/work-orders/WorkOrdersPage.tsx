@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FactoryVisionApiClient } from '@factory-vision/api-client';
-import { AdvancedDataTable, ColumnDef, Button, Icon, Modal } from '@factory-vision/ui';
-import { MetricCard, Page, Section, Dialog, FilterChip, RowActionMenu, type RowActionItem } from '@factory-vision/ui/fv';
+import { ColumnDef, Button, Icon, Modal } from '@factory-vision/ui';
+import { DataTable, MetricCard, Page, Section, Dialog, FilterChip, RowActionMenu, type RowActionItem } from '@factory-vision/ui/fv';
 import { SplitWorkOrderDialog, isSplittable } from './SplitWorkOrderDialog.js';
 import {
   WorkOrder,
@@ -844,14 +844,12 @@ export const WorkOrdersPage: React.FC = () => {
 
           {/* Advanced Data Table, header fill comes from the app-wide
  @factory-vision/ui/fv/table-header.css override (all tables). */}
-          <AdvancedDataTable
+          <DataTable
             columns={woColumns}
             data={filteredWos}
             title="Daftar Work Order (WO)"
             subtitle="Kelola status rilis, edit parameter target, dan pantau output aktual per Production Line"
             searchable={false}
-            selectable={true}
-            expandable={true}
             renderExpandedRow={(wo) => (
               <Section
                 style={{

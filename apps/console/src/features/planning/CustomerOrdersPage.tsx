@@ -2,19 +2,43 @@ import React, { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FactoryVisionApiClient, ApiRequestError } from '@factory-vision/api-client';
 import type { CustomerOrderDetailView } from '@factory-vision/api-client';
-import {
-  AdvancedDataTable,
-  ColumnDef,
-  Button,
-  Icon,
-  Select,
-  FilledTextField,
-  EmptyState,
-  ErrorState,
-} from '@factory-vision/ui';
-import { DateField, Page, Section, SurfaceCard, Dialog, toneContainer, toneOnContainer, type Tone } from '@factory-vision/ui/fv';
+import { ColumnDef, Button, Icon, Select, FilledTextField, EmptyState, ErrorState } from '@factory-vision/ui';
+import { DataTable, DateField, Page, Section, SurfaceCard, Dialog, toneContainer, toneOnContainer, type Tone } from '@factory-vision/ui/fv';
 import { useSession } from '../../app/SessionContext.js';
 import { useNewlyCreated } from '../common/useNewlyCreated.js';
+
+/**
+ * An order's lines, read the same way under the row in the list and in the
+ * detail dialog: what was asked for, what planning committed, what has been
+ * produced, and when it ships.
+ */
+const OrderLines: React.FC<{
+  order: CustomerOrderDetailView;
+  productName: (productId: string) => string;
+}> = ({ order, productName }) => (
+  <table className="fv-table">
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th className="fv-num">Ordered</th>
+        <th className="fv-num">Planned</th>
+        <th className="fv-num">Produced</th>
+        <th>Kirim</th>
+      </tr>
+    </thead>
+    <tbody>
+      {order.lines.map((line) => (
+        <tr key={line.id}>
+          <td>{productName(line.productId)}</td>
+          <td className="fv-num">{line.orderedQuantity.toLocaleString('id-ID')}</td>
+          <td className="fv-num">{line.plannedQuantity.toLocaleString('id-ID')}</td>
+          <td className="fv-num">{line.producedQuantity.toLocaleString('id-ID')}</td>
+          <td>{line.requestedDeliveryDate ?? order.requestedDeliveryDate}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+);
 import {
   CustomerOrderStatus,
   CUSTOMER_ORDER_STATUS_LABEL,
@@ -326,12 +350,12 @@ export const CustomerOrdersPage: React.FC = () => {
             actionLabel=""
           />
         ) : (
-          <AdvancedDataTable
+          <DataTable
             columns={columns}
             data={orders as (CustomerOrderDetailView & { id: string })[]}
             title="Customer Order"
-            subtitle={`${orders.length} order`}
-            selectable={false}
+            count={{ total: orders.length, noun: 'order' }}
+            renderExpandedRow={(order) => <OrderLines order={order} productName={productName} />}
           />
         )}
       </Section>
@@ -382,30 +406,7 @@ export const CustomerOrdersPage: React.FC = () => {
 
             <div>
               <h3 style={{ margin: `0 0 var(--space-2)`, fontSize: '14px', fontWeight: 700 }}>Order Line</h3>
-              <table className="fv-table">
-                <thead>
-                  <tr>
-                    <th>Product</th>
-                    <th>Ordered</th>
-                    <th>Planned</th>
-                    <th>Produced</th>
-                    <th>Kirim</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {detail.lines.map((line) => (
-                    <tr key={line.id}>
-                      <td>{productName(line.productId)}</td>
-                      <td>{line.orderedQuantity.toLocaleString('id-ID')}</td>
-                      <td>{line.plannedQuantity.toLocaleString('id-ID')}</td>
-                      <td>{line.producedQuantity.toLocaleString('id-ID')}</td>
-                      <td>
-                        {line.requestedDeliveryDate ?? detail.requestedDeliveryDate}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <OrderLines order={detail} productName={productName} />
             </div>
 
             {canSeePlans && <OrderTraceability orderId={detail.id} />}

@@ -1,16 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FactoryVisionApiClient } from '@factory-vision/api-client';
-import {
-  AdvancedDataTable,
-  ColumnDef,
-  Button,
-  Modal,
-  WarningBanner,
-  Timeline,
-  TimelineEvent,
-} from '@factory-vision/ui';
-import { toneContainer, toneOnContainer, type Tone, Page, Section } from '@factory-vision/ui/fv';
+import { ColumnDef, Button, Modal, WarningBanner, Timeline, TimelineEvent } from '@factory-vision/ui';
+import { DataTable, toneContainer, toneOnContainer, type Tone, Page, Section } from '@factory-vision/ui/fv';
 import { CorrectionRequest } from '@factory-vision/domain-types';
 
 const api = new FactoryVisionApiClient({ baseUrl: '' });
@@ -209,13 +201,12 @@ export const CorrectionsPage: React.FC<CorrectionsPageProps> = ({
 
       {/* Table first at full width, then the timeline underneath it. */}
       <Section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-        <AdvancedDataTable
+        <DataTable
           columns={columns}
           data={corrections || []}
           title="Data Correction Request Queue"
           subtitle="Review justification and execute tiered governance approvals"
           searchable={true}
-          selectable={false}
         />
 
         {/* Timeline Stream */}

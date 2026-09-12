@@ -21,3 +21,4 @@ export * from './FilterChip.js';
 export * from './RowActionMenu.js';
 export * from './DateField.js';
 export * from './Gauge.js';
+export * from './DataTable.js';

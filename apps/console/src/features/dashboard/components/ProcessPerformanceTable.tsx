@@ -74,32 +74,27 @@ export const ProcessPerformanceTable: React.FC<ProcessPerformanceTableProps> = (
         </div>
       </div>
 
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', textAlign: 'left' }}>
+      <div className="fv-table-scroll">
+        <table className="fv-table">
           <thead>
-            <tr
-              style={{
-                backgroundColor: 'var(--color-surface-container-high)',
-                borderBottom: '1px solid var(--color-outline-variant)',
-              }}
-            >
-              <th style={{ padding: `var(--space-3) var(--space-4)`, fontWeight: 800 }}>Tahapan Proses</th>
-              <th style={{ padding: `var(--space-3) var(--space-3)`, fontWeight: 700 }}>Target vs Aktual</th>
-              <th style={{ padding: `var(--space-3) var(--space-3)`, fontWeight: 700 }}>Achievement</th>
-              <th style={{ padding: `var(--space-3) var(--space-3)`, fontWeight: 700 }}>Jumlah Reject</th>
-              <th style={{ padding: `var(--space-3) var(--space-3)`, fontWeight: 700 }}>Downtime</th>
-              <th style={{ padding: `var(--space-3) var(--space-3)`, fontWeight: 700 }}>Availability</th>
-              <th style={{ padding: `var(--space-3) var(--space-3)`, fontWeight: 700 }}>Performance</th>
-              <th style={{ padding: `var(--space-3) var(--space-3)`, fontWeight: 700 }}>Quality</th>
-              <th style={{ padding: `var(--space-3) var(--space-4)`, fontWeight: 800 }}>OEE Proses</th>
+            <tr>
+              <th>Tahapan Proses</th>
+              <th>Target vs Aktual</th>
+              <th>Achievement</th>
+              <th>Jumlah Reject</th>
+              <th>Downtime</th>
+              <th>Availability</th>
+              <th>Performance</th>
+              <th>Quality</th>
+              <th>OEE Proses</th>
             </tr>
           </thead>
           <tbody>
             {processes.map((proc) => {
               const status = getOeeStatus(proc.oee);
               return (
-                <tr key={proc.processId} style={{ borderBottom: '1px solid var(--color-outline-variant)' }}>
-                  <td style={{ padding: `var(--space-3) var(--space-4)` }}>
+                <tr key={proc.processId}>
+                  <td>
                     <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--color-on-surface)' }}>
                       {proc.processName}
                     </div>
@@ -110,7 +105,7 @@ export const ProcessPerformanceTable: React.FC<ProcessPerformanceTableProps> = (
                     </div>
                   </td>
 
-                  <td style={{ padding: `var(--space-3) var(--space-3)` }}>
+                  <td>
                     <div style={{ fontWeight: 700, color: 'var(--color-on-surface)' }}>
                       {proc.goodQuantity.toLocaleString('en-US')} PCS
                     </div>
@@ -119,7 +114,7 @@ export const ProcessPerformanceTable: React.FC<ProcessPerformanceTableProps> = (
                     </div>
                   </td>
 
-                  <td style={{ padding: `var(--space-3) var(--space-3)` }}>
+                  <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                       <span
                         style={{
@@ -152,7 +147,7 @@ export const ProcessPerformanceTable: React.FC<ProcessPerformanceTableProps> = (
                     </div>
                   </td>
 
-                  <td style={{ padding: `var(--space-3) var(--space-3)` }}>
+                  <td>
                     <div
                       style={{
                         fontWeight: 700,
@@ -170,7 +165,7 @@ export const ProcessPerformanceTable: React.FC<ProcessPerformanceTableProps> = (
                     </div>
                   </td>
 
-                  <td style={{ padding: `var(--space-3) var(--space-3)` }}>
+                  <td>
                     <span
                       style={{
                         fontWeight: 700,
@@ -181,13 +176,13 @@ export const ProcessPerformanceTable: React.FC<ProcessPerformanceTableProps> = (
                     </span>
                   </td>
 
-                  <td style={{ padding: `var(--space-3) var(--space-3)`, fontWeight: 700 }}>{proc.availability}%</td>
+                  <td style={{ fontWeight: 700 }}>{proc.availability}%</td>
 
-                  <td style={{ padding: `var(--space-3) var(--space-3)`, fontWeight: 700 }}>{proc.performance}%</td>
+                  <td style={{ fontWeight: 700 }}>{proc.performance}%</td>
 
-                  <td style={{ padding: `var(--space-3) var(--space-3)`, fontWeight: 700 }}>{proc.quality}%</td>
+                  <td style={{ fontWeight: 700 }}>{proc.quality}%</td>
 
-                  <td style={{ padding: `var(--space-3) var(--space-4)` }}>
+                  <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                       <span style={{ fontWeight: 900, fontSize: '14px', color: status.color }}>
                         {proc.oee}%

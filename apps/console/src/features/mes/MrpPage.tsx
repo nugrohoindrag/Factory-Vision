@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { FactoryVisionApiClient } from '@factory-vision/api-client';
-import { AdvancedDataTable, Button, ColumnDef, Icon } from '@factory-vision/ui';
-import { Page, Section, SurfaceCard, FilterChip, DateField } from '@factory-vision/ui/fv';
+import { Button, ColumnDef, Icon } from '@factory-vision/ui';
+import { DataTable, Page, Section, SurfaceCard, FilterChip, DateField } from '@factory-vision/ui/fv';
 import type { MrpResult, MrpRun } from '@factory-vision/domain-types';
 import { EmptyState, KpiRow, KpiTile, PageHeading, StatusPill, fmt, fmtDate, fmtDateTime } from './shared.js';
 
@@ -240,13 +240,12 @@ export const MrpPage: React.FC = () => {
             />
           </SurfaceCard>
         ) : (
-          <AdvancedDataTable
+          <DataTable
             columns={columns}
             data={filtered}
             title="Hasil MRP"
             subtitle="Net Requirement = Gross Requirement − (On Hand − Reserved + Incoming). Rekomendasi ada pada baris yang diperluas."
             searchable
-            selectable={false}
             expandable
             renderExpandedRow={(row) => (
               <div style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { FactoryVisionApiClient } from '@factory-vision/api-client';
-import { AdvancedDataTable, ColumnDef } from '@factory-vision/ui';
-import { Page, Section, SurfaceCard, FilterChip } from '@factory-vision/ui/fv';
+import { ColumnDef } from '@factory-vision/ui';
+import { DataTable, Page, Section, SurfaceCard, FilterChip } from '@factory-vision/ui/fv';
 import type { MaterialReadiness, MaterialRequirement } from '@factory-vision/domain-types';
 import { EmptyState, KpiRow, KpiTile, PageHeading, StatusPill, fmt, fmtDate } from './shared.js';
 
@@ -250,14 +250,12 @@ export const MaterialReadinessPage: React.FC = () => {
             />
           </SurfaceCard>
         ) : (
-          <AdvancedDataTable
+          <DataTable
             columns={planColumns}
             data={visible.map((plan) => ({ ...plan, id: plan.sourceId }))}
             title="Kesiapan Material per Production Plan"
             subtitle="Pilih satu baris untuk melihat rincian kebutuhan materialnya."
             searchable
-            selectable={false}
-            expandable
             renderExpandedRow={(plan) => (
               <button
                 type="button"
@@ -282,13 +280,12 @@ export const MaterialReadinessPage: React.FC = () => {
 
       {selected ? (
         <Section>
-          <AdvancedDataTable
+          <DataTable
             columns={requirementColumns}
             data={selected.requirements}
             title={`Kebutuhan Material · ${selected.sourceLabel}`}
             subtitle="Available = On Hand − Reserved + Incoming. Shortage = Dibutuhkan − Available."
             searchable
-            selectable={false}
           />
         </Section>
       ) : null}

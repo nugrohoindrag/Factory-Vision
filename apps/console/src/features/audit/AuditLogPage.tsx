@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { FactoryVisionApiClient } from '@factory-vision/api-client';
-import { AdvancedDataTable, ColumnDef, Timeline, TimelineEvent } from '@factory-vision/ui';
-import { toneContainer, toneOnContainer, type Tone, Page, Section, FilterChip } from '@factory-vision/ui/fv';
+import { ColumnDef, Timeline, TimelineEvent } from '@factory-vision/ui';
+import { DataTable, toneContainer, toneOnContainer, type Tone, Page, Section, FilterChip } from '@factory-vision/ui/fv';
 import { AuditLog } from '@factory-vision/domain-types';
 
 const api = new FactoryVisionApiClient({ baseUrl: '' });
@@ -150,14 +150,12 @@ export const AuditLogPage: React.FC = () => {
 
       {/* Table first at full width, then the timeline underneath it. */}
       <Section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-        <AdvancedDataTable
+        <DataTable
           columns={columns}
           data={filteredLogs}
           title="Audit Log Transaction Registry"
           subtitle="Click row arrow to inspect payload JSON diff between previous and new state"
           searchable={true}
-          selectable={false}
-          expandable={true}
           renderExpandedRow={(log) => (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)', fontSize: '11px' }}>
               <div

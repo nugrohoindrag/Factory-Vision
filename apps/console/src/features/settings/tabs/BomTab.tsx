@@ -695,49 +695,31 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
                       <span>Rincian Struktur Komponen (Bill of Material Items)</span>
                     </div>
 
-                    <div style={{ overflowX: 'auto' }}>
-                      <table
-                        style={{
-                          width: '100%',
-                          borderCollapse: 'collapse',
-                          fontSize: '12px',
-                          textAlign: 'left',
-                        }}
-                      >
+                    <div className="fv-table-scroll">
+                      <table className="fv-table">
                         <thead>
-                          <tr
-                            style={{
-                              borderBottom: '1px solid var(--color-outline-variant)',
-                              color: 'var(--color-on-surface-variant)',
-                              backgroundColor: 'var(--color-surface-container)',
-                            }}
-                          >
-                            <th style={{ padding: '8px' }}>Line</th>
-                            <th style={{ padding: '8px' }}>Part SKU</th>
-                            <th style={{ padding: '8px' }}>Nama Part / Material</th>
-                            <th style={{ padding: '8px' }}>Tipe</th>
-                            <th style={{ padding: '8px', textAlign: 'right' }}>Kuantitas</th>
-                            <th style={{ padding: '8px' }}>Satuan</th>
-                            <th style={{ padding: '8px', textAlign: 'right' }}>Scrap (%)</th>
-                            <th style={{ padding: '8px' }}>Keterangan</th>
+                          <tr>
+                            <th>Line</th>
+                            <th>Part SKU</th>
+                            <th>Nama Part / Material</th>
+                            <th>Tipe</th>
+                            <th className="fv-num">Kuantitas</th>
+                            <th>Satuan</th>
+                            <th className="fv-num">Scrap (%)</th>
+                            <th>Keterangan</th>
                           </tr>
                         </thead>
                         <tbody>
                           {bom.components.map((c) => (
-                            <tr
-                              key={c.id}
-                              style={{
-                                borderBottom: '1px solid var(--color-outline-variant)',
-                              }}
-                            >
-                              <td style={{ padding: '8px', fontWeight: 700 }}>
+                            <tr key={c.id}>
+                              <td style={{ fontWeight: 700 }}>
                                 #{c.lineNumber || c.sequence}
                               </td>
-                              <td style={{ padding: '8px', fontWeight: 600 }}>
+                              <td style={{ fontWeight: 600 }}>
                                 <code>{c.componentPartSku}</code>
                               </td>
-                              <td style={{ padding: '8px' }}>{c.componentPartName}</td>
-                              <td style={{ padding: '8px' }}>
+                              <td>{c.componentPartName}</td>
+                              <td>
                                 <span
                                   style={{
                                     fontSize: '10.5px',
@@ -749,11 +731,11 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
                                   {c.componentType}
                                 </span>
                               </td>
-                              <td style={{ padding: '8px', textAlign: 'right', fontWeight: 700 }}>
+                              <td style={{ textAlign: 'right', fontWeight: 700 }}>
                                 {c.quantity}
                               </td>
-                              <td style={{ padding: '8px' }}>{c.uom}</td>
-                              <td style={{ padding: '8px', textAlign: 'right' }}>
+                              <td>{c.uom}</td>
+                              <td className="fv-num">
                                 {c.scrapPercentage ? `${c.scrapPercentage}%` : '0%'}
                               </td>
                               <td

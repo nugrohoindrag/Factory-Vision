@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { FactoryVisionApiClient } from '@factory-vision/api-client';
-import { AdvancedDataTable, Button, ColumnDef, FilledTextField, Icon, Select } from '@factory-vision/ui';
-import { Page, Section, SurfaceCard, Dialog } from '@factory-vision/ui/fv';
+import { Button, ColumnDef, FilledTextField, Icon, Select } from '@factory-vision/ui';
+import { DataTable, Page, Section, SurfaceCard, Dialog } from '@factory-vision/ui/fv';
 import type {
   MaintenancePlan,
   MaintenanceRecord,
@@ -257,13 +257,12 @@ export const MaintenancePage: React.FC = () => {
               />
             </SurfaceCard>
           ) : (
-            <AdvancedDataTable
+            <DataTable
               columns={recordColumns}
               data={records ?? []}
               title="Riwayat Pekerjaan Maintenance"
               subtitle="Penyelesaian wajib mencantumkan hasil; durasi dihitung dari waktu mulai sampai selesai."
               searchable
-              selectable={false}
               expandable
               renderExpandedRow={(row) => (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
@@ -318,13 +317,12 @@ export const MaintenancePage: React.FC = () => {
                 </Button>
               </div>
             ) : null}
-            <AdvancedDataTable
+            <DataTable
               columns={planColumns}
               data={plans ?? []}
               title="Preventive Maintenance Plan"
               subtitle="Status dihitung saat dibaca: sebuah rencana menjadi OVERDUE karena waktu berjalan, bukan karena ada yang mengubahnya."
               searchable
-              selectable={false}
               expandable
               renderExpandedRow={(row) => (
                 <div style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
@@ -337,13 +335,12 @@ export const MaintenancePage: React.FC = () => {
         )}
 
         {tab === 'requests' && (
-          <AdvancedDataTable
+          <DataTable
             columns={requestColumns}
             data={requests ?? []}
             title="Permintaan Maintenance"
             subtitle="Permintaan yang diterima menjadi pekerjaan maintenance dengan nomor tersendiri."
             searchable
-            selectable={false}
             expandable
             renderExpandedRow={(row) =>
               row.status === 'REQUESTED' && can('maintenance:assign') ? (

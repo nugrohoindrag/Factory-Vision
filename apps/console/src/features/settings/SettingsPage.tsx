@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FactoryVisionApiClient } from '@factory-vision/api-client';
-import { AdvancedDataTable, ColumnDef, Button, Icon, Modal, StatusBadge } from '@factory-vision/ui';
-import { Page, Section, Dialog } from '@factory-vision/ui/fv';
+import { ColumnDef, Button, Icon, Modal, StatusBadge } from '@factory-vision/ui';
+import { DataTable, Page, Section, Dialog } from '@factory-vision/ui/fv';
 import {
   AppUser,
   DeviceTerminal,
@@ -3801,86 +3801,72 @@ export const SettingsPage: React.FC = () => {
 
       {/* Active Tab Data Table Content */}
       {activeTab === 'processes' && (
-        <AdvancedDataTable
+        <DataTable
           columns={processColumns}
           data={processes || []}
           title="Production Processes & Stages"
           subtitle="Generic master processes (Mixing, Extrusion, Building, Curing, Inspection)"
           searchable={true}
-          selectable={true}
-          expandable={false}
         />
       )}
 
       {activeTab === 'routings' && (
-        <AdvancedDataTable
+        <DataTable
           columns={routingColumns}
           data={routings || []}
           title="Product Sequence Routings"
           subtitle="Multi-step manufacturing routing definitions mapping SKUs across processes and machines"
           searchable={true}
-          selectable={true}
-          expandable={false}
         />
       )}
 
       {activeTab === 'rates' && (
-        <AdvancedDataTable
+        <DataTable
           columns={rateColumns}
           data={machineRates || []}
           title="Product × Machine Ideal Cycle Rates (Tech Arch)"
           subtitle="Ideal cycle times (takt rates) resolved for Performance component calculation"
           searchable={true}
-          selectable={true}
-          expandable={false}
         />
       )}
 
       {activeTab === 'batches' && (
-        <AdvancedDataTable
+        <DataTable
           columns={batchColumns}
           data={batches || []}
           title="Production Batches & Traceability Lots"
           subtitle="Lot number tracking across multi-process work orders"
           searchable={true}
-          selectable={true}
-          expandable={false}
         />
       )}
 
       {activeTab === 'products' && (
-        <AdvancedDataTable
+        <DataTable
           columns={productColumns}
           data={products || []}
           title="Product & Part Number Catalog"
           subtitle="Daftar Produk beserta Ideal Cycle Time"
           searchable={true}
-          selectable={true}
-          expandable={false}
         />
       )}
 
       {activeTab === 'machines' && (
-        <AdvancedDataTable
+        <DataTable
           columns={machineColumns}
           data={machines || []}
           title="Mesin"
           subtitle="Specifications for stamping presses, CNC milling, and assembly cells"
           searchable={true}
-          selectable={true}
-          expandable={false}
         />
       )}
 
       {activeTab === 'lines' && (
-        <AdvancedDataTable
+        <DataTable
           columns={lineColumns}
           data={lines || []}
           title="Production Line Configurations"
           subtitle="Assembly line registry and planned operational shifts"
           searchable={true}
-          selectable={true}
-          expandable={false}
         />
       )}
 
@@ -3985,62 +3971,52 @@ export const SettingsPage: React.FC = () => {
       </Dialog>
 
       {activeTab === 'operators' && (
-        <AdvancedDataTable
+        <DataTable
           columns={operatorColumns}
           data={operators || []}
           title="Shop Floor Operator Directory"
           subtitle="Operator badge IDs, names, and default assigned production lines"
           searchable={true}
-          selectable={true}
-          expandable={false}
         />
       )}
 
       {activeTab === 'downtime-reasons' && (
-        <AdvancedDataTable
+        <DataTable
           columns={downtimeColumns}
           data={downtimeReasons || []}
           title="Downtime & Loss Taxonomy Directory"
           subtitle="Standardized categorisation for mechanical breakdowns, raw material shortages, and setup losses"
           searchable={true}
-          selectable={true}
-          expandable={false}
         />
       )}
 
       {activeTab === 'reject-reasons' && (
-        <AdvancedDataTable
+        <DataTable
           columns={rejectColumns}
           data={rejectReasons || []}
           title="Quality Defect & Reject Taxonomy"
           subtitle="Standardized defect codes for dimension variance, scratches, burrs, and functional QC tests"
           searchable={true}
-          selectable={true}
-          expandable={false}
         />
       )}
 
       {activeTab === 'users' && (
-        <AdvancedDataTable
+        <DataTable
           columns={userColumns}
           data={users || []}
           title="User Management & Access Scopes"
           subtitle="Configure application users, role models, and plant/line data visibility scopes"
           searchable={true}
-          selectable={true}
-          expandable={false}
         />
       )}
 
       {activeTab === 'devices' && (
-        <AdvancedDataTable
+        <DataTable
           columns={deviceColumns}
           data={devices || []}
           title="Registered Shop Floor Devices & PWA Terminals ( &)"
           subtitle="Authorized Android tablets with offline-first synchronization capabilities"
           searchable={true}
-          selectable={true}
-          expandable={false}
         />
       )}
 

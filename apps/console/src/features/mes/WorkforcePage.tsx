@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { FactoryVisionApiClient } from '@factory-vision/api-client';
-import { AdvancedDataTable, Button, ColumnDef, FilledTextField, Icon, Select } from '@factory-vision/ui';
-import { Page, Section, SurfaceCard, Dialog } from '@factory-vision/ui/fv';
+import { Button, ColumnDef, FilledTextField, Icon, Select } from '@factory-vision/ui';
+import { DataTable, Page, Section, SurfaceCard, Dialog } from '@factory-vision/ui/fv';
 import type {
   LaborUtilization,
   OperatorAvailability,
@@ -302,13 +302,12 @@ export const WorkforcePage: React.FC = () => {
               />
             </SurfaceCard>
           ) : (
-            <AdvancedDataTable
+            <DataTable
               columns={availabilityColumns}
               data={availability ?? []}
               title="Ketersediaan Operator"
               subtitle="Operator yang tidak AVAILABLE atau ASSIGNED tidak dapat ditugaskan ke work order baru."
               searchable
-              selectable={false}
               expandable
               renderExpandedRow={(row) =>
                 can('workforce:availability') ? (
@@ -326,57 +325,52 @@ export const WorkforcePage: React.FC = () => {
           ))}
 
         {tab === 'qualifications' && (
-          <AdvancedDataTable
+          <DataTable
             columns={qualificationColumns}
             data={qualifications ?? []}
             title="Kualifikasi Operator"
             subtitle="Status dihitung saat dibaca: sertifikat yang tanggal kedaluwarsanya lewat otomatis menjadi EXPIRED."
             searchable
-            selectable={false}
           />
         )}
 
         {tab === 'skills' && (
-          <AdvancedDataTable
+          <DataTable
             columns={skillColumns}
             data={skills ?? []}
             title="Master Skill"
             subtitle="Skill adalah satuan kualifikasi: operator memilikinya pada suatu level, mesin dan proses mensyaratkannya pada level minimum."
             searchable
-            selectable={false}
           />
         )}
 
         {tab === 'requirements' && (
-          <AdvancedDataTable
+          <DataTable
             columns={requirementColumns}
             data={requirements ?? []}
             title="Syarat Kualifikasi"
             subtitle="Syarat wajib memblokir penugasan; syarat anjuran hanya ditampilkan sebagai peringatan."
             searchable
-            selectable={false}
           />
         )}
 
         {tab === 'shifts' && (
-          <AdvancedDataTable
+          <DataTable
             columns={shiftColumns}
             data={shiftAssignments ?? []}
             title="Penugasan Shift"
             subtitle="Penugasan berlaku pada rentang tanggal; shift default dipakai ketika tidak ada penugasan khusus."
             searchable
-            selectable={false}
           />
         )}
 
         {tab === 'utilization' && (
-          <AdvancedDataTable
+          <DataTable
             columns={utilizationColumns}
             data={(utilization ?? []).map((row) => ({ ...row, id: row.scopeId }))}
             title="Utilisasi Tenaga Kerja"
             subtitle="Utilisasi = Waktu Produktif ÷ Waktu Tersedia × 100, dihitung dari labor time record."
             searchable
-            selectable={false}
           />
         )}
       </Section>

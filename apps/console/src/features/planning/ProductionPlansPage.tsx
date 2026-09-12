@@ -2,17 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FactoryVisionApiClient } from '@factory-vision/api-client';
-import {
-  AdvancedDataTable,
-  ColumnDef,
-  Button,
-  Icon,
-  FilledTextField,
-  EmptyState,
-  ErrorState,
-} from '@factory-vision/ui';
-import {
-  Page,
+import { ColumnDef, Button, Icon, FilledTextField, EmptyState, ErrorState } from '@factory-vision/ui';
+import { DataTable, Page,
   Section,
   SurfaceCard,
   Dialog,
@@ -20,8 +11,7 @@ import {
   toneContainer,
   toneOnContainer,
   type Tone,
-  DateField,
-} from '@factory-vision/ui/fv';
+  DateField, } from '@factory-vision/ui/fv';
 import {
   CapacityStatus,
   ProductionPlanStatus,
@@ -326,12 +316,11 @@ export const ProductionPlansPage: React.FC = () => {
             onAction={() => setShowCreate(true)}
           />
         ) : (
-          <AdvancedDataTable
+          <DataTable
             columns={columns}
             data={rows}
             title="Production Plan"
             subtitle={`${rows.length} plan`}
-            selectable={false}
           />
         )}
       </Section>

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { FactoryVisionApiClient } from '@factory-vision/api-client';
-import { AdvancedDataTable, Button, ColumnDef, FilledTextField, Icon, Select } from '@factory-vision/ui';
-import { Page, Section, SurfaceCard, Dialog, FilterChip } from '@factory-vision/ui/fv';
+import { Button, ColumnDef, FilledTextField, Icon, Select } from '@factory-vision/ui';
+import { DataTable, Page, Section, SurfaceCard, Dialog, FilterChip } from '@factory-vision/ui/fv';
 import type { WipReceipt, WipRecord, WipTransfer } from '@factory-vision/domain-types';
 import { useSession } from '../../app/SessionContext.js';
 import {
@@ -354,13 +354,12 @@ export const WipPage: React.FC = () => {
               />
             </SurfaceCard>
           ) : (
-            <AdvancedDataTable
+            <DataTable
               columns={recordColumns}
               data={records ?? []}
               title="Catatan WIP"
               subtitle="Umur dihitung sejak WIP dibuat. WIP berstatus ON_HOLD tidak dapat ditransfer tanpa pelepasan resmi."
               searchable
-              selectable={false}
               expandable
               renderExpandedRow={(row) => (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
@@ -416,13 +415,12 @@ export const WipPage: React.FC = () => {
           ))}
 
         {tab === 'transfers' && (
-          <AdvancedDataTable
+          <DataTable
             columns={transferColumns}
             data={transfers ?? []}
             title="Transfer WIP"
             subtitle="Transfer diblokir bila quality gate aktif dan inspeksi wajib belum PASS."
             searchable
-            selectable={false}
             expandable
             renderExpandedRow={(row) =>
               row.status === 'IN_TRANSIT' && can('wip:receive') ? (
@@ -440,13 +438,12 @@ export const WipPage: React.FC = () => {
         )}
 
         {tab === 'receipts' && (
-          <AdvancedDataTable
+          <DataTable
             columns={receiptColumns}
             data={receipts ?? []}
             title="Penerimaan WIP"
             subtitle="Selisih antara yang dikirim dan yang diterima wajib memiliki alasan, dan tercatat di audit trail."
             searchable
-            selectable={false}
           />
         )}
       </Section>

@@ -1,16 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FactoryVisionApiClient, ApiRequestError } from '@factory-vision/api-client';
-import {
-  AdvancedDataTable,
-  ColumnDef,
-  Button,
-  Icon,
-  FilledTextField,
-  EmptyState,
-  ErrorState,
-} from '@factory-vision/ui';
-import { Page, Section, SurfaceCard, Dialog, toneContainer, toneOnContainer } from '@factory-vision/ui/fv';
+import { ColumnDef, Button, Icon, FilledTextField, EmptyState, ErrorState } from '@factory-vision/ui';
+import { DataTable, Page, Section, SurfaceCard, Dialog, toneContainer, toneOnContainer } from '@factory-vision/ui/fv';
 import type { Customer, ApiFieldError } from '@factory-vision/domain-types';
 
 const api = new FactoryVisionApiClient({ baseUrl: '' });
@@ -195,12 +187,11 @@ export const CustomerMasterPage: React.FC = () => {
             onAction={openCreate}
           />
         ) : (
-          <AdvancedDataTable
+          <DataTable
             columns={columns}
             data={customers as (Customer & { id: string })[]}
             title="Customer"
             subtitle={`${customers.length} customer`}
-            selectable={false}
           />
         )}
       </Section>

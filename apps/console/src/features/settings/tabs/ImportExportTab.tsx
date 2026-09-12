@@ -185,23 +185,23 @@ export const ImportExportTab: React.FC<{ onToast: (message: string) => void }> =
               >
                 Kolom yang diharapkan
               </div>
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
+              <div className="fv-table-scroll">
+                <table className="fv-table">
                   <thead>
-                    <tr style={{ textAlign: 'left', color: 'var(--color-on-surface-variant)' }}>
-                      <th style={{ padding: `var(--space-1) var(--space-2)` }}>Kolom</th>
-                      <th style={{ padding: `var(--space-1) var(--space-2)` }}>Wajib</th>
-                      <th style={{ padding: `var(--space-1) var(--space-2)` }}>Keterangan</th>
+                    <tr>
+                      <th>Kolom</th>
+                      <th>Wajib</th>
+                      <th>Keterangan</th>
                     </tr>
                   </thead>
                   <tbody>
                     {template.columns.map((column) => (
-                      <tr key={column.name} style={{ borderTop: '1px solid var(--color-outline-variant)' }}>
-                        <td style={{ padding: `var(--space-1) var(--space-2)`, fontWeight: 700 }}>
+                      <tr key={column.name}>
+                        <td style={{ fontWeight: 700 }}>
                           <code>{column.name}</code>
                         </td>
-                        <td style={{ padding: `var(--space-1) var(--space-2)` }}>{column.required ? 'Ya' : 'Tidak'}</td>
-                        <td style={{ padding: `var(--space-1) var(--space-2)`, color: 'var(--color-on-surface-variant)' }}>
+                        <td>{column.required ? 'Ya' : 'Tidak'}</td>
+                        <td style={{ color: 'var(--color-on-surface-variant)' }}>
                           {column.description}
                         </td>
                       </tr>
@@ -290,22 +290,22 @@ export const ImportExportTab: React.FC<{ onToast: (message: string) => void }> =
                     borderRadius: 'var(--radius-sm, 8px)',
                   }}
                 >
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
+                  <table className="fv-table">
                     <thead>
-                      <tr style={{ textAlign: 'left', backgroundColor: 'var(--color-surface-container)' }}>
-                        <th style={{ padding: `var(--space-2) var(--space-2)` }}>Baris</th>
-                        <th style={{ padding: `var(--space-2) var(--space-2)` }}>Kolom</th>
-                        <th style={{ padding: `var(--space-2) var(--space-2)` }}>Masalah</th>
+                      <tr>
+                        <th>Baris</th>
+                        <th>Kolom</th>
+                        <th>Masalah</th>
                       </tr>
                     </thead>
                     <tbody>
                       {result.errors.map((rowError, index) => (
-                        <tr key={index} style={{ borderTop: '1px solid var(--color-outline-variant)' }}>
-                          <td style={{ padding: `var(--space-2) var(--space-2)`, fontWeight: 700 }}>{rowError.row || ', '}</td>
-                          <td style={{ padding: `var(--space-2) var(--space-2)` }}>
+                        <tr key={index}>
+                          <td style={{ fontWeight: 700 }}>{rowError.row || ', '}</td>
+                          <td>
                             <code>{rowError.column ?? ', '}</code>
                           </td>
-                          <td style={{ padding: `var(--space-2) var(--space-2)`, color: 'var(--color-error)' }}>
+                          <td style={{ color: 'var(--color-error)' }}>
                             {rowError.message}
                           </td>
                         </tr>

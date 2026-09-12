@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { FactoryVisionApiClient } from '@factory-vision/api-client';
-import { AdvancedDataTable, Button, ColumnDef, FilledTextField, Icon, Select } from '@factory-vision/ui';
-import { Page, Section, SurfaceCard, Dialog, FilterChip } from '@factory-vision/ui/fv';
+import { Button, ColumnDef, FilledTextField, Icon, Select } from '@factory-vision/ui';
+import { DataTable, Page, Section, SurfaceCard, Dialog, FilterChip } from '@factory-vision/ui/fv';
 import type {
   Inspection,
   InspectionPlan,
@@ -311,13 +311,12 @@ export const QualityPage: React.FC = () => {
               />
             </SurfaceCard>
           ) : (
-            <AdvancedDataTable
+            <DataTable
               columns={inspectionColumns}
               data={visibleInspections}
               title="Hasil Inspeksi"
               subtitle="Hasil keseluruhan diturunkan dari pengukuran: satu karakteristik di luar batas membuat inspeksi FAIL."
               searchable
-              selectable={false}
               expandable
               renderExpandedRow={(row) => (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
@@ -384,13 +383,12 @@ export const QualityPage: React.FC = () => {
           ))}
 
         {tab === 'holds' && (
-          <AdvancedDataTable
+          <DataTable
             columns={holdColumns}
             data={holds ?? []}
             title="Quality Hold"
             subtitle="Kuantitas yang ditahan tidak dapat ditransfer ke proses berikutnya sampai dilepas atau memiliki disposition."
             searchable
-            selectable={false}
             expandable
             renderExpandedRow={(row) =>
               row.status !== 'OPEN' ? (
@@ -425,24 +423,22 @@ export const QualityPage: React.FC = () => {
         )}
 
         {tab === 'dispositions' && (
-          <AdvancedDataTable
+          <DataTable
             columns={dispositionColumns}
             data={dispositions ?? []}
             title="Quality Disposition"
             subtitle="SCRAP dan REWORK mengurangi kuantitas baik pada work order terkait; setiap keputusan tercatat di audit trail."
             searchable
-            selectable={false}
           />
         )}
 
         {tab === 'ncr' && (
-          <AdvancedDataTable
+          <DataTable
             columns={ncrColumns}
             data={ncrs ?? []}
             title="Non-Conformance Record"
             subtitle="NCR hanya dapat ditutup setelah seluruh corrective action terverifikasi."
             searchable
-            selectable={false}
             expandable
             renderExpandedRow={(row) => (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
@@ -479,13 +475,12 @@ export const QualityPage: React.FC = () => {
         )}
 
         {tab === 'plans' && (
-          <AdvancedDataTable
+          <DataTable
             columns={planColumns}
             data={plans ?? []}
             title="Inspection Plan"
             subtitle="Rencana yang ditandai wajib memblokir handoff ke proses berikutnya sampai inspeksinya PASS."
             searchable
-            selectable={false}
             expandable
             renderExpandedRow={(row) => (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
