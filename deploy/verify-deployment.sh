@@ -109,6 +109,12 @@ expect "role aplikasi tunduk pada RLS" \
 expect "paket trial ada (033)" \
   "$(q "SELECT count(*) FROM subscription_plan WHERE id='plan-trial'")" "1"
 
+# 034. Without the runner policy every planning job stays PENDING and the
+# console shows "Menghitung…" until the planner gives up — silently, since
+# the claim returns no rows rather than an error.
+expect "policy runner_without_tenant pada queue (034)" \
+  "$(q "SELECT count(*) FROM pg_policies WHERE policyname='runner_without_tenant' AND tablename IN ('planning_job','outbox_event')")" "2"
+
 # ---------------------------------------------------------------------- rbac
 printf '\n4. Peran & permission (PRD §34, §35)\n'
 expect "11 system role" "$(q "SELECT count(*) FROM role_definition WHERE is_system")" "11"

@@ -22,3 +22,4 @@ export * from './RowActionMenu.js';
 export * from './DateField.js';
 export * from './Gauge.js';
 export * from './DataTable.js';
+export * from './JobProgress.js';

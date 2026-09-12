@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FactoryVisionApiClient } from '@factory-vision/api-client';
+import type { PlanningJobView } from '@factory-vision/domain-types';
 import { Button, Icon, Select, FilledTextField, EmptyState, ErrorState } from '@factory-vision/ui';
-import { DateField, Page, Section, SurfaceCard, MetricCard, FilterChip } from '@factory-vision/ui/fv';
+import { DateField, Page, Section, SurfaceCard, MetricCard, FilterChip, JobProgress } from '@factory-vision/ui/fv';
 import {
   DemandForecastStatus,
   DEMAND_FORECAST_STATUS_LABEL,
@@ -86,6 +87,9 @@ export const DemandForecastPage: React.FC = () => {
   const [lookback, setLookback] = useState<3 | 6 | 12>(6);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
+  // The job as last seen, kept after it finishes so the screen shows how it
+  // ended (and how long it took) rather than snapping back to the button.
+  const [lastJob, setLastJob] = useState<PlanningJobView | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
   const forecastsQuery = useQuery({
@@ -128,22 +132,29 @@ export const DemandForecastPage: React.FC = () => {
   });
 
   useEffect(() => {
+    if (jobQuery.data) setLastJob(jobQuery.data);
     if (jobQuery.data?.status === 'SUCCEEDED') {
-      setNotice('Forecast selesai dihitung.');
       setJobId(null);
       void queryClient.invalidateQueries({ queryKey: ['planning', 'forecasts'] });
     }
     if (jobQuery.data?.status === 'FAILED') {
-      setNotice(`Perhitungan forecast gagal: ${jobQuery.data.lastError ?? 'penyebab tidak diketahui'}`);
       setJobId(null);
     }
-  }, [jobQuery.data?.status, jobQuery.data?.lastError, queryClient]);
+  }, [jobQuery.data, queryClient]);
 
   const generate = useMutation({
     mutationFn: () => api.planning.generateForecast({ periodStart, periodEnd, lookbackMonths: lookback }),
     onSuccess: (response) => {
+      setNotice(null);
+      setLastJob({
+        id: response.jobId,
+        tenantId: '',
+        jobType: 'DEMAND_FORECAST_GENERATE',
+        status: 'PENDING',
+        attempts: 0,
+        enqueuedAt: new Date().toISOString(),
+      });
       setJobId(response.jobId);
-      setNotice('Perhitungan forecast berjalan sebagai job di worker…');
     },
     onError: (error: unknown) => {
       setNotice(error instanceof Error ? error.message : 'Gagal menjalankan forecast.');
@@ -234,6 +245,22 @@ export const DemandForecastPage: React.FC = () => {
               {jobId ? 'Menghitung…' : 'Hasilkan Forecast'}
             </Button>
           </div>
+          {lastJob && (
+            <div style={{ marginTop: 'var(--space-3)' }}>
+              <JobProgress
+                status={lastJob.status}
+                label={`Forecast ${periodStart} s.d. ${periodEnd} · lookback ${lookback} bulan`}
+                startedAt={lastJob.enqueuedAt}
+                detail={
+                  lastJob.status === 'FAILED'
+                    ? `Perhitungan forecast gagal: ${lastJob.lastError ?? 'penyebab tidak diketahui'}`
+                    : lastJob.status === 'SUCCEEDED'
+                      ? 'Forecast selesai dihitung dan sudah ada di daftar.'
+                      : 'Perhitungan berjalan sebagai job di worker; halaman ini memantau statusnya.'
+                }
+              />
+            </div>
+          )}
           {notice && (
             <p style={{ margin: `var(--space-3) 0 0`, fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
               {notice}

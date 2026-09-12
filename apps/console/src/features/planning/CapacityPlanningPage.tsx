@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FactoryVisionApiClient } from '@factory-vision/api-client';
+import type { PlanningJobView } from '@factory-vision/domain-types';
 import { Button, Icon, FilledTextField, EmptyState, ErrorState } from '@factory-vision/ui';
 import {
   Page,
   Section,
   SurfaceCard,
   MetricCard,
+  JobProgress,
   toneContainer,
   toneOnContainer,
   type Tone,
@@ -67,6 +69,10 @@ export const CapacityPlanningPage: React.FC = () => {
   const [periodStart, setPeriodStart] = useState(firstOfMonth);
   const [periodEnd, setPeriodEnd] = useState(lastOfMonth);
   const [notice, setNotice] = useState<string | null>(null);
+  // The recalculation runs on the worker; the screen watches the job, kept
+  // after it finishes so the outcome (and its duration) stays readable.
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [lastJob, setLastJob] = useState<PlanningJobView | null>(null);
 
   const currentQuery = useQuery({
     queryKey: ['planning', 'capacity-current', periodStart],
@@ -95,16 +101,40 @@ export const CapacityPlanningPage: React.FC = () => {
 
   const recalculate = useMutation({
     mutationFn: (planId: string) => api.planning.recalculateCapacityPlan(planId),
-    onSuccess: () => {
-      setNotice(
-        'Rekalkulasi berjalan sebagai job. Snapshot baru akan muncul; angka snapshot lama tidak diubah.'
-      );
-      window.setTimeout(
-        () => void queryClient.invalidateQueries({ queryKey: ['planning', 'capacity-current'] }),
-        2500
-      );
+    onSuccess: (response) => {
+      setNotice(null);
+      setLastJob({
+        id: response.jobId,
+        tenantId: '',
+        jobType: 'CAPACITY_PLAN_RECALCULATE',
+        status: 'PENDING',
+        attempts: 0,
+        enqueuedAt: new Date().toISOString(),
+      });
+      setJobId(response.jobId);
     },
   });
+
+  // The planning job endpoint reads any job of the tenant by id; a capacity
+  // recalculation is one, so the forecast screen's poll serves here too.
+  const jobQuery = useQuery({
+    queryKey: ['planning', 'forecast-job', jobId],
+    queryFn: () => api.planning.getForecastJob(jobId as string),
+    enabled: Boolean(jobId),
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status === 'SUCCEEDED' || status === 'FAILED' ? false : 1500;
+    },
+  });
+  useEffect(() => {
+    if (jobQuery.data) setLastJob(jobQuery.data);
+    if (jobQuery.data?.status === 'SUCCEEDED' || jobQuery.data?.status === 'FAILED') {
+      setJobId(null);
+      if (jobQuery.data.status === 'SUCCEEDED') {
+        void queryClient.invalidateQueries({ queryKey: ['planning', 'capacity-current'] });
+      }
+    }
+  }, [jobQuery.data, queryClient]);
 
   const productName = (productId?: string) => {
     if (!productId) return 'Seluruh product';
@@ -165,13 +195,29 @@ export const CapacityPlanningPage: React.FC = () => {
               <Button
                 variant="outlined"
                 onClick={() => recalculate.mutate(plan.id)}
-                disabled={recalculate.isPending}
+                disabled={recalculate.isPending || Boolean(jobId)}
               >
-                Rekalkulasi
+                {jobId ? 'Menghitung…' : 'Rekalkulasi'}
               </Button>
             )}
           </div>
         </div>
+        {lastJob && (
+          <div style={{ marginTop: 'var(--space-3)' }}>
+            <JobProgress
+              status={lastJob.status}
+              label="Rekalkulasi capacity plan"
+              startedAt={lastJob.enqueuedAt}
+              detail={
+                lastJob.status === 'FAILED'
+                  ? `Rekalkulasi gagal: ${lastJob.lastError ?? 'penyebab tidak diketahui'}`
+                  : lastJob.status === 'SUCCEEDED'
+                    ? 'Snapshot baru sudah tersedia; angka snapshot lama tidak diubah.'
+                    : 'Rekalkulasi berjalan sebagai job di worker; halaman ini memantau statusnya.'
+              }
+            />
+          </div>
+        )}
         {notice && (
           <p style={{ margin: `var(--space-3) 0 0`, fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
             {notice}

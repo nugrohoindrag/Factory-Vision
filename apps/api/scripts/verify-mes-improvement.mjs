@@ -1030,6 +1030,57 @@ async function main() {
   }
 
   // ==================================================================
+  // Scenario 10 — A planning job actually runs
+  // ==================================================================
+  //
+  // The queue tables carry forced row-level security, and the runner claims
+  // without a tenant. Until 034 the tenant policy alone hid every PENDING
+  // row from it, and nothing said so: no error, no log line, "Menghitung…"
+  // forever. Production sat with jobs pending for twelve days. This enqueues
+  // a forecast and insists the job reaches SUCCEEDED — the API's own runner
+  // is on in this harness — then reads the row back as the owner.
+  {
+    const periodStart = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth() + 1, 1))
+      .toISOString()
+      .slice(0, 10);
+    const periodEnd = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth() + 2, 0))
+      .toISOString()
+      .slice(0, 10);
+    const enqueued = await post('/api/v1/demand-forecasts/generate', { periodStart, periodEnd, lookbackMonths: 3 });
+    check(
+      '10 Job',
+      'Forecast dapat diantrekan sebagai job',
+      enqueued.status === 202 || enqueued.status === 200,
+      `${enqueued.status} ${JSON.stringify(enqueued.body).slice(0, 160)}`
+    );
+
+    const jobId = enqueued.body?.jobId;
+    let last = null;
+    for (let i = 0; i < 40 && jobId; i += 1) {
+      const res = await get(`/api/v1/demand-forecasts/jobs/${jobId}`);
+      last = res.body;
+      if (last?.status === 'SUCCEEDED' || last?.status === 'FAILED') break;
+      await sleep(500);
+    }
+    check(
+      '10 Job',
+      'Runner mengklaim job dan menyelesaikannya (bukan PENDING selamanya)',
+      last?.status === 'SUCCEEDED',
+      `status akhir: ${last?.status ?? 'tidak terbaca'} ${last?.lastError ?? ''}`
+    );
+
+    const row = jobId
+      ? await rows('SELECT status, attempts, started_at IS NOT NULL AS started FROM planning_job WHERE id = $1', [jobId])
+      : [];
+    check(
+      '10 Job',
+      'Baris job di PostgreSQL berstatus SUCCEEDED dengan satu percobaan',
+      row[0]?.status === 'SUCCEEDED' && row[0]?.attempts === 1 && row[0]?.started === true,
+      JSON.stringify(row[0])
+    );
+  }
+
+  // ==================================================================
   // Report
   // ==================================================================
   await stopApi();
