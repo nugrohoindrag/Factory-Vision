@@ -71,7 +71,7 @@ export const Footer: React.FC = () => {
               Architecture
             </h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-              {['Cloud & Hybrid Hosting', 'On-Premise / Air-Gapped', 'Edge Gateway Protocols (OPC-UA)', 'Enterprise RBAC & Security', 'Tamper-Proof Audit Trail', 'REST APIs & Webhooks'].map((s) => (
+              {['Cloud & Hybrid Hosting', 'On Premise', 'Edge Gateway Protocols (OPC-UA)', 'Enterprise RBAC & Security', 'Tamper-Proof Audit Trail', 'REST APIs & Webhooks'].map((s) => (
                 <li key={s}>
                   <a
                     href="#deployment"
