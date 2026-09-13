@@ -27,7 +27,7 @@ export const Footer: React.FC = () => {
           {/* Col 1: Brand info */}
           <div>
             <div style={{ marginBottom: 'var(--space-4)' }}>
-              <FactoryVisionLogo size="md" variant="full" />
+              <FactoryVisionLogo size="lg" variant="full" tone="white" />
             </div>
             <p style={{ fontSize: '14px', color: 'var(--color-on-primary)', lineHeight: 1.6, maxWidth: '320px', marginBottom: 'var(--space-5)' }}>
               The modern Manufacturing Execution System empowering discrete and batch industrial factories with real-time operational intelligence.

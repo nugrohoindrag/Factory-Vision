@@ -50,6 +50,6 @@ All visual assets used in the Factory Vision landing page are cataloged here in 
 
 | Asset | Local File / Component | Source | License |
 | :--- | :--- | :--- | :--- |
-| **Brand Logo** | `FullCircleLogo`, `FullCircleIcon` (`@factory-vision/ui/fv`) | Factory Vision Brand System | Proprietary |
+| **Brand Logo** | `FactoryVisionLogo`, `FactoryVisionIcon` (`@factory-vision/ui/fv`); static files in `/brand/factory-vision-logo.svg`, `-logo-white.svg`, `-mark.svg`, `-mark-white.svg` | Factory Vision Brand System (master: `main-logo-FV`) | Proprietary |
 | **Iconography** | Material Symbols Rounded (`@factory-vision/ui` `<Icon />`) | Google Fonts / Material Symbols | Apache 2.0 |
 | **Factory Vector Scene** | `FactoryHeroScene` (`@factory-vision/ui/fv`) | Factory Vision Morphic Design System | MIT / Factory Vision |

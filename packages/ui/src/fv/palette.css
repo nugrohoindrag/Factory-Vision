@@ -172,6 +172,14 @@
 
   /* Scrim, neutral black, not tinted */
   --md-sys-color-scrim: rgba(5, 5, 5, 0.42);
+
+  /* Logo, `tone="auto"` in fv/FactoryVisionLogo. The artwork's own colours
+     (the logo blue is the master file's #0344BC, not Primary Blue), and the
+     only thing in this file the logo is allowed to read. */
+  --fv-logo-mark: #0344BC;
+  --fv-logo-word: #1B1B1B;
+  --fv-logo-accent: #0344BC;
+  --fv-logo-tagline: #5A626E;
 }
 
 /* ========================================================================= */
@@ -268,4 +276,11 @@
   --md-sys-color-inverse-primary: #2454C3;
 
   --md-sys-color-scrim: rgba(5, 5, 5, 0.72);
+
+  /* Logo, reversed: the brand blue reads 2.3:1 on the near-black ground, so
+     dark mode carries the all-white lock-up. */
+  --fv-logo-mark: #FFFFFF;
+  --fv-logo-word: #FFFFFF;
+  --fv-logo-accent: #FFFFFF;
+  --fv-logo-tagline: #8A93A3; /* Steel Gray */
 }
