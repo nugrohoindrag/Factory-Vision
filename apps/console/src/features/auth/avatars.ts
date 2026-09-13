@@ -48,18 +48,3 @@ export function avatarDataUri(name: string, paletteIndex = 0): string {
   // devtools and avoids pulling in a Buffer/btoa shim.
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
-
-export interface AvatarChoice {
-  id: string;
-  label: string;
-  url: string;
-}
-
-/** The picker offered in Edit Profile. */
-export const OPEN_SOURCE_AVATARS: AvatarChoice[] = [
-  { id: 'av1', label: 'Biru Tua', url: avatarDataUri('FV', 0) },
-  { id: 'av2', label: 'Biru', url: avatarDataUri('FV', 1) },
-  { id: 'av3', label: 'Biru Terang', url: avatarDataUri('FV', 2) },
-  { id: 'av4', label: 'Biru Muda', url: avatarDataUri('FV', 3) },
-  { id: 'av5', label: 'Biru Pucat', url: avatarDataUri('FV', 4) },
-];

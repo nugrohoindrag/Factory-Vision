@@ -180,6 +180,15 @@
   --fv-logo-word: #1B1B1B;
   --fv-logo-accent: #0344BC;
   --fv-logo-tagline: #5A626E;
+
+  /* Console sidebar (fv/sidebar.css): a floating panel in Primary Blue, the
+     same in both themes, so the active tab cut out of it in the page ground
+     reads clearly on either. Ink 6.71:1, muted ink 5.08:1 on the fill; the
+     raised step is a tonal band for the footer, not a text ground. */
+  --fv-sidebar-fill: #2454C3; /* Primary Blue */
+  --fv-sidebar-fill-raised: #3865CC; /* derived */
+  --fv-sidebar-ink: #FFFFFF;
+  --fv-sidebar-ink-muted: #D7E0F7; /* derived */
 }
 
 /* ========================================================================= */

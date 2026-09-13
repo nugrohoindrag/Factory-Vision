@@ -10,6 +10,7 @@ import '@factory-vision/ui/fv/palette.css';
 import '@factory-vision/ui/fv/table-header.css';
 import '@factory-vision/ui/fv/mirror-fixes.css';
 import '@factory-vision/ui/fv/layout.css';
+import '@factory-vision/ui/fv/sidebar.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {

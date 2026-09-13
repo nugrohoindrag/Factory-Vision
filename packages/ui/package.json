@@ -78,6 +78,7 @@
     "./fv/table-header.css": "./src/fv/table-header.css",
     "./fv/mirror-fixes.css": "./src/fv/mirror-fixes.css",
     "./fv/layout.css": "./src/fv/layout.css",
+    "./fv/sidebar.css": "./src/fv/sidebar.css",
     "./tokens/*": "./src/tokens/*",
     "./src/*": "./src/*",
     "./package.json": "./package.json",

@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Icon, Button } from '@factory-vision/ui';
-import { UserSession, OPEN_SOURCE_AVATARS } from './ConsoleAuth.js';
+import { UserSession, avatarDataUri } from './ConsoleAuth.js';
+
+/** The largest photo accepted, in kilobytes. */
+const MAX_PHOTO_KB = 500;
+const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -15,10 +19,41 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
   const [email, setEmail] = useState(session.email);
   const [role, setRole] = useState(session.role);
   const [plantName, setPlantName] = useState(session.plantName || 'Main Plant Cikarang');
-  const [avatarUrl, setAvatarUrl] = useState(session.avatarUrl || OPEN_SOURCE_AVATARS[0].url);
+  const fallbackAvatar = avatarDataUri(session.name);
+  // Empty means "no photo": the initials avatar is drawn in its place and the
+  // preference is cleared rather than pinned to a generated image.
+  const [avatarUrl, setAvatarUrl] = useState(
+    session.avatarUrl && session.avatarUrl !== fallbackAvatar ? session.avatarUrl : ''
+  );
+  const [photoError, setPhotoError] = useState<string | null>(null);
   const [phone, setPhone] = useState(session.phone || '+62 812-3456-7890');
-  const [customAvatarInput, setCustomAvatarInput] = useState('');
   const [showToast, setShowToast] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    // Reset so choosing the same file again after an error still fires change.
+    e.target.value = '';
+    if (!file) return;
+
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      setPhotoError('Format tidak didukung. Gunakan JPG, PNG, atau WebP.');
+      return;
+    }
+    if (file.size > MAX_PHOTO_KB * 1024) {
+      const sizeKb = Math.ceil(file.size / 1024).toLocaleString('id-ID');
+      setPhotoError(`Ukuran foto ${sizeKb} KB melebihi batas ${MAX_PHOTO_KB} KB.`);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setAvatarUrl(typeof reader.result === 'string' ? reader.result : '');
+      setPhotoError(null);
+    };
+    reader.onerror = () => setPhotoError('Foto tidak dapat dibaca. Coba file lain.');
+    reader.readAsDataURL(file);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +63,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
       email,
       role,
       plantName,
-      avatarUrl: customAvatarInput.trim() || avatarUrl,
+      avatarUrl: avatarUrl || fallbackAvatar,
       phone,
     };
     onSave(updated);
@@ -138,7 +173,9 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
             onSubmit={handleSubmit}
             style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}
           >
-            {/* Avatar Section */}
+            {/* Avatar: an uploaded photo, kept as a data URI with the other
+                display preferences. 500 KB is the ceiling so the stored
+                preference stays well inside localStorage's budget. */}
             <div>
               <label
                 style={{
@@ -150,12 +187,12 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                   marginBottom: 'var(--space-2)',
                 }}
               >
-                Profile Photo (Select Open Source Preset or Custom URL)
+                Foto Profil
               </label>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', marginBottom: 'var(--space-3)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
                 <img
-                  src={customAvatarInput.trim() || avatarUrl}
+                  src={avatarUrl || fallbackAvatar}
                   alt={name}
                   style={{
                     width: '64px',
@@ -167,68 +204,51 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                     flexShrink: 0,
                   }}
                   onError={(e) => {
-                    // Fallback if custom URL fails
-                    (e.target as HTMLImageElement).src = OPEN_SOURCE_AVATARS[0].url;
+                    (e.target as HTMLImageElement).src = fallbackAvatar;
                   }}
                 />
 
-                {/* Preset Avatars Gallery */}
-                <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-                  {OPEN_SOURCE_AVATARS.map((av) => {
-                    const isSelected = avatarUrl === av.url && !customAvatarInput.trim();
-                    return (
-                      <button
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', minWidth: 0 }}>
+                  <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handleFileChange}
+                      style={{ display: 'none' }}
+                    />
+                    <Button
+                      type="button"
+                      variant="filled"
+                      icon={<Icon name="upload" size={16} />}
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      Unggah foto
+                    </Button>
+                    {avatarUrl && (
+                      <Button
                         type="button"
-                        key={av.id}
+                        variant="text"
                         onClick={() => {
-                          setAvatarUrl(av.url);
-                          setCustomAvatarInput('');
+                          setAvatarUrl('');
+                          setPhotoError(null);
                         }}
-                        style={{
-                          border: '2px solid transparent',
-                          padding: 'var(--space-1)',
-                          borderRadius: '50%',
-                          backgroundColor: isSelected ? 'var(--color-primary)' : 'transparent',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                        title={av.label}
                       >
-                        <img
-                          src={av.url}
-                          alt={av.label}
-                          style={{
-                            width: '36px',
-                            height: '36px',
-                            borderRadius: '50%',
-                            objectFit: 'cover',
-                          }}
-                        />
-                      </button>
-                    );
-                  })}
+                        Hapus
+                      </Button>
+                    )}
+                  </div>
+                  <span
+                    style={{
+                      fontSize: '11px',
+                      color: photoError ? 'var(--color-error)' : 'var(--color-on-surface-variant)',
+                      fontWeight: photoError ? 700 : 500,
+                    }}
+                    role={photoError ? 'alert' : undefined}
+                  >
+                    {photoError ?? `JPG, PNG, atau WebP · maksimal ${MAX_PHOTO_KB} KB`}
+                  </span>
                 </div>
-              </div>
-
-              {/* Custom Image URL Option */}
-              <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                <input
-                  type="text"
-                  placeholder="Or paste custom image URL (https://...)"
-                  value={customAvatarInput}
-                  onChange={(e) => setCustomAvatarInput(e.target.value)}
-                  style={{
-                    flex: 1,
-                    padding: `var(--space-2) var(--space-3)`,
-                    borderRadius: 'var(--radius-sm)',
-                    border: '1px solid var(--color-border)',
-                    backgroundColor: 'var(--color-surface-container)',
-                    color: 'var(--color-on-surface)',
-                    fontSize: '11.5px',
-                  }}
-                />
               </div>
             </div>
 

@@ -43,13 +43,29 @@ const MonthlyBars: React.FC<{ demand: Record<string, number> }> = ({ demand }) =
   const months = Object.keys(demand).sort();
   const max = Math.max(1, ...months.map((m) => demand[m]));
 
+  // The bar has its own fixed track; the figure above it and the month label
+  // below add their own height. A fixed height on the whole row used to be
+  // shorter than figure + bar + label, so the tallest bar climbed out of the
+  // row and over the totals printed above it.
+  const TRACK = 56;
+
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 'var(--space-2)', height: '64px' }}>
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
       {months.map((month) => {
         const value = demand[month];
-        const height = Math.max(2, Math.round((value / max) * 56));
+        const height = Math.max(2, Math.round((value / max) * TRACK));
         return (
-          <div key={month} style={{ display: 'grid', justifyItems: 'center', gap: 'var(--space-1)', flex: 1 }}>
+          <div
+            key={month}
+            style={{
+              display: 'grid',
+              gridTemplateRows: `auto ${TRACK}px auto`,
+              alignItems: 'end',
+              justifyItems: 'center',
+              gap: 'var(--space-1)',
+              flex: 1,
+            }}
+          >
             <span style={{ fontSize: '10px', color: 'var(--color-on-surface-variant)' }}>
               {value.toLocaleString('id-ID')}
             </span>

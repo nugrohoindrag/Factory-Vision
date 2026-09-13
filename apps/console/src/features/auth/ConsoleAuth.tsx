@@ -29,7 +29,7 @@ export interface UserSession {
   employeeId?: string;
 }
 
-export { OPEN_SOURCE_AVATARS, avatarDataUri, initialsOf } from './avatars.js';
+export { avatarDataUri, initialsOf } from './avatars.js';
 
 /**
  * The eight Executive KPI the dashboard leads with.

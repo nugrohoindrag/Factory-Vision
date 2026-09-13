@@ -72,7 +72,11 @@ interface NavGroup {
  * follow whatever survives the permission filter rather than being declared
  * up front and stranded when their items disappear.
  */
-const NavSectionLabel: React.FC<{ label: string; first: boolean }> = ({ label, first }) => (
+const NavSectionLabel: React.FC<{ label: string; first: boolean; color?: string }> = ({
+  label,
+  first,
+  color = 'var(--color-on-surface-variant)',
+}) => (
   <div
     style={{
       padding: `var(--space-2) var(--space-2) var(--space-1)`,
@@ -81,7 +85,7 @@ const NavSectionLabel: React.FC<{ label: string; first: boolean }> = ({ label, f
       fontWeight: 800,
       letterSpacing: '0.08em',
       textTransform: 'uppercase',
-      color: 'var(--color-on-surface-variant)',
+      color,
     }}
   >
     {label}
@@ -723,28 +727,22 @@ export const App: React.FC = () => {
           fontFamily: 'var(--font-family)',
         }}
       >
-      {/* Morphic Collapsible Sidebar with Independent Scroll */}
+      {/* Floating sidebar panel in the brand fill; the active group is cut
+          out of it as a tab in the page ground (fv/sidebar.css). */}
       <aside
+        className="fv-sidebar"
         style={{
-          width: isCollapsed ? '72px' : '270px',
-          height: '100vh',
-          transition: 'width 0.22s cubic-bezier(0.2, 0, 0, 1)',
-          backgroundColor: 'var(--color-surface)',
-          display: 'flex',
-          flexDirection: 'column',
-          flexShrink: 0,
-          zIndex: 20,
-          position: 'relative',
+          width: isCollapsed ? '72px' : '220px',
         }}
       >
         {/* Brand Header */}
         <div
           style={{
-            padding: isCollapsed ? '12px 8px' : '16px 16px',
+            padding: isCollapsed ? '16px 8px 8px' : '20px 14px 12px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: isCollapsed ? 'center' : 'flex-start',
-            height: '56px',
+            height: '64px',
             boxSizing: 'border-box',
           }}
         >
@@ -767,26 +765,30 @@ export const App: React.FC = () => {
               }}
               title="Click to expand sidebar (Uncollapse)"
             >
-              <FactoryVisionIcon size={28} />
+              <FactoryVisionIcon size={30} tone="white" />
             </button>
           ) : (
             /* Expanded Header: Clean Logo + Brand Name */
             <div style={{ display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-              <FactoryVisionLogo size="md" variant="full" />
+              <FactoryVisionLogo size="md" variant="compact" showTagline={false} tone="white" />
             </div>
           )}
         </div>
 
-        {/* Navigation Items with Accordion / Flyout Sub-Menus */}
+        {/* Navigation Items with Accordion / Flyout Sub-Menus.
+            No right padding: the active tab must reach the panel edge, and a
+            negative margin inside a scroll box would become horizontal
+            overflow. Every other item keeps the edge gap as its own margin. */}
         <nav
+          className="fv-sidebar__nav"
           style={{
-            padding: isCollapsed ? '12px 8px' : '12px 10px',
+            padding: isCollapsed ? '16px 0 12px 0' : '16px 0 12px 8px',
             display: 'flex',
             flexDirection: 'column',
             gap: isCollapsed ? '8px' : '4px',
             flex: 1,
             overflowY: 'auto',
-            overflowX: 'visible',
+            overflowX: 'hidden',
           }}
         >
           {navGroups.map((group) => {
@@ -810,6 +812,7 @@ export const App: React.FC = () => {
                   onMouseLeave={() => setHoveredGroupId(null)}
                 >
                   <button
+                    className={isGroupActive ? 'fv-sidebar__tab' : undefined}
                     onClick={() => {
                       if (group.children.length > 0) {
                         navigate(group.children[0].path);
@@ -817,42 +820,40 @@ export const App: React.FC = () => {
                       }
                     }}
                     style={{
-                      width: '42px',
+                      // Every icon sits on the panel's centre line (36px). The
+                      // active tab runs from there to the panel edge, and its
+                      // right padding keeps the icon on that same line.
+                      width: isGroupActive ? '57px' : '42px',
+                      marginLeft: isGroupActive ? 'auto' : 0,
+                      paddingRight: isGroupActive ? '15px' : 0,
                       height: '42px',
-                      borderRadius: 'var(--radius-md)',
-                      border: isGroupActive ? '1px solid var(--color-primary)' : '1px solid transparent',
+                      borderRadius: isGroupActive ? undefined : 'var(--radius-md)',
+                      border: 'none',
                       backgroundColor: isGroupActive
-                        ? 'var(--color-surface-container-high)'
+                        ? undefined
                         : isHovered
-                          ? 'var(--color-surface-container)'
+                          ? 'var(--fv-sidebar-fill-raised)'
                           : 'transparent',
-                      color: isGroupActive ? 'var(--color-primary)' : 'var(--color-on-surface-variant)',
+                      color: isGroupActive ? 'var(--color-primary)' : 'var(--fv-sidebar-ink)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       cursor: 'pointer',
-                      transition: 'all 0.15s ease',
-                      position: 'relative',
+                      transition: 'background-color 0.15s ease',
                     }}
                     title={group.label}
                   >
+                    {isGroupActive && (
+                      <>
+                        <span className="fv-sidebar__corner fv-sidebar__corner--top" aria-hidden="true" />
+                        <span className="fv-sidebar__corner fv-sidebar__corner--bottom" aria-hidden="true" />
+                      </>
+                    )}
                     <Icon
                       name={group.icon}
                       size={20}
-                      color={isGroupActive ? 'var(--color-primary)' : 'var(--color-on-surface-variant)'}
+                      color={isGroupActive ? 'var(--color-primary)' : 'var(--fv-sidebar-ink)'}
                     />
-                    {isGroupActive && (
-                      <span
-                        style={{
-                          position: 'absolute',
-                          left: '-4px',
-                          width: '3px',
-                          height: '18px',
-                          borderRadius: 'var(--radius-pill)',
-                          backgroundColor: 'var(--color-primary)',
-                        }}
-                      />
-                    )}
                   </button>
 
                   {/* Flyout Sub-menu Popover on Hover (when Collapsed) */}
@@ -970,32 +971,56 @@ export const App: React.FC = () => {
             // Expanded Mode: Hierarchical Accordion Sub-Menus
             return (
               <div key={group.id} style={{ display: 'flex', flexDirection: 'column' }}>
-                {/* Main Category Header / Toggle */}
+                {/* Main Category Header / Toggle. The active one is the tab
+                    cut out of the panel; it runs to the panel edge while the
+                    others keep the 12px edge gap as their own margin. */}
                 <button
+                  className={isGroupActive ? 'fv-sidebar__tab' : undefined}
                   onClick={() => toggleGroup(group.id)}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    width: '100%',
-                    padding: `var(--space-2) var(--space-3)`,
-                    borderRadius: 'var(--radius-md)',
+                    marginRight: isGroupActive ? 0 : '8px',
+                    padding: isGroupActive
+                      ? `var(--space-2) var(--space-4) var(--space-2) var(--space-2)`
+                      : `var(--space-2) var(--space-2)`,
+                    borderRadius: isGroupActive ? undefined : 'var(--radius-pill)',
                     border: 'none',
-                    backgroundColor: isGroupActive ? 'var(--color-surface-container)' : 'transparent',
-                    color: isGroupActive ? 'var(--color-primary)' : 'var(--color-on-surface)',
+                    backgroundColor: isGroupActive ? undefined : 'transparent',
+                    color: isGroupActive ? 'var(--color-primary)' : 'var(--fv-sidebar-ink)',
                     cursor: 'pointer',
-                    fontSize: '12px',
+                    fontSize: '11.5px',
                     fontWeight: isGroupActive ? 800 : 700,
                     textAlign: 'left',
-                    transition: 'all 0.15s ease',
+                    transition: 'background-color 0.15s ease',
                   }}
                 >
+                  {isGroupActive && (
+                    <>
+                      <span className="fv-sidebar__corner fv-sidebar__corner--top" aria-hidden="true" />
+                      <span className="fv-sidebar__corner fv-sidebar__corner--bottom" aria-hidden="true" />
+                    </>
+                  )}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', minWidth: 0 }}>
-                    <Icon
-                      name={group.icon}
-                      size={17}
-                      color={isGroupActive ? 'var(--color-primary)' : 'var(--color-on-surface-variant)'}
-                    />
+                    <span
+                      style={{
+                        width: '26px',
+                        height: '26px',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        backgroundColor: isGroupActive ? 'var(--color-primary)' : 'var(--fv-sidebar-fill-raised)',
+                      }}
+                    >
+                      <Icon
+                        name={group.icon}
+                        size={17}
+                        color={isGroupActive ? 'var(--color-on-primary)' : 'var(--fv-sidebar-ink)'}
+                      />
+                    </span>
                     <span style={{ minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {group.label}
                     </span>
@@ -1006,7 +1031,11 @@ export const App: React.FC = () => {
                     transition={{ duration: 0.2 }}
                     style={{ display: 'flex', alignItems: 'center' }}
                   >
-                    <Icon name="expand_more" size={15} color="var(--color-on-surface-variant)" />
+                    <Icon
+                      name="expand_more"
+                      size={15}
+                      color={isGroupActive ? 'var(--color-primary)' : 'var(--fv-sidebar-ink-muted)'}
+                    />
                   </motion.div>
                 </button>
 
@@ -1023,8 +1052,9 @@ export const App: React.FC = () => {
                         display: 'flex',
                         flexDirection: 'column',
                         gap: 'var(--space-1)',
-                        paddingLeft: 'var(--space-6)',
-                        marginTop: 'var(--space-1)',
+                        paddingLeft: 'var(--space-5)',
+                        marginRight: '8px',
+                        marginTop: 'var(--space-2)',
                       }}
                     >
                       {group.children.map((sub, subIndex) => {
@@ -1038,7 +1068,11 @@ export const App: React.FC = () => {
                         return (
                           <React.Fragment key={sub.path}>
                             {sectionChanged && (
-                              <NavSectionLabel label={sub.section!} first={subIndex === 0} />
+                              <NavSectionLabel
+                                label={sub.section!}
+                                first={subIndex === 0}
+                                color="var(--fv-sidebar-ink-muted)"
+                              />
                             )}
                           <Link
                             to={sub.path}
@@ -1047,21 +1081,19 @@ export const App: React.FC = () => {
                               alignItems: 'center',
                               gap: 'var(--space-2)',
                               padding: `var(--space-2) var(--space-2)`,
-                              borderRadius: 'var(--radius-sm)',
+                              borderRadius: 'var(--radius-pill)',
                               textDecoration: 'none',
                               fontSize: '11px',
                               fontWeight: isSubActive ? 800 : 500,
-                              backgroundColor: isSubActive
-                                ? 'var(--color-surface-container-high)'
-                                : 'transparent',
-                              color: isSubActive ? 'var(--color-primary)' : 'var(--color-on-surface-variant)',
-                              transition: 'all 0.15s ease',
+                              backgroundColor: isSubActive ? 'var(--fv-sidebar-fill-raised)' : 'transparent',
+                              color: isSubActive ? 'var(--fv-sidebar-ink)' : 'var(--fv-sidebar-ink-muted)',
+                              transition: 'background-color 0.15s ease',
                             }}
                           >
                             <Icon
                               name={sub.icon || 'circle'}
                               size={13}
-                              color={isSubActive ? 'var(--color-primary)' : 'var(--color-on-surface-variant)'}
+                              color={isSubActive ? 'var(--fv-sidebar-ink)' : 'var(--fv-sidebar-ink-muted)'}
                             />
                             <span
                               style={{ minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
@@ -1079,218 +1111,6 @@ export const App: React.FC = () => {
             );
           })}
         </nav>
-
-        {/* User / Session Footer with Interactive Avatar & Edit Action */}
-        <div
-          style={{
-            padding: isCollapsed ? '10px 8px' : '12px 14px',
-            backgroundColor: 'var(--color-surface-container-low)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: isCollapsed ? 'center' : 'stretch',
-            gap: 'var(--space-2)',
-          }}
-        >
-          {isCollapsed ? (
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 'var(--space-2)',
-                width: '100%',
-              }}
-            >
-              {/* Dedicated Expand Button when Collapsed */}
-              <button
-                onClick={() => {
-                  setIsCollapsed(false);
-                  setHoveredGroupId(null);
-                }}
-                style={{
-                  width: '38px',
-                  height: '38px',
-                  borderRadius: 'var(--radius-md)',
-                  backgroundColor: 'var(--color-surface-container-high)',
-                  border: 'none',
-                  color: 'var(--color-primary)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  boxShadow: 'var(--elevation-1)',
-                  transition: 'all 0.15s ease',
-                }}
-                title="Expand sidebar (Uncollapse)"
-              >
-                <Icon name="chevron_right" size={20} />
-              </button>
-
-              {/* User Avatar Photo with Click to Edit */}
-              <button
-                onClick={() => setIsEditProfileOpen(true)}
-                style={{
-                  width: '38px',
-                  height: '38px',
-                  borderRadius: '50%',
-                  padding: 0,
-                  border: '2px solid var(--color-primary)',
-                  backgroundColor: 'transparent',
-                  cursor: 'pointer',
-                  overflow: 'hidden',
-                  boxShadow: 'var(--elevation-1)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-                title={`${session.name} (${session.role}), Click to edit profile`}
-              >
-                <img
-                  src={session.avatarUrl || avatarDataUri(session.name)}
-                  alt={session.name}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-              </button>
-
-              {/* Dedicated Logout Button when Collapsed */}
-              <button
-                onClick={handleLogout}
-                style={{
-                  width: '38px',
-                  height: '38px',
-                  borderRadius: 'var(--radius-md)',
-                  backgroundColor: 'var(--color-surface-container)',
-                  border: 'none',
-                  color: 'var(--color-on-surface-variant)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                }}
-                title="Keluar / Logout"
-              >
-                <Icon name="logout" size={18} />
-              </button>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-2)' }}>
-              {/* Profile Card Trigger */}
-              <div
-                onClick={() => setIsEditProfileOpen(true)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 'var(--space-3)',
-                  overflow: 'hidden',
-                  cursor: 'pointer',
-                  flex: 1,
-                  padding: `var(--space-1) var(--space-1)`,
-                  borderRadius: 'var(--radius-sm)',
-                  transition: 'background-color 0.15s ease',
-                }}
-                title="Click to update your profile details"
-              >
-                <div style={{ position: 'relative', flexShrink: 0 }}>
-                  <img
-                    src={session.avatarUrl || avatarDataUri(session.name)}
-                    alt={session.name}
-                    style={{
-                      width: '38px',
-                      height: '38px',
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                      border: '2px solid var(--color-primary)',
-                      boxShadow: 'var(--elevation-1)',
-                    }}
-                  />
-                  <div
-                    style={{
-                      position: 'absolute',
-                      bottom: '-1px',
-                      right: '-1px',
-                      width: '10px',
-                      height: '10px',
-                      borderRadius: '50%',
-                      backgroundColor: 'var(--color-success)',
-                      border: '2px solid var(--color-surface)',
-                    }}
-                  />
-                </div>
-
-                <div style={{ overflow: 'hidden' }}>
-                  <div
-                    style={{
-                      fontWeight: 800,
-                      fontSize: '12px',
-                      color: 'var(--color-on-surface)',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    {session.name}
-                  </div>
-                  <div
-                    style={{
-                      color: 'var(--color-on-surface-variant)',
-                      fontSize: '10.5px',
-                      marginTop: 'var(--space-1)',
-                      fontWeight: 600,
-                    }}
-                  >
-                    Role: <span style={{ color: 'var(--color-primary)', fontWeight: 800 }}>{session.role}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Actions: Edit + Keluar (Logout) */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
-                <button
-                  onClick={() => setIsEditProfileOpen(true)}
-                  style={{
-                    width: '28px',
-                    height: '28px',
-                    borderRadius: 'var(--radius-sm)',
-                    backgroundColor: 'var(--color-surface-container)',
-                    border: 'none',
-                    color: 'var(--color-on-surface-variant)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                  }}
-                  title="Edit Profile"
-                >
-                  <Icon name="edit" size={14} />
-                </button>
-
-                <button
-                  onClick={handleLogout}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 'var(--space-1)',
-                    padding: `var(--space-1) var(--space-2)`,
-                    borderRadius: 'var(--radius-sm)',
-                    backgroundColor: 'var(--color-surface-container)',
-                    border: 'none',
-                    color: 'var(--color-on-surface-variant)',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    flexShrink: 0,
-                    transition: 'all 0.15s ease',
-                  }}
-                  title="Keluar dari akun (Logout)"
-                >
-                  <Icon name="logout" size={14} />
-                  <span>Keluar</span>
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
       </aside>
 
       {/* Main App Content Area */}
@@ -1406,6 +1226,43 @@ export const App: React.FC = () => {
                   border: '1.5px solid var(--color-primary)',
                 }}
               />
+              <span
+                style={{
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  color: 'var(--color-on-surface)',
+                  maxWidth: '140px',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {session.name}
+              </span>
+            </button>
+
+            {/* Keluar. Lives here rather than under the nav so the sidebar is
+                navigation only, the way the shell was redrawn. */}
+            <button
+              onClick={handleLogout}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--space-1)',
+                height: '32px',
+                padding: `0 var(--space-3)`,
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--color-surface-container)',
+                border: 'none',
+                color: 'var(--color-on-surface)',
+                fontSize: '12px',
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+              title="Keluar dari akun (Logout)"
+            >
+              <Icon name="logout" size={16} />
+              <span>Keluar</span>
             </button>
           </div>
         </header>
