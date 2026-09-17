@@ -11,9 +11,9 @@ import (
 	"github.com/jackc/pgx/v5"
 	"golang.org/x/sync/errgroup"
 
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/execution"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/masterdata"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/production"
-	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/shopfloor"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/cache"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/db"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/httpx"
@@ -24,24 +24,22 @@ const defaultWindowDays = 30
 
 // Service is the OEE read model over the execution records.
 type Service struct {
-	pool       *db.Pool
-	master     *masterdata.Service
-	production *production.Service
-	shopfloor  *shopfloor.Service
-	// rows is the machine-day grain per tenant: the three record scans it
-	// is built from are the expensive part of every OEE call, so they are
-	// loaded once per change rather than once per request.
+	pool   *db.Pool
+	master *masterdata.Service
+	source *execution.ReadModel
+	// rows is the machine-day grain per tenant, derived from the shared
+	// execution snapshot and dropped with it on every change.
 	rows *cache.Tenant[[]MachineDayRow]
 	now  func() time.Time
 }
 
 // NewService wires the read model.
-func NewService(pool *db.Pool, master *masterdata.Service, prod *production.Service, sf *shopfloor.Service) (*Service, error) {
+func NewService(pool *db.Pool, master *masterdata.Service, prod *production.Service, source *execution.ReadModel) (*Service, error) {
 	rows, err := cache.New[[]MachineDayRow]("oee_rows", cache.Options{MaxEntries: 256, TTL: 10 * time.Second})
 	if err != nil {
 		return nil, err
 	}
-	s := &Service{pool: pool, master: master, production: prod, shopfloor: sf, rows: rows, now: time.Now}
+	s := &Service{pool: pool, master: master, source: source, rows: rows, now: time.Now}
 	prod.OnChange(s.Invalidate)
 	return s, nil
 }
@@ -273,33 +271,13 @@ func minutesOf(clock string) int {
 	return h*60 + m
 }
 
-// load builds the machine-day grain from every work order, production
-// record and downtime record, the three scans running concurrently.
+// load builds the machine-day grain from the execution snapshot.
 func (s *Service) load(ctx context.Context, tenantID string, snap snapshot) ([]MachineDayRow, error) {
-	var (
-		workOrders []production.WorkOrder
-		records    []shopfloor.ProductionRecord
-		downtimes  []shopfloor.DowntimeRecord
-	)
-	g, gctx := errgroup.WithContext(ctx)
-	g.Go(func() error {
-		var err error
-		workOrders, err = s.production.WorkOrders(gctx, tenantID, production.WorkOrderFilter{})
-		return err
-	})
-	g.Go(func() error {
-		var err error
-		records, err = s.shopfloor.ProductionRecords(gctx, tenantID, shopfloor.ProductionRecordFilter{})
-		return err
-	})
-	g.Go(func() error {
-		var err error
-		downtimes, err = s.shopfloor.DowntimeRecords(gctx, tenantID, shopfloor.DowntimeFilter{})
-		return err
-	})
-	if err := g.Wait(); err != nil {
+	data, err := s.source.Snapshot(ctx, tenantID)
+	if err != nil {
 		return nil, err
 	}
+	workOrders, records, downtimes := data.WorkOrders, data.Records, data.Downtimes
 
 	byID := make(map[string]production.WorkOrder, len(workOrders))
 	targetByMachine := map[string]float64{}

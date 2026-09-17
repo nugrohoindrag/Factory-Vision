@@ -14,8 +14,10 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/fixtures"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/analytics"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/correction"
 	csvmod "github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/csv"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/execution"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/identity"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/masterdata"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/oee"
@@ -74,7 +76,15 @@ func TestEveryMutatingRouteHasAnExplicitRule(t *testing.T) {
 	masterHandler := masterdata.NewHandler(master, nil, identitySvc, events)
 	productionSvc := production.NewService(nil, nil, nil, log)
 	shopfloorSvc := shopfloor.NewService(nil, productionSvc, master, nil, nil, log)
-	oeeSvc, err := oee.NewService(nil, master, productionSvc, shopfloorSvc)
+	readModel, err := execution.New(productionSvc, shopfloorSvc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	oeeSvc, err := oee.NewService(nil, master, productionSvc, readModel)
+	if err != nil {
+		t.Fatal(err)
+	}
+	analyticsSvc, err := analytics.NewService(master, productionSvc, readModel)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -91,6 +101,7 @@ func TestEveryMutatingRouteHasAnExplicitRule(t *testing.T) {
 		func(api chi.Router) { shopfloor.Mount(api, shopfloorSvc, nil) },
 		func(api chi.Router) { correction.Mount(api, correction.NewService(nil, productionSvc, nil)) },
 		func(api chi.Router) { oee.Mount(api, oeeSvc, nil) },
+		func(api chi.Router) { analytics.Mount(api, analyticsSvc, shopfloorSvc) },
 	)).(chi.Router)
 
 	mutating := map[string]bool{"POST": true, "PUT": true, "PATCH": true, "DELETE": true}

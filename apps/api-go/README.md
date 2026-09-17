@@ -99,9 +99,13 @@ internal/modules/
   shopfloor   output, downtime start/resolve, sync-batch (idempoten via sync_event; satu query untuk ledger), sync
               exceptions (MES-082), shift_date di zona plant (TZ)
   correction  correction_request (dulu in-memory): window 24 jam, auto-apply bila berwenang, approve/reject, policy
-  oee         oee_config + oee_validation_entry (dulu in-memory); grain machine×shift×hari di cache per tenant
-              (TTL 10 s, invalidasi on-change), 3 scan paralel (errgroup); drill-down, bottleneck, report (+CSV),
-              target-vs-actual, /reports/oee; pembulatan identik JS (platform/jsnum)
+  execution   read model: snapshot per tenant (work orders, production/downtime records, downtime aktif) — 4 scan
+              paralel (errgroup), cache 10 s + singleflight, di-invalidasi oleh setiap penulisan production/shopfloor
+  oee         oee_config + oee_validation_entry (dulu in-memory); grain machine×shift×hari dari snapshot; drill-down,
+              bottleneck, report (+CSV), target-vs-actual, /reports/oee; pembulatan identik JS (platform/jsnum)
+  analytics   14 route /analytics/* (live board, pareto, KPI eksekutif, tren, line/plant/process, downtime & quality
+              summary, order status, alerts, daily) dari grain line×hari; /reports/{production,downtime,shift} (+CSV
+              ber-scope); ExtraAlerts = antarmuka aturan v2 (M4)
 internal/routes   pipeline + mount; routes_test: setiap route mutasi wajib punya aturan permission eksplisit (chi.Walk)
 internal/testkit  pool app + owner untuk uji integrasi
 ```
@@ -113,7 +117,7 @@ internal/testkit  pool app + owner untuk uji integrasi
 | M0 | platform, health/meta, event, audit, resolver, tabel permission, observability, CI job `api-go`, `qa-api-diff` | selesai | `go test` + integrasi; `qa-api-diff` identik untuk events/audit/meta |
 | M1 | identity (login, MFA, sesi, kredensial), roles, master data (62 route, entitas yang dulu in-memory kini persisten), shifts, CSV, security summary, bootstrap | selesai | `qa-security-posture` 12/13 (sisa: trial-register → M6); `verify-user-stories` 34/81 (semua bagian identitas, user, role, master data, shift, CSV, audit, meta) |
 | M2 | production, shopfloor (output, downtime, sync-batch, sync exceptions), corrections, OEE, shift handover/performance, `master/batches` | selesai | `verify-persistence` 28/29 (sisa: `/reports/downtime` → M3), `qa-batch-integrity` 15/15, `qa-sales-http-boundary` 27/27, `verify-user-stories` 67/81 (sisa: analytics/reports → M3); `qa-api-diff` identik untuk work-orders (+chain, available-quantity), production-orders, shop-floor, oee (calculate, machine-performance, bottlenecks, report, target-vs-actual), reports/oee |
-| M3 | analytics (14), reports, alerts parsial | — | user stories analytics, `qa-production-posture` |
+| M3 | analytics (14 route, satu grain line×hari dari snapshot eksekusi bersama), reports (produksi/downtime/shift + CSV), alerts v1.7 (+ antarmuka untuk aturan v2 di M4) | selesai | `verify-user-stories` 80/81 melawan Go sendirian di DB segar (sisa: riwayat demo 60 hari → `fv seed-demo` M7), `verify-persistence` 29/29, `qa-production-posture` 22/29 (sisa: planning → M5); `qa-api-diff` identik untuk 14 analytics + 4 reports kecuali executive-kpi/alerts (status KPI diturunkan dari `kpi_target` DB yang Node abaikan) |
 | M4 | material/mrp, quality, maintenance, workforce, wip, board, alerts penuh | — | `verify:improvement` 8 skenario |
 | M5 | planning, molds, storage fs/S3, `fv worker`, relay outbox + hub SSE | — | `qa-mold-crud`, user stories planning |
 | M6 | onboarding (trial-register), client-management + admin internal | — | `verify-user-stories` penuh, posture 13/13 |
@@ -163,3 +167,6 @@ berebut 10 koneksi, sedangkan event loop Node menyerialkan. Kandidat untuk dipro
   permanen) alih-alih `INTERNAL_ERROR` retryable.
 - Exception sync tetap difile walau konteks work order gagal dibaca (Node melewatkan pencatatan bila `contextFor` melempar).
 - `GET /work-orders/:id/demand` → 404 sampai planning (M5) terpasang.
+- `analytics/executive-kpi` dan `analytics/alerts`: status/ambang diturunkan dari `kpi_target` di DB (seed
+  `110/130` untuk REJECT_RATE dan DOWNTIME); Node memakai baris demo in-memory (`95/85`, DOWNTIME 400) dan mengabaikan
+  tabelnya. Angka lainnya identik.

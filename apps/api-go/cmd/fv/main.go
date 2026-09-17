@@ -23,10 +23,12 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
 
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/analytics"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/audit"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/correction"
 	csvmod "github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/csv"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/event"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/execution"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/identity"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/masterdata"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/oee"
@@ -164,11 +166,19 @@ func serve() error {
 	productionHandler := production.NewHandler(productionSvc, master, auditSvc)
 	productionHandler.AttachDowntime(shopfloorSvc)
 	correctionSvc := correction.NewService(pool, productionSvc, auditSvc)
-	oeeSvc, err := oee.NewService(pool, master, productionSvc, shopfloorSvc)
+	readModel, err := execution.New(productionSvc, shopfloorSvc)
+	if err != nil {
+		return err
+	}
+	oeeSvc, err := oee.NewService(pool, master, productionSvc, readModel)
 	if err != nil {
 		return err
 	}
 	correctionSvc.AttachOee(oeeSvc)
+	analyticsSvc, err := analytics.NewService(master, productionSvc, readModel)
+	if err != nil {
+		return err
+	}
 	handoverSvc := shift.NewHandoverService(pool, master, productionSvc, shopfloorSvc)
 
 	// Every install starts with the pilot tenant row and the bootstrap
@@ -199,6 +209,7 @@ func serve() error {
 			func(r chi.Router) { shopfloor.Mount(r, shopfloorSvc, auditSvc) },
 			func(r chi.Router) { correction.Mount(r, correctionSvc) },
 			func(r chi.Router) { oee.Mount(r, oeeSvc, auditSvc) },
+			func(r chi.Router) { analytics.Mount(r, analyticsSvc, shopfloorSvc) },
 		},
 	})
 
