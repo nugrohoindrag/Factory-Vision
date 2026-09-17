@@ -1,5 +1,5 @@
 -- State the Node API kept only in process memory, given tables by the Go
--- backend (apps/api-go, milestone M6).
+-- backend (apps/api, milestone M6).
 --
 -- Onboarding progress and the welcome-tour guidance lived in two `Map`s
 -- inside OnboardingService, so a deployment reset every trial to "not

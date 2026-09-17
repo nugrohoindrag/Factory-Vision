@@ -149,9 +149,10 @@ printf '\n5. API\n'
 # report a failure against a perfectly healthy API. That is what the first
 # version of this script did on the pilot host.
 #
-# `node -e` rather than curl because the runtime image carries node and not
-# much else — it is the same call the container's own HEALTHCHECK makes.
-# VERIFY_BASE_URL still overrides, for a host that does publish the port.
+# `fv probe` rather than curl because the runtime image is distroless: it
+# carries the binary and nothing else, not even a shell — the same binary the
+# container's own HEALTHCHECK runs. VERIFY_BASE_URL still overrides, for a
+# host that does publish the port.
 api_probe() { # path [method] -> status code, or 000
   local method="${2:-GET}"
   if [ -n "${VERIFY_BASE_URL:-}" ]; then
@@ -162,14 +163,7 @@ api_probe() { # path [method] -> status code, or 000
         -H 'Content-Type: application/json' -d '{}' "${VERIFY_BASE_URL}$1" 2>/dev/null
     fi
   else
-    $COMPOSE exec -T api node -e "
-      const init = '$method' === 'GET'
-        ? {}
-        : { method: '$method', headers: { 'content-type': 'application/json' }, body: '{}' };
-      fetch('http://127.0.0.1:4000$1', init)
-        .then(r => console.log(r.status))
-        .catch(() => console.log('000'));
-    " 2>/dev/null | tr -d '\r' | head -1
+    $COMPOSE exec -T api /fv probe "$1" "$method" 2>/dev/null | tr -d '\r' | head -1
   fi
 }
 

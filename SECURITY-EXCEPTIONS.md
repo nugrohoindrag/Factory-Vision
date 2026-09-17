@@ -11,11 +11,13 @@ not to fix immediately.
 | ID | Finding | Severity | Where | Why accepted | Owner | Review |
 |---|---|---|---|---|---|---|
 | EX-001 | `vite` — `server.fs.deny` bypass on Windows (GHSA-fx2h-pf6j-xcff), all 5.x | High (dev), none in production | `apps/console`, `apps/operator`, `apps/admin`, `apps/landing` — devDependency | The advisory is against the **development server**. Production serves a pre-built static bundle from nginx; no Vite dev server runs in any deployed image, and `pnpm audit --prod` is clean. The fix requires Vite 6+, a migration across four apps that is not a security change and should not ride in with one. | Engineering | 2026-12-01, or sooner if a Vite 6 migration lands |
-| EX-002 | `esbuild` — dev server request forgery; `launch-editor` NTLM hash disclosure; `qs` array-limit / DoS | Moderate | Build and test tooling only | Same shape as EX-001: reachable only through developer tooling. `qs` enters through the dev server stack, not through the API, which uses Express 4's own parser. | Engineering | 2026-12-01 |
+| EX-002 | `esbuild` — dev server request forgery; `launch-editor` NTLM hash disclosure; `qs` array-limit / DoS | Moderate | Build and test tooling only | Same shape as EX-001: reachable only through developer tooling. `qs` enters through the dev server stack; the API is a Go binary with no Node dependency at all. | Engineering | 2026-12-01 |
+| EX-003 | `golang.org/x/crypto` GO-2026-5932 (no fix published) | Reported by govulncheck as a module-level finding | `apps/api` — `x/crypto/scrypt` is the only package used | govulncheck confirms none of the API's call paths reach the affected code; the module is kept current and the finding re-checked on every CI run (`govulncheck ./...` fails the build the moment a call path appears). | Engineering | 2026-12-01, or when a fixed version is released |
 
 ## How this register is used
 
-- CI blocks on the production dependency tree: `pnpm audit --prod --audit-level high`.
+- CI blocks on the production dependency tree: `pnpm audit --prod --audit-level high`
+  for the front ends, `govulncheck ./...` for the API (reachable findings only).
 - CI reports the full tree without blocking, so a new dev-tooling advisory is
   visible in the run log rather than silently ignored.
 - Anything that is reachable from a deployed image is **not** eligible for this

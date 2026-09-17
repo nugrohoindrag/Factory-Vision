@@ -24,6 +24,9 @@ account, no external service.
 
 The stack is seven services: PostgreSQL, the API, the background worker, the
 three front ends, and, for an internet-facing install only, a reverse proxy.
+The API, the worker and the migration step are one image — a distroless
+container around a single static Go binary, `fv` — started as `fv serve`,
+`fv worker` and `fv migrate`.
 
 ```bash
 cp deploy/.env.example deploy/.env
@@ -61,7 +64,7 @@ role, and `APP_DB_PASSWORD` is what lets the migration give `factory_app` its
 login:
 
 ```bash
-docker compose -f deploy/docker-compose.yml exec api node -e "process.exit(0)" # readiness
+docker compose -f deploy/docker-compose.yml exec api /fv probe /health        # readiness → 200
 export DATABASE_URL='postgresql://factory:<POSTGRES_PASSWORD>@localhost:5432/factory_vision'
 export APP_DB_PASSWORD='<APP_DB_PASSWORD from deploy/.env>'
 pnpm db:migrate
@@ -105,9 +108,17 @@ is needed. If forecasts stop completing, check the worker's logs first — with
 `API_RUN_JOB_RUNNER=false` there is nothing else draining the queue.
 
 The **outbox relay** runs in the API, not the worker, and is not a job. Its
-subscribers hold the WebSocket connections, which exist only in that process; a
-relay elsewhere would mark events published that nobody heard. `OUTBOX_RELAY_ENABLED=false`
-turns it off, and `OUTBOX_RELAY_INTERVAL_MS` sets its poll interval.
+subscriber is the Server-Sent Events hub (`GET /api/v1/events/stream`), which
+exists only in that process; a relay elsewhere would mark events published that
+nobody heard. `OUTBOX_RELAY_ENABLED=false` turns it off, and
+`OUTBOX_RELAY_INTERVAL_MS` sets its poll interval.
+
+The container publishes no shell and no package manager. Liveness is the
+image's own `HEALTHCHECK` (`fv healthcheck`); a status-code probe from inside
+the container is `docker compose exec api /fv probe <path> [method]`, which
+is what `deploy/verify-deployment.sh` uses. Prometheus metrics and pprof are
+served on `ADMIN_ADDR` (`127.0.0.1:4100` inside the container) and are not
+published; map the port deliberately for a profiling session.
 
 ### Document storage
 

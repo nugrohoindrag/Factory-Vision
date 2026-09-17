@@ -15,6 +15,7 @@
  *   node --import tsx scripts/qa-mold-crud.mjs
  */
 import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import pg from 'pg';
@@ -24,12 +25,12 @@ import path from 'path';
 const here = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(here, '../../../.env') });
 
-const API_ENTRY = fileURLToPath(new URL('../dist/main.js', import.meta.url));
-// The API under test is the Node build unless QA_API_CMD names another
-// command, e.g. `apps/api-go/bin/fv serve` for the Go implementation. The
-// script itself is language-agnostic: it only talks HTTP and reads the
-// database back.
-const API_CMD = process.env.QA_API_CMD ? process.env.QA_API_CMD.split(/\s+/) : [process.execPath, API_ENTRY];
+// The API under test is the built binary (`go build -o bin/fv ./cmd/fv`)
+// unless QA_API_CMD names another command. The script itself is
+// language-agnostic: it only talks HTTP and reads the database back.
+const API_BIN = fileURLToPath(new URL('../bin/fv', import.meta.url));
+const API_ENTRY = existsSync(`${API_BIN}.exe`) ? `${API_BIN}.exe` : API_BIN;
+const API_CMD = process.env.QA_API_CMD ? process.env.QA_API_CMD.split(/\s+/) : [API_ENTRY, 'serve'];
 const PORT = Number(process.env.MOLD_QA_PORT || 4195);
 const BASE = `http://127.0.0.1:${PORT}`;
 const TENANT = 'tenant-pilot-factory-01';

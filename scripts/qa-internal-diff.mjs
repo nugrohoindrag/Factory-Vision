@@ -1,8 +1,9 @@
 /**
- * Differential check of the vendor API (/api/internal/v1): Go and Node over
- * the same database, both logged in as the same internal administrator (the
- * row Go's bootstrap wrote, which Node reads from the same table), replaying
- * the GET routes and diffing the normalised JSON.
+ * Differential check of the vendor API (/api/internal/v1) between two API
+ * instances over the same database (GO_API under test, NODE_API the
+ * reference — historically the Node implementation, today any known-good
+ * build), both logged in as the same internal administrator, replaying the
+ * GET routes and diffing the normalised JSON.
  *
  *   INTERNAL_ADMIN_EMAIL=... INTERNAL_ADMIN_PASSWORD=... node scripts/qa-internal-diff.mjs
  *

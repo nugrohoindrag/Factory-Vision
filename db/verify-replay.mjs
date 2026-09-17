@@ -1,7 +1,7 @@
 /**
  * Replay guard: every migration must survive being applied twice.
  *
- * The runner inside the API image (`apps/api/src/migrate.ts`) keeps no
+ * The runner inside the API image (`fv migrate`, apps/api/internal/platform/migrate) keeps no
  * `schema_migrations` table. A pull-based host has no checkout to record state
  * in, so it reads `db/migrations` and applies every file on every deploy. That
  * makes idempotence a property each migration must have, not one it may have.

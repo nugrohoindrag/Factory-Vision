@@ -1,23 +1,25 @@
 /**
- * Differential contract check: the Go API against the Node API.
+ * Differential contract check between two API instances over the same
+ * seeded database: the instance under test (GO_API) against a reference
+ * instance (NODE_API — historically the Node implementation the Go API
+ * replaced; today any known-good build, e.g. the previous release).
  *
- * Both servers run against the same seeded database. Every GET route in the
- * exported inventory (apps/api-go/fixtures/routes.node.json) is replayed
- * against both, and status plus normalised JSON are compared. GETs are safe
- * to replay; the story script is not, which is why this only reads.
+ * Every GET route in the frozen inventory (apps/api/fixtures/routes.node.json)
+ * is replayed against both, and status plus normalised JSON are compared.
+ * GETs are safe to replay; the story script is not, which is why this only
+ * reads.
  *
- *   GO_API=http://localhost:4000 NODE_API=http://localhost:4001 \
- *     node scripts/qa-api-diff.mjs --include=/api/v1/master,/api/v1/events
+ *   GO_API=http://localhost:4000 NODE_API=http://localhost:4001  *     node scripts/qa-api-diff.mjs --include=/api/v1/master,/api/v1/events
  *
  *   --include=<prefix,...>   only routes under these prefixes (default: all)
  *   --allow=<prefix,...>     routes allowed to differ (reported, not failed);
  *                            an entry starting with `*` matches by suffix
  *   --verbose                print the first difference of every route
  *
- * Normalisation drops null-valued keys (Node writes `undefined` as absent,
- * Go omits nil pointers), sorts keys, and ignores fields that legitimately
- * differ between two processes: timestamps of the request itself, session
- * windows, request ids.
+ * Normalisation drops null-valued keys, sorts keys, and ignores fields that
+ * legitimately differ between two processes: timestamps of the request
+ * itself, session windows, request ids. On Git Bash run with
+ * MSYS_NO_PATHCONV=1 so the path arguments survive.
  */
 import fs from 'fs';
 import path from 'path';
@@ -148,7 +150,7 @@ async function concretise(route, base, token) {
 
 async function main() {
   const inventory = JSON.parse(
-    fs.readFileSync(path.resolve(here, '../apps/api-go/fixtures/routes.node.json'), 'utf-8')
+    fs.readFileSync(path.resolve(here, '../apps/api/fixtures/routes.node.json'), 'utf-8')
   );
   const routes = inventory
     .filter((r) => r.method === 'GET' && r.path.startsWith('/api/v1'))

@@ -3,10 +3,10 @@
 Manufacturing Execution System (MES) for mid-market Indonesian manufacturing. pnpm workspace monorepo.
 
 ```
-apps/api        NestJS-style service layer (production, shopfloor, downtime, corrections, audit)
+apps/api        The API: one Go binary `fv` (chi + pgx) — serve | worker | migrate | seed-demo | healthcheck | probe
 apps/console    Supervisor / manager web console (Vite + React, port 3100)
 apps/operator   Shop-floor operator terminal, offline-capable via IndexedDB (port 3200)
-apps/worker     Background job runner
+apps/admin      Internal client-management console (port 3300)
 packages/ui     Design system mirror + Factory Vision extension layer
 packages/api-client, domain-types, i18n
 db/             SQL migrations and seeds
@@ -20,60 +20,63 @@ The Improvement PRD (`Docs/Factory Vision — MES Improvement PRD.md`) adds six 
 capabilities on top of the v1.7 baseline (the current PRD is `Docs/PRD-MES-Indonesia-MVP-v1.8.md`; v1.8 is additive over v1.7). Each is one API module, one console screen and one
 migration:
 
-| Capability | API module | Console route | Migration |
+| Capability | API module (`apps/api/internal/modules/`) | Console route | Migration |
 |---|---|---|---|
-| Event History (append-only) | `modules/event` | `/event-history` | 026 |
-| Material, inventory, MRP | `modules/material` | `/material-inventory`, `/material-readiness`, `/mrp` | 027 |
-| Quality lifecycle | `modules/quality` | `/quality` | 028 |
-| Maintenance | `modules/maintenance` | `/maintenance` | 029 |
-| Workforce & labour | `modules/workforce` | `/workforce` | 030 |
-| WIP & process handoff | `modules/wip` | `/wip` | 031 |
-| Visual Production Board | `modules/board` | `/production-board` | — (a projection) |
+| Event History (append-only) | `event` | `/event-history` | 026 |
+| Material, inventory, MRP | `material` | `/material-inventory`, `/material-readiness`, `/mrp` | 027 |
+| Quality lifecycle | `quality` | `/quality` | 028 |
+| Maintenance | `maintenance` | `/maintenance` | 029 |
+| Workforce & labour | `workforce` | `/workforce` | 030 |
+| WIP & process handoff | `wip` | `/wip` | 031 |
+| Visual Production Board | `board` | `/production-board` | — (a projection) |
 
 Things worth knowing before changing any of it:
 
 - **Every capability writes to `operational_event`**, and that table is append-only *by privilege*:
-  `factory_app` holds SELECT and INSERT and nothing else. Use `EventService.recordDetached` from a
+  `factory_app` holds SELECT and INSERT and nothing else. Use `event.Service.RecordDetached` from a
   path whose work is already committed — a failed timeline write must never fail the production
   record that caused it.
 - **The improvement's roles are `MAINTENANCE`, `WAREHOUSE` and `WORKFORCE_ADMIN`** (migration 032).
-  New permissions must be added to `modules/rbac/permissions.ts` *and* backfilled in a migration:
-  baseline roles are only materialised for a tenant that has none, so anything added later is inert
-  for existing tenants until a migration grants it.
-- **`pnpm --filter @factory-vision/api run qa:routes` fails on an unmapped router file.** A new
-  `routes/*.ts` must be added to `ROUTER_MOUNTS` in `scripts/audit-route-permissions.mjs`, and every
-  mutating endpoint needs an explicit rule in `platform/auth/route-permissions.ts`.
-- **`pnpm verify:improvement` is the acceptance gate** — eight end-to-end scenarios (PRD §50) run
-  against a live API and a live PostgreSQL, asserting business rules through HTTP and then reading
-  the rows back as the database owner. It is idempotent: it may be run repeatedly against the same
-  database.
+  New permissions must be added to `apps/api/fixtures/permission-catalog.json` (and to the roles
+  that hold them in `system-role-permissions.json`) *and* backfilled in a migration: baseline roles
+  are only materialised for a tenant that has none, so anything added later is inert for existing
+  tenants until a migration grants it.
+- **`go test ./internal/routes` fails on a mutating route without an explicit permission rule.**
+  Every new mutating endpoint needs a rule in `internal/platform/rbac/table.go` and a row in
+  `fixtures/route-permissions.golden.json`; the test walks the chi tree, so nothing is exempt.
+- **`pnpm verify:improvement` is the acceptance gate** — ten end-to-end scenarios (PRD §50) run
+  against a live API (the script boots `apps/api/bin/fv` itself) and a live PostgreSQL, asserting
+  business rules through HTTP and then reading the rows back as the database owner. It is
+  idempotent: it may be run repeatedly against the same database.
 
-## Go backend (`apps/api-go`) — the replacement for `apps/api`
+## Backend (`apps/api`, Go)
 
-The API is being rewritten in Go (chi + pgx) for a single cutover, milestone by milestone
-(M0 platform and M1 identity/master data are done; M2–M7 remain — see `apps/api-go/README.md`).
-Rules while both exist:
+One binary, `fv`, built with `go build -o bin/fv ./cmd/fv` (or `pnpm --filter @factory-vision/api
+build`). `serve` is the API, `worker` the planning job queue, `migrate` the in-image migration
+runner, `seed-demo` the demo plant with its 60-day history, `probe` a status-code probe for the
+distroless container. Details and the layout are in `apps/api/README.md`.
 
-- **`apps/api` (Node) is the reference and is not changed**, except the QA scripts it hosts. Port
-  behaviour from its source; when Go must differ, list the difference in the README's
-  "Divergensi yang disengaja" and in the `--allow` list of `scripts/qa-api-diff.mjs`.
-- **The HTTP contract is byte-identical**: bare arrays for lists, the `{ error: { code, message,
-  fields, requestId } }` envelope, Indonesian messages, session token `<tenant>.<base64url>`,
-  scrypt `scrypt$salt$hash`, AES-GCM `v1:` values. Domain structs keep timestamps as strings via
-  `db.ISO`/`db.Date`; optional fields are pointers, never `omitempty` on `0`/`false`.
+- **The HTTP contract is what the front ends and the QA scripts expect**: bare arrays for lists,
+  the `{ error: { code, message, fields, requestId } }` envelope, Indonesian messages, session
+  token `<tenant>.<base64url>`, scrypt `scrypt$salt$hash`, AES-GCM `v1:` values. Domain structs
+  keep timestamps as strings via `db.ISO`/`db.Date`; optional fields are pointers, never
+  `omitempty` on `0`/`false`.
 - **Every handler returns `error` through `httpx.Handle`**, every query runs inside
   `pool.WithTenant` (RLS), `WithoutTenant` is only for the relay/queue, and nothing ever
   UPDATEs `audit_log` or `operational_event`. Detached work (audit, events, session touch) goes
   through `async.Runner`, never a bare goroutine.
 - **Policy lives in `internal/platform/rbac/table.go`** and is tested against
-  `fixtures/route-permissions.golden.json`. Regenerate fixtures with
-  `node --import tsx apps/api/scripts/export-go-fixtures.mjs` whenever `permissions.ts`,
-  `route-permissions.ts` or `meta.routes.ts` change; CI diffs them.
-- **Gates** (all against the Go binary alone, CI job `api-go`): `go test` + `go test -tags
-  integration` on the CI Postgres, `qa-security-posture.mjs`, `verify-user-stories.mjs` with a
-  milestone threshold, and `qa-api-diff.mjs` (Node `:4001` vs Go `:4000`, same DB). Raise the
-  thresholds in `.github/workflows/ci.yml` as milestones land. On Git Bash pass
-  `MSYS_NO_PATHCONV=1` to the diff script.
+  `fixtures/route-permissions.golden.json`. The fixtures are the frozen contract snapshot (see
+  `fixtures/fixtures.go`); edit them by hand together with the code they describe.
+- **Every migration must be idempotent**: `fv migrate` keeps no state table and replays the whole
+  directory on every deploy (`pnpm db:replay-check` and the CI `persistence` job catch a
+  violation). Migration 035 (`onboarding_*`, `internal_session`) is the pattern.
+- **Gates before a push**, all against the binary alone on the CI-identical Postgres: `go test
+  ./...`, `go test -tags integration ./...`, `qa-security-posture.mjs` (13/13),
+  `verify-user-stories.mjs` (81/81, needs `SEED_DEMO_DATA=true`), `pnpm verify:improvement`
+  (73/73), `verify:persistence`, `qa:posture`, `qa:mold-crud`, `qa:batch`, `qa:sales-boundary`.
+  The scripts that read rows back take `DATABASE_URL` as the owner connection. On Git Bash pass
+  `MSYS_NO_PATHCONV=1` to scripts that take URL paths as arguments.
 
 ## UI work: read this first
 
@@ -92,17 +95,18 @@ All UI changes are governed by **[Docs/DESIGN-SYSTEM-GUIDELINE.md](Docs/DESIGN-S
 ## Commands
 
 ```bash
-pnpm dev              # every app in parallel
+pnpm dev              # every app in parallel (the API via `go run`)
 pnpm dev:console      # console only
 pnpm dev:operator     # operator only
-pnpm typecheck        # tsc --noEmit across the workspace
+pnpm typecheck        # tsc --noEmit across the workspace, go vet for the API
 pnpm ds:check         # design system mirror integrity
-pnpm db:migrate       # apply db/migrations
+pnpm db:migrate       # apply db/migrations (dev runner, tracks schema_migrations)
 pnpm db:seed          # apply db/seeds
+pnpm db:seed:demo     # demo plant + 60 days of history (fv seed-demo, idempotent)
 pnpm verify:improvement   # MES Improvement end-to-end acceptance (PRD §50)
 ```
 
 ## Notes
 
-- The `dist/` directories committed under `apps/` and `packages/` are stale build output, not sources — don't read them for current behaviour.
+- The `dist/` directories under `apps/` and `packages/` are build output, not sources — don't read them for current behaviour.
 - Product docs (PRD, roadmap, architecture, market analysis) live in `Docs/`, which is git-ignored and not published to GitHub.

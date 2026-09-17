@@ -14,7 +14,7 @@ di Linux perintahnya identik.
 | Kebutuhan | Versi |
 |---|---|
 | Docker Engine + Compose v2 | `docker compose version` ≥ 2.20 |
-| Node + pnpm | hanya untuk `pnpm typecheck` / test, tidak untuk runtime |
+| Node + pnpm, Go 1.26 | hanya untuk `pnpm typecheck` / test di workstation, tidak untuk runtime |
 | RAM | 4 GB minimum untuk stack penuh |
 
 Stack membangun image dari source, jadi checkout harus lengkap — bukan hanya
@@ -159,9 +159,8 @@ menentukan.
 **a. API menjawab**
 
 ```bash
-docker compose -f deploy/docker-compose.yml --env-file deploy/.env exec -T api \
-  node -e "fetch('http://localhost:4000/health').then(r=>r.text()).then(console.log)"
-# → {"status":"ok","time":"…","tenant":"tenant-pilot-factory-01"}
+docker compose -f deploy/docker-compose.yml --env-file deploy/.env exec -T api /fv probe /health
+# → 200   (image distroless: tidak ada shell/curl; `fv probe` mencetak kode status dari dalam container)
 ```
 
 **b. Data terisi**

@@ -3,99 +3,54 @@
 # One image serves both deployment modes. The difference is configuration, not
 # code: PRD §31 requires the domain model and business behaviour to be
 # identical, so an on-premise install must not run a different build.
+#
+# One binary, four roles, selected by the command:
+#
+#   serve        the HTTP API (default)
+#   worker       the planning job queue and the outbox relay, no HTTP
+#   migrate      apply db/migrations (and db/seeds when SEED_DEMO_DATA is on)
+#   seed-demo    the demo plant and its shop-floor history, idempotent
 
 # --- Build stage ---------------------------------------------------
-FROM node:22-alpine AS build
+FROM golang:1.26-alpine AS build
 
-RUN corepack enable
+WORKDIR /src
 
-# The prod prune below re-installs into a populated node_modules, which pnpm 11
-# treats as a purge and refuses to do without confirmation. There is no tty in
-# a build, so the build hangs and then fails; CI=true is pnpm's own answer.
-ENV CI=true
+# Module manifests first, so the dependency download is cached across
+# source edits — the layer that dominates rebuild time.
+COPY apps/api/go.mod apps/api/go.sum ./
+RUN go mod download
 
-WORKDIR /repo
+COPY apps/api ./
 
-# Workspace manifests first, so a dependency install is cached across source
-# edits — the layer that dominates rebuild time on a factory's own runner.
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
-COPY packages/domain-types/package.json packages/domain-types/
-COPY packages/api-client/package.json packages/api-client/
-COPY packages/i18n/package.json packages/i18n/
-COPY packages/job-queue/package.json packages/job-queue/
-COPY apps/api/package.json apps/api/
-
-RUN pnpm install --frozen-lockfile --filter @factory-vision/api... --filter @factory-vision/domain-types...
-
-COPY packages/domain-types packages/domain-types
-COPY packages/i18n packages/i18n
-COPY packages/job-queue packages/job-queue
-COPY apps/api apps/api
-
-# The schema travels with the image: a VPS that pulls images has no checkout,
-# so `pnpm db:migrate` is not available to it (see apps/api/src/migrate.ts).
-COPY db db
-
-RUN pnpm --filter @factory-vision/domain-types build \
- && pnpm --filter @factory-vision/i18n build \
- && pnpm --filter @factory-vision/job-queue build \
- && pnpm --filter @factory-vision/api build
-
-# Drop dev dependencies before they reach the runtime image.
-RUN pnpm install --frozen-lockfile --prod --filter @factory-vision/api...
+# CGO off and trimmed paths: a static binary that runs on a distroless base,
+# with no build-machine paths in its panics.
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/fv ./cmd/fv
 
 # --- Runtime stage -------------------------------------------------
-FROM node:22-alpine AS runtime
+#
+# distroless/static carries no shell, no package manager and no libc: the
+# image scan has nothing to find, and there is nothing for an attacker to
+# run. Time zones are compiled into the binary (time/tzdata), so TZ=Asia/Jakarta
+# resolves without an OS zoneinfo directory. The image already runs as a
+# non-root user: never run the API as root, an on-premise install often lands
+# on shared factory infrastructure where that matters more, not less.
+FROM gcr.io/distroless/static-debian12:nonroot AS runtime
 
-ENV NODE_ENV=production
 ENV PORT=4000
+ENV NODE_ENV=production
 
-# Patch the base image's OS packages.
-#
-# `node:22-alpine` is rebuilt on its own schedule, so between rebuilds it
-# carries whatever Alpine packages it was built with — currently libssl3 and
-# libcrypto3 at 3.5.7-r0, against which CVE-2026-14456 has a fix. Upgrading
-# rather than pinning the two by name because the next base image will be
-# behind on something else, and a gate that has to be edited for each new CVE
-# is a gate people learn to edit rather than to satisfy.
-RUN apk --no-cache upgrade
+COPY --from=build /out/fv /fv
 
-# Remove npm and corepack from the runtime image.
-#
-# The container starts `node apps/api/dist/main.js`; it never installs a
-# package, so npm is only an attack surface here. It is a large one: npm
-# vendors its own dependency tree under `lib/node_modules/npm/node_modules`,
-# and that tree is where the image scan's entire CRITICAL/HIGH list lives —
-# tar, pacote, sigstore, brace-expansion, ip-address, picomatch. None is an
-# application dependency; `/app` contains not one of them.
-#
-# Deleting them is a real fix rather than a suppression: the vulnerable code
-# is gone from the deployed image, which is what SECURITY-EXCEPTIONS.md means
-# by "anything reachable from a deployed image gets fixed, or the release
-# waits". Waiting for a base image whose bundled npm has caught up would park
-# the release behind someone else's release schedule.
-RUN rm -rf /usr/local/lib/node_modules/npm \
-           /usr/local/lib/node_modules/corepack \
-           /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack
-
-# Never run the API as root: an on-premise install often lands on shared
-# factory infrastructure where that matters more, not less.
-RUN addgroup -S factory && adduser -S factory -G factory
-
-WORKDIR /app
-
-COPY --from=build --chown=factory:factory /repo/node_modules ./node_modules
-COPY --from=build --chown=factory:factory /repo/packages ./packages
-COPY --from=build --chown=factory:factory /repo/apps/api/dist ./apps/api/dist
-COPY --from=build --chown=factory:factory /repo/apps/api/package.json ./apps/api/
-COPY --from=build --chown=factory:factory /repo/apps/api/node_modules ./apps/api/node_modules
-COPY --from=build --chown=factory:factory /repo/db ./db
-
-USER factory
+# The schema travels with the image: a VPS that pulls images has no checkout,
+# so `pnpm db:migrate` is not available to it. `fv migrate` applies it.
+COPY db /db
+ENV MIGRATIONS_DIR=/db
 
 EXPOSE 4000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||4000)+'/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+# No curl in distroless: the binary probes itself.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD ["/fv", "healthcheck"]
 
-CMD ["node", "apps/api/dist/main.js"]
+ENTRYPOINT ["/fv"]
+CMD ["serve"]

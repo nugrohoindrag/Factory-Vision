@@ -115,9 +115,17 @@ services:
       # ability to run it — `SKIP LOCKED` makes either arrangement correct — but
       # leaving it off is what makes the split real rather than decorative.
       API_RUN_JOB_RUNNER: ${API_RUN_JOB_RUNNER:-false}
-      # How often the outbox relay publishes planning events. This one does run
-      # in the API: its subscriber is the WebSocket gateway, which lives here.
+      # How often the outbox relay publishes planning and execution events.
+      # This one does run in the API: its subscriber is the SSE hub
+      # (GET /api/v1/events/stream), which lives here.
+      OUTBOX_RELAY_ENABLED: ${OUTBOX_RELAY_ENABLED:-true}
       OUTBOX_RELAY_INTERVAL_MS: ${OUTBOX_RELAY_INTERVAL_MS:-5000}
+      # Slow-query threshold for the database log line and histogram.
+      SLOW_QUERY_MS: ${SLOW_QUERY_MS:-250}
+      # Metrics and pprof stay on the loopback of the container: not published,
+      # reachable with `docker compose exec api /fv healthcheck` for liveness
+      # and through a deliberate port mapping for a profiling session.
+      ADMIN_ADDR: 127.0.0.1:4100
     volumes:
       - document-data:/var/lib/factory-vision/documents
     expose:
@@ -136,7 +144,8 @@ services:
   #   docker compose -f deploy/docker-compose.yml run --rm migrate
   #
   # It connects as POSTGRES_USER, which owns the schema, and uses
-  # APP_DB_PASSWORD to give the RLS-bound application role its login.
+  # APP_DB_PASSWORD to give the RLS-bound application role its login. Same
+  # image as the API: `fv migrate` reads the SQL baked in under /db.
   migrate:
     image: ${IMAGE_PREFIX:-ghcr.io/nugrohoindrag}/factory-vision-api:${IMAGE_TAG:-master}
     build:
@@ -152,16 +161,24 @@ services:
       APP_DB_USER: ${APP_DB_USER:-factory_app}
       APP_DB_PASSWORD: ${APP_DB_PASSWORD:?set APP_DB_PASSWORD in deploy/.env}
       SEED_DEMO_DATA: ${SEED_DEMO_DATA:-}
-    command: ['node', 'apps/api/dist/migrate.js']
+    command: ['migrate']
 
   # Scheduled aggregation and other asynchronous jobs (§5). Separate from the
   # API so a long-running rollup cannot make the shop floor's capture endpoint
   # slow to answer, and so the two can be restarted independently.
+  #
+  # Same image as the API, started as `fv worker`: the job handlers *are* the
+  # planning application services, so the two processes cannot disagree about
+  # what a job is. It serves no port, so liveness is the process itself —
+  # Docker restarts it on exit via the restart policy.
   worker:
-    image: ${IMAGE_PREFIX:-ghcr.io/nugrohoindrag}/factory-vision-worker:${IMAGE_TAG:-master}
+    image: ${IMAGE_PREFIX:-ghcr.io/nugrohoindrag}/factory-vision-api:${IMAGE_TAG:-master}
     build:
       context: ..
-      dockerfile: deploy/Dockerfile.worker
+      dockerfile: deploy/Dockerfile.api
+    command: ['worker']
+    healthcheck:
+      disable: true
     restart: unless-stopped
     depends_on:
       db:

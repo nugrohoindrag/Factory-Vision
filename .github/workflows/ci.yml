@@ -39,12 +39,22 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
+    env:
+      TZ: Asia/Jakarta
     steps:
       - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
+
+      # The API is Go (apps/api); the front ends and the shared packages are
+      # TypeScript. `pnpm build` and `pnpm typecheck` cover both: the API's
+      # package scripts wrap `go build` and `go vet`.
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: apps/api/go.mod
+          cache-dependency-path: apps/api/go.sum
 
       # Corepack rather than pnpm/action-setup: the version comes from the
       # `packageManager` field, so the runner cannot drift from a developer's
@@ -109,11 +119,23 @@ jobs:
           DATABASE_URL: postgresql://factory:factory@localhost:5432/factory_vision
         run: pnpm db:seed
 
+      # Domain rules, security controls, the route → permission table against
+      # its golden file, the history generator against the rows the reference
+      # implementation wrote: everything that needs no database.
+      - name: Unit tests
+        working-directory: apps/api
+        run: |
+          test -z "$(gofmt -l .)" || { echo "gofmt:"; gofmt -l .; exit 1; }
+          go test ./...
+
       - name: Start API
         env:
           PORT: '4000'
+          NODE_ENV: test
           # The RLS-bound role, never the schema owner.
           DATABASE_URL: postgresql://factory_app:ci-app-role-password@localhost:5432/factory_vision
+          # The demo plant and its sixty days of history, which the stories
+          # about trends and previous periods read.
           SEED_DEMO_DATA: 'true'
           AUTH_REQUIRED: 'true'
           # Throwaway values for this job only. The acceptance script signs in
@@ -121,17 +143,17 @@ jobs:
           BOOTSTRAP_ADMIN_EMAIL: admin@pabrik.co.id
           BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
           BOOTSTRAP_OPERATOR_PIN: '284617'
+          MFA_ENCRYPTION_KEY: ci-only-mfa-key
+          INTERNAL_ADMIN_EMAIL: ops@factoryvision.local
+          INTERNAL_ADMIN_PASSWORD: RahasiaKuatInternal2026
         run: |
-          node apps/api/dist/main.js > api.log 2>&1 &
+          apps/api/bin/fv serve > api.log 2>&1 &
           echo $! > api.pid
-          for i in $(seq 1 60); do
+          for i in $(seq 1 30); do
             curl -sf http://localhost:4000/health > /dev/null && exit 0
             sleep 1
           done
           echo "API did not become healthy:" && cat api.log && exit 1
-
-      - name: Unit tests (domain & security controls)
-        run: pnpm --filter @factory-vision/api test
 
       - name: Security posture (Cyber Security Requirement, MUST controls)
         env:
@@ -171,12 +193,19 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
+    env:
+      TZ: Asia/Jakarta
     steps:
       - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: apps/api/go.mod
+          cache-dependency-path: apps/api/go.sum
 
       - name: Enable pnpm
         run: |
@@ -186,8 +215,9 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Build
-        run: pnpm build
+      - name: Build API
+        working-directory: apps/api
+        run: go build -o bin/fv ./cmd/fv
 
       # Migrations run as the schema owner. This is also the regression test
       # for the runner itself, which used to catch a failed migration, log it
@@ -222,6 +252,17 @@ jobs:
           DATABASE_URL: postgresql://factory:factory@localhost:5432/factory_vision
         run: pnpm db:replay-check
 
+      # The runner that ships in the image, on the database the dev runner has
+      # already migrated and seeded: exactly what a deploy does, since the
+      # host's database was migrated by the previous release.
+      - name: In-image migration runner replays cleanly
+        env:
+          MIGRATE_DATABASE_URL: postgresql://factory:factory@localhost:5432/factory_vision
+          APP_DB_USER: factory_app
+          APP_DB_PASSWORD: ci-app-role-password
+          SEED_DEMO_DATA: 'true'
+        run: apps/api/bin/fv migrate
+
       # The application role, not the owner: connecting as the superuser is
       # exactly the defect this job exists to catch, and the first check in the
       # script asserts the role is one the policies bind.
@@ -238,12 +279,19 @@ jobs:
         env:
           OWNER_DATABASE_URL: postgresql://factory:factory@localhost:5432/factory_vision
           DATABASE_URL: postgresql://factory_app:ci-app-role-password@localhost:5432/factory_vision
+          NODE_ENV: test
+          AUTH_REQUIRED: 'true'
+          BOOTSTRAP_ADMIN_EMAIL: admin@pabrik.co.id
+          BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
+          BOOTSTRAP_OPERATOR_PIN: '284617'
+          MFA_ENCRYPTION_KEY: ci-only-mfa-key
         run: pnpm verify:persistence
 
-      # MES Improvement acceptance (Improvement PRD §50). Eight end-to-end
+      # MES Improvement acceptance (Improvement PRD §50). Ten end-to-end
       # scenarios — material, quality, maintenance, workforce, WIP, board,
-      # events, offline — asserted through HTTP and then read back as the
-      # database owner, so the API is never asked to vouch for itself.
+      # events, offline, trial registration, planning jobs — asserted through
+      # HTTP and then read back as the database owner, so the API is never
+      # asked to vouch for itself.
       #
       # It belongs in this job rather than beside the 54 user stories because
       # it needs both connections: the application role to drive the API, and
@@ -258,16 +306,20 @@ jobs:
         env:
           OWNER_DATABASE_URL: postgresql://factory:factory@localhost:5432/factory_vision
           DATABASE_URL: postgresql://factory_app:ci-app-role-password@localhost:5432/factory_vision
+          NODE_ENV: test
+          AUTH_REQUIRED: 'true'
+          BOOTSTRAP_ADMIN_EMAIL: admin@pabrik.co.id
+          BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
+          BOOTSTRAP_OPERATOR_PIN: '284617'
+          MFA_ENCRYPTION_KEY: ci-only-mfa-key
         run: pnpm verify:improvement
 
-  # The Go implementation of the API (apps/api-go), being built towards a
-  # cutover milestone by milestone. Three gates: the Go suite (unit +
-  # integration against the same PostgreSQL as `persistence`), the fixtures
-  # exported from the TypeScript sources being current, and the black-box
-  # scripts run against the Go binary alone. Thresholds below are the current
-  # milestone's; each milestone raises them until every check passes.
-  api-go:
-    name: Go API (unit, integration, black-box gates)
+  # The API's own suite: integration tests against the same PostgreSQL as
+  # `persistence` (driven through the RLS-bound role, verified through the
+  # owner), then the black-box gates that boot the binary themselves or read
+  # the running one.
+  api:
+    name: API (integration, black-box gates)
     runs-on: ubuntu-latest
     timeout-minutes: 25
     services:
@@ -307,37 +359,21 @@ jobs:
           key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: pnpm-${{ runner.os }}-
 
+      # The QA scripts and the dev migration runner need only the root
+      # devDependencies (pg, tsx, dotenv).
       - name: Install
         run: pnpm install --frozen-lockfile
 
       - uses: actions/setup-go@v5
         with:
-          go-version-file: apps/api-go/go.mod
-          cache-dependency-path: apps/api-go/go.sum
+          go-version-file: apps/api/go.mod
+          cache-dependency-path: apps/api/go.sum
 
-      # The export imports the workspace packages through their built `dist`,
-      # and the Node reference API started later needs the full build anyway.
-      - name: Build workspace
-        run: pnpm build > build.log 2>&1 || { cat build.log; exit 1; }
-
-      # The permission catalogue, the role baselines and the route → permission
-      # golden file are exported from the TypeScript sources. A stale export
-      # means the Go tables are being checked against yesterday's policy.
-      - name: Fixtures are current
+      - name: Vet and build
+        working-directory: apps/api
         run: |
-          node --import tsx apps/api/scripts/export-go-fixtures.mjs
-          git diff --exit-code -- apps/api-go/fixtures || {
-            echo "::error::apps/api-go/fixtures is stale; run: node --import tsx apps/api/scripts/export-go-fixtures.mjs"
-            exit 1
-          }
-
-      - name: Vet, build, unit tests
-        working-directory: apps/api-go
-        run: |
-          test -z "$(gofmt -l .)" || { echo "gofmt:"; gofmt -l .; exit 1; }
           go vet ./...
           go build -o bin/fv ./cmd/fv
-          go test ./...
 
       - name: Migrate and seed
         env:
@@ -350,12 +386,12 @@ jobs:
       # Driven through the RLS-bound role, verified through the owner — the
       # same split verify-mes-improvement.mjs uses.
       - name: Integration tests
-        working-directory: apps/api-go
+        working-directory: apps/api
         env:
           DATABASE_URL: ${{ env.APP_DATABASE_URL }}
         run: go test -tags integration ./...
 
-      - name: Start Go API
+      - name: Start API
         env:
           PORT: '4000'
           NODE_ENV: test
@@ -370,64 +406,19 @@ jobs:
           INTERNAL_ADMIN_EMAIL: ops@factoryvision.local
           INTERNAL_ADMIN_PASSWORD: RahasiaKuatInternal2026
         run: |
-          apps/api-go/bin/fv serve > api-go.log 2>&1 &
-          echo $! > api-go.pid
+          apps/api/bin/fv serve > api.log 2>&1 &
+          echo $! > api.pid
           for i in $(seq 1 30); do
             curl -sf http://localhost:4000/health > /dev/null && exit 0
             sleep 1
           done
-          echo "Go API did not become healthy:" && cat api-go.log && exit 1
+          echo "API did not become healthy:" && cat api.log && exit 1
 
-      # Milestone thresholds. M6: the security posture passes in full; 80 of
-      # the 81 story assertions pass — everything but the 60-day demo history
-      # (fv seed-demo, M7).
-      - name: Security posture against Go
+      # Planning and moulds: the mould CRUD gate boots its own instance; the
+      # production posture reads the running one. Both read rows back as the
+      # schema owner, which is what their DATABASE_URL names here.
+      - name: Mould CRUD
         env:
-          QA_API: http://localhost:4000
-        run: |
-          # 2>&1: the script writes its FAIL lines and the summary of failing
-          # checks to stderr, and the assertion below reads both.
-          node apps/api/scripts/qa-security-posture.mjs 2>&1 | tee posture.log || true
-          grep -q "13 passed, 0 failed" posture.log
-
-      - name: User stories against Go (milestone threshold)
-        env:
-          API_BASE: http://localhost:4000
-          BOOTSTRAP_ADMIN_EMAIL: admin@pabrik.co.id
-          BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
-          BOOTSTRAP_OPERATOR_PIN: '284617'
-        run: |
-          node scripts/verify-user-stories.mjs 2>&1 | tee stories.log || true
-          passed=$(grep -oE '[0-9]+/81 assertions passed' stories.log | grep -oE '^[0-9]+')
-          echo "passed=$passed (threshold 80)"
-          test "${passed:-0}" -ge 80
-
-      # PRD §50 acceptance (M6): all ten scenarios. The script boots its own
-      # Go instance on :4097 from QA_API_CMD (which runs the job runner too)
-      # and reads the rows back as the owner.
-      - name: MES Improvement acceptance against Go (milestone threshold)
-        env:
-          QA_API_CMD: apps/api-go/bin/fv serve
-          DATABASE_URL: ${{ env.APP_DATABASE_URL }}
-          OWNER_DATABASE_URL: ${{ env.OWNER_DATABASE_URL }}
-          NODE_ENV: test
-          AUTH_REQUIRED: 'true'
-          BOOTSTRAP_ADMIN_EMAIL: admin@pabrik.co.id
-          BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
-          BOOTSTRAP_OPERATOR_PIN: '284617'
-          MFA_ENCRYPTION_KEY: ci-only-mfa-key
-        run: |
-          node apps/api/scripts/verify-mes-improvement.mjs 2>&1 | tee improvement.log || true
-          passed=$(grep -oE '[0-9]+/73 kriteria terpenuhi' improvement.log | grep -oE '^[0-9]+')
-          echo "passed=$passed (threshold 73)"
-          test "${passed:-0}" -ge 73
-
-      # Planning and moulds (M5): the mould CRUD gate boots its own instance;
-      # the production posture reads the running one. Both read rows back as
-      # the schema owner, which is what their DATABASE_URL names here.
-      - name: Mould CRUD against Go
-        env:
-          QA_API_CMD: apps/api-go/bin/fv serve
           DATABASE_URL: ${{ env.OWNER_DATABASE_URL }}
           NODE_ENV: test
           AUTH_REQUIRED: 'true'
@@ -437,97 +428,47 @@ jobs:
           MFA_ENCRYPTION_KEY: ci-only-mfa-key
         run: node apps/api/scripts/qa-mold-crud.mjs
 
-      - name: Production posture against Go
+      - name: Production posture
         env:
           QA_API: http://localhost:4000
           DATABASE_URL: ${{ env.OWNER_DATABASE_URL }}
           BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
         run: node apps/api/scripts/qa-production-posture.mjs
 
-      # The Node API on :4001, same database, for the differential contract
-      # check over every ported GET route.
-      - name: Start Node API (reference)
+      # Batch integrity (ADR-29/35) and the sales HTTP boundary each boot
+      # their own instance on their own port and read rows back as the owner.
+      - name: Batch integrity
         env:
-          PORT: '4001'
+          DATABASE_URL: ${{ env.OWNER_DATABASE_URL }}
           NODE_ENV: test
-          DATABASE_URL: ${{ env.APP_DATABASE_URL }}
-          SEED_DEMO_DATA: 'true'
-          AUTH_REQUIRED: 'true'
-          API_RUN_JOB_RUNNER: 'false'
-          OUTBOX_RELAY_ENABLED: 'false'
-          BOOTSTRAP_ADMIN_EMAIL: admin@pabrik.co.id
-          BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
-          BOOTSTRAP_OPERATOR_PIN: '284617'
-          MFA_ENCRYPTION_KEY: ci-only-mfa-key
-        run: |
-          node apps/api/dist/main.js > api-node.log 2>&1 &
-          echo $! > api-node.pid
-          for i in $(seq 1 60); do
-            curl -sf http://localhost:4001/health > /dev/null && exit 0
-            sleep 1
-          done
-          echo "Node API did not become healthy:" && cat api-node.log && exit 1
-
-      # The Node API rewrites the demo master data as it boots (seedDemoPlant
-      # upserts its in-memory rows), and the Go API caches reference data for
-      # thirty seconds. A fresh Go process reads what Node just wrote, so the
-      # comparison is of two views of the same rows rather than of a cache.
-      - name: Restart Go API with fresh caches
-        env:
-          PORT: '4000'
-          NODE_ENV: test
-          DATABASE_URL: ${{ env.APP_DATABASE_URL }}
-          SEED_DEMO_DATA: 'true'
           AUTH_REQUIRED: 'true'
           BOOTSTRAP_ADMIN_EMAIL: admin@pabrik.co.id
           BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
           BOOTSTRAP_OPERATOR_PIN: '284617'
           MFA_ENCRYPTION_KEY: ci-only-mfa-key
-        run: |
-          kill "$(cat api-go.pid)" 2>/dev/null || true
-          sleep 2
-          apps/api-go/bin/fv serve >> api-go.log 2>&1 &
-          echo $! > api-go.pid
-          for i in $(seq 1 30); do
-            curl -sf http://localhost:4000/health > /dev/null && exit 0
-            sleep 1
-          done
-          echo "Go API did not come back:" && cat api-go.log && exit 1
+        run: node apps/api/scripts/qa-batch-integrity.mjs
 
-      - name: Differential contract check (Go vs Node)
+      - name: Sales HTTP boundary
         env:
-          GO_API: http://localhost:4000
-          NODE_API: http://localhost:4001
+          DATABASE_URL: ${{ env.OWNER_DATABASE_URL }}
+          NODE_ENV: test
+          AUTH_REQUIRED: 'true'
           BOOTSTRAP_ADMIN_EMAIL: admin@pabrik.co.id
           BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
-        run: |
-          node scripts/qa-api-diff.mjs \
-            --include=/api/v1/master,/api/v1/events,/api/v1/audit-logs,/api/v1/roles,/api/v1/permissions,/api/v1/shifts,/api/v1/csv,/api/v1/meta/deployment,/api/v1/sessions,/api/v1/security,/api/v1/work-orders,/api/v1/production-orders,/api/v1/shop-floor,/api/v1/oee,/api/v1/corrections,/api/v1/reports,/api/v1/analytics,/api/v1/materials,/api/v1/mrp,/api/v1/quality,/api/v1/maintenance,/api/v1/workforce,/api/v1/wip,/api/v1/production-board,/api/v1/customers,/api/v1/customer-orders,/api/v1/demand-forecasts,/api/v1/capacity-plans,/api/v1/production-plans,/api/v1/planning,/api/v1/molds \
-            --allow=/api/v1/csv/entities,/api/v1/master/batches,/api/v1/master/bom,/api/v1/master/devices,/api/v1/master/kpi-targets,/api/v1/master/processes,/api/v1/shifts/handover,/api/v1/shifts/performance,/api/v1/corrections,/api/v1/oee/config,/api/v1/oee/validation,/api/v1/analytics/executive-kpi,/api/v1/analytics/alerts,/api/v1/maintenance/kpi,/api/v1/quality/dashboard,/api/v1/workforce/availability
+          BOOTSTRAP_OPERATOR_PIN: '284617'
+          MFA_ENCRYPTION_KEY: ci-only-mfa-key
+        run: node apps/api/scripts/qa-sales-http-boundary.mjs
 
-      # The vendor API is outside /api/v1 and needs its own session, so it
-      # has its own differential check; the Go bootstrap wrote the internal
-      # administrator both instances log in as.
-      - name: Differential contract check (vendor API)
-        env:
-          INTERNAL_ADMIN_EMAIL: ops@factoryvision.local
-          INTERNAL_ADMIN_PASSWORD: RahasiaKuatInternal2026
-        run: node scripts/qa-internal-diff.mjs
-
-      - name: Logs on failure
+      - name: Log on failure
         if: failure()
-        run: |
-          echo "--- Go ---"; cat api-go.log || true
-          echo "--- Node ---"; cat api-node.log || true
+        run: cat api.log || true
 
-      - name: Stop APIs
+      - name: Stop API
         if: always()
-        run: |
-          kill "$(cat api-go.pid)" 2>/dev/null || true
-          kill "$(cat api-node.pid)" 2>/dev/null || true
+        run: kill "$(cat api.pid)" 2>/dev/null || true
 
-  # SAST for the Go implementation, in its own job so the TypeScript CodeQL
-  # category and the Go one never share an analysis.
+  # SAST for the Go API, in its own job so the TypeScript CodeQL category and
+  # the Go one never share an analysis.
   scan-go:
     name: Static analysis (Go)
     runs-on: ubuntu-latest
@@ -540,15 +481,15 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v5
         with:
-          go-version-file: apps/api-go/go.mod
-          cache-dependency-path: apps/api-go/go.sum
+          go-version-file: apps/api/go.mod
+          cache-dependency-path: apps/api/go.sum
       - name: Initialise CodeQL
         uses: github/codeql-action/init@v3
         with:
           languages: go
           queries: security-and-quality
       - name: Build
-        working-directory: apps/api-go
+        working-directory: apps/api
         run: go build ./...
       - name: CodeQL analysis
         uses: github/codeql-action/analyze@v3
@@ -595,15 +536,28 @@ jobs:
         if: always()
         run: pnpm audit || true
 
+      # The Go module graph, with the same bar: a known vulnerability that is
+      # reachable from the binary fails the run.
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: apps/api/go.mod
+          cache-dependency-path: apps/api/go.sum
+      - name: Go vulnerability check
+        working-directory: apps/api
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...
+
       # Secrets that should never have been committed (§51).
       - name: Secret scan
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # SAST. CodeQL rather than a bespoke ruleset: it is maintained, it
-      # understands TypeScript, and its findings land in the repository's
-      # security tab where they can be tracked rather than scrolled past.
+      # SAST for the front ends and the shared packages. CodeQL rather than a
+      # bespoke ruleset: it is maintained, it understands TypeScript, and its
+      # findings land in the repository's security tab where they can be
+      # tracked rather than scrolled past.
       - name: Initialise CodeQL
         uses: github/codeql-action/init@v3
         with:
@@ -615,7 +569,7 @@ jobs:
         with:
           category: '/language:javascript-typescript'
 
-  # Container image scanning (§48). Runs on the images this commit would
+  # Container image scanning (§48). Runs on the image this commit would
   # publish, built locally so a pull request is scanned too.
   scan-image:
     name: Container image scan
@@ -642,22 +596,9 @@ jobs:
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
 
-      - name: Build Go API image
-        run: docker build -f deploy/Dockerfile.api-go -t factory-vision-api-go:scan .
-
-      - name: Scan Go API image
-        uses: aquasecurity/trivy-action@0.35.0
-        with:
-          image-ref: factory-vision-api-go:scan
-          format: table
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-
   publish:
     name: Publish images
-    needs: [verify, persistence, api-go, scan, scan-go, scan-image]
+    needs: [verify, persistence, api, scan, scan-go, scan-image]
     # Pull requests verify but never publish: the head of a PR is not a
     # release, and a fork's token could not push to the registry anyway.
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -670,11 +611,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # One API image serves `serve`, `worker` and `migrate`.
           - image: factory-vision-api
             dockerfile: deploy/Dockerfile.api
-            app: ''
-          - image: factory-vision-api-go
-            dockerfile: deploy/Dockerfile.api-go
             app: ''
           - image: factory-vision-console
             dockerfile: deploy/Dockerfile.web
@@ -688,9 +627,6 @@ jobs:
           - image: factory-vision-admin
             dockerfile: deploy/Dockerfile.web
             app: admin
-          - image: factory-vision-worker
-            dockerfile: deploy/Dockerfile.worker
-            app: ''
           - image: factory-vision-backup
             dockerfile: deploy/Dockerfile.backup
             app: ''

@@ -3,9 +3,9 @@
 Kontrak HTTP untuk alur *self-serve trial*: dari formulir "Coba Gratis" di landing
 page sampai onboarding pabrik pertama di console. Dokumen ini adalah sumber
 kebenaran untuk **bentuk permintaan dan respons**; implementasinya ada di
-`apps/api/src/routes/onboarding.routes.ts`, tipenya di
+`apps/api/internal/modules/onboarding/handler.go`, tipenya di
 `packages/domain-types/src/onboarding.ts`, dan bentuk permintaan trial dikunci
-oleh `apps/api/test/trial-signup-contract.test.ts`.
+oleh skenario trial-register di `apps/api/scripts/verify-mes-improvement.mjs`.
 
 Setiap perubahan bentuk (field baru, field diganti nama, kode error baru) wajib
 mengubah ketiganya **dan** dokumen ini dalam satu commit.

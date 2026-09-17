@@ -14,11 +14,10 @@ pnpm workspace monorepo.
 
 | Path | What it is |
 |---|---|
-| `apps/api` | Service layer: production, shop floor, downtime, OEE, corrections, audit, RBAC |
+| `apps/api` | The API, one Go binary (`fv`): production, shop floor, downtime, OEE, planning, quality, maintenance, workforce, WIP, audit, RBAC; also the job worker and the in-image migration runner |
 | `apps/console` | Supervisor / manager web console (Vite + React, port 3100) |
 | `apps/operator` | Shop-floor terminal, offline-capable via IndexedDB (port 3200) |
 | `apps/admin` | Internal client-management console (port 3300) |
-| `apps/worker` | Background job runner |
 | `packages/ui` | Design system mirror plus the Factory Vision extension layer (`ui/fv`) |
 | `packages/api-client`, `packages/domain-types`, `packages/i18n` | Shared contracts |
 | `db/` | SQL migrations and seeds |
@@ -27,7 +26,9 @@ pnpm workspace monorepo.
 ## Running locally
 
 Requires Node 22 and pnpm (the version is pinned by `packageManager`; run
-`corepack enable` and pnpm resolves itself).
+`corepack enable` and pnpm resolves itself) for the front ends and the shared
+packages, and Go 1.26 for the API (`apps/api/go.mod` pins the toolchain; the
+`go` command downloads it).
 
 PostgreSQL 16 is required, not optional: production records, downtime and
 work orders are stored there, and the API refuses to start without it rather
@@ -49,13 +50,15 @@ pnpm dev
 |---|---|
 | `pnpm dev` | every app in parallel |
 | `pnpm dev:console` / `dev:operator` / `dev:api` / `dev:admin` | one app |
-| `pnpm typecheck` | `tsc --noEmit` across all nine packages |
+| `pnpm typecheck` | `tsc --noEmit` across the TypeScript packages, `go vet` for the API |
 | `pnpm build` | build every app and package |
 | `pnpm verify:stories` | acceptance suite, 81 assertions over 54 user stories, against a running API |
 | `pnpm verify:isolation` | asserts PostgreSQL row-level security refuses cross-tenant access |
 | `pnpm verify:persistence` | writes through the API, kills it, restarts it and reads back |
 | `pnpm ds:check` | design-system mirror integrity (needs the upstream system on disk) |
 | `pnpm db:migrate` / `db:seed` | apply `db/migrations` and `db/seeds` |
+| `pnpm db:seed:demo` | the demo tyre plant and its 60 days of history (`fv seed-demo`; idempotent) |
+| `pnpm verify:improvement` | MES Improvement acceptance (PRD §50), boots its own API |
 
 `SEED_DEMO_DATA` loads a demo tyre plant with 60 days of history. Leave it
 unset for a real install, which should start empty and be filled from the
@@ -76,12 +79,19 @@ Promotion is forward-only: `master` → `staging` → `production`.
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every push and
 pull request to those three branches:
 
-1. **verify** — install, build, typecheck, then start the API and run the
-   acceptance suite against it.
-2. **persistence** — apply the migrations against a real PostgreSQL 16 and
-   assert tenant isolation actually refuses cross-tenant reads and writes, then write production data through the API, kill it, restart it and read it back.
-3. **publish** — only after both are green, and never for a pull request.
-   Builds five images and pushes them to GHCR.
+1. **verify** — install, build, typecheck, the API's unit tests, then start
+   the API and run the security posture and the acceptance suite against it.
+2. **persistence** — apply the migrations against a real PostgreSQL 16 (the
+   dev runner, the replay guard and the in-image `fv migrate`), assert tenant
+   isolation actually refuses cross-tenant reads and writes, write production
+   data through the API, kill it, restart it and read it back, then the MES
+   Improvement acceptance.
+3. **api** — the API's integration tests and the black-box gates (mould CRUD,
+   production posture, batch integrity, sales boundary).
+4. **scan / scan-go / scan-image** — dependency audit, govulncheck, secret
+   scan, CodeQL for TypeScript and Go, trivy on the API image.
+5. **publish** — only after all of them are green, and never for a pull
+   request. Builds six images and pushes them to GHCR.
 
 | Image | Built from |
 |---|---|
@@ -89,7 +99,12 @@ pull request to those three branches:
 | `ghcr.io/nugrohoindrag/factory-vision-console` | `deploy/Dockerfile.web` (`APP=console`) |
 | `ghcr.io/nugrohoindrag/factory-vision-operator` | `deploy/Dockerfile.web` (`APP=operator`) |
 | `ghcr.io/nugrohoindrag/factory-vision-admin` | `deploy/Dockerfile.web` (`APP=admin`) |
-| `ghcr.io/nugrohoindrag/factory-vision-worker` | `deploy/Dockerfile.worker` |
+| `ghcr.io/nugrohoindrag/factory-vision-landing` | `deploy/Dockerfile.web` (`APP=landing`) |
+| `ghcr.io/nugrohoindrag/factory-vision-backup` | `deploy/Dockerfile.backup` |
+
+The API image is distroless and carries one static binary; the compose stack
+starts it three ways — `serve` (the API), `worker` (the planning job queue)
+and `migrate` (the schema, under supervision).
 
 Each is tagged with its branch name, a short commit sha, semver for a `v*` tag,
 and `latest` on `production`.
