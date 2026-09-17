@@ -13,7 +13,10 @@ import (
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/tenancy"
 )
 
-func clientContext(r *http.Request) ClientContext {
+func clientContext(r *http.Request) ClientContext { return ClientContextFrom(r) }
+
+// ClientContextFrom is the caller's address and agent, for the audit trail.
+func ClientContextFrom(r *http.Request) ClientContext {
 	ip := httpx.ClientIP(r)
 	return ClientContext{IP: &ip, UserAgent: httpx.UserAgent(r)}
 }

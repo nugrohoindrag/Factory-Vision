@@ -26,6 +26,7 @@ const { PERMISSION_CATALOG, SYSTEM_ROLE_PERMISSIONS, ROLE_LANDING_PATH, ROLE_DES
 const { permissionForRoute, PUBLIC_API_PATHS } = await import(
   '../src/platform/auth/route-permissions.ts'
 );
+const { INDUSTRY_TEMPLATES } = await import('../src/modules/onboarding/industry-templates.ts');
 
 // --- Route inventory ---------------------------------------------------
 //
@@ -165,6 +166,10 @@ write('public-api-paths.json', [...PUBLIC_API_PATHS].sort());
 write('routes.node.json', inventory);
 write('route-permissions.golden.json', golden);
 write('endpoints.json', endpoints);
+// The industry seed templates are data (products, machines, routings per
+// industry), so the Go onboarding module reads them from here rather than
+// transcribing eleven hundred lines of literals by hand.
+write('industry-templates.json', INDUSTRY_TEMPLATES);
 
 console.log(
   `[fixtures] ${inventory.length} routes, ${golden.length} under /api/v1, ` +

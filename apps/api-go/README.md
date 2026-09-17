@@ -134,6 +134,13 @@ internal/modules/
   production/generation  Work Order per proses routing dari plan (validasi routing dulu, rantai predecessor, idempoten)
   mold        /molds CRUD + kompatibilitas produk (ADR-36): retire dijaga IN_USE, hapus dijaga referensi produksi
   stream      GET /events/stream (SSE): relay outbox → hub; event planning bernama `planning:<Type>` dengan amplop baris outbox
+  onboarding  POST /auth/trial-register (tenant + client_account + langganan trial + admin dalam satu transaksi, lalu login),
+              template industri (fixture industry-templates.json, diklon ke tenant), blank factory, status (checklist readiness
+              & activation berbobot 100 dari baris tenant), step, guidance, first-workflow, events, upgrade — progres/guidance
+              di tabel (migrasi 035), bukan memori proses
+  clientmgmt  /api/internal/v1: login/sesi/logout staf vendor (internal_session, token di-hash), summary, plans, clients CRUD +
+              status, subscription history/change, usage capture (dihitung SQL per tenant), support access (grant/revoke/use),
+              audit, staff; hak per peran OWNER/ACCOUNT_MANAGER/SUPPORT
 internal/routes   pipeline + mount; routes_test: setiap route mutasi wajib punya aturan permission eksplisit (chi.Walk)
 internal/testkit  pool app + owner untuk uji integrasi
 ```
@@ -148,7 +155,7 @@ internal/testkit  pool app + owner untuk uji integrasi
 | M3 | analytics (14 route, satu grain line×hari dari snapshot eksekusi bersama), reports (produksi/downtime/shift + CSV), alerts v1.7 (+ antarmuka untuk aturan v2 di M4) | selesai | `verify-user-stories` 80/81 melawan Go sendirian di DB segar (sisa: riwayat demo 60 hari → `fv seed-demo` M7), `verify-persistence` 29/29, `qa-production-posture` 22/29 (sisa: planning → M5); `qa-api-diff` identik untuk 14 analytics + 4 reports kecuali executive-kpi/alerts (status KPI diturunkan dari `kpi_target` DB yang Node abaikan) |
 | M4 | material/mrp, quality, maintenance, workforce, wip, board, alerts penuh, adapter sync-batch v2 | selesai | `verify-mes-improvement` 64/73 melawan Go sendirian: skenario 1–8 (material, quality, maintenance, workforce, WIP, board, events, offline) penuh; sisa skenario 9 trial-register → M6 dan 10 job runner → M5. `qa-api-diff` 33 identik / 3 diizinkan / 0 tak terduga untuk materials, mrp, quality, maintenance, workforce, wip, production-board; regresi M1–M3 tetap 59 identik / 11 diizinkan |
 | M5 | planning (customers, orders + dokumen, forecast, capacity, production plan, WO generation, config), molds, storage fs/S3, queue + `fv worker`, relay outbox + hub SSE | selesai | `verify-mes-improvement` 67/73 (sisa skenario 9 trial-register → M6), `qa-mold-crud` 39/39, `qa-production-posture` 30/30, `verify-persistence` 29/29, `qa-batch-integrity` 15/15, `qa-sales-http-boundary` 27/27; uji integrasi Go: queue (claim/retry/FAILED), relay (rollback tak terkirim, PUBLISHED, FAILED setelah 5), storage fs, alur planning (verify-planning-flow diport); `qa-api-diff` 27 identik / 0 diizinkan untuk customers, customer-orders, demand-forecasts, capacity-plans, production-plans, planning, molds; `/work-orders/:id/demand` dan `/materials/readiness` kini identik |
-| M6 | onboarding (trial-register), client-management + admin internal | — | `verify-user-stories` penuh, posture 13/13 |
+| M6 | onboarding (trial-register, template, status, guidance, first-workflow), client management + API internal vendor, migrasi 035 (onboarding_progress/guidance/analytics_event, internal_session) | selesai | `qa-security-posture` 13/13, `verify-mes-improvement` 73/73 melawan Go sendirian; uji integrasi progres onboarding (persisten lintas instance, 404 untuk tenant lain); `scripts/qa-internal-diff.mjs` 8 identik / 3 diizinkan (tanggal DATE, lihat divergensi) untuk /api/internal/v1 |
 | M7 | `fv migrate`, `fv seed-demo`, Dockerfile/compose/CI cutover, hapus runtime Node | — | seluruh CI hijau tanpa Node |
 
 Rencana lengkap: `~/.claude/plans/wise-beaming-dongarra.md` (lokal).
@@ -206,6 +213,12 @@ berebut 10 koneksi, sedangkan event loop Node menyerialkan. Kandidat untuk dipro
   permintaan (selisih milidetik antar-proses); bidang lain identik.
 - Audit §39 pada modul v2 (kualifikasi, penugasan, WIP, dispatch board, konsumsi, inspeksi, maintenance) ditulis
   *sebelum* respons, seperti `await audit.record` di Node — bukan detached.
+- Progres onboarding, guidance dan event funnel disimpan di tabel (migrasi 035); Node menyimpannya di memori (hilang saat
+  restart). Sesi konsol internal juga persisten (`internal_session`, token di-hash SHA-256) — Node memakai `Map`.
+- `/api/internal/v1`: kolom DATE (`startedAt`, `renewsAt`, `endedAt`, `capturedOn`) dikembalikan apa adanya; Node membaca DATE
+  sebagai `Date` tengah malam lokal lalu `toISOString()`, sehingga di Asia/Jakarta mundur satu hari (dan `daysToRenewal`
+  ikut bergeser). `client_usage_snapshot` dihitung lewat SQL per tenant, bukan dari cache memori.
+- `POST /onboarding/events` tanpa `eventName` → 422 ber-envelope (Node: 400 `{error: string}` tanpa envelope).
 - `analytics/executive-kpi` dan `analytics/alerts`: status/ambang diturunkan dari `kpi_target` di DB (seed
   `110/130` untuk REJECT_RATE dan DOWNTIME); Node memakai baris demo in-memory (`95/85`, DOWNTIME 400) dan mengabaikan
   tabelnya. Angka lainnya identik.

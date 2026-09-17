@@ -25,6 +25,7 @@ import (
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/material"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/mold"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/oee"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/onboarding"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/planning"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/production"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/quality"
@@ -105,6 +106,10 @@ func TestEveryMutatingRouteHasAnExplicitRule(t *testing.T) {
 	wipSvc := wip.NewService(nil, master, productionSvc, qualitySvc, nil, 24, 72)
 	boardSvc := board.NewService(master, productionSvc, maintenanceSvc, materialSvc, workforceSvc, nil, nil)
 	planningSvc := planning.NewService(nil, nil, nil, nil, nil)
+	onboardingSvc, err := onboarding.NewService(nil, master, productionSvc, identitySvc, security.NewPolicy(12, 6))
+	if err != nil {
+		t.Fatal(err)
+	}
 	r := Handler(testDeps(t,
 		func(api chi.Router) { identity.Mount(api, identitySvc, master) },
 		func(api chi.Router) { roles.Mount(api, roleSvc, nil, events) },
@@ -128,6 +133,7 @@ func TestEveryMutatingRouteHasAnExplicitRule(t *testing.T) {
 		func(api chi.Router) { planning.Mount(api, planningSvc, nil, nil) },
 		func(api chi.Router) { mold.Mount(api, mold.NewService(nil), nil) },
 		func(api chi.Router) { stream.Mount(api, realtime.New()) },
+		func(api chi.Router) { onboarding.Mount(api, onboardingSvc) },
 	)).(chi.Router)
 
 	mutating := map[string]bool{"POST": true, "PUT": true, "PATCH": true, "DELETE": true}

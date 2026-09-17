@@ -28,6 +28,7 @@ import (
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/analytics"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/audit"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/board"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/clientmgmt"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/correction"
 	csvmod "github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/csv"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/event"
@@ -39,6 +40,7 @@ import (
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/material"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/mold"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/oee"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/onboarding"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/planning"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/production"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/quality"
@@ -242,6 +244,16 @@ func serve() error {
 		runner.Start(ctx, cfg.PlanningJobInterval)
 		defer runner.Stop()
 	}
+	// Onboarding and the vendor console (M6). Trial registration writes the
+	// tenant, its client account, the trial subscription and the
+	// administrator in one transaction; the vendor API lives under
+	// /api/internal/v1 with its own staff, sessions and audit trail.
+	policy := security.NewPolicy(cfg.PasswordMinLength, cfg.PINMinLength)
+	onboardingSvc, err := onboarding.NewService(pool, master, productionSvc, identitySvc, policy)
+	if err != nil {
+		return err
+	}
+	internalSvc := clientmgmt.NewService(pool, events, policy, log)
 	hub := realtime.New()
 	relay := outbox.NewRelay(pool, log)
 	relay.Subscribe(stream.Subscriber(hub))
@@ -261,6 +273,9 @@ func serve() error {
 	}
 	if err := identitySvc.BootstrapAdminCredential(ctx); err != nil {
 		return fmt.Errorf("bootstrap admin: %w", err)
+	}
+	if err := internalSvc.Bootstrap(ctx, cfg.InternalAdminEmail, cfg.InternalAdminPassword, cfg.InternalAdminName); err != nil {
+		return fmt.Errorf("bootstrap internal admin: %w", err)
 	}
 	identitySvc.StartSessionSweeper(ctx, 15*time.Minute)
 
@@ -289,6 +304,10 @@ func serve() error {
 			func(r chi.Router) { planning.Mount(r, planningSvc, runner, generatorAdapter{generator}) },
 			func(r chi.Router) { mold.Mount(r, moldSvc, auditSvc) },
 			func(r chi.Router) { stream.Mount(r, hub) },
+			func(r chi.Router) { onboarding.Mount(r, onboardingSvc) },
+		},
+		Root: []func(chi.Router){
+			func(r chi.Router) { clientmgmt.Mount(r, internalSvc) },
 		},
 	})
 
