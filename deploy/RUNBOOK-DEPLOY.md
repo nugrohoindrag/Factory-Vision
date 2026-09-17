@@ -442,6 +442,55 @@ dokumen Cyber Security Requirement).
 
 ---
 
+## 9d. Deploy otomatis dari CI
+
+Sejak rilis ini, push ke `master` (langkah terakhir promosi
+`branch → staging → production → master`) tidak hanya menerbitkan image:
+job `deploy` di `.github/workflows/ci.yml` masuk ke host lewat SSH dan
+menjalankan `deploy/deploy.sh` — urutan §9 "Deploy versi baru" sebagai satu
+skrip: **dump database → pull → migrate → up → verifikasi**. Berhenti pada
+kegagalan pertama, tanpa rollback otomatis; dump pra-deploy ada di
+`/var/backups/factory-vision/` (10 terakhir disimpan).
+
+Job ini **tidak melakukan apa pun** sampai empat secret repository diisi
+(Settings → Secrets and variables → Actions):
+
+| Secret | Isi |
+|---|---|
+| `DEPLOY_HOST` | IP atau hostname host produksi |
+| `DEPLOY_USER` | user SSH (yang punya `sudo` tanpa password) |
+| `DEPLOY_SSH_KEY` | kunci privat **khusus deploy** (lihat di bawah), utuh termasuk baris BEGIN/END |
+| `DEPLOY_KNOWN_HOSTS` | keluaran `ssh-keyscan -t ed25519 <host>` — agar host key dipin, bukan dipercaya saat pertama kali |
+
+Variabel opsional `DEPLOY_CHECKOUT` (Settings → Variables) bila checkout di host
+bukan `/opt/factory-vision`.
+
+Buat pasangan kunci khusus, jangan pakai kunci login pribadi:
+
+```bash
+ssh-keygen -t ed25519 -N "" -C "github-actions deploy" -f deploy-key
+# di host, sebagai user SSH:
+cat deploy-key.pub >> ~/.ssh/authorized_keys
+# isi DEPLOY_SSH_KEY dengan isi file `deploy-key` (privat), lalu hapus kedua file dari laptop
+```
+
+Persetujuan manual sebelum deploy: buat *environment* bernama `production`
+(Settings → Environments) dan tambahkan *required reviewers*. Job `deploy`
+mendeklarasikan environment itu, jadi setiap push ke `master` akan menunggu
+persetujuan sebelum menyentuh host.
+
+Menjalankan hal yang sama dengan tangan, dari checkout di host:
+
+```bash
+git pull --ff-only origin master && sh deploy/deploy.sh
+```
+
+Yang berubah dari kebiasaan lama: push ke `production` tetap hanya menerbitkan
+`:latest`; **push ke `master` kini men-deploy**. Cadangkan dulu bila ragu (§9a),
+dan jangan promosikan ke `master` sebelum CI di `production` hijau.
+
+---
+
 ## 10. Troubleshooting
 
 ### API restart terus, log berisi `28P01` / `auth_failed`

@@ -646,3 +646,79 @@ jobs:
           provenance: false
           cache-from: type=gha,scope=${{ matrix.image }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+
+  # Deploy to the production host after a push to `master` has published the
+  # images that host tracks (deploy/.env there pins IMAGE_TAG=master).
+  #
+  # `master` is the last step of the promotion chain
+  # (branch → staging → production → master), so by the time this runs the
+  # same commit has already been through CI three times. The job does what
+  # RUNBOOK-DEPLOY.md does, over SSH, via deploy/deploy.sh: dump, pull,
+  # migrate, up, verify — and stops at the first failure without rolling back.
+  #
+  # It is inert until four repository secrets exist (RUNBOOK §9d):
+  # DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY, DEPLOY_KNOWN_HOSTS. Without them
+  # it prints a notice and exits green, so a fork or a fresh clone is not
+  # broken by a missing box. The `production` environment lets the repository
+  # require a reviewer's approval before this job runs.
+  deploy:
+    name: Deploy to production host
+    needs: [publish]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: https://dashboard.factoryvision.id
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    steps:
+      - name: Deploy secrets present?
+        id: check
+        env:
+          KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          if [ -z "$KEY" ] || [ -z "$HOST" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Deploy skipped::DEPLOY_SSH_KEY / DEPLOY_HOST are not set. Images are published; the host was not touched. See deploy/RUNBOOK-DEPLOY.md §9d."
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Prepare SSH
+        if: steps.check.outputs.configured == 'true'
+        env:
+          KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          if [ -n "$KNOWN_HOSTS" ]; then
+            printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            # Trust on first use is weaker than a pinned key; say so.
+            echo "::warning::DEPLOY_KNOWN_HOSTS is not set; the host key is taken from ssh-keyscan on this run."
+            ssh-keyscan -t ed25519,rsa "$HOST" > ~/.ssh/known_hosts 2>/dev/null
+          fi
+          chmod 644 ~/.ssh/known_hosts
+
+      # `pull --ff-only` rather than `reset --hard`: a hot-fix committed on the
+      # box makes this fail loudly instead of being discarded in silence.
+      - name: Roll the stack forward
+        if: steps.check.outputs.configured == 'true'
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          CHECKOUT: ${{ vars.DEPLOY_CHECKOUT || '/opt/factory-vision' }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 \
+            "${DEPLOY_USER:-adminfv}@$HOST" \
+            "sudo -n bash -c 'set -e; cd $CHECKOUT; \
+              git -c safe.directory=$CHECKOUT fetch --quiet origin master; \
+              git -c safe.directory=$CHECKOUT checkout --quiet master; \
+              git -c safe.directory=$CHECKOUT pull --ff-only --quiet origin master; \
+              echo \"[deploy] checkout at \$(git -c safe.directory=$CHECKOUT rev-parse --short HEAD)\"; \
+              sh deploy/deploy.sh'"
