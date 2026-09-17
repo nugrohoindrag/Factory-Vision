@@ -27,6 +27,11 @@ COPY apps/api ./
 # with no build-machine paths in its panics.
 RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/fv ./cmd/fv
 
+# The attachment directory, so it exists in the image owned by the runtime
+# user: Docker seeds a fresh named volume from the image's directory,
+# ownership included, and the process has no root and no shell to fix one up.
+RUN mkdir -p /out/documents
+
 # --- Runtime stage -------------------------------------------------
 #
 # distroless/static carries no shell, no package manager and no libc: the
@@ -46,6 +51,11 @@ COPY --from=build /out/fv /fv
 # so `pnpm db:migrate` is not available to it. `fv migrate` applies it.
 COPY db /db
 ENV MIGRATIONS_DIR=/db
+
+# Customer Order attachments on the filesystem driver (compose mounts the
+# document-data volume here). A volume created by an earlier image under
+# another uid needs a one-off `chown 65532:65532` — RUNBOOK-DEPLOY.md §10.
+COPY --from=build --chown=65532:65532 /out/documents /var/lib/factory-vision/documents
 
 EXPOSE 4000
 

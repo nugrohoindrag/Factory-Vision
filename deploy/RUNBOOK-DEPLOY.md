@@ -506,6 +506,20 @@ docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d api
 API tidak boleh terhubung sebagai `POSTGRES_USER`: superuser membawa `BYPASSRLS`
 dan akan melewati seluruh isolasi tenant.
 
+### Log API: `[storage] filesystem /var/lib/factory-vision/documents tidak dapat ditulis`
+
+Volume `document-data` dibuat oleh image lama dengan uid lain; image Go
+(distroless) berjalan sebagai uid 65532 tanpa root dan tanpa shell, jadi tidak
+bisa memperbaikinya sendiri. Sekali saja:
+
+```bash
+docker run --rm -v factory-vision_document-data:/d alpine chown 65532:65532 /d
+docker compose -f deploy/docker-compose.yml --env-file deploy/.env restart api
+```
+
+Instalasi baru tidak mengalaminya: direktori itu ada di dalam image dengan
+pemilik yang benar, dan Docker menyalin kepemilikannya ke volume yang baru.
+
 ### `duplicate key … uq_work_order_machine_in_production` saat seeding
 
 Dua work order berstatus `IN_PRODUCTION` menempati mesin yang sama. Satu mesin
