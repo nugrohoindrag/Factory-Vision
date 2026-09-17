@@ -28,6 +28,11 @@ import { fileURLToPath } from 'node:url';
 import pg from 'pg';
 
 const API_ENTRY = fileURLToPath(new URL('../dist/main.js', import.meta.url));
+// The API under test is the Node build unless QA_API_CMD names another
+// command, e.g. `apps/api-go/bin/fv serve` for the Go implementation. The
+// script itself is language-agnostic: it only talks HTTP and reads the
+// database back.
+const API_CMD = process.env.QA_API_CMD ? process.env.QA_API_CMD.split(/\s+/) : [process.execPath, API_ENTRY];
 
 const APP_URL = process.env.DATABASE_URL;
 const OWNER_URL = process.env.OWNER_DATABASE_URL || APP_URL;
@@ -53,7 +58,7 @@ function check(scenario, criterion, passed, detail = '') {
 let child = null;
 
 async function startApi() {
-  child = spawn(process.execPath, [API_ENTRY], {
+  child = spawn(API_CMD[0], API_CMD.slice(1), {
     env: {
       ...process.env,
       PORT: String(PORT),

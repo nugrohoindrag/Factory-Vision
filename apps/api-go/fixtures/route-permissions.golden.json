@@ -1,0 +1,2256 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/alerts",
+    "concretePath": "/api/v1/analytics/alerts",
+    "public": false,
+    "permission": "analytics:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/daily-performance",
+    "concretePath": "/api/v1/analytics/daily-performance",
+    "public": false,
+    "permission": "analytics:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/downtime-pareto",
+    "concretePath": "/api/v1/analytics/downtime-pareto",
+    "public": false,
+    "permission": "analytics:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/downtime-summary",
+    "concretePath": "/api/v1/analytics/downtime-summary",
+    "public": false,
+    "permission": "analytics:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/executive-kpi",
+    "concretePath": "/api/v1/analytics/executive-kpi",
+    "public": false,
+    "permission": "analytics:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/line-performance",
+    "concretePath": "/api/v1/analytics/line-performance",
+    "public": false,
+    "permission": "analytics:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/live-board",
+    "concretePath": "/api/v1/analytics/live-board",
+    "public": false,
+    "permission": "analytics:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/oee-trend",
+    "concretePath": "/api/v1/analytics/oee-trend",
+    "public": false,
+    "permission": "analytics:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/order-status",
+    "concretePath": "/api/v1/analytics/order-status",
+    "public": false,
+    "permission": "analytics:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/plant-performance",
+    "concretePath": "/api/v1/analytics/plant-performance",
+    "public": false,
+    "permission": "analytics:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/process-performance",
+    "concretePath": "/api/v1/analytics/process-performance",
+    "public": false,
+    "permission": "analytics:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/production-trend",
+    "concretePath": "/api/v1/analytics/production-trend",
+    "public": false,
+    "permission": "analytics:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/quality-summary",
+    "concretePath": "/api/v1/analytics/quality-summary",
+    "public": false,
+    "permission": "analytics:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/reject-pareto",
+    "concretePath": "/api/v1/analytics/reject-pareto",
+    "public": false,
+    "permission": "analytics:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/audit-logs",
+    "concretePath": "/api/v1/audit-logs",
+    "public": false,
+    "permission": "audit:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/login",
+    "concretePath": "/api/v1/auth/login",
+    "public": true,
+    "permission": null
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/logout",
+    "concretePath": "/api/v1/auth/logout",
+    "public": true,
+    "permission": null
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/auth/mfa",
+    "concretePath": "/api/v1/auth/mfa",
+    "public": false,
+    "permission": null
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/mfa/confirm",
+    "concretePath": "/api/v1/auth/mfa/confirm",
+    "public": false,
+    "permission": "dashboard:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/mfa/disable",
+    "concretePath": "/api/v1/auth/mfa/disable",
+    "public": false,
+    "permission": "dashboard:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/mfa/enroll",
+    "concretePath": "/api/v1/auth/mfa/enroll",
+    "public": false,
+    "permission": "dashboard:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/mfa/verify",
+    "concretePath": "/api/v1/auth/mfa/verify",
+    "public": true,
+    "permission": null
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/operator-login",
+    "concretePath": "/api/v1/auth/operator-login",
+    "public": true,
+    "permission": null
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/auth/session",
+    "concretePath": "/api/v1/auth/session",
+    "public": true,
+    "permission": null
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/trial-register",
+    "concretePath": "/api/v1/auth/trial-register",
+    "public": true,
+    "permission": null
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/capacity-plans",
+    "concretePath": "/api/v1/capacity-plans",
+    "public": false,
+    "permission": "capacity_plan:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/capacity-plans",
+    "concretePath": "/api/v1/capacity-plans",
+    "public": false,
+    "permission": "capacity_plan:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/capacity-plans/:id",
+    "concretePath": "/api/v1/capacity-plans/x",
+    "public": false,
+    "permission": "capacity_plan:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/capacity-plans/:id/recalculate",
+    "concretePath": "/api/v1/capacity-plans/x/recalculate",
+    "public": false,
+    "permission": "capacity_plan:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/capacity-plans/assess",
+    "concretePath": "/api/v1/capacity-plans/assess",
+    "public": false,
+    "permission": "capacity_plan:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/capacity-plans/current",
+    "concretePath": "/api/v1/capacity-plans/current",
+    "public": false,
+    "permission": "capacity_plan:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/corrections",
+    "concretePath": "/api/v1/corrections",
+    "public": false,
+    "permission": "production_record:correct"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/corrections",
+    "concretePath": "/api/v1/corrections",
+    "public": false,
+    "permission": "production_record:correct"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/corrections/:id/approve",
+    "concretePath": "/api/v1/corrections/x/approve",
+    "public": false,
+    "permission": "correction:approve"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/corrections/:id/reject",
+    "concretePath": "/api/v1/corrections/x/reject",
+    "public": false,
+    "permission": "correction:approve"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/corrections/policy",
+    "concretePath": "/api/v1/corrections/policy",
+    "public": false,
+    "permission": "production_record:correct"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/csv/:entity/export",
+    "concretePath": "/api/v1/csv/x/export",
+    "public": false,
+    "permission": "master_data:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/csv/:entity/import",
+    "concretePath": "/api/v1/csv/x/import",
+    "public": false,
+    "permission": "master_data:import"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/csv/:entity/template",
+    "concretePath": "/api/v1/csv/x/template",
+    "public": false,
+    "permission": "master_data:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/csv/entities",
+    "concretePath": "/api/v1/csv/entities",
+    "public": false,
+    "permission": "master_data:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/customer-orders",
+    "concretePath": "/api/v1/customer-orders",
+    "public": false,
+    "permission": "customer_order:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/customer-orders",
+    "concretePath": "/api/v1/customer-orders",
+    "public": false,
+    "permission": "customer_order:create"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/customer-orders/:id",
+    "concretePath": "/api/v1/customer-orders/x",
+    "public": false,
+    "permission": "customer_order:view"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/customer-orders/:id",
+    "concretePath": "/api/v1/customer-orders/x",
+    "public": false,
+    "permission": "customer_order:edit"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/customer-orders/:id/cancel",
+    "concretePath": "/api/v1/customer-orders/x/cancel",
+    "public": false,
+    "permission": "customer_order:cancel"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/customer-orders/:id/documents",
+    "concretePath": "/api/v1/customer-orders/x/documents",
+    "public": false,
+    "permission": "customer_order:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/customer-orders/:id/documents",
+    "concretePath": "/api/v1/customer-orders/x/documents",
+    "public": false,
+    "permission": "customer_order:edit"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/customer-orders/:id/documents/:documentId",
+    "concretePath": "/api/v1/customer-orders/x/documents/x",
+    "public": false,
+    "permission": "customer_order:edit"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/customer-orders/:id/lines",
+    "concretePath": "/api/v1/customer-orders/x/lines",
+    "public": false,
+    "permission": "customer_order:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/customer-orders/:id/lines",
+    "concretePath": "/api/v1/customer-orders/x/lines",
+    "public": false,
+    "permission": "customer_order:edit"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/customer-orders/:id/lines/:lineId",
+    "concretePath": "/api/v1/customer-orders/x/lines/x",
+    "public": false,
+    "permission": "customer_order:edit"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/customer-orders/:id/lines/:lineId",
+    "concretePath": "/api/v1/customer-orders/x/lines/x",
+    "public": false,
+    "permission": "customer_order:edit"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/customer-orders/:id/logistics-status",
+    "concretePath": "/api/v1/customer-orders/x/logistics-status",
+    "public": false,
+    "permission": "customer_order:edit"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/customer-orders/:id/refresh-status",
+    "concretePath": "/api/v1/customer-orders/x/refresh-status",
+    "public": false,
+    "permission": "customer_order:edit"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/customer-orders/documents/:objectId/content",
+    "concretePath": "/api/v1/customer-orders/documents/x/content",
+    "public": false,
+    "permission": "customer_order:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/customers",
+    "concretePath": "/api/v1/customers",
+    "public": false,
+    "permission": "customer:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/customers",
+    "concretePath": "/api/v1/customers",
+    "public": false,
+    "permission": "customer:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/customers/:id",
+    "concretePath": "/api/v1/customers/x",
+    "public": false,
+    "permission": "customer:view"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/customers/:id",
+    "concretePath": "/api/v1/customers/x",
+    "public": false,
+    "permission": "customer:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/demand-forecasts",
+    "concretePath": "/api/v1/demand-forecasts",
+    "public": false,
+    "permission": "demand_forecast:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/demand-forecasts/:id",
+    "concretePath": "/api/v1/demand-forecasts/x",
+    "public": false,
+    "permission": "demand_forecast:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/demand-forecasts/:id/comparison",
+    "concretePath": "/api/v1/demand-forecasts/x/comparison",
+    "public": false,
+    "permission": "demand_forecast:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/demand-forecasts/generate",
+    "concretePath": "/api/v1/demand-forecasts/generate",
+    "public": false,
+    "permission": "demand_forecast:generate"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/demand-forecasts/jobs",
+    "concretePath": "/api/v1/demand-forecasts/jobs",
+    "public": false,
+    "permission": "demand_forecast:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/demand-forecasts/jobs/:jobId",
+    "concretePath": "/api/v1/demand-forecasts/jobs/x",
+    "public": false,
+    "permission": "demand_forecast:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/docs",
+    "concretePath": "/api/v1/docs",
+    "public": false,
+    "permission": null
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/events",
+    "concretePath": "/api/v1/events",
+    "public": false,
+    "permission": "event:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/events/summary",
+    "concretePath": "/api/v1/events/summary",
+    "public": false,
+    "permission": "event:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/events/timeline/:entityType/:entityId",
+    "concretePath": "/api/v1/events/timeline/x/x",
+    "public": false,
+    "permission": "event:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/maintenance/emergency",
+    "concretePath": "/api/v1/maintenance/emergency",
+    "public": false,
+    "permission": "maintenance:execute"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/maintenance/kpi",
+    "concretePath": "/api/v1/maintenance/kpi",
+    "public": false,
+    "permission": "maintenance:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/maintenance/plans",
+    "concretePath": "/api/v1/maintenance/plans",
+    "public": false,
+    "permission": "maintenance:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/maintenance/plans",
+    "concretePath": "/api/v1/maintenance/plans",
+    "public": false,
+    "permission": "maintenance:create"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/maintenance/plans/:id",
+    "concretePath": "/api/v1/maintenance/plans/x",
+    "public": false,
+    "permission": "maintenance:create"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/maintenance/plans/:id",
+    "concretePath": "/api/v1/maintenance/plans/x",
+    "public": false,
+    "permission": "maintenance:create"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/maintenance/plans/generate",
+    "concretePath": "/api/v1/maintenance/plans/generate",
+    "public": false,
+    "permission": "maintenance:create"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/maintenance/records",
+    "concretePath": "/api/v1/maintenance/records",
+    "public": false,
+    "permission": "maintenance:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/maintenance/records/:id/assign",
+    "concretePath": "/api/v1/maintenance/records/x/assign",
+    "public": false,
+    "permission": "maintenance:assign"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/maintenance/records/:id/complete",
+    "concretePath": "/api/v1/maintenance/records/x/complete",
+    "public": false,
+    "permission": "maintenance:complete"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/maintenance/records/:id/start",
+    "concretePath": "/api/v1/maintenance/records/x/start",
+    "public": false,
+    "permission": "maintenance:execute"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/maintenance/requests",
+    "concretePath": "/api/v1/maintenance/requests",
+    "public": false,
+    "permission": "maintenance:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/maintenance/requests",
+    "concretePath": "/api/v1/maintenance/requests",
+    "public": false,
+    "permission": "maintenance:create"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/maintenance/requests/:id/accept",
+    "concretePath": "/api/v1/maintenance/requests/x/accept",
+    "public": false,
+    "permission": "maintenance:assign"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/maintenance/requests/:id/reject",
+    "concretePath": "/api/v1/maintenance/requests/x/reject",
+    "public": false,
+    "permission": "maintenance:assign"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/batches",
+    "concretePath": "/api/v1/master/batches",
+    "public": false,
+    "permission": "batch:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/batches",
+    "concretePath": "/api/v1/master/batches",
+    "public": false,
+    "permission": "batch:create"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/batches/:id",
+    "concretePath": "/api/v1/master/batches/x",
+    "public": false,
+    "permission": "batch:edit"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/bom",
+    "concretePath": "/api/v1/master/bom",
+    "public": false,
+    "permission": "master_data:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/bom",
+    "concretePath": "/api/v1/master/bom",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/master/bom/:id",
+    "concretePath": "/api/v1/master/bom/x",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/bom/:id",
+    "concretePath": "/api/v1/master/bom/x",
+    "public": false,
+    "permission": "master_data:view"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/bom/:id",
+    "concretePath": "/api/v1/master/bom/x",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/master/bom/:id/status",
+    "concretePath": "/api/v1/master/bom/x/status",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/devices",
+    "concretePath": "/api/v1/master/devices",
+    "public": false,
+    "permission": "device:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/devices",
+    "concretePath": "/api/v1/master/devices",
+    "public": false,
+    "permission": "device:manage"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/master/devices/:id",
+    "concretePath": "/api/v1/master/devices/x",
+    "public": false,
+    "permission": "device:manage"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/devices/:id",
+    "concretePath": "/api/v1/master/devices/x",
+    "public": false,
+    "permission": "device:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/downtime-reasons",
+    "concretePath": "/api/v1/master/downtime-reasons",
+    "public": false,
+    "permission": "master_data:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/downtime-reasons",
+    "concretePath": "/api/v1/master/downtime-reasons",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/master/downtime-reasons/:id",
+    "concretePath": "/api/v1/master/downtime-reasons/x",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/downtime-reasons/:id",
+    "concretePath": "/api/v1/master/downtime-reasons/x",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/kpi-targets",
+    "concretePath": "/api/v1/master/kpi-targets",
+    "public": false,
+    "permission": "master_data:view"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/kpi-targets/:metric",
+    "concretePath": "/api/v1/master/kpi-targets/x",
+    "public": false,
+    "permission": "configuration:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/lines",
+    "concretePath": "/api/v1/master/lines",
+    "public": false,
+    "permission": "master_data:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/lines",
+    "concretePath": "/api/v1/master/lines",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/master/lines/:id",
+    "concretePath": "/api/v1/master/lines/x",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/lines/:id",
+    "concretePath": "/api/v1/master/lines/x",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/machine-rates",
+    "concretePath": "/api/v1/master/machine-rates",
+    "public": false,
+    "permission": "master_data:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/machine-rates",
+    "concretePath": "/api/v1/master/machine-rates",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/master/machine-rates/:id",
+    "concretePath": "/api/v1/master/machine-rates/x",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/machines",
+    "concretePath": "/api/v1/master/machines",
+    "public": false,
+    "permission": "master_data:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/machines",
+    "concretePath": "/api/v1/master/machines",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/master/machines/:id",
+    "concretePath": "/api/v1/master/machines/x",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/machines/:id",
+    "concretePath": "/api/v1/master/machines/x",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/operators",
+    "concretePath": "/api/v1/master/operators",
+    "public": false,
+    "permission": "master_data:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/operators",
+    "concretePath": "/api/v1/master/operators",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/master/operators/:id",
+    "concretePath": "/api/v1/master/operators/x",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/operators/:id",
+    "concretePath": "/api/v1/master/operators/x",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/plants",
+    "concretePath": "/api/v1/master/plants",
+    "public": false,
+    "permission": "master_data:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/processes",
+    "concretePath": "/api/v1/master/processes",
+    "public": false,
+    "permission": "master_data:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/processes",
+    "concretePath": "/api/v1/master/processes",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/master/processes/:id",
+    "concretePath": "/api/v1/master/processes/x",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/processes/:id",
+    "concretePath": "/api/v1/master/processes/x",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/products",
+    "concretePath": "/api/v1/master/products",
+    "public": false,
+    "permission": "master_data:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/products",
+    "concretePath": "/api/v1/master/products",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/master/products/:id",
+    "concretePath": "/api/v1/master/products/x",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/products/:id",
+    "concretePath": "/api/v1/master/products/x",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/reject-reasons",
+    "concretePath": "/api/v1/master/reject-reasons",
+    "public": false,
+    "permission": "master_data:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/reject-reasons",
+    "concretePath": "/api/v1/master/reject-reasons",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/master/reject-reasons/:id",
+    "concretePath": "/api/v1/master/reject-reasons/x",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/reject-reasons/:id",
+    "concretePath": "/api/v1/master/reject-reasons/x",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/routings",
+    "concretePath": "/api/v1/master/routings",
+    "public": false,
+    "permission": "master_data:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/routings",
+    "concretePath": "/api/v1/master/routings",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/master/routings/:id",
+    "concretePath": "/api/v1/master/routings/x",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/routings/:id",
+    "concretePath": "/api/v1/master/routings/x",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/shifts",
+    "concretePath": "/api/v1/master/shifts",
+    "public": false,
+    "permission": "master_data:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/users",
+    "concretePath": "/api/v1/master/users",
+    "public": false,
+    "permission": "user:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/users",
+    "concretePath": "/api/v1/master/users",
+    "public": false,
+    "permission": "user:create"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/master/users/:id",
+    "concretePath": "/api/v1/master/users/x",
+    "public": false,
+    "permission": "user:deactivate"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/users/:id",
+    "concretePath": "/api/v1/master/users/x",
+    "public": false,
+    "permission": "user:view"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/users/:id",
+    "concretePath": "/api/v1/master/users/x",
+    "public": false,
+    "permission": "user:edit"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/master/users/:id/status",
+    "concretePath": "/api/v1/master/users/x/status",
+    "public": false,
+    "permission": "user:deactivate"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/work-centers",
+    "concretePath": "/api/v1/master/work-centers",
+    "public": false,
+    "permission": "master_data:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/work-centers",
+    "concretePath": "/api/v1/master/work-centers",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/master/work-centers/:id",
+    "concretePath": "/api/v1/master/work-centers/x",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/work-centers/:id",
+    "concretePath": "/api/v1/master/work-centers/x",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/materials/availability/production-plan/:id",
+    "concretePath": "/api/v1/materials/availability/production-plan/x",
+    "public": false,
+    "permission": "material:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/materials/availability/work-order/:id",
+    "concretePath": "/api/v1/materials/availability/work-order/x",
+    "public": false,
+    "permission": "material:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/materials/consumption",
+    "concretePath": "/api/v1/materials/consumption",
+    "public": false,
+    "permission": "material:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/materials/consumption",
+    "concretePath": "/api/v1/materials/consumption",
+    "public": false,
+    "permission": "material:consume"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/materials/consumption/variance/:workOrderId",
+    "concretePath": "/api/v1/materials/consumption/variance/x",
+    "public": false,
+    "permission": "material:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/materials/inventory",
+    "concretePath": "/api/v1/materials/inventory",
+    "public": false,
+    "permission": "material:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/materials/inventory/adjust",
+    "concretePath": "/api/v1/materials/inventory/adjust",
+    "public": false,
+    "permission": "material:adjust"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/materials/inventory/incoming",
+    "concretePath": "/api/v1/materials/inventory/incoming",
+    "public": false,
+    "permission": "material:adjust"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/materials/inventory/receive",
+    "concretePath": "/api/v1/materials/inventory/receive",
+    "public": false,
+    "permission": "material:adjust"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/materials/readiness",
+    "concretePath": "/api/v1/materials/readiness",
+    "public": false,
+    "permission": "material:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/materials/requirements",
+    "concretePath": "/api/v1/materials/requirements",
+    "public": false,
+    "permission": "material:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/materials/reservations",
+    "concretePath": "/api/v1/materials/reservations",
+    "public": false,
+    "permission": "material:view"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/materials/reservations/:id",
+    "concretePath": "/api/v1/materials/reservations/x",
+    "public": false,
+    "permission": "material:reserve"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/materials/reservations/work-order/:id",
+    "concretePath": "/api/v1/materials/reservations/work-order/x",
+    "public": false,
+    "permission": "material:reserve"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/materials/transactions",
+    "concretePath": "/api/v1/materials/transactions",
+    "public": false,
+    "permission": "material:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/materials/warehouses",
+    "concretePath": "/api/v1/materials/warehouses",
+    "public": false,
+    "permission": "material:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/materials/warehouses",
+    "concretePath": "/api/v1/materials/warehouses",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/meta/deployment",
+    "concretePath": "/api/v1/meta/deployment",
+    "public": true,
+    "permission": null
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/meta/openapi.json",
+    "concretePath": "/api/v1/meta/openapi.json",
+    "public": false,
+    "permission": null
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/molds",
+    "concretePath": "/api/v1/molds",
+    "public": false,
+    "permission": "master_data:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/molds",
+    "concretePath": "/api/v1/molds",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/molds/:id",
+    "concretePath": "/api/v1/molds/x",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/molds/:id",
+    "concretePath": "/api/v1/molds/x",
+    "public": false,
+    "permission": "master_data:view"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/molds/:id",
+    "concretePath": "/api/v1/molds/x",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/molds/:id/compatibilities",
+    "concretePath": "/api/v1/molds/x/compatibilities",
+    "public": false,
+    "permission": "master_data:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/molds/:id/compatibilities",
+    "concretePath": "/api/v1/molds/x/compatibilities",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/molds/:id/compatibilities/:compatibilityId",
+    "concretePath": "/api/v1/molds/x/compatibilities/x",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/molds/:id/compatibilities/:compatibilityId",
+    "concretePath": "/api/v1/molds/x/compatibilities/x",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/mrp/run",
+    "concretePath": "/api/v1/mrp/run",
+    "public": false,
+    "permission": "mrp:run"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/mrp/runs",
+    "concretePath": "/api/v1/mrp/runs",
+    "public": false,
+    "permission": "mrp:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/mrp/runs/:id",
+    "concretePath": "/api/v1/mrp/runs/x",
+    "public": false,
+    "permission": "mrp:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/mrp/runs/latest",
+    "concretePath": "/api/v1/mrp/runs/latest",
+    "public": false,
+    "permission": "mrp:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/oee/bottlenecks",
+    "concretePath": "/api/v1/oee/bottlenecks",
+    "public": false,
+    "permission": "analytics:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/oee/calculate",
+    "concretePath": "/api/v1/oee/calculate",
+    "public": false,
+    "permission": "analytics:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/oee/config",
+    "concretePath": "/api/v1/oee/config",
+    "public": false,
+    "permission": "analytics:view"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/oee/config",
+    "concretePath": "/api/v1/oee/config",
+    "public": false,
+    "permission": "configuration:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/oee/machine-performance",
+    "concretePath": "/api/v1/oee/machine-performance",
+    "public": false,
+    "permission": "analytics:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/oee/report",
+    "concretePath": "/api/v1/oee/report",
+    "public": false,
+    "permission": "analytics:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/oee/target-vs-actual",
+    "concretePath": "/api/v1/oee/target-vs-actual",
+    "public": false,
+    "permission": "analytics:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/oee/validation",
+    "concretePath": "/api/v1/oee/validation",
+    "public": false,
+    "permission": "analytics:view"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/oee/validation/:item",
+    "concretePath": "/api/v1/oee/validation/x",
+    "public": false,
+    "permission": "configuration:manage"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/onboarding/apply-template",
+    "concretePath": "/api/v1/onboarding/apply-template",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/onboarding/create-blank",
+    "concretePath": "/api/v1/onboarding/create-blank",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/onboarding/events",
+    "concretePath": "/api/v1/onboarding/events",
+    "public": false,
+    "permission": "dashboard:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/onboarding/first-workflow",
+    "concretePath": "/api/v1/onboarding/first-workflow",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/onboarding/guidance",
+    "concretePath": "/api/v1/onboarding/guidance",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/onboarding/guidance",
+    "concretePath": "/api/v1/onboarding/guidance",
+    "public": false,
+    "permission": "dashboard:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/onboarding/status",
+    "concretePath": "/api/v1/onboarding/status",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/onboarding/step",
+    "concretePath": "/api/v1/onboarding/step",
+    "public": false,
+    "permission": "dashboard:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/onboarding/templates",
+    "concretePath": "/api/v1/onboarding/templates",
+    "public": false,
+    "permission": "master_data:manage"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/onboarding/upgrade",
+    "concretePath": "/api/v1/onboarding/upgrade",
+    "public": false,
+    "permission": "configuration:manage"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/operators/:id/pin",
+    "concretePath": "/api/v1/operators/x/pin",
+    "public": false,
+    "permission": "user:edit"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/permissions",
+    "concretePath": "/api/v1/permissions",
+    "public": false,
+    "permission": "role:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/planning/config",
+    "concretePath": "/api/v1/planning/config",
+    "public": false,
+    "permission": "production_plan:view"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/planning/config",
+    "concretePath": "/api/v1/planning/config",
+    "public": false,
+    "permission": "configuration:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/production-board",
+    "concretePath": "/api/v1/production-board",
+    "public": false,
+    "permission": "production_board:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/production-board/dispatch",
+    "concretePath": "/api/v1/production-board/dispatch",
+    "public": false,
+    "permission": "production_board:reschedule"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/production-orders",
+    "concretePath": "/api/v1/production-orders",
+    "public": false,
+    "permission": "production_order:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/production-orders",
+    "concretePath": "/api/v1/production-orders",
+    "public": false,
+    "permission": "production_order:create"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/production-orders/:id",
+    "concretePath": "/api/v1/production-orders/x",
+    "public": false,
+    "permission": "production_order:delete"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/production-orders/:id",
+    "concretePath": "/api/v1/production-orders/x",
+    "public": false,
+    "permission": "production_order:view"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/production-orders/:id",
+    "concretePath": "/api/v1/production-orders/x",
+    "public": false,
+    "permission": "production_order:edit"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/production-orders/:id/release",
+    "concretePath": "/api/v1/production-orders/x/release",
+    "public": false,
+    "permission": "production_order:release"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/production-plans",
+    "concretePath": "/api/v1/production-plans",
+    "public": false,
+    "permission": "production_plan:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/production-plans",
+    "concretePath": "/api/v1/production-plans",
+    "public": false,
+    "permission": "production_plan:create"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/production-plans/:id",
+    "concretePath": "/api/v1/production-plans/x",
+    "public": false,
+    "permission": "production_plan:view"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/production-plans/:id",
+    "concretePath": "/api/v1/production-plans/x",
+    "public": false,
+    "permission": "production_plan:edit"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/production-plans/:id/cancel",
+    "concretePath": "/api/v1/production-plans/x/cancel",
+    "public": false,
+    "permission": "production_plan:confirm"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/production-plans/:id/confirm",
+    "concretePath": "/api/v1/production-plans/x/confirm",
+    "public": false,
+    "permission": "production_plan:confirm"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/production-plans/:id/demand",
+    "concretePath": "/api/v1/production-plans/x/demand",
+    "public": false,
+    "permission": "production_plan:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/production-plans/:id/demand",
+    "concretePath": "/api/v1/production-plans/x/demand",
+    "public": false,
+    "permission": "production_plan:edit"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/production-plans/:id/demand/:demandId",
+    "concretePath": "/api/v1/production-plans/x/demand/x",
+    "public": false,
+    "permission": "production_plan:edit"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/production-plans/:id/generate-work-orders",
+    "concretePath": "/api/v1/production-plans/x/generate-work-orders",
+    "public": false,
+    "permission": "work_order:create"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/production-plans/:id/lines",
+    "concretePath": "/api/v1/production-plans/x/lines",
+    "public": false,
+    "permission": "production_plan:view"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/production-plans/:id/lines/:lineId",
+    "concretePath": "/api/v1/production-plans/x/lines/x",
+    "public": false,
+    "permission": "production_plan:edit"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/production-plans/:id/wizard",
+    "concretePath": "/api/v1/production-plans/x/wizard",
+    "public": false,
+    "permission": "production_plan:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/quality/dashboard",
+    "concretePath": "/api/v1/quality/dashboard",
+    "public": false,
+    "permission": "quality:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/quality/dispositions",
+    "concretePath": "/api/v1/quality/dispositions",
+    "public": false,
+    "permission": "quality:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/quality/dispositions",
+    "concretePath": "/api/v1/quality/dispositions",
+    "public": false,
+    "permission": "quality:disposition"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/quality/gate/:workOrderId",
+    "concretePath": "/api/v1/quality/gate/x",
+    "public": false,
+    "permission": "quality:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/quality/holds",
+    "concretePath": "/api/v1/quality/holds",
+    "public": false,
+    "permission": "quality:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/quality/holds",
+    "concretePath": "/api/v1/quality/holds",
+    "public": false,
+    "permission": "quality:hold"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/quality/holds/:id/release",
+    "concretePath": "/api/v1/quality/holds/x/release",
+    "public": false,
+    "permission": "quality:release"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/quality/inspection-plans",
+    "concretePath": "/api/v1/quality/inspection-plans",
+    "public": false,
+    "permission": "quality:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/quality/inspection-plans",
+    "concretePath": "/api/v1/quality/inspection-plans",
+    "public": false,
+    "permission": "ncr:manage"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/quality/inspection-plans/:id",
+    "concretePath": "/api/v1/quality/inspection-plans/x",
+    "public": false,
+    "permission": "ncr:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/quality/inspection-plans/:id",
+    "concretePath": "/api/v1/quality/inspection-plans/x",
+    "public": false,
+    "permission": "quality:view"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/quality/inspection-plans/:id",
+    "concretePath": "/api/v1/quality/inspection-plans/x",
+    "public": false,
+    "permission": "ncr:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/quality/inspections",
+    "concretePath": "/api/v1/quality/inspections",
+    "public": false,
+    "permission": "quality:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/quality/inspections",
+    "concretePath": "/api/v1/quality/inspections",
+    "public": false,
+    "permission": "quality:inspect"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/quality/ncr",
+    "concretePath": "/api/v1/quality/ncr",
+    "public": false,
+    "permission": "quality:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/quality/ncr",
+    "concretePath": "/api/v1/quality/ncr",
+    "public": false,
+    "permission": "ncr:create"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/quality/ncr/:id",
+    "concretePath": "/api/v1/quality/ncr/x",
+    "public": false,
+    "permission": "ncr:manage"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/quality/ncr/:id/actions",
+    "concretePath": "/api/v1/quality/ncr/x/actions",
+    "public": false,
+    "permission": "ncr:manage"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/quality/ncr/actions/:id",
+    "concretePath": "/api/v1/quality/ncr/actions/x",
+    "public": false,
+    "permission": "ncr:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reports/downtime",
+    "concretePath": "/api/v1/reports/downtime",
+    "public": false,
+    "permission": "report:export"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reports/oee",
+    "concretePath": "/api/v1/reports/oee",
+    "public": false,
+    "permission": "report:export"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reports/production",
+    "concretePath": "/api/v1/reports/production",
+    "public": false,
+    "permission": "report:export"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reports/shift",
+    "concretePath": "/api/v1/reports/shift",
+    "public": false,
+    "permission": "report:export"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/roles",
+    "concretePath": "/api/v1/roles",
+    "public": false,
+    "permission": "role:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/roles",
+    "concretePath": "/api/v1/roles",
+    "public": false,
+    "permission": "role:create"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/roles/:id",
+    "concretePath": "/api/v1/roles/x",
+    "public": false,
+    "permission": "role:edit"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/roles/:id",
+    "concretePath": "/api/v1/roles/x",
+    "public": false,
+    "permission": "role:view"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/roles/:id",
+    "concretePath": "/api/v1/roles/x",
+    "public": false,
+    "permission": "role:edit"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/security/summary",
+    "concretePath": "/api/v1/security/summary",
+    "public": false,
+    "permission": "configuration:manage"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/sessions",
+    "concretePath": "/api/v1/sessions",
+    "public": false,
+    "permission": "user:deactivate"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sessions",
+    "concretePath": "/api/v1/sessions",
+    "public": false,
+    "permission": "user:view"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/sessions/:sessionId",
+    "concretePath": "/api/v1/sessions/x",
+    "public": false,
+    "permission": "user:deactivate"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/shifts",
+    "concretePath": "/api/v1/shifts",
+    "public": false,
+    "permission": "shift:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/shifts",
+    "concretePath": "/api/v1/shifts",
+    "public": false,
+    "permission": "shift:manage"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/shifts/:id",
+    "concretePath": "/api/v1/shifts/x",
+    "public": false,
+    "permission": "shift:manage"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/shifts/:id",
+    "concretePath": "/api/v1/shifts/x",
+    "public": false,
+    "permission": "shift:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/shifts/handover",
+    "concretePath": "/api/v1/shifts/handover",
+    "public": false,
+    "permission": "shift:handover"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/shifts/handover",
+    "concretePath": "/api/v1/shifts/handover",
+    "public": false,
+    "permission": "shift:handover"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/shifts/handover/:id/acknowledge",
+    "concretePath": "/api/v1/shifts/handover/x/acknowledge",
+    "public": false,
+    "permission": "shift:handover"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/shifts/handover/context",
+    "concretePath": "/api/v1/shifts/handover/context",
+    "public": false,
+    "permission": "shift:handover"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/shifts/performance",
+    "concretePath": "/api/v1/shifts/performance",
+    "public": false,
+    "permission": "shift:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/shop-floor/downtime",
+    "concretePath": "/api/v1/shop-floor/downtime",
+    "public": false,
+    "permission": "work_order:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/shop-floor/downtime/:id/resolve",
+    "concretePath": "/api/v1/shop-floor/downtime/x/resolve",
+    "public": false,
+    "permission": "downtime:create"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/shop-floor/downtime/start",
+    "concretePath": "/api/v1/shop-floor/downtime/start",
+    "public": false,
+    "permission": "downtime:create"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/shop-floor/output",
+    "concretePath": "/api/v1/shop-floor/output",
+    "public": false,
+    "permission": "production_record:create"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/shop-floor/sync-batch",
+    "concretePath": "/api/v1/shop-floor/sync-batch",
+    "public": false,
+    "permission": "shopfloor:execute"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/shop-floor/sync-exceptions",
+    "concretePath": "/api/v1/shop-floor/sync-exceptions",
+    "public": false,
+    "permission": "work_order:view"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/shop-floor/sync-exceptions/:id",
+    "concretePath": "/api/v1/shop-floor/sync-exceptions/x",
+    "public": false,
+    "permission": "production_record:correct"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/shop-floor/sync-exceptions/summary",
+    "concretePath": "/api/v1/shop-floor/sync-exceptions/summary",
+    "public": false,
+    "permission": "work_order:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/users/:id/password",
+    "concretePath": "/api/v1/users/x/password",
+    "public": false,
+    "permission": "user:edit"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/wip/dashboard",
+    "concretePath": "/api/v1/wip/dashboard",
+    "public": false,
+    "permission": "wip:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/wip/receipts",
+    "concretePath": "/api/v1/wip/receipts",
+    "public": false,
+    "permission": "wip:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/wip/records",
+    "concretePath": "/api/v1/wip/records",
+    "public": false,
+    "permission": "wip:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/wip/records",
+    "concretePath": "/api/v1/wip/records",
+    "public": false,
+    "permission": "wip:create"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/wip/records/:id/history",
+    "concretePath": "/api/v1/wip/records/x/history",
+    "public": false,
+    "permission": "wip:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/wip/records/:id/hold",
+    "concretePath": "/api/v1/wip/records/x/hold",
+    "public": false,
+    "permission": "wip:hold"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/wip/records/:id/release",
+    "concretePath": "/api/v1/wip/records/x/release",
+    "public": false,
+    "permission": "wip:release"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/wip/transfers",
+    "concretePath": "/api/v1/wip/transfers",
+    "public": false,
+    "permission": "wip:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/wip/transfers",
+    "concretePath": "/api/v1/wip/transfers",
+    "public": false,
+    "permission": "wip:transfer"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/wip/transfers/:id/receive",
+    "concretePath": "/api/v1/wip/transfers/x/receive",
+    "public": false,
+    "permission": "wip:receive"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/work-orders",
+    "concretePath": "/api/v1/work-orders",
+    "public": false,
+    "permission": "work_order:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/work-orders",
+    "concretePath": "/api/v1/work-orders",
+    "public": false,
+    "permission": "work_order:create"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/work-orders/:id",
+    "concretePath": "/api/v1/work-orders/x",
+    "public": false,
+    "permission": "work_order:cancel"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/work-orders/:id",
+    "concretePath": "/api/v1/work-orders/x",
+    "public": false,
+    "permission": "work_order:view"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/work-orders/:id",
+    "concretePath": "/api/v1/work-orders/x",
+    "public": false,
+    "permission": "work_order:edit"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/work-orders/:id/available-quantity",
+    "concretePath": "/api/v1/work-orders/x/available-quantity",
+    "public": false,
+    "permission": "work_order:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/work-orders/:id/batch",
+    "concretePath": "/api/v1/work-orders/x/batch",
+    "public": false,
+    "permission": "batch:edit"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/work-orders/:id/cancel",
+    "concretePath": "/api/v1/work-orders/x/cancel",
+    "public": false,
+    "permission": "work_order:cancel"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/work-orders/:id/chain",
+    "concretePath": "/api/v1/work-orders/x/chain",
+    "public": false,
+    "permission": "work_order:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/work-orders/:id/complete",
+    "concretePath": "/api/v1/work-orders/x/complete",
+    "public": false,
+    "permission": "shopfloor:execute"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/work-orders/:id/confirm",
+    "concretePath": "/api/v1/work-orders/x/confirm",
+    "public": false,
+    "permission": "work_order:confirm"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/work-orders/:id/demand",
+    "concretePath": "/api/v1/work-orders/x/demand",
+    "public": false,
+    "permission": "work_order:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/work-orders/:id/release",
+    "concretePath": "/api/v1/work-orders/x/release",
+    "public": false,
+    "permission": "work_order:confirm"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/work-orders/:id/split",
+    "concretePath": "/api/v1/work-orders/x/split",
+    "public": false,
+    "permission": "work_order:create"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/work-orders/:id/start",
+    "concretePath": "/api/v1/work-orders/x/start",
+    "public": false,
+    "permission": "shopfloor:execute"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workforce/assignments",
+    "concretePath": "/api/v1/workforce/assignments",
+    "public": false,
+    "permission": "workforce:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workforce/assignments",
+    "concretePath": "/api/v1/workforce/assignments",
+    "public": false,
+    "permission": "workforce:assignment"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/workforce/assignments/:id",
+    "concretePath": "/api/v1/workforce/assignments/x",
+    "public": false,
+    "permission": "workforce:assignment"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workforce/availability",
+    "concretePath": "/api/v1/workforce/availability",
+    "public": false,
+    "permission": "workforce:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workforce/availability",
+    "concretePath": "/api/v1/workforce/availability",
+    "public": false,
+    "permission": "workforce:availability"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workforce/dashboard",
+    "concretePath": "/api/v1/workforce/dashboard",
+    "public": false,
+    "permission": "workforce:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workforce/eligibility",
+    "concretePath": "/api/v1/workforce/eligibility",
+    "public": false,
+    "permission": "workforce:view"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workforce/labor-requirements/:workOrderId",
+    "concretePath": "/api/v1/workforce/labor-requirements/x",
+    "public": false,
+    "permission": "workforce:view"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/workforce/labor-requirements/:workOrderId",
+    "concretePath": "/api/v1/workforce/labor-requirements/x",
+    "public": false,
+    "permission": "workforce:assignment"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workforce/qualifications",
+    "concretePath": "/api/v1/workforce/qualifications",
+    "public": false,
+    "permission": "workforce:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workforce/qualifications",
+    "concretePath": "/api/v1/workforce/qualifications",
+    "public": false,
+    "permission": "workforce:qualification"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/workforce/qualifications/:id",
+    "concretePath": "/api/v1/workforce/qualifications/x",
+    "public": false,
+    "permission": "workforce:qualification"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workforce/requirements",
+    "concretePath": "/api/v1/workforce/requirements",
+    "public": false,
+    "permission": "workforce:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workforce/requirements",
+    "concretePath": "/api/v1/workforce/requirements",
+    "public": false,
+    "permission": "workforce:manage"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/workforce/requirements/:id",
+    "concretePath": "/api/v1/workforce/requirements/x",
+    "public": false,
+    "permission": "workforce:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workforce/shift-assignments",
+    "concretePath": "/api/v1/workforce/shift-assignments",
+    "public": false,
+    "permission": "workforce:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workforce/shift-assignments",
+    "concretePath": "/api/v1/workforce/shift-assignments",
+    "public": false,
+    "permission": "workforce:assignment"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/workforce/shift-assignments/:id",
+    "concretePath": "/api/v1/workforce/shift-assignments/x",
+    "public": false,
+    "permission": "workforce:assignment"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workforce/skills",
+    "concretePath": "/api/v1/workforce/skills",
+    "public": false,
+    "permission": "workforce:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workforce/skills",
+    "concretePath": "/api/v1/workforce/skills",
+    "public": false,
+    "permission": "workforce:manage"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/workforce/skills/:id",
+    "concretePath": "/api/v1/workforce/skills/x",
+    "public": false,
+    "permission": "workforce:manage"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/workforce/skills/:id",
+    "concretePath": "/api/v1/workforce/skills/x",
+    "public": false,
+    "permission": "workforce:manage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workforce/time-records",
+    "concretePath": "/api/v1/workforce/time-records",
+    "public": false,
+    "permission": "workforce:view"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workforce/time-records",
+    "concretePath": "/api/v1/workforce/time-records",
+    "public": false,
+    "permission": "workforce:assignment"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workforce/utilization",
+    "concretePath": "/api/v1/workforce/utilization",
+    "public": false,
+    "permission": "workforce:view"
+  }
+]

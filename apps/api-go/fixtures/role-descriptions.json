@@ -1,0 +1,13 @@
+{
+  "EXECUTIVE": "Visibilitas KPI pabrik tingkat tenant, tanpa perintah shop floor.",
+  "PRODUCTION_MANAGER": "Kendali penuh eksekusi produksi, analitik, dan persetujuan koreksi.",
+  "SUPERVISOR": "Kendali shift, rilis work order, dan koreksi shift berjalan.",
+  "OPERATOR": "Eksekusi work order yang ditugaskan pada terminal shop floor.",
+  "PPIC": "Perencanaan production order, work order, dan penjadwalan.",
+  "QUALITY": "Pencatatan dan analisis reject serta traceability kualitas.",
+  "SALES": "Penerimaan dan pencatatan Customer Order, beserta status pemenuhannya. Tanpa akses planning maupun eksekusi produksi.",
+  "MAINTENANCE": "Preventive, corrective, dan emergency maintenance mesin. Tanpa akses eksekusi produksi.",
+  "WAREHOUSE": "Inventory, issue, return, dan penyesuaian stok material beserta ledger transaksinya.",
+  "WORKFORCE_ADMIN": "Skill, kualifikasi, penugasan shift, dan ketersediaan operator. Tanpa akses eksekusi produksi.",
+  "ADMIN": "Administrasi tenant: pengguna, peran, master data, dan audit."
+}

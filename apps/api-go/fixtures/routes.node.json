@@ -1,0 +1,1717 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/internal/v1/audit",
+    "file": "routes/internal.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/internal/v1/auth/login",
+    "file": "routes/internal.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/internal/v1/auth/logout",
+    "file": "routes/internal.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/internal/v1/auth/session",
+    "file": "routes/internal.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/internal/v1/clients",
+    "file": "routes/internal.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/internal/v1/clients",
+    "file": "routes/internal.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/internal/v1/clients/:id",
+    "file": "routes/internal.routes.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/internal/v1/clients/:id",
+    "file": "routes/internal.routes.ts"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/internal/v1/clients/:id/status",
+    "file": "routes/internal.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/internal/v1/clients/:id/subscription",
+    "file": "routes/internal.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/internal/v1/clients/:id/subscriptions",
+    "file": "routes/internal.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/internal/v1/clients/:id/support-access",
+    "file": "routes/internal.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/internal/v1/clients/:id/support-access",
+    "file": "routes/internal.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/internal/v1/clients/:id/usage",
+    "file": "routes/internal.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/internal/v1/plans",
+    "file": "routes/internal.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/internal/v1/staff",
+    "file": "routes/internal.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/internal/v1/summary",
+    "file": "routes/internal.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/internal/v1/support-access",
+    "file": "routes/internal.routes.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/internal/v1/support-access/:grantId",
+    "file": "routes/internal.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/internal/v1/support-access/:grantId/use",
+    "file": "routes/internal.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/internal/v1/usage/capture",
+    "file": "routes/internal.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/alerts",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/daily-performance",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/downtime-pareto",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/downtime-summary",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/executive-kpi",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/line-performance",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/live-board",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/oee-trend",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/order-status",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/plant-performance",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/process-performance",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/production-trend",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/quality-summary",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/reject-pareto",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/audit-logs",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/login",
+    "file": "routes/auth.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/logout",
+    "file": "routes/auth.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/auth/mfa",
+    "file": "routes/auth.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/mfa/confirm",
+    "file": "routes/auth.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/mfa/disable",
+    "file": "routes/auth.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/mfa/enroll",
+    "file": "routes/auth.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/mfa/verify",
+    "file": "routes/auth.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/operator-login",
+    "file": "routes/auth.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/auth/session",
+    "file": "routes/auth.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/trial-register",
+    "file": "routes/onboarding.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/capacity-plans",
+    "file": "modules/planning/api/capacity-plan.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/capacity-plans",
+    "file": "modules/planning/api/capacity-plan.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/capacity-plans/:id",
+    "file": "modules/planning/api/capacity-plan.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/capacity-plans/:id/recalculate",
+    "file": "modules/planning/api/capacity-plan.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/capacity-plans/assess",
+    "file": "modules/planning/api/capacity-plan.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/capacity-plans/current",
+    "file": "modules/planning/api/capacity-plan.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/corrections",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/corrections",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/corrections/:id/approve",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/corrections/:id/reject",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/corrections/policy",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/csv/:entity/export",
+    "file": "routes/csv.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/csv/:entity/import",
+    "file": "routes/csv.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/csv/:entity/template",
+    "file": "routes/csv.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/csv/entities",
+    "file": "routes/csv.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/customer-orders",
+    "file": "modules/planning/api/customer-order.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/customer-orders",
+    "file": "modules/planning/api/customer-order.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/customer-orders/:id",
+    "file": "modules/planning/api/customer-order.routes.ts"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/customer-orders/:id",
+    "file": "modules/planning/api/customer-order.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/customer-orders/:id/cancel",
+    "file": "modules/planning/api/customer-order.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/customer-orders/:id/documents",
+    "file": "modules/planning/api/customer-order.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/customer-orders/:id/documents",
+    "file": "modules/planning/api/customer-order.routes.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/customer-orders/:id/documents/:documentId",
+    "file": "modules/planning/api/customer-order.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/customer-orders/:id/lines",
+    "file": "modules/planning/api/customer-order.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/customer-orders/:id/lines",
+    "file": "modules/planning/api/customer-order.routes.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/customer-orders/:id/lines/:lineId",
+    "file": "modules/planning/api/customer-order.routes.ts"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/customer-orders/:id/lines/:lineId",
+    "file": "modules/planning/api/customer-order.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/customer-orders/:id/logistics-status",
+    "file": "modules/planning/api/customer-order.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/customer-orders/:id/refresh-status",
+    "file": "modules/planning/api/customer-order.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/customer-orders/documents/:objectId/content",
+    "file": "modules/planning/api/customer-order.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/customers",
+    "file": "modules/planning/api/customer.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/customers",
+    "file": "modules/planning/api/customer.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/customers/:id",
+    "file": "modules/planning/api/customer.routes.ts"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/customers/:id",
+    "file": "modules/planning/api/customer.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/demand-forecasts",
+    "file": "modules/planning/api/demand-forecast.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/demand-forecasts/:id",
+    "file": "modules/planning/api/demand-forecast.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/demand-forecasts/:id/comparison",
+    "file": "modules/planning/api/demand-forecast.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/demand-forecasts/generate",
+    "file": "modules/planning/api/demand-forecast.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/demand-forecasts/jobs",
+    "file": "modules/planning/api/demand-forecast.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/demand-forecasts/jobs/:jobId",
+    "file": "modules/planning/api/demand-forecast.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/docs",
+    "file": "routes/meta.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/events",
+    "file": "routes/event.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/events/summary",
+    "file": "routes/event.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/events/timeline/:entityType/:entityId",
+    "file": "routes/event.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/maintenance/emergency",
+    "file": "routes/maintenance.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/maintenance/kpi",
+    "file": "routes/maintenance.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/maintenance/plans",
+    "file": "routes/maintenance.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/maintenance/plans",
+    "file": "routes/maintenance.routes.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/maintenance/plans/:id",
+    "file": "routes/maintenance.routes.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/maintenance/plans/:id",
+    "file": "routes/maintenance.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/maintenance/plans/generate",
+    "file": "routes/maintenance.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/maintenance/records",
+    "file": "routes/maintenance.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/maintenance/records/:id/assign",
+    "file": "routes/maintenance.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/maintenance/records/:id/complete",
+    "file": "routes/maintenance.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/maintenance/records/:id/start",
+    "file": "routes/maintenance.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/maintenance/requests",
+    "file": "routes/maintenance.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/maintenance/requests",
+    "file": "routes/maintenance.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/maintenance/requests/:id/accept",
+    "file": "routes/maintenance.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/maintenance/requests/:id/reject",
+    "file": "routes/maintenance.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/batches",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/batches",
+    "file": "main.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/batches/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/bom",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/bom",
+    "file": "main.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/master/bom/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/bom/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/bom/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/master/bom/:id/status",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/devices",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/devices",
+    "file": "main.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/master/devices/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/devices/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/downtime-reasons",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/downtime-reasons",
+    "file": "main.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/master/downtime-reasons/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/downtime-reasons/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/kpi-targets",
+    "file": "main.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/kpi-targets/:metric",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/lines",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/lines",
+    "file": "main.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/master/lines/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/lines/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/machine-rates",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/machine-rates",
+    "file": "main.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/master/machine-rates/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/machines",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/machines",
+    "file": "main.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/master/machines/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/machines/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/operators",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/operators",
+    "file": "main.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/master/operators/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/operators/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/plants",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/processes",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/processes",
+    "file": "main.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/master/processes/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/processes/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/products",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/products",
+    "file": "main.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/master/products/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/products/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/reject-reasons",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/reject-reasons",
+    "file": "main.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/master/reject-reasons/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/reject-reasons/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/routings",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/routings",
+    "file": "main.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/master/routings/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/routings/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/shifts",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/users",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/users",
+    "file": "main.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/master/users/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/users/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/users/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/master/users/:id/status",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/work-centers",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/master/work-centers",
+    "file": "main.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/master/work-centers/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/master/work-centers/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/materials/availability/production-plan/:id",
+    "file": "routes/material.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/materials/availability/work-order/:id",
+    "file": "routes/material.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/materials/consumption",
+    "file": "routes/material.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/materials/consumption",
+    "file": "routes/material.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/materials/consumption/variance/:workOrderId",
+    "file": "routes/material.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/materials/inventory",
+    "file": "routes/material.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/materials/inventory/adjust",
+    "file": "routes/material.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/materials/inventory/incoming",
+    "file": "routes/material.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/materials/inventory/receive",
+    "file": "routes/material.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/materials/readiness",
+    "file": "routes/material.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/materials/requirements",
+    "file": "routes/material.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/materials/reservations",
+    "file": "routes/material.routes.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/materials/reservations/:id",
+    "file": "routes/material.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/materials/reservations/work-order/:id",
+    "file": "routes/material.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/materials/transactions",
+    "file": "routes/material.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/materials/warehouses",
+    "file": "routes/material.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/materials/warehouses",
+    "file": "routes/material.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/meta/deployment",
+    "file": "routes/meta.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/meta/openapi.json",
+    "file": "routes/meta.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/molds",
+    "file": "modules/master-data/mold.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/molds",
+    "file": "modules/master-data/mold.routes.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/molds/:id",
+    "file": "modules/master-data/mold.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/molds/:id",
+    "file": "modules/master-data/mold.routes.ts"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/molds/:id",
+    "file": "modules/master-data/mold.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/molds/:id/compatibilities",
+    "file": "modules/master-data/mold.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/molds/:id/compatibilities",
+    "file": "modules/master-data/mold.routes.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/molds/:id/compatibilities/:compatibilityId",
+    "file": "modules/master-data/mold.routes.ts"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/molds/:id/compatibilities/:compatibilityId",
+    "file": "modules/master-data/mold.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/mrp/run",
+    "file": "routes/material.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/mrp/runs",
+    "file": "routes/material.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/mrp/runs/:id",
+    "file": "routes/material.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/mrp/runs/latest",
+    "file": "routes/material.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/oee/bottlenecks",
+    "file": "routes/oee.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/oee/calculate",
+    "file": "routes/oee.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/oee/config",
+    "file": "routes/oee.routes.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/oee/config",
+    "file": "routes/oee.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/oee/machine-performance",
+    "file": "routes/oee.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/oee/report",
+    "file": "routes/oee.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/oee/target-vs-actual",
+    "file": "routes/oee.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/oee/validation",
+    "file": "routes/oee.routes.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/oee/validation/:item",
+    "file": "routes/oee.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/onboarding/apply-template",
+    "file": "routes/onboarding.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/onboarding/create-blank",
+    "file": "routes/onboarding.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/onboarding/events",
+    "file": "routes/onboarding.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/onboarding/first-workflow",
+    "file": "routes/onboarding.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/onboarding/guidance",
+    "file": "routes/onboarding.routes.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/onboarding/guidance",
+    "file": "routes/onboarding.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/onboarding/status",
+    "file": "routes/onboarding.routes.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/onboarding/step",
+    "file": "routes/onboarding.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/onboarding/templates",
+    "file": "routes/onboarding.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/onboarding/upgrade",
+    "file": "routes/onboarding.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/operators/:id/pin",
+    "file": "routes/auth.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/permissions",
+    "file": "routes/rbac.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/planning/config",
+    "file": "modules/planning/api/index.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/planning/config",
+    "file": "modules/planning/api/index.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/production-board",
+    "file": "routes/production-board.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/production-board/dispatch",
+    "file": "routes/production-board.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/production-orders",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/production-orders",
+    "file": "main.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/production-orders/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/production-orders/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/production-orders/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/production-orders/:id/release",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/production-plans",
+    "file": "modules/planning/api/production-plan.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/production-plans",
+    "file": "modules/planning/api/production-plan.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/production-plans/:id",
+    "file": "modules/planning/api/production-plan.routes.ts"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/production-plans/:id",
+    "file": "modules/planning/api/production-plan.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/production-plans/:id/cancel",
+    "file": "modules/planning/api/production-plan.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/production-plans/:id/confirm",
+    "file": "modules/planning/api/production-plan.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/production-plans/:id/demand",
+    "file": "modules/planning/api/production-plan.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/production-plans/:id/demand",
+    "file": "modules/planning/api/production-plan.routes.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/production-plans/:id/demand/:demandId",
+    "file": "modules/planning/api/production-plan.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/production-plans/:id/generate-work-orders",
+    "file": "modules/planning/api/production-plan.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/production-plans/:id/lines",
+    "file": "modules/planning/api/production-plan.routes.ts"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/production-plans/:id/lines/:lineId",
+    "file": "modules/planning/api/production-plan.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/production-plans/:id/wizard",
+    "file": "modules/planning/api/production-plan.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/quality/dashboard",
+    "file": "routes/quality.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/quality/dispositions",
+    "file": "routes/quality.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/quality/dispositions",
+    "file": "routes/quality.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/quality/gate/:workOrderId",
+    "file": "routes/quality.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/quality/holds",
+    "file": "routes/quality.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/quality/holds",
+    "file": "routes/quality.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/quality/holds/:id/release",
+    "file": "routes/quality.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/quality/inspection-plans",
+    "file": "routes/quality.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/quality/inspection-plans",
+    "file": "routes/quality.routes.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/quality/inspection-plans/:id",
+    "file": "routes/quality.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/quality/inspection-plans/:id",
+    "file": "routes/quality.routes.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/quality/inspection-plans/:id",
+    "file": "routes/quality.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/quality/inspections",
+    "file": "routes/quality.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/quality/inspections",
+    "file": "routes/quality.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/quality/ncr",
+    "file": "routes/quality.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/quality/ncr",
+    "file": "routes/quality.routes.ts"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/quality/ncr/:id",
+    "file": "routes/quality.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/quality/ncr/:id/actions",
+    "file": "routes/quality.routes.ts"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/quality/ncr/actions/:id",
+    "file": "routes/quality.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reports/downtime",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reports/oee",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reports/production",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reports/shift",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/roles",
+    "file": "routes/rbac.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/roles",
+    "file": "routes/rbac.routes.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/roles/:id",
+    "file": "routes/rbac.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/roles/:id",
+    "file": "routes/rbac.routes.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/roles/:id",
+    "file": "routes/rbac.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/security/summary",
+    "file": "main.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/sessions",
+    "file": "routes/auth.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sessions",
+    "file": "routes/auth.routes.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/sessions/:sessionId",
+    "file": "routes/auth.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/shifts",
+    "file": "routes/shift.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/shifts",
+    "file": "routes/shift.routes.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/shifts/:id",
+    "file": "routes/shift.routes.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/shifts/:id",
+    "file": "routes/shift.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/shifts/handover",
+    "file": "routes/shift.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/shifts/handover",
+    "file": "routes/shift.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/shifts/handover/:id/acknowledge",
+    "file": "routes/shift.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/shifts/handover/context",
+    "file": "routes/shift.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/shifts/performance",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/shop-floor/downtime",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/shop-floor/downtime/:id/resolve",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/shop-floor/downtime/start",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/shop-floor/output",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/shop-floor/sync-batch",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/shop-floor/sync-exceptions",
+    "file": "main.ts"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/shop-floor/sync-exceptions/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/shop-floor/sync-exceptions/summary",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/users/:id/password",
+    "file": "routes/auth.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/wip/dashboard",
+    "file": "routes/wip.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/wip/receipts",
+    "file": "routes/wip.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/wip/records",
+    "file": "routes/wip.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/wip/records",
+    "file": "routes/wip.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/wip/records/:id/history",
+    "file": "routes/wip.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/wip/records/:id/hold",
+    "file": "routes/wip.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/wip/records/:id/release",
+    "file": "routes/wip.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/wip/transfers",
+    "file": "routes/wip.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/wip/transfers",
+    "file": "routes/wip.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/wip/transfers/:id/receive",
+    "file": "routes/wip.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/work-orders",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/work-orders",
+    "file": "main.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/work-orders/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/work-orders/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/work-orders/:id",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/work-orders/:id/available-quantity",
+    "file": "routes/work-order.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/work-orders/:id/batch",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/work-orders/:id/cancel",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/work-orders/:id/chain",
+    "file": "routes/work-order.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/work-orders/:id/complete",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/work-orders/:id/confirm",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/work-orders/:id/demand",
+    "file": "routes/work-order.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/work-orders/:id/release",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/work-orders/:id/split",
+    "file": "main.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/work-orders/:id/start",
+    "file": "main.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workforce/assignments",
+    "file": "routes/workforce.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workforce/assignments",
+    "file": "routes/workforce.routes.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/workforce/assignments/:id",
+    "file": "routes/workforce.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workforce/availability",
+    "file": "routes/workforce.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workforce/availability",
+    "file": "routes/workforce.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workforce/dashboard",
+    "file": "routes/workforce.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workforce/eligibility",
+    "file": "routes/workforce.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workforce/labor-requirements/:workOrderId",
+    "file": "routes/workforce.routes.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/workforce/labor-requirements/:workOrderId",
+    "file": "routes/workforce.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workforce/qualifications",
+    "file": "routes/workforce.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workforce/qualifications",
+    "file": "routes/workforce.routes.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/workforce/qualifications/:id",
+    "file": "routes/workforce.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workforce/requirements",
+    "file": "routes/workforce.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workforce/requirements",
+    "file": "routes/workforce.routes.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/workforce/requirements/:id",
+    "file": "routes/workforce.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workforce/shift-assignments",
+    "file": "routes/workforce.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workforce/shift-assignments",
+    "file": "routes/workforce.routes.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/workforce/shift-assignments/:id",
+    "file": "routes/workforce.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workforce/skills",
+    "file": "routes/workforce.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workforce/skills",
+    "file": "routes/workforce.routes.ts"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/workforce/skills/:id",
+    "file": "routes/workforce.routes.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/workforce/skills/:id",
+    "file": "routes/workforce.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workforce/time-records",
+    "file": "routes/workforce.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/workforce/time-records",
+    "file": "routes/workforce.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/workforce/utilization",
+    "file": "routes/workforce.routes.ts"
+  }
+]

@@ -1,0 +1,653 @@
+[
+  {
+    "id": "dashboard:view",
+    "module": "dashboard",
+    "action": "view",
+    "description": "Melihat dashboard eksekutif dan produksi",
+    "privileged": false
+  },
+  {
+    "id": "production_order:view",
+    "module": "production_order",
+    "action": "view",
+    "description": "Melihat production order",
+    "privileged": false
+  },
+  {
+    "id": "production_order:create",
+    "module": "production_order",
+    "action": "create",
+    "description": "Membuat production order",
+    "privileged": false
+  },
+  {
+    "id": "production_order:edit",
+    "module": "production_order",
+    "action": "edit",
+    "description": "Mengubah production order",
+    "privileged": false
+  },
+  {
+    "id": "production_order:release",
+    "module": "production_order",
+    "action": "release",
+    "description": "Merilis production order",
+    "privileged": false
+  },
+  {
+    "id": "production_order:delete",
+    "module": "production_order",
+    "action": "delete",
+    "description": "Menghapus production order",
+    "privileged": false
+  },
+  {
+    "id": "customer:view",
+    "module": "customer",
+    "action": "view",
+    "description": "Melihat master customer",
+    "privileged": false
+  },
+  {
+    "id": "customer:manage",
+    "module": "customer",
+    "action": "manage",
+    "description": "Mengelola master customer",
+    "privileged": false
+  },
+  {
+    "id": "customer_order:view",
+    "module": "customer_order",
+    "action": "view",
+    "description": "Melihat customer order",
+    "privileged": false
+  },
+  {
+    "id": "customer_order:create",
+    "module": "customer_order",
+    "action": "create",
+    "description": "Membuat customer order",
+    "privileged": false
+  },
+  {
+    "id": "customer_order:edit",
+    "module": "customer_order",
+    "action": "edit",
+    "description": "Mengubah customer order dan order line",
+    "privileged": false
+  },
+  {
+    "id": "customer_order:cancel",
+    "module": "customer_order",
+    "action": "cancel",
+    "description": "Membatalkan customer order",
+    "privileged": false
+  },
+  {
+    "id": "demand_forecast:view",
+    "module": "demand_forecast",
+    "action": "view",
+    "description": "Melihat demand forecast",
+    "privileged": false
+  },
+  {
+    "id": "demand_forecast:generate",
+    "module": "demand_forecast",
+    "action": "generate",
+    "description": "Menghasilkan demand forecast",
+    "privileged": false
+  },
+  {
+    "id": "capacity_plan:view",
+    "module": "capacity_plan",
+    "action": "view",
+    "description": "Melihat capacity plan",
+    "privileged": false
+  },
+  {
+    "id": "capacity_plan:manage",
+    "module": "capacity_plan",
+    "action": "manage",
+    "description": "Menghitung ulang capacity plan",
+    "privileged": false
+  },
+  {
+    "id": "production_plan:view",
+    "module": "production_plan",
+    "action": "view",
+    "description": "Melihat production plan",
+    "privileged": false
+  },
+  {
+    "id": "production_plan:create",
+    "module": "production_plan",
+    "action": "create",
+    "description": "Membuat production plan",
+    "privileged": false
+  },
+  {
+    "id": "production_plan:edit",
+    "module": "production_plan",
+    "action": "edit",
+    "description": "Mengubah production plan dan plan line",
+    "privileged": false
+  },
+  {
+    "id": "production_plan:confirm",
+    "module": "production_plan",
+    "action": "confirm",
+    "description": "Mengonfirmasi production plan",
+    "privileged": false
+  },
+  {
+    "id": "work_order:view",
+    "module": "work_order",
+    "action": "view",
+    "description": "Melihat work order",
+    "privileged": false
+  },
+  {
+    "id": "work_order:create",
+    "module": "work_order",
+    "action": "create",
+    "description": "Membuat work order",
+    "privileged": false
+  },
+  {
+    "id": "work_order:edit",
+    "module": "work_order",
+    "action": "edit",
+    "description": "Mengubah work order",
+    "privileged": false
+  },
+  {
+    "id": "work_order:schedule",
+    "module": "work_order",
+    "action": "schedule",
+    "description": "Menjadwalkan work order",
+    "privileged": false
+  },
+  {
+    "id": "work_order:release",
+    "module": "work_order",
+    "action": "release",
+    "description": "Merilis work order ke shop floor (dialihkan ke work_order:confirm, ADR-18)",
+    "privileged": false
+  },
+  {
+    "id": "work_order:confirm",
+    "module": "work_order",
+    "action": "confirm",
+    "description": "Mengonfirmasi work order sehingga muncul di terminal operator",
+    "privileged": false
+  },
+  {
+    "id": "work_order:cancel",
+    "module": "work_order",
+    "action": "cancel",
+    "description": "Membatalkan work order",
+    "privileged": false
+  },
+  {
+    "id": "batch:view",
+    "module": "batch",
+    "action": "view",
+    "description": "Melihat batch/lot produksi",
+    "privileged": false
+  },
+  {
+    "id": "batch:create",
+    "module": "batch",
+    "action": "create",
+    "description": "Membuat batch/lot produksi",
+    "privileged": false
+  },
+  {
+    "id": "batch:edit",
+    "module": "batch",
+    "action": "edit",
+    "description": "Mengubah dan melampirkan batch/lot",
+    "privileged": false
+  },
+  {
+    "id": "shopfloor:execute",
+    "module": "shopfloor",
+    "action": "execute",
+    "description": "Menjalankan perintah shop floor pada WO yang ditugaskan",
+    "privileged": false
+  },
+  {
+    "id": "production_record:create",
+    "module": "production_record",
+    "action": "create",
+    "description": "Mencatat output produksi",
+    "privileged": false
+  },
+  {
+    "id": "production_record:correct",
+    "module": "production_record",
+    "action": "correct",
+    "description": "Mengoreksi catatan produksi",
+    "privileged": false
+  },
+  {
+    "id": "downtime:create",
+    "module": "downtime",
+    "action": "create",
+    "description": "Mencatat downtime",
+    "privileged": false
+  },
+  {
+    "id": "downtime:correct",
+    "module": "downtime",
+    "action": "correct",
+    "description": "Mengoreksi catatan downtime",
+    "privileged": false
+  },
+  {
+    "id": "reject:create",
+    "module": "reject",
+    "action": "create",
+    "description": "Mencatat reject/defect",
+    "privileged": false
+  },
+  {
+    "id": "reject:correct",
+    "module": "reject",
+    "action": "correct",
+    "description": "Mengoreksi catatan reject",
+    "privileged": false
+  },
+  {
+    "id": "correction:approve",
+    "module": "correction",
+    "action": "approve",
+    "description": "Menyetujui permintaan koreksi data",
+    "privileged": true
+  },
+  {
+    "id": "shift:view",
+    "module": "shift",
+    "action": "view",
+    "description": "Melihat konfigurasi dan performa shift",
+    "privileged": false
+  },
+  {
+    "id": "shift:manage",
+    "module": "shift",
+    "action": "manage",
+    "description": "Mengelola konfigurasi shift",
+    "privileged": false
+  },
+  {
+    "id": "shift:handover",
+    "module": "shift",
+    "action": "handover",
+    "description": "Melakukan serah terima shift",
+    "privileged": false
+  },
+  {
+    "id": "analytics:view",
+    "module": "analytics",
+    "action": "view",
+    "description": "Melihat OEE, downtime, reject, dan bottleneck analytics",
+    "privileged": false
+  },
+  {
+    "id": "report:export",
+    "module": "report",
+    "action": "export",
+    "description": "Mengekspor laporan",
+    "privileged": false
+  },
+  {
+    "id": "master_data:view",
+    "module": "master_data",
+    "action": "view",
+    "description": "Melihat master data manufaktur",
+    "privileged": false
+  },
+  {
+    "id": "master_data:manage",
+    "module": "master_data",
+    "action": "manage",
+    "description": "Mengelola master data manufaktur",
+    "privileged": false
+  },
+  {
+    "id": "master_data:import",
+    "module": "master_data",
+    "action": "import",
+    "description": "Mengimpor master data melalui CSV",
+    "privileged": false
+  },
+  {
+    "id": "device:view",
+    "module": "device",
+    "action": "view",
+    "description": "Melihat terminal shop floor",
+    "privileged": false
+  },
+  {
+    "id": "device:manage",
+    "module": "device",
+    "action": "manage",
+    "description": "Mengelola terminal shop floor",
+    "privileged": false
+  },
+  {
+    "id": "user:view",
+    "module": "user",
+    "action": "view",
+    "description": "Melihat daftar pengguna",
+    "privileged": false
+  },
+  {
+    "id": "user:create",
+    "module": "user",
+    "action": "create",
+    "description": "Membuat pengguna",
+    "privileged": true
+  },
+  {
+    "id": "user:edit",
+    "module": "user",
+    "action": "edit",
+    "description": "Mengubah profil, peran, dan scope pengguna",
+    "privileged": true
+  },
+  {
+    "id": "user:deactivate",
+    "module": "user",
+    "action": "deactivate",
+    "description": "Menonaktifkan pengguna dan mencabut sesi",
+    "privileged": true
+  },
+  {
+    "id": "role:view",
+    "module": "role",
+    "action": "view",
+    "description": "Melihat peran dan permission",
+    "privileged": false
+  },
+  {
+    "id": "role:create",
+    "module": "role",
+    "action": "create",
+    "description": "Membuat peran khusus tenant",
+    "privileged": true
+  },
+  {
+    "id": "role:edit",
+    "module": "role",
+    "action": "edit",
+    "description": "Mengubah permission sebuah peran",
+    "privileged": true
+  },
+  {
+    "id": "audit:view",
+    "module": "audit",
+    "action": "view",
+    "description": "Melihat audit trail",
+    "privileged": true
+  },
+  {
+    "id": "configuration:manage",
+    "module": "configuration",
+    "action": "manage",
+    "description": "Mengubah konfigurasi sistem dan OEE",
+    "privileged": true
+  },
+  {
+    "id": "material:view",
+    "module": "material",
+    "action": "view",
+    "description": "Melihat inventory, kebutuhan, dan konsumsi material",
+    "privileged": false
+  },
+  {
+    "id": "material:reserve",
+    "module": "material",
+    "action": "reserve",
+    "description": "Mereservasi material untuk work order",
+    "privileged": false
+  },
+  {
+    "id": "material:consume",
+    "module": "material",
+    "action": "consume",
+    "description": "Mencatat konsumsi material terhadap work order",
+    "privileged": false
+  },
+  {
+    "id": "material:return",
+    "module": "material",
+    "action": "return",
+    "description": "Mencatat pengembalian material ke gudang",
+    "privileged": false
+  },
+  {
+    "id": "material:adjust",
+    "module": "material",
+    "action": "adjust",
+    "description": "Menyesuaikan stok material dan melakukan override konsumsi",
+    "privileged": true
+  },
+  {
+    "id": "mrp:view",
+    "module": "mrp",
+    "action": "view",
+    "description": "Melihat hasil MRP",
+    "privileged": false
+  },
+  {
+    "id": "mrp:run",
+    "module": "mrp",
+    "action": "run",
+    "description": "Menjalankan MRP",
+    "privileged": false
+  },
+  {
+    "id": "mrp:approve",
+    "module": "mrp",
+    "action": "approve",
+    "description": "Menyetujui rekomendasi MRP",
+    "privileged": true
+  },
+  {
+    "id": "quality:view",
+    "module": "quality",
+    "action": "view",
+    "description": "Melihat inspeksi, hold, disposition, dan NCR",
+    "privileged": false
+  },
+  {
+    "id": "quality:inspect",
+    "module": "quality",
+    "action": "inspect",
+    "description": "Menjalankan inspeksi kualitas",
+    "privileged": false
+  },
+  {
+    "id": "quality:hold",
+    "module": "quality",
+    "action": "hold",
+    "description": "Menahan kuantitas karena masalah kualitas",
+    "privileged": false
+  },
+  {
+    "id": "quality:release",
+    "module": "quality",
+    "action": "release",
+    "description": "Melepas hold kualitas",
+    "privileged": false
+  },
+  {
+    "id": "quality:disposition",
+    "module": "quality",
+    "action": "disposition",
+    "description": "Menetapkan disposition atas kuantitas gagal",
+    "privileged": false
+  },
+  {
+    "id": "ncr:create",
+    "module": "ncr",
+    "action": "create",
+    "description": "Membuat Non-Conformance Record",
+    "privileged": false
+  },
+  {
+    "id": "ncr:manage",
+    "module": "ncr",
+    "action": "manage",
+    "description": "Mengelola NCR dan corrective action",
+    "privileged": false
+  },
+  {
+    "id": "maintenance:view",
+    "module": "maintenance",
+    "action": "view",
+    "description": "Melihat rencana, permintaan, dan riwayat maintenance",
+    "privileged": false
+  },
+  {
+    "id": "maintenance:create",
+    "module": "maintenance",
+    "action": "create",
+    "description": "Membuat rencana dan permintaan maintenance",
+    "privileged": false
+  },
+  {
+    "id": "maintenance:assign",
+    "module": "maintenance",
+    "action": "assign",
+    "description": "Menugaskan teknisi maintenance",
+    "privileged": false
+  },
+  {
+    "id": "maintenance:execute",
+    "module": "maintenance",
+    "action": "execute",
+    "description": "Menjalankan pekerjaan maintenance",
+    "privileged": false
+  },
+  {
+    "id": "maintenance:complete",
+    "module": "maintenance",
+    "action": "complete",
+    "description": "Menyelesaikan pekerjaan maintenance",
+    "privileged": false
+  },
+  {
+    "id": "workforce:view",
+    "module": "workforce",
+    "action": "view",
+    "description": "Melihat operator, skill, dan kualifikasi",
+    "privileged": false
+  },
+  {
+    "id": "workforce:manage",
+    "module": "workforce",
+    "action": "manage",
+    "description": "Mengelola skill dan requirement kualifikasi",
+    "privileged": false
+  },
+  {
+    "id": "workforce:qualification",
+    "module": "workforce",
+    "action": "qualification",
+    "description": "Mengelola kualifikasi operator",
+    "privileged": false
+  },
+  {
+    "id": "workforce:assignment",
+    "module": "workforce",
+    "action": "assignment",
+    "description": "Menugaskan operator ke work order dan shift",
+    "privileged": false
+  },
+  {
+    "id": "workforce:availability",
+    "module": "workforce",
+    "action": "availability",
+    "description": "Mengubah status ketersediaan operator",
+    "privileged": false
+  },
+  {
+    "id": "wip:view",
+    "module": "wip",
+    "action": "view",
+    "description": "Melihat WIP dan transfer antar proses",
+    "privileged": false
+  },
+  {
+    "id": "wip:create",
+    "module": "wip",
+    "action": "create",
+    "description": "Membuat catatan WIP",
+    "privileged": false
+  },
+  {
+    "id": "wip:transfer",
+    "module": "wip",
+    "action": "transfer",
+    "description": "Mentransfer WIP ke proses berikutnya",
+    "privileged": false
+  },
+  {
+    "id": "wip:receive",
+    "module": "wip",
+    "action": "receive",
+    "description": "Menerima WIP di proses tujuan",
+    "privileged": false
+  },
+  {
+    "id": "wip:hold",
+    "module": "wip",
+    "action": "hold",
+    "description": "Menahan WIP",
+    "privileged": false
+  },
+  {
+    "id": "wip:release",
+    "module": "wip",
+    "action": "release",
+    "description": "Melepas WIP yang ditahan",
+    "privileged": false
+  },
+  {
+    "id": "production_board:view",
+    "module": "production_board",
+    "action": "view",
+    "description": "Melihat Visual Production Board",
+    "privileged": false
+  },
+  {
+    "id": "production_board:reschedule",
+    "module": "production_board",
+    "action": "reschedule",
+    "description": "Menjadwalkan ulang work order dari board",
+    "privileged": false
+  },
+  {
+    "id": "production_board:assign",
+    "module": "production_board",
+    "action": "assign",
+    "description": "Mengubah penugasan mesin dan operator dari board",
+    "privileged": false
+  },
+  {
+    "id": "production_board:dispatch",
+    "module": "production_board",
+    "action": "dispatch",
+    "description": "Mengonfirmasi dan membatalkan dispatch dari board",
+    "privileged": false
+  },
+  {
+    "id": "event:view",
+    "module": "event",
+    "action": "view",
+    "description": "Melihat Event History operasional",
+    "privileged": false
+  }
+]

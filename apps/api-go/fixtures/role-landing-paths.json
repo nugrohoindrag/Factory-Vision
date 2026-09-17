@@ -1,0 +1,13 @@
+{
+  "EXECUTIVE": "/",
+  "PRODUCTION_MANAGER": "/",
+  "SUPERVISOR": "/live-board",
+  "OPERATOR": "/terminal",
+  "PPIC": "/work-orders",
+  "QUALITY": "/quality",
+  "SALES": "/order-receiving",
+  "MAINTENANCE": "/maintenance",
+  "WAREHOUSE": "/material-inventory",
+  "WORKFORCE_ADMIN": "/workforce",
+  "ADMIN": "/settings?tab=users"
+}

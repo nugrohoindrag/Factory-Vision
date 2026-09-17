@@ -48,6 +48,33 @@ Things worth knowing before changing any of it:
   the rows back as the database owner. It is idempotent: it may be run repeatedly against the same
   database.
 
+## Go backend (`apps/api-go`) — the replacement for `apps/api`
+
+The API is being rewritten in Go (chi + pgx) for a single cutover, milestone by milestone
+(M0 platform and M1 identity/master data are done; M2–M7 remain — see `apps/api-go/README.md`).
+Rules while both exist:
+
+- **`apps/api` (Node) is the reference and is not changed**, except the QA scripts it hosts. Port
+  behaviour from its source; when Go must differ, list the difference in the README's
+  "Divergensi yang disengaja" and in the `--allow` list of `scripts/qa-api-diff.mjs`.
+- **The HTTP contract is byte-identical**: bare arrays for lists, the `{ error: { code, message,
+  fields, requestId } }` envelope, Indonesian messages, session token `<tenant>.<base64url>`,
+  scrypt `scrypt$salt$hash`, AES-GCM `v1:` values. Domain structs keep timestamps as strings via
+  `db.ISO`/`db.Date`; optional fields are pointers, never `omitempty` on `0`/`false`.
+- **Every handler returns `error` through `httpx.Handle`**, every query runs inside
+  `pool.WithTenant` (RLS), `WithoutTenant` is only for the relay/queue, and nothing ever
+  UPDATEs `audit_log` or `operational_event`. Detached work (audit, events, session touch) goes
+  through `async.Runner`, never a bare goroutine.
+- **Policy lives in `internal/platform/rbac/table.go`** and is tested against
+  `fixtures/route-permissions.golden.json`. Regenerate fixtures with
+  `node --import tsx apps/api/scripts/export-go-fixtures.mjs` whenever `permissions.ts`,
+  `route-permissions.ts` or `meta.routes.ts` change; CI diffs them.
+- **Gates** (all against the Go binary alone, CI job `api-go`): `go test` + `go test -tags
+  integration` on the CI Postgres, `qa-security-posture.mjs`, `verify-user-stories.mjs` with a
+  milestone threshold, and `qa-api-diff.mjs` (Node `:4001` vs Go `:4000`, same DB). Raise the
+  thresholds in `.github/workflows/ci.yml` as milestones land. On Git Bash pass
+  `MSYS_NO_PATHCONV=1` to the diff script.
+
 ## UI work: read this first
 
 All UI changes are governed by **[Docs/DESIGN-SYSTEM-GUIDELINE.md](Docs/DESIGN-SYSTEM-GUIDELINE.md)**, which is kept out of the published repository and so exists only in a local checkout. The rules that catch people out:

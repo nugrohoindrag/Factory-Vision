@@ -260,6 +260,214 @@ jobs:
           DATABASE_URL: postgresql://factory_app:ci-app-role-password@localhost:5432/factory_vision
         run: pnpm verify:improvement
 
+  # The Go implementation of the API (apps/api-go), being built towards a
+  # cutover milestone by milestone. Three gates: the Go suite (unit +
+  # integration against the same PostgreSQL as `persistence`), the fixtures
+  # exported from the TypeScript sources being current, and the black-box
+  # scripts run against the Go binary alone. Thresholds below are the current
+  # milestone's; each milestone raises them until every check passes.
+  api-go:
+    name: Go API (unit, integration, black-box gates)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: factory
+          POSTGRES_PASSWORD: factory
+          POSTGRES_DB: factory_vision
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U factory -d factory_vision"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TZ: Asia/Jakarta
+      OWNER_DATABASE_URL: postgresql://factory:factory@localhost:5432/factory_vision
+      APP_DATABASE_URL: postgresql://factory_app:ci-app-role-password@localhost:5432/factory_vision
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Resolve pnpm store
+        id: pnpm-store
+        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v6
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: apps/api-go/go.mod
+          cache-dependency-path: apps/api-go/go.sum
+
+      # The permission catalogue, the role baselines and the route → permission
+      # golden file are exported from the TypeScript sources. A stale export
+      # means the Go tables are being checked against yesterday's policy.
+      - name: Fixtures are current
+        run: |
+          node --import tsx apps/api/scripts/export-go-fixtures.mjs
+          git diff --exit-code -- apps/api-go/fixtures
+
+      - name: Vet, build, unit tests
+        working-directory: apps/api-go
+        run: |
+          test -z "$(gofmt -l .)" || { echo "gofmt:"; gofmt -l .; exit 1; }
+          go vet ./...
+          go build -o bin/fv ./cmd/fv
+          go test ./...
+
+      - name: Migrate and seed
+        env:
+          DATABASE_URL: ${{ env.OWNER_DATABASE_URL }}
+          APP_DB_PASSWORD: ci-app-role-password
+        run: |
+          pnpm db:migrate
+          pnpm db:seed
+
+      # Driven through the RLS-bound role, verified through the owner — the
+      # same split verify-mes-improvement.mjs uses.
+      - name: Integration tests
+        working-directory: apps/api-go
+        env:
+          DATABASE_URL: ${{ env.APP_DATABASE_URL }}
+        run: go test -tags integration ./...
+
+      - name: Start Go API
+        env:
+          PORT: '4000'
+          NODE_ENV: test
+          DATABASE_URL: ${{ env.APP_DATABASE_URL }}
+          SEED_DEMO_DATA: 'true'
+          AUTH_REQUIRED: 'true'
+          # Throwaway values for this job only; nothing here is a real credential.
+          BOOTSTRAP_ADMIN_EMAIL: admin@pabrik.co.id
+          BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
+          BOOTSTRAP_OPERATOR_PIN: '284617'
+          MFA_ENCRYPTION_KEY: ci-only-mfa-key
+        run: |
+          apps/api-go/bin/fv serve > api-go.log 2>&1 &
+          echo $! > api-go.pid
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:4000/health > /dev/null && exit 0
+            sleep 1
+          done
+          echo "Go API did not become healthy:" && cat api-go.log && exit 1
+
+      # Milestone thresholds. M1: the security posture passes except
+      # trial-register (onboarding, M6); 34 of the 81 story assertions pass
+      # (identity, users, roles, master data, shifts, CSV, audit, meta).
+      - name: Security posture against Go
+        env:
+          QA_API: http://localhost:4000
+        run: |
+          node apps/api/scripts/qa-security-posture.mjs | tee posture.log || true
+          grep -q "12 passed, 1 failed" posture.log
+          grep -q "pendaftaran trial" posture.log
+
+      - name: User stories against Go (milestone threshold)
+        env:
+          API_BASE: http://localhost:4000
+          BOOTSTRAP_ADMIN_EMAIL: admin@pabrik.co.id
+          BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
+          BOOTSTRAP_OPERATOR_PIN: '284617'
+        run: |
+          node scripts/verify-user-stories.mjs | tee stories.log || true
+          passed=$(grep -oE '[0-9]+/81 assertions passed' stories.log | grep -oE '^[0-9]+')
+          echo "passed=$passed (threshold 34)"
+          test "${passed:-0}" -ge 34
+
+      # The Node API on :4001, same database, for the differential contract
+      # check over every ported GET route.
+      - name: Build and start Node API (reference)
+        env:
+          PORT: '4001'
+          NODE_ENV: test
+          DATABASE_URL: ${{ env.APP_DATABASE_URL }}
+          SEED_DEMO_DATA: 'true'
+          AUTH_REQUIRED: 'true'
+          API_RUN_JOB_RUNNER: 'false'
+          OUTBOX_RELAY_ENABLED: 'false'
+          BOOTSTRAP_ADMIN_EMAIL: admin@pabrik.co.id
+          BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
+          BOOTSTRAP_OPERATOR_PIN: '284617'
+          MFA_ENCRYPTION_KEY: ci-only-mfa-key
+        run: |
+          pnpm build > /dev/null
+          node apps/api/dist/main.js > api-node.log 2>&1 &
+          echo $! > api-node.pid
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:4001/health > /dev/null && exit 0
+            sleep 1
+          done
+          echo "Node API did not become healthy:" && cat api-node.log && exit 1
+
+      - name: Differential contract check (Go vs Node)
+        env:
+          GO_API: http://localhost:4000
+          NODE_API: http://localhost:4001
+          BOOTSTRAP_ADMIN_EMAIL: admin@pabrik.co.id
+          BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
+        run: |
+          node scripts/qa-api-diff.mjs \
+            --include=/api/v1/master,/api/v1/events,/api/v1/audit-logs,/api/v1/roles,/api/v1/permissions,/api/v1/shifts,/api/v1/csv,/api/v1/meta/deployment,/api/v1/sessions,/api/v1/security \
+            --allow=/api/v1/csv/entities,/api/v1/master/batches,/api/v1/master/bom,/api/v1/master/devices,/api/v1/master/processes,/api/v1/shifts/handover,/api/v1/shifts/performance
+
+      - name: Logs on failure
+        if: failure()
+        run: |
+          echo "--- Go ---"; cat api-go.log || true
+          echo "--- Node ---"; cat api-node.log || true
+
+      - name: Stop APIs
+        if: always()
+        run: |
+          kill "$(cat api-go.pid)" 2>/dev/null || true
+          kill "$(cat api-node.pid)" 2>/dev/null || true
+
+  # SAST for the Go implementation, in its own job so the TypeScript CodeQL
+  # category and the Go one never share an analysis.
+  scan-go:
+    name: Static analysis (Go)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: apps/api-go/go.mod
+          cache-dependency-path: apps/api-go/go.sum
+      - name: Initialise CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: go
+          queries: security-and-quality
+      - name: Build
+        working-directory: apps/api-go
+        run: go build ./...
+      - name: CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: '/language:go'
+
   # Security scanning (§47, §49, §50). Separate from `verify` so a scanner
   # being slow, or its feed being down, never blocks the acceptance signal —
   # and separate from `publish` so nothing reaches the registry unscanned.
@@ -347,9 +555,22 @@ jobs:
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
 
+      - name: Build Go API image
+        run: docker build -f deploy/Dockerfile.api-go -t factory-vision-api-go:scan .
+
+      - name: Scan Go API image
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          image-ref: factory-vision-api-go:scan
+          format: table
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
   publish:
     name: Publish images
-    needs: [verify, persistence, scan, scan-image]
+    needs: [verify, persistence, api-go, scan, scan-go, scan-image]
     # Pull requests verify but never publish: the head of a PR is not a
     # release, and a fork's token could not push to the registry anyway.
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -364,6 +585,9 @@ jobs:
         include:
           - image: factory-vision-api
             dockerfile: deploy/Dockerfile.api
+            app: ''
+          - image: factory-vision-api-go
+            dockerfile: deploy/Dockerfile.api-go
             app: ''
           - image: factory-vision-console
             dockerfile: deploy/Dockerfile.web

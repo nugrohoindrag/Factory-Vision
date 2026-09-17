@@ -1,0 +1,347 @@
+[
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/login",
+    "summary": "Login pengguna aplikasi (email + password)"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/operator-login",
+    "summary": "Login operator (employee number + PIN)"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/mfa/verify",
+    "summary": "Verifikasi kode MFA saat login"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/auth/mfa",
+    "summary": "Status MFA akun yang sedang login"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/mfa/enroll",
+    "summary": "Mulai pendaftaran MFA (TOTP)"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/mfa/confirm",
+    "summary": "Konfirmasi MFA dan terbitkan recovery code"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/mfa/disable",
+    "summary": "Nonaktifkan MFA dengan kode berjalan"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/auth/session",
+    "summary": "Detail sesi aktif"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/security/summary",
+    "summary": "Ringkasan security event dan postur konfigurasi"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/logout",
+    "summary": "Akhiri sesi"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sessions",
+    "summary": "Daftar sesi aktif tenant"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/sessions/:sessionId",
+    "summary": "Cabut satu sesi"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/permissions",
+    "summary": "Katalog permission module:action"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/roles",
+    "summary": "Daftar peran sistem dan custom"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/roles",
+    "summary": "Buat peran custom tenant"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/roles/:id",
+    "summary": "Ubah permission peran custom"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/roles/:id",
+    "summary": "Hapus peran custom"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/plants",
+    "summary": "Master plant"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/lines",
+    "summary": "Master production line"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/work-centers",
+    "summary": "Master work center"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/machines",
+    "summary": "Master mesin"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/products",
+    "summary": "Master produk"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/processes",
+    "summary": "Master production process"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/routings",
+    "summary": "Product routing"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/machine-rates",
+    "summary": "Ideal cycle time Product x Machine"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/batches",
+    "summary": "Batch / lot produksi"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/operators",
+    "summary": "Master operator"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/master/users",
+    "summary": "Daftar pengguna aplikasi"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/shifts",
+    "summary": "Konfigurasi shift"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/shifts",
+    "summary": "Buat shift"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/shifts/:id",
+    "summary": "Ubah shift"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/shifts/handover/context",
+    "summary": "Konteks serah terima shift"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/shifts/handover",
+    "summary": "Catat serah terima shift"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/production-orders",
+    "summary": "Daftar production order"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/production-orders",
+    "summary": "Buat production order"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/work-orders",
+    "summary": "Daftar work order"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/work-orders",
+    "summary": "Buat work order"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/work-orders/:id/release",
+    "summary": "Rilis work order"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/work-orders/:id/batch",
+    "summary": "Lampirkan batch/lot ke work order"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/work-orders/:id/start",
+    "summary": "Mulai produksi"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/work-orders/:id/complete",
+    "summary": "Selesaikan work order"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/shop-floor/output",
+    "summary": "Catat output good/reject"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/shop-floor/downtime/start",
+    "summary": "Mulai downtime"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/shop-floor/downtime/:id/resolve",
+    "summary": "Selesaikan downtime"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/shop-floor/sync-batch",
+    "summary": "Sinkronisasi antrian offline (idempoten)"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/executive-kpi",
+    "summary": "KPI eksekutif"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/live-board",
+    "summary": "Papan produksi real-time"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/downtime-pareto",
+    "summary": "Pareto downtime"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/reject-pareto",
+    "summary": "Pareto reject"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/order-status",
+    "summary": "Risiko production order"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/alerts",
+    "summary": "Alert operasional"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/oee/config",
+    "summary": "Konfigurasi perhitungan OEE"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/oee/config",
+    "summary": "Ubah definisi OEE (menaikkan calc_version)"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/oee/machine-performance",
+    "summary": "Drill-down OEE per mesin"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/oee/bottlenecks",
+    "summary": "Ranking bottleneck"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/oee/target-vs-actual",
+    "summary": "Target vs actual"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/oee/report",
+    "summary": "Laporan OEE (JSON/CSV)"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/oee/validation",
+    "summary": "Log validasi OEE pilot V1-V6"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reports/production",
+    "summary": "Laporan produksi"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reports/downtime",
+    "summary": "Laporan downtime"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reports/shift",
+    "summary": "Laporan shift"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/csv/entities",
+    "summary": "Entitas master data yang mendukung CSV"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/csv/:entity/template",
+    "summary": "Unduh template CSV"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/csv/:entity/export",
+    "summary": "Ekspor master data ke CSV"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/csv/:entity/import",
+    "summary": "Impor CSV dengan validasi per baris"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/corrections",
+    "summary": "Permintaan koreksi data"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/corrections",
+    "summary": "Ajukan koreksi"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/corrections/:id/approve",
+    "summary": "Setujui koreksi dan recompute"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/audit-logs",
+    "summary": "Audit trail"
+  }
+]
