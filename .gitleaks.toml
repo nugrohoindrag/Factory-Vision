@@ -1,0 +1,13 @@
+# Secret scanning (CI job `scan`, gitleaks). The default ruleset stays in
+# force; only the entries below are exempt, each one a published value that
+# merely looks like a credential.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Published test vectors that read as credentials"
+regexes = [
+  # RFC 6238 Appendix B seed "12345678901234567890" in base32. It is the
+  # vector every TOTP implementation is checked against, not a secret.
+  '''GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ''',
+]

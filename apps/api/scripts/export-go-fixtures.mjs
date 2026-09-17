@@ -107,7 +107,10 @@ const inventory = routes
     seen.add(key);
     return true;
   })
-  .sort((a, b) => a.path.localeCompare(b.path) || a.method.localeCompare(b.method));
+  // Byte-wise, not localeCompare: the latter follows the machine's locale,
+  // and an export that sorts differently on a Windows laptop and a Linux
+  // runner fails the "fixtures are current" check for no real reason.
+  .sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : a.method < b.method ? -1 : a.method > b.method ? 1 : 0));
 
 // --- Golden permission table --------------------------------------------
 //

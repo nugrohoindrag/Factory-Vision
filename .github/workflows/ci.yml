@@ -315,13 +315,21 @@ jobs:
           go-version-file: apps/api-go/go.mod
           cache-dependency-path: apps/api-go/go.sum
 
+      # The export imports the workspace packages through their built `dist`,
+      # and the Node reference API started later needs the full build anyway.
+      - name: Build workspace
+        run: pnpm build > build.log 2>&1 || { cat build.log; exit 1; }
+
       # The permission catalogue, the role baselines and the route → permission
       # golden file are exported from the TypeScript sources. A stale export
       # means the Go tables are being checked against yesterday's policy.
       - name: Fixtures are current
         run: |
           node --import tsx apps/api/scripts/export-go-fixtures.mjs
-          git diff --exit-code -- apps/api-go/fixtures
+          git diff --exit-code -- apps/api-go/fixtures || {
+            echo "::error::apps/api-go/fixtures is stale; run: node --import tsx apps/api/scripts/export-go-fixtures.mjs"
+            exit 1
+          }
 
       - name: Vet, build, unit tests
         working-directory: apps/api-go
@@ -393,7 +401,7 @@ jobs:
 
       # The Node API on :4001, same database, for the differential contract
       # check over every ported GET route.
-      - name: Build and start Node API (reference)
+      - name: Start Node API (reference)
         env:
           PORT: '4001'
           NODE_ENV: test
@@ -407,7 +415,6 @@ jobs:
           BOOTSTRAP_OPERATOR_PIN: '284617'
           MFA_ENCRYPTION_KEY: ci-only-mfa-key
         run: |
-          pnpm build > /dev/null
           node apps/api/dist/main.js > api-node.log 2>&1 &
           echo $! > api-node.pid
           for i in $(seq 1 60); do
