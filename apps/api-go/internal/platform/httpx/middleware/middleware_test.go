@@ -94,7 +94,7 @@ func TestGzipOnlyAboveThreshold(t *testing.T) {
 	for i := range big {
 		big[i] = 'a'
 	}
-	handler := Gzip()(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handler := Gzip(nil)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		if r.URL.Path == "/big" {
 			w.Write(big)

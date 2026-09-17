@@ -67,6 +67,10 @@ type Config struct {
 	ObjectStorageRegion    string
 	ObjectStorageAccessKey string
 	ObjectStorageSecretKey string
+	// Path-style addressing; required by MinIO, harmless on AWS.
+	ObjectStorageForcePathStyle bool
+	// WorkingDir is where the filesystem store defaults to var/documents.
+	WorkingDir string
 
 	APIRunJobRunner     bool
 	PlanningJobInterval time.Duration
@@ -151,6 +155,8 @@ func Load() (*Config, error) {
 	c.ObjectStorageRegion = get("OBJECT_STORAGE_REGION", "us-east-1")
 	c.ObjectStorageAccessKey = get("OBJECT_STORAGE_ACCESS_KEY", "")
 	c.ObjectStorageSecretKey = get("OBJECT_STORAGE_SECRET_KEY", "")
+	c.ObjectStorageForcePathStyle = get("OBJECT_STORAGE_FORCE_PATH_STYLE", "") != "false"
+	c.WorkingDir, _ = os.Getwd()
 
 	c.APIRunJobRunner = get("API_RUN_JOB_RUNNER", "") != "false"
 	c.PlanningJobInterval = time.Duration(getInt("PLANNING_JOB_INTERVAL_MS", 5000)) * time.Millisecond

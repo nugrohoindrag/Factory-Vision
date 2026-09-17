@@ -1,6 +1,7 @@
 // Command fv is the Factory Vision MES API.
 //
 //	fv serve        run the HTTP API (the default)
+//	fv worker       run the planning job queue and the outbox relay alone
 //	fv healthcheck  probe a running API, for the container HEALTHCHECK
 //
 // One binary serves both deployment modes (US-052 cloud, US-053 on-premise).
@@ -36,12 +37,15 @@ import (
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/maintenance"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/masterdata"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/material"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/mold"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/oee"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/planning"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/production"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/quality"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/roles"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/shift"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/shopfloor"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/stream"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/wip"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/workforce"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/async"
@@ -51,8 +55,11 @@ import (
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/httpx"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/observability"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/outbox"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/queue"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/rbac"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/realtime"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/security"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/storage"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/routes"
 )
 
@@ -65,10 +72,12 @@ func main() {
 	switch cmd {
 	case "serve":
 		err = serve()
+	case "worker":
+		err = worker()
 	case "healthcheck":
 		err = healthcheck()
 	default:
-		err = fmt.Errorf("unknown command %q (serve | healthcheck)", cmd)
+		err = fmt.Errorf("unknown command %q (serve | worker | healthcheck)", cmd)
 	}
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "[fv]", err)
@@ -202,6 +211,46 @@ func serve() error {
 	shopfloorSvc.AttachImprovement(improvement.NewOffline(materialSvc, qualitySvc, wipSvc))
 	analyticsSvc.AttachExtraAlerts(alerts.NewImprovement(materialSvc, qualitySvc, maintenanceSvc, workforceSvc, wipSvc))
 
+	// Planning and the async layer (M5). Planning publishes, it never calls
+	// execution; production reaches planning through the facade seams it
+	// declared in M2. Documents go to the object store, forecasts and
+	// recalculations to the job queue, and every outbox row to the SSE hub
+	// through the relay.
+	store, err := storage.FromOptions(storage.Options{Driver: cfg.ObjectStorageDriver, DocumentDir: cfg.DocumentStorageDir, Bucket: cfg.ObjectStorageBucket, Region: cfg.ObjectStorageRegion,
+		Endpoint: cfg.ObjectStorageEndpoint, AccessKey: cfg.ObjectStorageAccessKey, SecretKey: cfg.ObjectStorageSecretKey, ForcePathStyle: cfg.ObjectStorageForcePathStyle,
+		ForcePathStyleSet: true, WorkingDirFallback: cfg.WorkingDir})
+	if err != nil {
+		return err
+	}
+	if ok, detail := store.Check(ctx); ok {
+		log.Info("[storage] " + detail)
+	} else {
+		log.Error("[storage] " + detail)
+	}
+	jobQueue := queue.New(pool)
+	planningSvc := planning.NewService(pool, auditSvc, ob, jobQueue, store)
+	productionSvc.AttachPlanning(planningSvc)
+	productionHandler.AttachDemand(planningSvc)
+	materialSvc.AttachDemand(materialDemand{planningSvc})
+	generator := production.NewGenerator(productionSvc, auditSvc)
+	moldSvc := mold.NewService(pool)
+	// The API runs the queue too unless API_RUN_JOB_RUNNER=false hands it to
+	// `fv worker`; SKIP LOCKED makes either arrangement correct.
+	var runner *queue.Runner
+	if cfg.APIRunJobRunner {
+		runner = queue.NewRunner(jobQueue, planningSvc.JobHandlers(), "api-job-runner", log)
+		runner.Start(ctx, cfg.PlanningJobInterval)
+		defer runner.Stop()
+	}
+	hub := realtime.New()
+	relay := outbox.NewRelay(pool, log)
+	relay.Subscribe(stream.Subscriber(hub))
+	if cfg.OutboxRelayEnabled {
+		relay.Start(ctx, cfg.OutboxRelayInterval)
+		defer relay.Stop()
+		log.Info("[outbox] relay aktif.")
+	}
+
 	// Every install starts with the pilot tenant row and the bootstrap
 	// administrator; the demo seed and the trial tenants come later.
 	if err := ensureTenant(ctx, pool, cfg); err != nil {
@@ -237,6 +286,9 @@ func serve() error {
 			func(r chi.Router) { workforce.Mount(r, workforceSvc, auditSvc) },
 			func(r chi.Router) { wip.Mount(r, wipSvc, auditSvc) },
 			func(r chi.Router) { board.Mount(r, boardSvc, auditSvc) },
+			func(r chi.Router) { planning.Mount(r, planningSvc, runner, generatorAdapter{generator}) },
+			func(r chi.Router) { mold.Mount(r, moldSvc, auditSvc) },
+			func(r chi.Router) { stream.Mount(r, hub) },
 		},
 	})
 
@@ -261,6 +313,84 @@ func serve() error {
 		_ = tracing.Shutdown(shutdownCtx)
 	}
 	return err
+}
+
+// worker runs the planning job queue and the outbox relay without serving
+// HTTP. `FOR UPDATE SKIP LOCKED` lets any number of these share the queue
+// with the API's optional in-process runner.
+func worker() error {
+	cfg, err := config.Load()
+	if err != nil {
+		return err
+	}
+	if cfg.DatabaseURL == "" {
+		return errors.New("DATABASE_URL belum diset. Worker tidak dapat memproses job queue")
+	}
+	log := observability.Logger(cfg.IsProduction())
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+	pool, err := db.Open(ctx, cfg.DatabaseURL, db.Options{MaxConns: cfg.PoolMax, MinConns: cfg.PoolMin, SlowQuery: cfg.SlowQuery, Logger: log})
+	if err != nil {
+		return err
+	}
+	defer pool.Close()
+	store, err := storage.FromOptions(storage.Options{Driver: cfg.ObjectStorageDriver, DocumentDir: cfg.DocumentStorageDir, Bucket: cfg.ObjectStorageBucket, Region: cfg.ObjectStorageRegion,
+		Endpoint: cfg.ObjectStorageEndpoint, AccessKey: cfg.ObjectStorageAccessKey, SecretKey: cfg.ObjectStorageSecretKey, ForcePathStyle: cfg.ObjectStorageForcePathStyle,
+		ForcePathStyleSet: true, WorkingDirFallback: cfg.WorkingDir})
+	if err != nil {
+		return err
+	}
+	detached := async.NewRunner(16, 15*time.Second, log)
+	events := security.NewEvents(cfg.SecurityAlertWebhook, log)
+	auditSvc := audit.NewService(pool, detached, events)
+	planningSvc := planning.NewService(pool, auditSvc, outbox.Repository{}, queue.New(pool), store)
+	runner := queue.NewRunner(queue.New(pool), planningSvc.JobHandlers(), "worker", log)
+	runner.Start(ctx, cfg.PlanningJobInterval)
+	relay := outbox.NewRelay(pool, log)
+	if cfg.OutboxRelayEnabled {
+		relay.Start(ctx, cfg.OutboxRelayInterval)
+	}
+	log.Info("[worker] aktif", "interval", cfg.PlanningJobInterval.String(), "relay", cfg.OutboxRelayEnabled)
+	<-ctx.Done()
+	log.Info("[worker] sinyal diterima, menghentikan runner.")
+	runner.Stop()
+	relay.Stop()
+	detached.Drain(10 * time.Second)
+	return nil
+}
+
+// generatorAdapter presents production's Work Order generator through the
+// interface planning declares, so planning never imports production.
+type generatorAdapter struct{ g *production.Generator }
+
+func (a generatorAdapter) GenerateForPlan(ctx context.Context, tenantID, planID, actorID string) (planning.GenerateResult, error) {
+	res, err := a.g.GenerateForPlan(ctx, tenantID, planID, actorID)
+	if err != nil {
+		return planning.GenerateResult{}, err
+	}
+	out := planning.GenerateResult{ProductionPlanID: res.ProductionPlanID, Created: make([]any, len(res.Created)), Existing: make([]any, len(res.Existing)), SkippedPlanLineIDs: res.SkippedPlanLineIDs}
+	for i, w := range res.Created {
+		out.Created[i] = w
+	}
+	for i, w := range res.Existing {
+		out.Existing[i] = w
+	}
+	return out, nil
+}
+
+// materialDemand presents planning's demand lines in material's terms.
+type materialDemand struct{ p *planning.Service }
+
+func (m materialDemand) PlanDemandLines(ctx context.Context, tenantID string, planIDs []string, horizonStart, horizonEnd string) ([]material.DemandLine, error) {
+	lines, err := m.p.PlanDemandLines(ctx, tenantID, planIDs, horizonStart, horizonEnd)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]material.DemandLine, len(lines))
+	for i, l := range lines {
+		out[i] = material.DemandLine{ProductionPlanID: l.ProductionPlanID, PlanNumber: l.PlanNumber, ProductID: l.ProductID, PlannedQuantity: float64(l.PlannedQuantity), RequiredDate: l.RequiredDate}
+	}
+	return out, nil
 }
 
 // ensureTenant makes sure the tenant row exists. Every table has a foreign

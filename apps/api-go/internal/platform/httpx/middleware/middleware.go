@@ -126,22 +126,34 @@ func Recover(log *slog.Logger) func(http.Handler) http.Handler {
 // Gzip compresses responses above one kilobyte; below that the framing costs
 // more than it saves, and the encoder streams so a large export is never
 // buffered whole.
-func Gzip() func(http.Handler) http.Handler {
+func Gzip(skip func(*http.Request) bool) func(http.Handler) http.Handler {
 	wrapper, err := gzhttp.NewWrapper(gzhttp.MinSize(1024), gzhttp.CompressionLevel(5))
 	if err != nil {
 		panic(err)
 	}
 	return func(next http.Handler) http.Handler {
-		return wrapper(next)
+		compressed := wrapper(next)
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if skip != nil && skip(r) {
+				next.ServeHTTP(w, r)
+				return
+			}
+			compressed.ServeHTTP(w, r)
+		})
 	}
 }
 
 // Timeout bounds a request's context. Handlers pass that context to every
 // query, so a client that gave up, or a query that hung, stops costing a
-// goroutine and a connection when the deadline passes.
-func Timeout(d time.Duration) func(http.Handler) http.Handler {
+// goroutine and a connection when the deadline passes. A streaming route
+// (the SSE feed) is exempt through skip: its lifetime is the client's.
+func Timeout(d time.Duration, skip func(*http.Request) bool) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if skip != nil && skip(r) {
+				next.ServeHTTP(w, r)
+				return
+			}
 			ctx, cancel := context.WithTimeout(r.Context(), d)
 			defer cancel()
 			next.ServeHTTP(w, r.WithContext(ctx))

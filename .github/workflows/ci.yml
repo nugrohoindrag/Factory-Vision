@@ -376,7 +376,7 @@ jobs:
           done
           echo "Go API did not become healthy:" && cat api-go.log && exit 1
 
-      # Milestone thresholds. M4: the security posture passes except
+      # Milestone thresholds. M5: the security posture passes except
       # trial-register (onboarding, M6); 80 of the 81 story assertions pass —
       # everything but the 60-day demo history (fv seed-demo, M7).
       - name: Security posture against Go
@@ -401,10 +401,10 @@ jobs:
           echo "passed=$passed (threshold 80)"
           test "${passed:-0}" -ge 80
 
-      # PRD §50 acceptance (M4). The script boots its own Go instance on
-      # :4097 from QA_API_CMD and reads the rows back as the owner. 64 of 73
-      # pass: scenarios 1-8 in full; trial registration (M6) and the planning
-      # job runner (M5) are the nine that remain.
+      # PRD §50 acceptance (M5). The script boots its own Go instance on
+      # :4097 from QA_API_CMD and reads the rows back as the owner. 67 of 73
+      # pass: scenarios 1-8 and 10 in full; trial registration (M6) is the
+      # six that remain.
       - name: MES Improvement acceptance against Go (milestone threshold)
         env:
           QA_API_CMD: apps/api-go/bin/fv serve
@@ -419,8 +419,30 @@ jobs:
         run: |
           node apps/api/scripts/verify-mes-improvement.mjs 2>&1 | tee improvement.log || true
           passed=$(grep -oE '[0-9]+/73 kriteria terpenuhi' improvement.log | grep -oE '^[0-9]+')
-          echo "passed=$passed (threshold 64)"
-          test "${passed:-0}" -ge 64
+          echo "passed=$passed (threshold 67)"
+          test "${passed:-0}" -ge 67
+
+      # Planning and moulds (M5): the mould CRUD gate boots its own instance;
+      # the production posture reads the running one. Both read rows back as
+      # the schema owner, which is what their DATABASE_URL names here.
+      - name: Mould CRUD against Go
+        env:
+          QA_API_CMD: apps/api-go/bin/fv serve
+          DATABASE_URL: ${{ env.OWNER_DATABASE_URL }}
+          NODE_ENV: test
+          AUTH_REQUIRED: 'true'
+          BOOTSTRAP_ADMIN_EMAIL: admin@pabrik.co.id
+          BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
+          BOOTSTRAP_OPERATOR_PIN: '284617'
+          MFA_ENCRYPTION_KEY: ci-only-mfa-key
+        run: node apps/api/scripts/qa-mold-crud.mjs
+
+      - name: Production posture against Go
+        env:
+          QA_API: http://localhost:4000
+          DATABASE_URL: ${{ env.OWNER_DATABASE_URL }}
+          BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
+        run: node apps/api/scripts/qa-production-posture.mjs
 
       # The Node API on :4001, same database, for the differential contract
       # check over every ported GET route.
@@ -480,8 +502,8 @@ jobs:
           BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
         run: |
           node scripts/qa-api-diff.mjs \
-            --include=/api/v1/master,/api/v1/events,/api/v1/audit-logs,/api/v1/roles,/api/v1/permissions,/api/v1/shifts,/api/v1/csv,/api/v1/meta/deployment,/api/v1/sessions,/api/v1/security,/api/v1/work-orders,/api/v1/production-orders,/api/v1/shop-floor,/api/v1/oee,/api/v1/corrections,/api/v1/reports,/api/v1/analytics,/api/v1/materials,/api/v1/mrp,/api/v1/quality,/api/v1/maintenance,/api/v1/workforce,/api/v1/wip,/api/v1/production-board \
-            --allow=/api/v1/csv/entities,/api/v1/master/batches,/api/v1/master/bom,/api/v1/master/devices,/api/v1/master/kpi-targets,/api/v1/master/processes,/api/v1/shifts/handover,/api/v1/shifts/performance,/api/v1/corrections,/api/v1/oee/config,/api/v1/oee/validation,'*/demand',/api/v1/analytics/executive-kpi,/api/v1/analytics/alerts,/api/v1/materials/readiness,/api/v1/maintenance/kpi,/api/v1/quality/dashboard,/api/v1/workforce/availability
+            --include=/api/v1/master,/api/v1/events,/api/v1/audit-logs,/api/v1/roles,/api/v1/permissions,/api/v1/shifts,/api/v1/csv,/api/v1/meta/deployment,/api/v1/sessions,/api/v1/security,/api/v1/work-orders,/api/v1/production-orders,/api/v1/shop-floor,/api/v1/oee,/api/v1/corrections,/api/v1/reports,/api/v1/analytics,/api/v1/materials,/api/v1/mrp,/api/v1/quality,/api/v1/maintenance,/api/v1/workforce,/api/v1/wip,/api/v1/production-board,/api/v1/customers,/api/v1/customer-orders,/api/v1/demand-forecasts,/api/v1/capacity-plans,/api/v1/production-plans,/api/v1/planning,/api/v1/molds \
+            --allow=/api/v1/csv/entities,/api/v1/master/batches,/api/v1/master/bom,/api/v1/master/devices,/api/v1/master/kpi-targets,/api/v1/master/processes,/api/v1/shifts/handover,/api/v1/shifts/performance,/api/v1/corrections,/api/v1/oee/config,/api/v1/oee/validation,/api/v1/analytics/executive-kpi,/api/v1/analytics/alerts,/api/v1/maintenance/kpi,/api/v1/quality/dashboard,/api/v1/workforce/availability
 
       - name: Logs on failure
         if: failure()

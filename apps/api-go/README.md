@@ -63,7 +63,7 @@ aturan `*` mempertahankan urutan).
 ## Tata letak
 
 ```
-cmd/fv                       binary: serve | healthcheck
+cmd/fv                       binary: serve | worker | healthcheck
 fixtures/                    katalog permission, baseline role, golden route→permission, inventori endpoint (dari TS)
 internal/platform/
   config      env → struct (NODE_ENV=production menolak AUTH_REQUIRED=false; TZ wajib di production)
@@ -81,6 +81,12 @@ internal/platform/
   cache       cache per tenant (ristretto + singleflight + invalidasi)
   async       runner detached berbatas (semaphore) — audit/event/touch tidak memblokir request, tidak fan-out tanpa batas
   observability  Prometheus (latency per route, in-flight, query DB, security event), pprof di ADMIN_ADDR, OTel opsional, slog
+  queue       planning_job: enqueue (di dalam transaksi pemanggil), claim FOR UPDATE SKIP LOCKED tanpa tenant, succeed/fail dengan
+              max_attempts; Runner (drain per tick, Nudge dari request) dipakai API (API_RUN_JOB_RUNNER) dan fv worker
+  outbox      Writer (in-transaction) + Relay: klaim per tenant SKIP LOCKED, kirim ke subscriber, tandai PUBLISHED dalam transaksi
+              yang sama; kegagalan dicatat di luar transaksi, FAILED setelah 5 percobaan (at-least-once)
+  realtime    hub Server-Sent Events: satu goroutine per klien, buffer per klien (drop bila penuh), room per tenant, heartbeat 25 s
+  storage     ObjectStore: filesystem (default, tolak traversal) dan S3/MinIO (SigV4 di stdlib, path-style; vektor uji AWS)
 internal/modules/
   meta        /health, /meta/deployment, /meta/openapi.json, /docs
   event       /events, /events/timeline, /events/summary (+ ?cursor= keyset aditif), Recorder detached berbatas
@@ -120,6 +126,14 @@ internal/modules/
   alerts      aturan §26 (material, quality, maintenance, workforce, WIP) — lima grup paralel, satu grup gagal tidak
               mengosongkan feed; digabung ke /analytics/alerts
   improvement adapter sync-batch → material/quality/wip (RECORD_CONSUMPTION, RECORD_INSPECTION, RECORD_WIP, TRANSFER_WIP)
+  planning    customers, customer orders (+ lines, dokumen base64 → object store, status turunan MES-026), demand forecast (job
+              DEMAND_FORECAST_GENERATE, snapshot SUPERSEDED), capacity plan (mesin × shift × hari − downtime terencana, job
+              CAPACITY_PLAN_RECALCULATE, assess on-the-fly), production plan (wizard 6 langkah, optimistic locking `version`,
+              agregasi demand per produk, confirm/cancel), /planning/config; audit transaksional (RecordIn) + outbox per perubahan;
+              Facade untuk production (RefreshOrdersForPlanLine, PropagateProducedQuantity, WorkOrderDemand) dan material (PlanDemandLines)
+  production/generation  Work Order per proses routing dari plan (validasi routing dulu, rantai predecessor, idempoten)
+  mold        /molds CRUD + kompatibilitas produk (ADR-36): retire dijaga IN_USE, hapus dijaga referensi produksi
+  stream      GET /events/stream (SSE): relay outbox → hub; event planning bernama `planning:<Type>` dengan amplop baris outbox
 internal/routes   pipeline + mount; routes_test: setiap route mutasi wajib punya aturan permission eksplisit (chi.Walk)
 internal/testkit  pool app + owner untuk uji integrasi
 ```
@@ -133,7 +147,7 @@ internal/testkit  pool app + owner untuk uji integrasi
 | M2 | production, shopfloor (output, downtime, sync-batch, sync exceptions), corrections, OEE, shift handover/performance, `master/batches` | selesai | `verify-persistence` 28/29 (sisa: `/reports/downtime` → M3), `qa-batch-integrity` 15/15, `qa-sales-http-boundary` 27/27, `verify-user-stories` 67/81 (sisa: analytics/reports → M3); `qa-api-diff` identik untuk work-orders (+chain, available-quantity), production-orders, shop-floor, oee (calculate, machine-performance, bottlenecks, report, target-vs-actual), reports/oee |
 | M3 | analytics (14 route, satu grain line×hari dari snapshot eksekusi bersama), reports (produksi/downtime/shift + CSV), alerts v1.7 (+ antarmuka untuk aturan v2 di M4) | selesai | `verify-user-stories` 80/81 melawan Go sendirian di DB segar (sisa: riwayat demo 60 hari → `fv seed-demo` M7), `verify-persistence` 29/29, `qa-production-posture` 22/29 (sisa: planning → M5); `qa-api-diff` identik untuk 14 analytics + 4 reports kecuali executive-kpi/alerts (status KPI diturunkan dari `kpi_target` DB yang Node abaikan) |
 | M4 | material/mrp, quality, maintenance, workforce, wip, board, alerts penuh, adapter sync-batch v2 | selesai | `verify-mes-improvement` 64/73 melawan Go sendirian: skenario 1–8 (material, quality, maintenance, workforce, WIP, board, events, offline) penuh; sisa skenario 9 trial-register → M6 dan 10 job runner → M5. `qa-api-diff` 33 identik / 3 diizinkan / 0 tak terduga untuk materials, mrp, quality, maintenance, workforce, wip, production-board; regresi M1–M3 tetap 59 identik / 11 diizinkan |
-| M5 | planning, molds, storage fs/S3, `fv worker`, relay outbox + hub SSE | — | `qa-mold-crud`, user stories planning |
+| M5 | planning (customers, orders + dokumen, forecast, capacity, production plan, WO generation, config), molds, storage fs/S3, queue + `fv worker`, relay outbox + hub SSE | selesai | `verify-mes-improvement` 67/73 (sisa skenario 9 trial-register → M6), `qa-mold-crud` 39/39, `qa-production-posture` 30/30, `verify-persistence` 29/29, `qa-batch-integrity` 15/15, `qa-sales-http-boundary` 27/27; uji integrasi Go: queue (claim/retry/FAILED), relay (rollback tak terkirim, PUBLISHED, FAILED setelah 5), storage fs, alur planning (verify-planning-flow diport); `qa-api-diff` 27 identik / 0 diizinkan untuk customers, customer-orders, demand-forecasts, capacity-plans, production-plans, planning, molds; `/work-orders/:id/demand` dan `/materials/readiness` kini identik |
 | M6 | onboarding (trial-register), client-management + admin internal | — | `verify-user-stories` penuh, posture 13/13 |
 | M7 | `fv migrate`, `fv seed-demo`, Dockerfile/compose/CI cutover, hapus runtime Node | — | seluruh CI hijau tanpa Node |
 
@@ -180,8 +194,14 @@ berebut 10 koneksi, sedangkan event loop Node menyerialkan. Kandidat untuk dipro
 - Klasifikasi sync-batch: pelanggaran constraint PostgreSQL diklasifikasikan lewat kode envelope-nya (23514 → VALIDATION_ERROR,
   permanen) alih-alih `INTERNAL_ERROR` retryable.
 - Exception sync tetap difile walau konteks work order gagal dibaca (Node melewatkan pencatatan bila `contextFor` melempar).
-- `GET /work-orders/:id/demand` → 404 sampai planning (M5) terpasang.
-- `GET /materials/readiness` → `[]` sampai planning (M5) menyediakan baris permintaan rencana.
+- socket.io diganti `GET /api/v1/events/stream` (SSE, tenant dari sesi): event eksekusi memakai nama lama
+  (`work-order:updated`, `production:output-recorded`, `downtime:*`) dengan entitasnya sebagai data; event planning
+  `planning:<Type>` dengan `{eventId, aggregateType, aggregateId, occurredAt, ...payload}` seperti gateway lama.
+  Rute ini dikecualikan dari gzip dan timeout 60 s.
+- Relay outbox berjalan di API (`OUTBOX_RELAY_ENABLED`) dan/atau `fv worker`; subscriber-nya hub SSE proses itu sendiri, jadi
+  relay di worker hanya berguna bila API tidak menjalankannya (perilaku Node: relay hanya di API).
+- `GET /capacity-plans/assess`: `demandQuantity` dibulatkan ke bilangan bulat (Node meneruskan pecahan apa adanya).
+- Dokumen order: base64 yang tidak valid → 422 `INVALID_FORMAT` (Node: `Buffer.from` memotong diam-diam, hanya hasil kosong yang ditolak).
 - `maintenance/kpi`, `quality/dashboard`, `workforce/availability`: `from`/`effectiveFrom` default dicap dari jam
   permintaan (selisih milidetik antar-proses); bidang lain identik.
 - Audit §39 pada modul v2 (kualifikasi, penugasan, WIP, dispatch board, konsumsi, inspeksi, maintenance) ditulis

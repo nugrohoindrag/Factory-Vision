@@ -60,6 +60,12 @@ type Deps struct {
 // slowest legitimate calls and finish well inside it.
 const RequestTimeout = 60 * time.Second
 
+// StreamPath is the Server-Sent Events feed, which is neither compressed
+// nor bounded by the request timeout: its lifetime is the client's.
+const StreamPath = "/api/v1/events/stream"
+
+func isStream(r *http.Request) bool { return r.URL.Path == StreamPath }
+
 // Handler builds the root handler.
 func Handler(d Deps) http.Handler {
 	r := chi.NewRouter()
@@ -79,8 +85,8 @@ func Handler(d Deps) http.Handler {
 	}
 	r.Use(middleware.SecurityHeaders)
 	r.Use(middleware.CORS(middleware.CORSOptions{AllowedOrigins: d.Config.AllowedOrigins()}))
-	r.Use(middleware.Gzip())
-	r.Use(middleware.Timeout(RequestTimeout))
+	r.Use(middleware.Gzip(isStream))
+	r.Use(middleware.Timeout(RequestTimeout, isStream))
 	r.Use(tenancy.FromHeaders(d.Config.DefaultTenant))
 	r.Use(auth.AttachPrincipal(d.Resolver, d.Log))
 	r.Use(pathLimits(d.Events))
