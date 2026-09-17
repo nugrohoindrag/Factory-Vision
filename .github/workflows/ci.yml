@@ -383,7 +383,9 @@ jobs:
         env:
           QA_API: http://localhost:4000
         run: |
-          node apps/api/scripts/qa-security-posture.mjs | tee posture.log || true
+          # 2>&1: the script writes its FAIL lines and the summary of failing
+          # checks to stderr, and the assertions below read both.
+          node apps/api/scripts/qa-security-posture.mjs 2>&1 | tee posture.log || true
           grep -q "12 passed, 1 failed" posture.log
           grep -q "pendaftaran trial" posture.log
 
@@ -394,7 +396,7 @@ jobs:
           BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
           BOOTSTRAP_OPERATOR_PIN: '284617'
         run: |
-          node scripts/verify-user-stories.mjs | tee stories.log || true
+          node scripts/verify-user-stories.mjs 2>&1 | tee stories.log || true
           passed=$(grep -oE '[0-9]+/81 assertions passed' stories.log | grep -oE '^[0-9]+')
           echo "passed=$passed (threshold 34)"
           test "${passed:-0}" -ge 34
