@@ -44,15 +44,24 @@ const VOLATILE = new Set([
   'sessionId', 'since', 'counters', 'currentStateSince', 'lastLoginAt',
 ]);
 
-function normalise(value) {
-  if (Array.isArray(value)) return value.map(normalise);
+// Arrays that are sets in the domain: the two runtimes read them from the
+// same rows but in whatever order PostgreSQL returned them, so a positional
+// comparison would report a difference that no client can observe.
+const SET_FIELDS = new Set(['permissions', 'plantIds', 'lineIds', 'workCenterIds', 'openIssues']);
+
+function normalise(value, key) {
+  if (Array.isArray(value)) {
+    const items = value.map((v) => normalise(v));
+    if (SET_FIELDS.has(key) && items.every((v) => typeof v === 'string')) return [...items].sort();
+    return items;
+  }
   if (value && typeof value === 'object') {
     const out = {};
-    for (const key of Object.keys(value).sort()) {
-      if (VOLATILE.has(key)) continue;
-      const v = value[key];
+    for (const k of Object.keys(value).sort()) {
+      if (VOLATILE.has(k)) continue;
+      const v = value[k];
       if (v === null || v === undefined) continue;
-      out[key] = normalise(v);
+      out[k] = normalise(v, k);
     }
     return out;
   }

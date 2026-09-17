@@ -103,7 +103,37 @@ func (s *Service) list(ctx context.Context, tx pgx.Tx, tenantID string) ([]Role,
 			out[i].Permissions = append(out[i].Permissions, permission)
 		}
 	}
-	return out, perms.Err()
+	if err := perms.Err(); err != nil {
+		return nil, err
+	}
+	// Catalogue order rather than whatever order the rows came back in, so
+	// the access matrix reads the same on every request and every host.
+	for i := range out {
+		sortByCatalogue(out[i].Permissions)
+	}
+	return out, nil
+}
+
+var catalogueIndex = func() map[string]int {
+	idx := map[string]int{}
+	for i, id := range rbac.PermissionIDs() {
+		idx[id] = i
+	}
+	return idx
+}()
+
+func sortByCatalogue(perms []string) {
+	sort.SliceStable(perms, func(i, j int) bool {
+		a, aok := catalogueIndex[perms[i]]
+		b, bok := catalogueIndex[perms[j]]
+		if aok != bok {
+			return aok // known permissions first
+		}
+		if !aok {
+			return perms[i] < perms[j]
+		}
+		return a < b
+	})
 }
 
 // upsert writes a role and replaces its permission set, delete-then-insert

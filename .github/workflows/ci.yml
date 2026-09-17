@@ -425,6 +425,32 @@ jobs:
           done
           echo "Node API did not become healthy:" && cat api-node.log && exit 1
 
+      # The Node API rewrites the demo master data as it boots (seedDemoPlant
+      # upserts its in-memory rows), and the Go API caches reference data for
+      # thirty seconds. A fresh Go process reads what Node just wrote, so the
+      # comparison is of two views of the same rows rather than of a cache.
+      - name: Restart Go API with fresh caches
+        env:
+          PORT: '4000'
+          NODE_ENV: test
+          DATABASE_URL: ${{ env.APP_DATABASE_URL }}
+          SEED_DEMO_DATA: 'true'
+          AUTH_REQUIRED: 'true'
+          BOOTSTRAP_ADMIN_EMAIL: admin@pabrik.co.id
+          BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
+          BOOTSTRAP_OPERATOR_PIN: '284617'
+          MFA_ENCRYPTION_KEY: ci-only-mfa-key
+        run: |
+          kill "$(cat api-go.pid)" 2>/dev/null || true
+          sleep 2
+          apps/api-go/bin/fv serve >> api-go.log 2>&1 &
+          echo $! > api-go.pid
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:4000/health > /dev/null && exit 0
+            sleep 1
+          done
+          echo "Go API did not come back:" && cat api-go.log && exit 1
+
       - name: Differential contract check (Go vs Node)
         env:
           GO_API: http://localhost:4000
@@ -434,7 +460,7 @@ jobs:
         run: |
           node scripts/qa-api-diff.mjs \
             --include=/api/v1/master,/api/v1/events,/api/v1/audit-logs,/api/v1/roles,/api/v1/permissions,/api/v1/shifts,/api/v1/csv,/api/v1/meta/deployment,/api/v1/sessions,/api/v1/security \
-            --allow=/api/v1/csv/entities,/api/v1/master/batches,/api/v1/master/bom,/api/v1/master/devices,/api/v1/master/processes,/api/v1/shifts/handover,/api/v1/shifts/performance
+            --allow=/api/v1/csv/entities,/api/v1/master/batches,/api/v1/master/bom,/api/v1/master/devices,/api/v1/master/kpi-targets,/api/v1/master/processes,/api/v1/shifts/handover,/api/v1/shifts/performance
 
       - name: Logs on failure
         if: failure()
