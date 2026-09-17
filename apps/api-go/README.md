@@ -90,8 +90,18 @@ internal/modules/
   roles       /permissions, /roles CRUD; PermissionsFor / ResolveScope / LandingPathFor untuk resolver
   masterdata  62 route /master/* (plants, lines, work centers, machines, products, BOM, operators, reasons, users, devices,
               processes, routings, machine-rates, kpi-targets, shifts) — DB adalah rekaman, cache per tenant TTL 30 s
-  shift       /shifts CRUD
+  shift       /shifts CRUD; handover (context, list, create, acknowledge — tabel shift_handover), /shifts/performance
   csv         /csv/entities, template, export (formula-neutralised), import per baris (+ dryRun)
+  production  production orders, work orders (state machine §11, split §25.7, process chain §13, quantity flow §10),
+              batches (master/batches, ADR-29); PlanningReactor (M5) dan DemandSource (M5) sebagai antarmuka; outbox
+              in-transaction; OnChange → invalidasi read model
+  machinestate  machine_state_log (append-then-close), dipakai production dan shopfloor
+  shopfloor   output, downtime start/resolve, sync-batch (idempoten via sync_event; satu query untuk ledger), sync
+              exceptions (MES-082), shift_date di zona plant (TZ)
+  correction  correction_request (dulu in-memory): window 24 jam, auto-apply bila berwenang, approve/reject, policy
+  oee         oee_config + oee_validation_entry (dulu in-memory); grain machine×shift×hari di cache per tenant
+              (TTL 10 s, invalidasi on-change), 3 scan paralel (errgroup); drill-down, bottleneck, report (+CSV),
+              target-vs-actual, /reports/oee; pembulatan identik JS (platform/jsnum)
 internal/routes   pipeline + mount; routes_test: setiap route mutasi wajib punya aturan permission eksplisit (chi.Walk)
 internal/testkit  pool app + owner untuk uji integrasi
 ```
@@ -102,7 +112,7 @@ internal/testkit  pool app + owner untuk uji integrasi
 |---|---|---|---|
 | M0 | platform, health/meta, event, audit, resolver, tabel permission, observability, CI job `api-go`, `qa-api-diff` | selesai | `go test` + integrasi; `qa-api-diff` identik untuk events/audit/meta |
 | M1 | identity (login, MFA, sesi, kredensial), roles, master data (62 route, entitas yang dulu in-memory kini persisten), shifts, CSV, security summary, bootstrap | selesai | `qa-security-posture` 12/13 (sisa: trial-register → M6); `verify-user-stories` 34/81 (semua bagian identitas, user, role, master data, shift, CSV, audit, meta) |
-| M2 | production, shopfloor (output, downtime, sync-batch, sync exceptions), corrections, OEE, shift handover/performance, `master/batches` | — | `verify-persistence`, `qa-batch-integrity`, `qa-sales-http-boundary`, user stories shop floor |
+| M2 | production, shopfloor (output, downtime, sync-batch, sync exceptions), corrections, OEE, shift handover/performance, `master/batches` | selesai | `verify-persistence` 28/29 (sisa: `/reports/downtime` → M3), `qa-batch-integrity` 15/15, `qa-sales-http-boundary` 27/27, `verify-user-stories` 67/81 (sisa: analytics/reports → M3); `qa-api-diff` identik untuk work-orders (+chain, available-quantity), production-orders, shop-floor, oee (calculate, machine-performance, bottlenecks, report, target-vs-actual), reports/oee |
 | M3 | analytics (14), reports, alerts parsial | — | user stories analytics, `qa-production-posture` |
 | M4 | material/mrp, quality, maintenance, workforce, wip, board, alerts penuh | — | `verify:improvement` 8 skenario |
 | M5 | planning, molds, storage fs/S3, `fv worker`, relay outbox + hub SSE | — | `qa-mold-crud`, user stories planning |
@@ -141,3 +151,15 @@ berebut 10 koneksi, sedangkan event loop Node menyerialkan. Kandidat untuk dipro
 - Audit `actorId` merekam principal yang sebenarnya (Node menulis literal `Admin` pada banyak route master data).
 - `PUT /master/downtime-reasons/:id` dan `reject-reasons/:id` menerapkan field body (Node mengabaikan payload).
 - Staleness cache sesi maksimal 10 s per proses (sama seperti Node).
+- `corrections`, `oee/config`, `oee/validation`, `shifts/handover`: Node menyimpannya di memori (hilang saat restart,
+  `calcVersion` kembali ke 1); Go menulis `correction_request`, `oee_config`, `oee_validation_entry`, `shift_handover`.
+  `GET /corrections` tidak lagi memuat dua baris demo hard-coded.
+- `POST /work-orders/:id/cancel` menerima `reason`/`statusReason` di body; tanpa alasan tetap 409 seperti Node (yang
+  tidak pernah meneruskan alasan, sehingga pembatalan lewat API selalu ditolak).
+- `POST /production-orders`, `POST /work-orders`, `POST /shop-floor/output`, `downtime/start`: field wajib divalidasi
+  (422 VALIDATION_ERROR ber-field) alih-alih diserahkan ke constraint PostgreSQL.
+- `GET /master/batches` membaca `production_batch` (bentuk penuh ADR-29), bukan tiga baris demo in-memory.
+- Klasifikasi sync-batch: pelanggaran constraint PostgreSQL diklasifikasikan lewat kode envelope-nya (23514 → VALIDATION_ERROR,
+  permanen) alih-alih `INTERNAL_ERROR` retryable.
+- Exception sync tetap difile walau konteks work order gagal dibaca (Node melewatkan pencatatan bila `contextFor` melempar).
+- `GET /work-orders/:id/demand` → 404 sampai planning (M5) terpasang.

@@ -10,7 +10,8 @@
  *     node scripts/qa-api-diff.mjs --include=/api/v1/master,/api/v1/events
  *
  *   --include=<prefix,...>   only routes under these prefixes (default: all)
- *   --allow=<prefix,...>     routes allowed to differ (reported, not failed)
+ *   --allow=<prefix,...>     routes allowed to differ (reported, not failed);
+ *                            an entry starting with `*` matches by suffix
  *   --verbose                print the first difference of every route
  *
  * Normalisation drops null-valued keys (Node writes `undefined` as absent,
@@ -42,6 +43,12 @@ const verbose = Boolean(args.verbose);
 const VOLATILE = new Set([
   'time', 'serverTime', 'requestId', 'lastSeenAt', 'idleExpiresAt', 'expiresAt', 'issuedAt',
   'sessionId', 'since', 'counters', 'currentStateSince', 'lastLoginAt',
+  // Computed from the request's own clock, or stamped when a row that the
+  // Node API only held in memory was first materialised.
+  'computedAt', 'hoursElapsed',
+  // State the Node API kept in process memory and Go persists: the OEE
+  // definition version starts at 1 on every Node boot and survives in Go.
+  'calcVersion', 'updatedAt', 'recordedAt',
 ]);
 
 // Arrays that are sets in the domain: the two runtimes read them from the
@@ -168,7 +175,7 @@ async function main() {
       difference = firstDifference(normalise(g.body), normalise(n.body));
     } else if (g.body !== n.body) difference = 'body differs';
 
-    const isAllowed = allow.some((p) => concrete.startsWith(p));
+    const isAllowed = allow.some((p) => (p.startsWith('*') ? concrete.endsWith(p.slice(1)) : concrete.startsWith(p)));
     if (!difference) {
       same += 1;
       if (verbose) console.log(`  SAME  ${concrete}`);

@@ -14,11 +14,15 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/fixtures"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/correction"
 	csvmod "github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/csv"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/identity"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/masterdata"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/oee"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/production"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/roles"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/shift"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/shopfloor"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/auth"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/config"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/rbac"
@@ -68,12 +72,25 @@ func TestEveryMutatingRouteHasAnExplicitRule(t *testing.T) {
 	events := security.NewEvents("", log)
 	identitySvc := identity.NewService(&config.Config{}, master, roleSvc, nil, nil, nil, nil, events, log)
 	masterHandler := masterdata.NewHandler(master, nil, identitySvc, events)
+	productionSvc := production.NewService(nil, nil, nil, log)
+	shopfloorSvc := shopfloor.NewService(nil, productionSvc, master, nil, nil, log)
+	oeeSvc, err := oee.NewService(nil, master, productionSvc, shopfloorSvc)
+	if err != nil {
+		t.Fatal(err)
+	}
 	r := Handler(testDeps(t,
 		func(api chi.Router) { identity.Mount(api, identitySvc, master) },
 		func(api chi.Router) { roles.Mount(api, roleSvc, nil, events) },
 		masterHandler.Mount,
 		func(api chi.Router) { shift.Mount(api, master, nil) },
+		func(api chi.Router) {
+			shift.MountHandover(api, shift.NewHandoverService(nil, master, productionSvc, shopfloorSvc), master, nil)
+		},
 		func(api chi.Router) { csvmod.Mount(api, csvmod.NewService(master), nil, events, 5000) },
+		production.NewHandler(productionSvc, master, nil).Mount,
+		func(api chi.Router) { shopfloor.Mount(api, shopfloorSvc, nil) },
+		func(api chi.Router) { correction.Mount(api, correction.NewService(nil, productionSvc, nil)) },
+		func(api chi.Router) { oee.Mount(api, oeeSvc, nil) },
 	)).(chi.Router)
 
 	mutating := map[string]bool{"POST": true, "PUT": true, "PATCH": true, "DELETE": true}

@@ -376,9 +376,9 @@ jobs:
           done
           echo "Go API did not become healthy:" && cat api-go.log && exit 1
 
-      # Milestone thresholds. M1: the security posture passes except
-      # trial-register (onboarding, M6); 34 of the 81 story assertions pass
-      # (identity, users, roles, master data, shifts, CSV, audit, meta).
+      # Milestone thresholds. M2: the security posture passes except
+      # trial-register (onboarding, M6); 67 of the 81 story assertions pass —
+      # everything but analytics and reports (M3).
       - name: Security posture against Go
         env:
           QA_API: http://localhost:4000
@@ -398,8 +398,8 @@ jobs:
         run: |
           node scripts/verify-user-stories.mjs 2>&1 | tee stories.log || true
           passed=$(grep -oE '[0-9]+/81 assertions passed' stories.log | grep -oE '^[0-9]+')
-          echo "passed=$passed (threshold 34)"
-          test "${passed:-0}" -ge 34
+          echo "passed=$passed (threshold 67)"
+          test "${passed:-0}" -ge 67
 
       # The Node API on :4001, same database, for the differential contract
       # check over every ported GET route.
@@ -459,8 +459,8 @@ jobs:
           BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
         run: |
           node scripts/qa-api-diff.mjs \
-            --include=/api/v1/master,/api/v1/events,/api/v1/audit-logs,/api/v1/roles,/api/v1/permissions,/api/v1/shifts,/api/v1/csv,/api/v1/meta/deployment,/api/v1/sessions,/api/v1/security \
-            --allow=/api/v1/csv/entities,/api/v1/master/batches,/api/v1/master/bom,/api/v1/master/devices,/api/v1/master/kpi-targets,/api/v1/master/processes,/api/v1/shifts/handover,/api/v1/shifts/performance
+            --include=/api/v1/master,/api/v1/events,/api/v1/audit-logs,/api/v1/roles,/api/v1/permissions,/api/v1/shifts,/api/v1/csv,/api/v1/meta/deployment,/api/v1/sessions,/api/v1/security,/api/v1/work-orders,/api/v1/production-orders,/api/v1/shop-floor,/api/v1/oee,/api/v1/corrections,/api/v1/reports/oee \
+            --allow=/api/v1/csv/entities,/api/v1/master/batches,/api/v1/master/bom,/api/v1/master/devices,/api/v1/master/kpi-targets,/api/v1/master/processes,/api/v1/shifts/handover,/api/v1/shifts/performance,/api/v1/corrections,/api/v1/oee/config,/api/v1/oee/validation,'*/demand'
 
       - name: Logs on failure
         if: failure()

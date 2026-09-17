@@ -24,18 +24,23 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/audit"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/correction"
 	csvmod "github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/csv"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/event"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/identity"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/masterdata"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/oee"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/production"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/roles"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/shift"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/shopfloor"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/async"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/auth"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/config"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/db"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/httpx"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/observability"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/outbox"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/rbac"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/security"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/routes"
@@ -150,6 +155,22 @@ func serve() error {
 	masterHandler := masterdata.NewHandler(master, auditSvc, identitySvc, events)
 	csvSvc := csvmod.NewService(master)
 
+	// The execution core (M2): production and the shop floor share one
+	// outbox and one change hook, so a read model built over their records
+	// is refreshed whichever of them wrote.
+	ob := outbox.Repository{}
+	productionSvc := production.NewService(pool, ob, detached, log)
+	shopfloorSvc := shopfloor.NewService(pool, productionSvc, master, ob, cfg.Location, log)
+	productionHandler := production.NewHandler(productionSvc, master, auditSvc)
+	productionHandler.AttachDowntime(shopfloorSvc)
+	correctionSvc := correction.NewService(pool, productionSvc, auditSvc)
+	oeeSvc, err := oee.NewService(pool, master, productionSvc, shopfloorSvc)
+	if err != nil {
+		return err
+	}
+	correctionSvc.AttachOee(oeeSvc)
+	handoverSvc := shift.NewHandoverService(pool, master, productionSvc, shopfloorSvc)
+
 	// Every install starts with the pilot tenant row and the bootstrap
 	// administrator; the demo seed and the trial tenants come later.
 	if err := ensureTenant(ctx, pool, cfg); err != nil {
@@ -172,7 +193,12 @@ func serve() error {
 			func(r chi.Router) { roles.Mount(r, roleSvc, auditSvc, events) },
 			masterHandler.Mount,
 			func(r chi.Router) { shift.Mount(r, master, auditSvc) },
+			func(r chi.Router) { shift.MountHandover(r, handoverSvc, master, auditSvc) },
 			func(r chi.Router) { csvmod.Mount(r, csvSvc, auditSvc, events, cfg.LargeExportRows) },
+			productionHandler.Mount,
+			func(r chi.Router) { shopfloor.Mount(r, shopfloorSvc, auditSvc) },
+			func(r chi.Router) { correction.Mount(r, correctionSvc) },
+			func(r chi.Router) { oee.Mount(r, oeeSvc, auditSvc) },
 		},
 	})
 

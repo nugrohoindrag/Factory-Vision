@@ -357,13 +357,19 @@ func (s *Service) ResolveIdealCycleSeconds(ctx context.Context, tenantID, produc
 	if err != nil {
 		return nil, err
 	}
+	return r.IdealCycleSeconds(productID, machineID, source), nil
+}
+
+// IdealCycleSeconds resolves the rate against an already-loaded reference,
+// for read models that resolve thousands of rows against one snapshot.
+func (r *Reference) IdealCycleSeconds(productID, machineID, source string) *float64 {
 	if source == "" {
 		source = "PRODUCT_MACHINE"
 	}
 	if source == "PRODUCT_MACHINE" && productID != "" && machineID != "" {
 		for _, rate := range r.Rates {
 			if rate.ProductID == productID && rate.MachineID == machineID {
-				return db.Ptr(rate.IdealCycleTimeSeconds), nil
+				return db.Ptr(rate.IdealCycleTimeSeconds)
 			}
 		}
 	}
@@ -371,7 +377,7 @@ func (s *Service) ResolveIdealCycleSeconds(ctx context.Context, tenantID, produc
 		for _, rt := range r.Routings {
 			if rt.ProductID == productID && rt.Active && (machineID == "" || (rt.MachineID != nil && *rt.MachineID == machineID)) {
 				if rt.StandardCycleTimeSeconds != nil && *rt.StandardCycleTimeSeconds != 0 {
-					return db.Ptr(*rt.StandardCycleTimeSeconds), nil
+					return db.Ptr(*rt.StandardCycleTimeSeconds)
 				}
 				break
 			}
@@ -380,11 +386,11 @@ func (s *Service) ResolveIdealCycleSeconds(ctx context.Context, tenantID, produc
 	if productID != "" {
 		for _, p := range r.Products {
 			if p.ID == productID && p.IdealCycleTimeSeconds != 0 {
-				return db.Ptr(p.IdealCycleTimeSeconds), nil
+				return db.Ptr(p.IdealCycleTimeSeconds)
 			}
 		}
 	}
-	return nil, nil
+	return nil
 }
 
 // write runs a reference mutation and invalidates the projection.

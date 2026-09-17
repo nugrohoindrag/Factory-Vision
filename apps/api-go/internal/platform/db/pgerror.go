@@ -69,3 +69,14 @@ func IsInsufficientPrivilege(err error) bool {
 	var pg *pgconn.PgError
 	return errors.As(err, &pg) && pg.Code == "42501"
 }
+
+// SQLState is the PostgreSQL error code and the constraint it names, for
+// callers that translate one specific violation into a domain message.
+// Empty when the error is not a PostgreSQL error.
+func SQLState(err error) (code, constraint string) {
+	var pg *pgconn.PgError
+	if !errors.As(err, &pg) {
+		return "", ""
+	}
+	return pg.Code, pg.ConstraintName
+}
