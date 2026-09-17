@@ -105,7 +105,21 @@ internal/modules/
               bottleneck, report (+CSV), target-vs-actual, /reports/oee; pembulatan identik JS (platform/jsnum)
   analytics   14 route /analytics/* (live board, pareto, KPI eksekutif, tren, line/plant/process, downtime & quality
               summary, order status, alerts, daily) dari grain line×hari; /reports/{production,downtime,shift} (+CSV
-              ber-scope); ExtraAlerts = antarmuka aturan v2 (M4)
+              ber-scope); ExtraAlerts = antarmuka aturan v2
+  material    /materials/* (gudang, inventori + ledger, transaksi, kebutuhan/readiness, reservasi, konsumsi + varians)
+              dan /mrp/* (run, hasil, latest); DemandSource (M5) sebagai antarmuka
+  quality     /quality/* (inspection plans + characteristics, inspections + lines, holds, dispositions → production,
+              NCR + corrective actions, transfer gate, dashboard)
+  maintenance /maintenance/* (plans + due status, requests, records: assign/start/complete/emergency → downtime dan
+              machine state, KPI MTBF/MTTR)
+  workforce   /workforce/* (skills, requirements, qualifications dengan status turunan, shift assignments, availability
+              sebagai riwayat, eligibility, labor requirements/assignments, time records, utilisation, dashboard)
+  wip         /wip/* (records + aging, status history, hold/release, transfers dengan quality gate, receipts dengan
+              varians beralasan, dashboard)
+  board       /production-board (proyeksi lane + konflik dihitung saat dibaca; 8 pembacaan paralel) dan dispatch
+  alerts      aturan §26 (material, quality, maintenance, workforce, WIP) — lima grup paralel, satu grup gagal tidak
+              mengosongkan feed; digabung ke /analytics/alerts
+  improvement adapter sync-batch → material/quality/wip (RECORD_CONSUMPTION, RECORD_INSPECTION, RECORD_WIP, TRANSFER_WIP)
 internal/routes   pipeline + mount; routes_test: setiap route mutasi wajib punya aturan permission eksplisit (chi.Walk)
 internal/testkit  pool app + owner untuk uji integrasi
 ```
@@ -118,7 +132,7 @@ internal/testkit  pool app + owner untuk uji integrasi
 | M1 | identity (login, MFA, sesi, kredensial), roles, master data (62 route, entitas yang dulu in-memory kini persisten), shifts, CSV, security summary, bootstrap | selesai | `qa-security-posture` 12/13 (sisa: trial-register → M6); `verify-user-stories` 34/81 (semua bagian identitas, user, role, master data, shift, CSV, audit, meta) |
 | M2 | production, shopfloor (output, downtime, sync-batch, sync exceptions), corrections, OEE, shift handover/performance, `master/batches` | selesai | `verify-persistence` 28/29 (sisa: `/reports/downtime` → M3), `qa-batch-integrity` 15/15, `qa-sales-http-boundary` 27/27, `verify-user-stories` 67/81 (sisa: analytics/reports → M3); `qa-api-diff` identik untuk work-orders (+chain, available-quantity), production-orders, shop-floor, oee (calculate, machine-performance, bottlenecks, report, target-vs-actual), reports/oee |
 | M3 | analytics (14 route, satu grain line×hari dari snapshot eksekusi bersama), reports (produksi/downtime/shift + CSV), alerts v1.7 (+ antarmuka untuk aturan v2 di M4) | selesai | `verify-user-stories` 80/81 melawan Go sendirian di DB segar (sisa: riwayat demo 60 hari → `fv seed-demo` M7), `verify-persistence` 29/29, `qa-production-posture` 22/29 (sisa: planning → M5); `qa-api-diff` identik untuk 14 analytics + 4 reports kecuali executive-kpi/alerts (status KPI diturunkan dari `kpi_target` DB yang Node abaikan) |
-| M4 | material/mrp, quality, maintenance, workforce, wip, board, alerts penuh | — | `verify:improvement` 8 skenario |
+| M4 | material/mrp, quality, maintenance, workforce, wip, board, alerts penuh, adapter sync-batch v2 | selesai | `verify-mes-improvement` 64/73 melawan Go sendirian: skenario 1–8 (material, quality, maintenance, workforce, WIP, board, events, offline) penuh; sisa skenario 9 trial-register → M6 dan 10 job runner → M5. `qa-api-diff` 33 identik / 3 diizinkan / 0 tak terduga untuk materials, mrp, quality, maintenance, workforce, wip, production-board; regresi M1–M3 tetap 59 identik / 11 diizinkan |
 | M5 | planning, molds, storage fs/S3, `fv worker`, relay outbox + hub SSE | — | `qa-mold-crud`, user stories planning |
 | M6 | onboarding (trial-register), client-management + admin internal | — | `verify-user-stories` penuh, posture 13/13 |
 | M7 | `fv migrate`, `fv seed-demo`, Dockerfile/compose/CI cutover, hapus runtime Node | — | seluruh CI hijau tanpa Node |
@@ -167,6 +181,11 @@ berebut 10 koneksi, sedangkan event loop Node menyerialkan. Kandidat untuk dipro
   permanen) alih-alih `INTERNAL_ERROR` retryable.
 - Exception sync tetap difile walau konteks work order gagal dibaca (Node melewatkan pencatatan bila `contextFor` melempar).
 - `GET /work-orders/:id/demand` → 404 sampai planning (M5) terpasang.
+- `GET /materials/readiness` → `[]` sampai planning (M5) menyediakan baris permintaan rencana.
+- `maintenance/kpi`, `quality/dashboard`, `workforce/availability`: `from`/`effectiveFrom` default dicap dari jam
+  permintaan (selisih milidetik antar-proses); bidang lain identik.
+- Audit §39 pada modul v2 (kualifikasi, penugasan, WIP, dispatch board, konsumsi, inspeksi, maintenance) ditulis
+  *sebelum* respons, seperti `await audit.record` di Node — bukan detached.
 - `analytics/executive-kpi` dan `analytics/alerts`: status/ambang diturunkan dari `kpi_target` di DB (seed
   `110/130` untuk REJECT_RATE dan DOWNTIME); Node memakai baris demo in-memory (`95/85`, DOWNTIME 400) dan mengabaikan
   tabelnya. Angka lainnya identik.

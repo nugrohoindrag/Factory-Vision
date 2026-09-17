@@ -738,7 +738,7 @@ func (s *Service) Report(ctx context.Context, tenantID string, f Filter) ([]Repo
 		if out[i].ShiftDate != out[j].ShiftDate {
 			return out[i].ShiftDate > out[j].ShiftDate
 		}
-		return localeLess(out[i].MachineName, out[j].MachineName)
+		return jsnum.LocaleLess(out[i].MachineName, out[j].MachineName)
 	})
 	return out, nil
 }
@@ -1103,14 +1103,4 @@ func findProduct(ref *masterdata.Reference, id *string) *masterdata.Product {
 		}
 	}
 	return nil
-}
-
-// localeLess approximates String.prototype.localeCompare for the names the
-// plant uses: case-insensitive first, lowercase before uppercase on a tie.
-func localeLess(a, b string) bool {
-	la, lb := strings.ToLower(a), strings.ToLower(b)
-	if la != lb {
-		return la < lb
-	}
-	return a > b
 }

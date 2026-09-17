@@ -49,6 +49,9 @@ const VOLATILE = new Set([
   // State the Node API kept in process memory and Go persists: the OEE
   // definition version starts at 1 on every Node boot and survives in Go.
   'calcVersion', 'updatedAt', 'recordedAt',
+  // Stamped with the request's clock: the board's generation time, and the
+  // default window a dashboard or KPI reads when the query names none.
+  'generatedAt', 'checkedAt', 'raisedAt',
 ]);
 
 // Arrays that are sets in the domain: the two runtimes read them from the

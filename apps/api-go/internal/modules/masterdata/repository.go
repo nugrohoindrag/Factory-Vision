@@ -165,7 +165,8 @@ func (Repository) UpsertMachine(ctx context.Context, tx pgx.Tx, m Machine) error
 		 ON CONFLICT (id) DO UPDATE
 		   SET work_center_id = EXCLUDED.work_center_id, code = EXCLUDED.code, name = EXCLUDED.name,
 		       status = EXCLUDED.status,
-		       ideal_cycle_time_seconds = EXCLUDED.ideal_cycle_time_seconds`,
+		       ideal_cycle_time_seconds = EXCLUDED.ideal_cycle_time_seconds,
+		       current_state = EXCLUDED.current_state, current_state_since = EXCLUDED.current_state_since`,
 		m.ID, m.TenantID, m.WorkCenterID, m.Code, m.Name, orDefault(m.Status, "ACTIVE"),
 		m.IdealCycleTimeSeconds, orDefault(m.CurrentState, "IDLE"), since)
 	return err

@@ -23,19 +23,27 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
 
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/alerts"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/analytics"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/audit"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/board"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/correction"
 	csvmod "github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/csv"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/event"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/execution"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/identity"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/improvement"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/maintenance"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/masterdata"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/material"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/oee"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/production"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/quality"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/roles"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/shift"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/shopfloor"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/wip"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/workforce"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/async"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/auth"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/config"
@@ -181,6 +189,19 @@ func serve() error {
 	}
 	handoverSvc := shift.NewHandoverService(pool, master, productionSvc, shopfloorSvc)
 
+	// The MES Improvement modules (M4). Each writes its own tables and the
+	// operational_event timeline; the board and the alert feed are
+	// projections over them, and the sync batch reaches them through the
+	// offline adapter so a replayed terminal queue applies exactly once.
+	materialSvc := material.NewService(pool, master, productionSvc, eventSvc)
+	qualitySvc := quality.NewService(pool, productionSvc, eventSvc)
+	maintenanceSvc := maintenance.NewService(pool, master, shopfloorSvc, eventSvc, log)
+	workforceSvc := workforce.NewService(pool, master, productionSvc, eventSvc)
+	wipSvc := wip.NewService(pool, master, productionSvc, qualitySvc, eventSvc, cfg.WipAgingHours, cfg.WipCriticalHours)
+	boardSvc := board.NewService(master, productionSvc, maintenanceSvc, materialSvc, workforceSvc, eventSvc, cfg.Location)
+	shopfloorSvc.AttachImprovement(improvement.NewOffline(materialSvc, qualitySvc, wipSvc))
+	analyticsSvc.AttachExtraAlerts(alerts.NewImprovement(materialSvc, qualitySvc, maintenanceSvc, workforceSvc, wipSvc))
+
 	// Every install starts with the pilot tenant row and the bootstrap
 	// administrator; the demo seed and the trial tenants come later.
 	if err := ensureTenant(ctx, pool, cfg); err != nil {
@@ -210,6 +231,12 @@ func serve() error {
 			func(r chi.Router) { correction.Mount(r, correctionSvc) },
 			func(r chi.Router) { oee.Mount(r, oeeSvc, auditSvc) },
 			func(r chi.Router) { analytics.Mount(r, analyticsSvc, shopfloorSvc) },
+			func(r chi.Router) { material.Mount(r, materialSvc, auditSvc) },
+			func(r chi.Router) { quality.Mount(r, qualitySvc, auditSvc) },
+			func(r chi.Router) { maintenance.Mount(r, maintenanceSvc, auditSvc) },
+			func(r chi.Router) { workforce.Mount(r, workforceSvc, auditSvc) },
+			func(r chi.Router) { wip.Mount(r, wipSvc, auditSvc) },
+			func(r chi.Router) { board.Mount(r, boardSvc, auditSvc) },
 		},
 	})
 

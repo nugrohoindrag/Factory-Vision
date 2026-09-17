@@ -55,6 +55,8 @@ type Config struct {
 
 	SecurityAlertWebhook string
 	LargeExportRows      int
+	WipAgingHours        float64
+	WipCriticalHours     float64
 
 	SeedDemoData bool
 
@@ -138,6 +140,8 @@ func Load() (*Config, error) {
 
 	c.SecurityAlertWebhook = strings.TrimSpace(get("SECURITY_ALERT_WEBHOOK", ""))
 	c.LargeExportRows = getInt("LARGE_EXPORT_ROWS", 5000)
+	c.WipAgingHours = getFloat("WIP_AGING_HOURS", 24)
+	c.WipCriticalHours = getFloat("WIP_CRITICAL_HOURS", 72)
 	c.SeedDemoData = truthy(get("SEED_DEMO_DATA", ""))
 
 	c.ObjectStorageDriver = get("OBJECT_STORAGE_DRIVER", "filesystem")
@@ -238,6 +242,18 @@ func getInt(name string, fallback int) int {
 		return fallback
 	}
 	return n
+}
+
+func getFloat(name string, fallback float64) float64 {
+	v := get(name, "")
+	if v == "" {
+		return fallback
+	}
+	f, err := strconv.ParseFloat(strings.TrimSpace(v), 64)
+	if err != nil {
+		return fallback
+	}
+	return f
 }
 
 var truthyPattern = regexp.MustCompile(`(?i)^(1|true|yes)$`)

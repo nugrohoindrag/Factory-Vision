@@ -11,6 +11,7 @@ import (
 	"math"
 	"math/big"
 	"strconv"
+	"strings"
 )
 
 // ToFixed is Number(x.toFixed(digits)).
@@ -63,3 +64,22 @@ func Clamp01(x float64) float64 { return math.Min(1, math.Max(0, x)) }
 
 // Trunc is Math.trunc.
 func Trunc(x float64) float64 { return math.Trunc(x) }
+
+// LocaleLess approximates String.prototype.localeCompare for the names a
+// plant uses: case-insensitive first, lowercase before uppercase on a tie.
+func LocaleLess(a, b string) bool {
+	la, lb := strings.ToLower(a), strings.ToLower(b)
+	if la != lb {
+		return la < lb
+	}
+	return a > b
+}
+
+// Format is String(x) for the finite numbers a plant produces: the
+// shortest decimal that round-trips, with no exponent for ordinary magnitudes.
+func Format(x float64) string {
+	if x == math.Trunc(x) && math.Abs(x) < 1e21 {
+		return strconv.FormatFloat(x, 'f', 0, 64)
+	}
+	return strconv.FormatFloat(x, 'f', -1, 64)
+}

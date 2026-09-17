@@ -199,6 +199,14 @@ func (s *Service) UpdateMachine(ctx context.Context, tenantID, id string, body P
 	body.str("name", &m.Name)
 	body.str("status", &m.Status)
 	body.num("idealCycleTimeSeconds", &m.IdealCycleTimeSeconds)
+	// Maintenance drives the machine's current state (OFFLINE while under
+	// repair, IDLE after); the stamp moves only when the state does.
+	if state := m.CurrentState; body.has("currentState") {
+		body.str("currentState", &m.CurrentState)
+		if m.CurrentState != state {
+			m.CurrentStateSince = db.Now()
+		}
+	}
 	err = s.write(ctx, tenantID, func(tx pgx.Tx) error { return s.repo.UpsertMachine(ctx, tx, m) })
 	return m, err
 }

@@ -15,16 +15,22 @@ import (
 
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/fixtures"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/analytics"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/board"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/correction"
 	csvmod "github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/csv"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/execution"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/identity"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/maintenance"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/masterdata"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/material"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/oee"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/production"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/quality"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/roles"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/shift"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/shopfloor"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/wip"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/workforce"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/auth"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/config"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/rbac"
@@ -88,6 +94,12 @@ func TestEveryMutatingRouteHasAnExplicitRule(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	materialSvc := material.NewService(nil, master, productionSvc, nil)
+	qualitySvc := quality.NewService(nil, productionSvc, nil)
+	maintenanceSvc := maintenance.NewService(nil, master, shopfloorSvc, nil, log)
+	workforceSvc := workforce.NewService(nil, master, productionSvc, nil)
+	wipSvc := wip.NewService(nil, master, productionSvc, qualitySvc, nil, 24, 72)
+	boardSvc := board.NewService(master, productionSvc, maintenanceSvc, materialSvc, workforceSvc, nil, nil)
 	r := Handler(testDeps(t,
 		func(api chi.Router) { identity.Mount(api, identitySvc, master) },
 		func(api chi.Router) { roles.Mount(api, roleSvc, nil, events) },
@@ -102,6 +114,12 @@ func TestEveryMutatingRouteHasAnExplicitRule(t *testing.T) {
 		func(api chi.Router) { correction.Mount(api, correction.NewService(nil, productionSvc, nil)) },
 		func(api chi.Router) { oee.Mount(api, oeeSvc, nil) },
 		func(api chi.Router) { analytics.Mount(api, analyticsSvc, shopfloorSvc) },
+		func(api chi.Router) { material.Mount(api, materialSvc, nil) },
+		func(api chi.Router) { quality.Mount(api, qualitySvc, nil) },
+		func(api chi.Router) { maintenance.Mount(api, maintenanceSvc, nil) },
+		func(api chi.Router) { workforce.Mount(api, workforceSvc, nil) },
+		func(api chi.Router) { wip.Mount(api, wipSvc, nil) },
+		func(api chi.Router) { board.Mount(api, boardSvc, nil) },
 	)).(chi.Router)
 
 	mutating := map[string]bool{"POST": true, "PUT": true, "PATCH": true, "DELETE": true}
