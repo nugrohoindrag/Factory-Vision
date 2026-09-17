@@ -10,4 +10,12 @@ regexes = [
   # RFC 6238 Appendix B seed "12345678901234567890" in base32. It is the
   # vector every TOTP implementation is checked against, not a secret.
   '''GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ''',
+  # The CI jobs' throwaway internal-administrator password (ci.yml). The row
+  # it protects exists only in the job's own PostgreSQL service container and
+  # dies with it; the value is fictional, like BOOTSTRAP_ADMIN_PASSWORD beside
+  # it, but long enough for the entropy rule to notice.
+  '''RahasiaKuatInternal2026''',
+  # A local MinIO root password from a QA script that no longer exists
+  # (history only): fictional, for a container on a developer's machine.
+  '''fvqasecret123''',
 ]
