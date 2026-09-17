@@ -6,13 +6,19 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/sony/gobreaker/v2"
+
+	"github.com/nugrohoindrag/factory-vision/apps/api/internal/platform/breaker"
 )
 
 // S3Options configure the S3-compatible store — MinIO on a self-hosted
@@ -31,12 +37,44 @@ type S3 struct {
 	opt    S3Options
 	client *http.Client
 	now    func() time.Time
+	// cb fails fast once the store has stopped answering: five consecutive
+	// transport errors or 5xx open it for thirty seconds, and a request in
+	// that window returns ErrUnavailable without holding a socket for the
+	// client's sixty-second timeout.
+	cb *gobreaker.CircuitBreaker[*http.Response]
 }
+
+// ErrUnavailable is returned while the breaker holds the store to be down.
+var ErrUnavailable = errors.New("penyimpanan objek sedang tidak tersedia")
 
 // NewS3 builds the client.
 func NewS3(o S3Options) *S3 {
-	return &S3{opt: o, client: &http.Client{Timeout: 60 * time.Second}, now: time.Now}
+	return &S3{opt: o, client: &http.Client{Timeout: 60 * time.Second}, now: time.Now, cb: newS3Breaker(nil)}
 }
+
+// WithLogger routes breaker state changes to the log.
+func (s *S3) WithLogger(log *slog.Logger) *S3 {
+	s.cb = newS3Breaker(log)
+	return s
+}
+
+func newS3Breaker(log *slog.Logger) *gobreaker.CircuitBreaker[*http.Response] {
+	return breaker.New[*http.Response]("object-store", log, breaker.Options{
+		// Only the store being unreachable or broken counts: a 4xx is an
+		// answer about the key, and a request the caller cancelled says
+		// nothing about the store.
+		IsSuccessful: func(err error) bool {
+			var down *storeDown
+			return err == nil || !errors.As(err, &down)
+		},
+	})
+}
+
+// storeDown marks a failure of the store itself (transport error or 5xx).
+type storeDown struct{ err error }
+
+func (d *storeDown) Error() string { return d.err.Error() }
+func (d *storeDown) Unwrap() error { return d.err }
 
 // Kind is "s3".
 func (s *S3) Kind() string { return "s3" }
@@ -152,7 +190,27 @@ func (s *S3) do(ctx context.Context, method, key string, body []byte, contentTyp
 	}
 	s.sign(req, path, sha256Hex(body))
 	req.Header.Del("host")
-	return s.client.Do(req)
+	resp, err := breaker.Execute(s.cb, func() (*http.Response, error) {
+		resp, err := s.client.Do(req)
+		if err != nil {
+			if ctx.Err() != nil {
+				return nil, err // the caller gave up; not the store's fault
+			}
+			return nil, &storeDown{err}
+		}
+		if resp.StatusCode >= 500 {
+			return nil, &storeDown{fmt.Errorf("s3 %s %s: HTTP %d %s", strings.ToLower(method), key, resp.StatusCode, drain(resp))}
+		}
+		return resp, nil
+	})
+	if breaker.Tripped(err) {
+		return nil, fmt.Errorf("s3 %s %s: %w", strings.ToLower(method), key, ErrUnavailable)
+	}
+	var down *storeDown
+	if errors.As(err, &down) {
+		return nil, down.err
+	}
+	return resp, err
 }
 
 func drain(resp *http.Response) string {

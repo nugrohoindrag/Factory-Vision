@@ -275,7 +275,7 @@ func serve() error {
 	// through the relay.
 	store, err := storage.FromOptions(storage.Options{Driver: cfg.ObjectStorageDriver, DocumentDir: cfg.DocumentStorageDir, Bucket: cfg.ObjectStorageBucket, Region: cfg.ObjectStorageRegion,
 		Endpoint: cfg.ObjectStorageEndpoint, AccessKey: cfg.ObjectStorageAccessKey, SecretKey: cfg.ObjectStorageSecretKey, ForcePathStyle: cfg.ObjectStorageForcePathStyle,
-		ForcePathStyleSet: true, WorkingDirFallback: cfg.WorkingDir})
+		ForcePathStyleSet: true, WorkingDirFallback: cfg.WorkingDir, Logger: log})
 	if err != nil {
 		return err
 	}
@@ -503,7 +503,7 @@ func worker() error {
 	defer pool.Close()
 	store, err := storage.FromOptions(storage.Options{Driver: cfg.ObjectStorageDriver, DocumentDir: cfg.DocumentStorageDir, Bucket: cfg.ObjectStorageBucket, Region: cfg.ObjectStorageRegion,
 		Endpoint: cfg.ObjectStorageEndpoint, AccessKey: cfg.ObjectStorageAccessKey, SecretKey: cfg.ObjectStorageSecretKey, ForcePathStyle: cfg.ObjectStorageForcePathStyle,
-		ForcePathStyleSet: true, WorkingDirFallback: cfg.WorkingDir})
+		ForcePathStyleSet: true, WorkingDirFallback: cfg.WorkingDir, Logger: log})
 	if err != nil {
 		return err
 	}

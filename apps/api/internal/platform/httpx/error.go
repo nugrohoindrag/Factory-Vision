@@ -89,6 +89,18 @@ func Internal(message string) *Error {
 	return New("INTERNAL_ERROR", message, 500)
 }
 
+// Unavailable answers 503 with Retry-After when a dependency the request
+// needs — the object store — is down and its circuit breaker is open: the
+// client should try again shortly rather than treat it as a defect.
+func Unavailable(message string, retryAfterSeconds int) *Error {
+	if message == "" {
+		message = "Layanan sedang tidak tersedia. Coba lagi sebentar."
+	}
+	e := New("SERVICE_UNAVAILABLE", message, 503)
+	e.RetryAfter = retryAfterSeconds
+	return e
+}
+
 // PayloadTooLarge answers a body over the configured limit. The Node API
 // returned a codeless 500 here; an envelope the client can read is a
 // deliberate improvement.

@@ -3,6 +3,7 @@ package planning
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"net/http"
 	"path"
@@ -16,6 +17,7 @@ import (
 	"github.com/nugrohoindrag/factory-vision/apps/api/internal/platform/db"
 	"github.com/nugrohoindrag/factory-vision/apps/api/internal/platform/httpx"
 	"github.com/nugrohoindrag/factory-vision/apps/api/internal/platform/outbox"
+	"github.com/nugrohoindrag/factory-vision/apps/api/internal/platform/storage"
 )
 
 // CustomerOrder is the TypeScript CustomerOrder. Dates are calendar dates,
@@ -703,7 +705,7 @@ func (s *Service) AttachDocument(ctx context.Context, tenantID, orderID string, 
 		}
 		written, err := s.store.Put(ctx, key, raw, in.ContentType)
 		if err != nil {
-			return OrderDocument{}, err
+			return OrderDocument{}, storeError(err)
 		}
 		// A URL the API serves, not a storage location: the console must never
 		// learn where the bytes live, so the backend can change under it.
@@ -758,12 +760,21 @@ func (s *Service) DocumentContent(ctx context.Context, tenantID, objectID string
 	}
 	b, err := s.store.Get(ctx, key)
 	if err != nil {
-		return nil, "", err
+		return nil, "", storeError(err)
 	}
 	if b == nil {
 		return nil, "", httpx.NotFound("Dokumen tidak ditemukan pada penyimpanan.")
 	}
 	return b, ContentTypeOf(objectID), nil
+}
+
+// storeError turns a store whose breaker is open into a 503 the client can
+// retry; any other failure stays an internal error.
+func storeError(err error) error {
+	if errors.Is(err, storage.ErrUnavailable) {
+		return httpx.Unavailable("Penyimpanan dokumen sedang tidak tersedia. Coba lagi sebentar.", 30)
+	}
+	return err
 }
 
 // RemoveDocument deletes the row and then the object; an already-absent

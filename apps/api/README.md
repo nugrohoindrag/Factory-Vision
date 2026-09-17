@@ -83,7 +83,9 @@ internal/platform/
               WithoutTenant hanya untuk relay/queue, pemetaan 23505/23503/23502/23514, tracer slow-query + histogram
   httpx       Error + Handle (satu-satunya tempat envelope dibentuk), JSON streaming (SetEscapeHTML false), Decode 8 MiB,
               Validator (pesan identik TS), request id, server dengan timeout
-  httpx/middleware  security headers, CORS, gzip ≥1 KiB (streaming), recover, access log, timeout per request
+  httpx/middleware  security headers, CORS, gzip ≥1 KiB (streaming), ETag lemah + 304 untuk route read model
+              (analytics, reports, production-board, oee — klien bersama mengirim If-None-Match), recover, access log,
+              timeout per request
   tenancy     X-Tenant-Id / DEFAULT_TENANT_ID / X-User-Id / X-User-Role (jalur AUTH_REQUIRED=false)
   auth        Principal, token (<tenant>.<base64url>, sha256), Resolver (ristretto TTL 10 s + singleflight + touch idle
               throttled 60 s via runner berbatas), middleware AttachPrincipal/RequirePermission, scope helpers
@@ -98,7 +100,10 @@ internal/platform/
   outbox      Writer (in-transaction) + Relay: klaim per tenant SKIP LOCKED, kirim ke subscriber, tandai PUBLISHED dalam transaksi
               yang sama; kegagalan dicatat di luar transaksi, FAILED setelah 5 percobaan (at-least-once)
   realtime    hub Server-Sent Events: satu goroutine per klien, buffer per klien (drop bila penuh), room per tenant, heartbeat 25 s
-  storage     ObjectStore: filesystem (default, tolak traversal) dan S3/MinIO (SigV4 di stdlib, path-style; vektor uji AWS)
+  storage     ObjectStore: filesystem (default, tolak traversal) dan S3/MinIO (SigV4 di stdlib, path-style; vektor uji AWS);
+              S3 di balik circuit breaker — 5 kegagalan beruntun (transport/5xx) membuka 30 s, permintaan di jendela itu
+              menjawab 503 SERVICE_UNAVAILABLE + Retry-After alih-alih menahan soket 60 s
+  breaker     pembungkus gobreaker/v2 untuk dependensi keluar (object store, webhook alert keamanan); perubahan state di-log
 internal/modules/
   meta        /health, /meta/deployment, /meta/openapi.json, /docs
   event       /events, /events/timeline, /events/summary (+ ?cursor= keyset aditif), Recorder detached berbatas
@@ -169,9 +174,33 @@ internal/testkit  pool app + owner untuk uji integrasi
 | M4 | material/mrp, quality, maintenance, workforce, wip, board, alerts penuh, adapter sync-batch v2 | selesai | `verify-mes-improvement` 64/73 melawan Go sendirian: skenario 1–8 (material, quality, maintenance, workforce, WIP, board, events, offline) penuh; sisa skenario 9 trial-register → M6 dan 10 job runner → M5. `qa-api-diff` 33 identik / 3 diizinkan / 0 tak terduga untuk materials, mrp, quality, maintenance, workforce, wip, production-board; regresi M1–M3 tetap 59 identik / 11 diizinkan |
 | M5 | planning (customers, orders + dokumen, forecast, capacity, production plan, WO generation, config), molds, storage fs/S3, queue + `fv worker`, relay outbox + hub SSE | selesai | `verify-mes-improvement` 67/73 (sisa skenario 9 trial-register → M6), `qa-mold-crud` 39/39, `qa-production-posture` 30/30, `verify-persistence` 29/29, `qa-batch-integrity` 15/15, `qa-sales-http-boundary` 27/27; uji integrasi Go: queue (claim/retry/FAILED), relay (rollback tak terkirim, PUBLISHED, FAILED setelah 5), storage fs, alur planning (verify-planning-flow diport); `qa-api-diff` 27 identik / 0 diizinkan untuk customers, customer-orders, demand-forecasts, capacity-plans, production-plans, planning, molds; `/work-orders/:id/demand` dan `/materials/readiness` kini identik |
 | M6 | onboarding (trial-register, template, status, guidance, first-workflow), client management + API internal vendor, migrasi 035 (onboarding_progress/guidance/analytics_event, internal_session) | selesai | `qa-security-posture` 13/13, `verify-mes-improvement` 73/73 melawan Go sendirian; uji integrasi progres onboarding (persisten lintas instance, 404 untuk tenant lain); `scripts/qa-internal-diff.mjs` 8 identik / 3 diizinkan (tanggal DATE, lihat divergensi) untuk /api/internal/v1 |
-| M7 | `fv migrate`, `fv seed-demo` (+ hook boot `SEED_DEMO_DATA`), `fv probe`, Dockerfile/compose/CI cutover ke Go, runtime Node + `apps/worker` + `packages/job-queue` dihapus, `apps/api-go` → `apps/api` | selesai | riwayat demo identik byte-per-byte dengan yang ditulis boot Node di DB segar (312 production + 233 downtime; run kedua menambah 0), `verify-user-stories` 81/81 melawan Go sendirian di DB segar, seluruh CI tanpa Node (unit + integrasi, posture 13/13, stories 81/81, improvement 73/73, persistence, mold CRUD, posture produksi, batch, sales boundary, govulncheck, CodeQL Go, trivy atas image distroless) |
+| M7 | `fv migrate`, `fv seed-demo` (+ hook boot `SEED_DEMO_DATA`), `fv probe`, Dockerfile/compose/CI cutover ke Go, runtime Node + `apps/worker` + `packages/job-queue` dihapus, `apps/api-go` → `apps/api`; ETag read model + revalidasi di klien bersama, circuit breaker S3/webhook, PGO (`cmd/fv/default.pgo`), `cmd/bench` | selesai | riwayat demo identik byte-per-byte dengan yang ditulis boot Node di DB segar (312 production + 233 downtime; run kedua menambah 0), `verify-user-stories` 81/81 melawan Go sendirian di DB segar, seluruh CI tanpa Node (unit + integrasi, posture 13/13, stories 81/81, improvement 73/73, persistence, mold CRUD, posture produksi, batch, sales boundary, govulncheck, CodeQL Go, trivy atas image distroless) |
 
 Tabel di atas adalah catatan sejarah pengerjaan; sejak M7 hanya Go yang ada di repositori.
+
+## Baseline performa (M7, setelah cutover)
+
+Laptop pengembang yang sama dengan tabel M1 di bawah, Postgres 16 di Docker (DB seed + demo), 32 klien
+paralel selama 5 detik per endpoint, pool 10 koneksi, binary dengan PGO. Diukur dengan
+`go run ./cmd/bench` (closed loop, di mesin yang sama dengan API).
+
+| Endpoint | rps | p50 / p95 / p99 (ms) |
+|---|---|---|
+| `GET /master/products` | 8 718 | 3.1 / 7.6 / 11.6 |
+| `GET /master/machines` | 8 744 | 3.2 / 7.2 / 10.5 |
+| `GET /roles` | 5 248 | 5.3 / 12.2 / 16.6 |
+| `GET /events?limit=200` (murni DB) | 535 | 53.6 / 91.9 / 279.7 |
+| `GET /auth/session` | 7 112 | 3.9 / 8.8 / 13.6 |
+| `GET /work-orders` (murni DB, 9 WO + agregat) | 539 | 54.3 / 99.3 / 138.3 |
+| `GET /analytics/executive-kpi` (read model, singleflight) | 2 707 | 10.4 / 24.0 / 31.8 |
+| `GET /analytics/live-board` | 4 216 | 6.8 / 14.9 / 19.3 |
+
+PGO: `cmd/fv/default.pgo` adalah profil CPU 50 detik yang diambil di bawah beban `cmd/bench`
+(`curl 'http://127.0.0.1:4100/debug/pprof/profile?seconds=50' > cmd/fv/default.pgo`); `go build`
+memakainya otomatis (`-pgo=auto`). Efeknya pada angka di atas dalam batas derau (±5 %), dan
+profil itu perlu diambil ulang bila jalur panas berubah. Endpoint yang murni DB tetap dibatasi
+10 koneksi pool yang diperebutkan 32 goroutine (ekor p99 panjang) — `DATABASE_POOL_MAX` adalah
+kenopnya, dan pprof di `ADMIN_ADDR` tempat membuktikannya sebelum menyetel.
 
 ## Baseline performa (diukur saat M1, bukan klaim)
 

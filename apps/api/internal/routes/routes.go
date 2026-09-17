@@ -66,6 +66,22 @@ const StreamPath = "/api/v1/events/stream"
 
 func isStream(r *http.Request) bool { return r.URL.Path == StreamPath }
 
+// readModelPrefixes are the routes that answer with a weak ETag: the
+// projections the console polls — analytics, reports, the board, OEE — whose
+// answers mostly repeat between polls. Transaction routes are not tagged: a
+// list of work orders is written to between reads, and a validator there
+// buys nothing.
+var readModelPrefixes = []string{"/api/v1/analytics/", "/api/v1/reports/", "/api/v1/production-board", "/api/v1/oee/"}
+
+func isReadModel(r *http.Request) bool {
+	for _, p := range readModelPrefixes {
+		if strings.HasPrefix(r.URL.Path, p) {
+			return true
+		}
+	}
+	return false
+}
+
 // Handler builds the root handler.
 func Handler(d Deps) http.Handler {
 	r := chi.NewRouter()
@@ -86,6 +102,7 @@ func Handler(d Deps) http.Handler {
 	r.Use(middleware.SecurityHeaders)
 	r.Use(middleware.CORS(middleware.CORSOptions{AllowedOrigins: d.Config.AllowedOrigins()}))
 	r.Use(middleware.Gzip(isStream))
+	r.Use(middleware.ETag(isReadModel))
 	r.Use(middleware.Timeout(RequestTimeout, isStream))
 	r.Use(tenancy.FromHeaders(d.Config.DefaultTenant))
 	r.Use(auth.AttachPrincipal(d.Resolver, d.Log))

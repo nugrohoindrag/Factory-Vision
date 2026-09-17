@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"sort"
@@ -11,6 +12,9 @@ import (
 	"time"
 
 	"github.com/nugrohoindrag/factory-vision/apps/api/internal/platform/auth"
+	"github.com/sony/gobreaker/v2"
+
+	"github.com/nugrohoindrag/factory-vision/apps/api/internal/platform/breaker"
 	"github.com/nugrohoindrag/factory-vision/apps/api/internal/platform/db"
 	"github.com/nugrohoindrag/factory-vision/apps/api/internal/platform/httpx"
 	"github.com/nugrohoindrag/factory-vision/apps/api/internal/platform/tenancy"
@@ -74,6 +78,11 @@ type Events struct {
 	counters map[string]int
 	webhook  string
 	client   *http.Client
+	// cb stops a dead webhook from costing a goroutine and a five-second
+	// timeout per alert: after five consecutive failures deliveries are
+	// dropped for thirty seconds, then one is tried again. The event is
+	// still logged either way; the webhook is a courtesy copy.
+	cb       *gobreaker.CircuitBreaker[struct{}]
 	log      *slog.Logger
 	observer func(eventType string)
 }
@@ -87,6 +96,7 @@ func NewEvents(webhook string, log *slog.Logger) *Events {
 		counters: map[string]int{},
 		webhook:  webhook,
 		client:   &http.Client{Timeout: 5 * time.Second},
+		cb:       breaker.New[struct{}]("security-webhook", log, breaker.Options{}),
 		log:      log,
 	}
 }
@@ -155,12 +165,20 @@ func (e *Events) deliver(ev Event) {
 		return
 	}
 	req.Header.Set("Content-Type", "application/json")
-	resp, err := e.client.Do(req)
-	if err != nil {
+	_, err = breaker.Execute(e.cb, func() (struct{}, error) {
+		resp, err := e.client.Do(req)
+		if err != nil {
+			return struct{}{}, err
+		}
+		resp.Body.Close()
+		if resp.StatusCode >= 500 {
+			return struct{}{}, fmt.Errorf("HTTP %d", resp.StatusCode)
+		}
+		return struct{}{}, nil
+	})
+	if err != nil && !breaker.Tripped(err) {
 		e.log.Warn("security: alert webhook failed", "error", err)
-		return
 	}
-	resp.Body.Close()
 }
 
 // Refusal is the most common shape: something was refused.

@@ -8,6 +8,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"path/filepath"
 	"strings"
 )
@@ -50,6 +51,8 @@ type Options struct {
 	ForcePathStyle     bool
 	ForcePathStyleSet  bool
 	WorkingDirFallback string
+	// Logger receives the S3 breaker's state changes; nil is silent.
+	Logger *slog.Logger
 }
 
 // FromOptions is the one place the backend is chosen. The default is the
@@ -82,7 +85,7 @@ func FromOptions(o Options) (Store, error) {
 		if o.ForcePathStyleSet {
 			pathStyle = o.ForcePathStyle
 		}
-		return NewS3(S3Options{Bucket: o.Bucket, Region: region, Endpoint: o.Endpoint, AccessKey: o.AccessKey, SecretKey: o.SecretKey, ForcePathStyle: pathStyle}), nil
+		return NewS3(S3Options{Bucket: o.Bucket, Region: region, Endpoint: o.Endpoint, AccessKey: o.AccessKey, SecretKey: o.SecretKey, ForcePathStyle: pathStyle}).WithLogger(o.Logger), nil
 	}
 	if driver != "filesystem" {
 		return nil, fmt.Errorf("OBJECT_STORAGE_DRIVER=%s tidak dikenal. Gunakan 'filesystem' atau 's3'.", driver)

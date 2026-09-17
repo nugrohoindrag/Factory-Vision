@@ -291,6 +291,20 @@ export class FactoryVisionApiClient {
     this.getTenantId = config.getTenantId ?? getTenantId;
   }
 
+  /**
+   * The last tagged answer per GET endpoint, for revalidation.
+   *
+   * The API puts a weak ETag on its read-model routes (analytics, reports,
+   * the production board, OEE) and answers a matching If-None-Match with a
+   * bodiless 304. A dashboard polling every few seconds then moves almost no
+   * bytes while nothing changes. Every API answer also carries
+   * Cache-Control: no-store, so the browser keeps nothing; this map is the
+   * only copy, it lives as long as the tab, and it is bounded so a screen
+   * that walks many date ranges cannot grow it without limit.
+   */
+  private readonly validators = new Map<string, { etag: string; body: unknown }>();
+  private static readonly MAX_VALIDATORS = 200;
+
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -307,7 +321,17 @@ export class FactoryVisionApiClient {
       headers['X-Tenant-Id'] = tenantId;
     }
 
+    const isGet = !options.method || options.method.toUpperCase() === 'GET';
+    const validator = isGet ? this.validators.get(endpoint) : undefined;
+    if (validator) {
+      headers['If-None-Match'] = validator.etag;
+    }
+
     const response = await fetch(`${this.baseUrl}${endpoint}`, { ...options, headers });
+
+    if (response.status === 304 && validator) {
+      return validator.body as T;
+    }
 
     if (!response.ok) {
       const errorBody = await response.json().catch(() => ({}));
@@ -321,7 +345,17 @@ export class FactoryVisionApiClient {
       return (await response.text()) as unknown as T;
     }
 
-    return response.json();
+    const body = await response.json();
+    const etag = response.headers.get('etag');
+    if (isGet && etag) {
+      if (this.validators.size >= FactoryVisionApiClient.MAX_VALIDATORS) {
+        const oldest = this.validators.keys().next().value;
+        if (oldest !== undefined) this.validators.delete(oldest);
+      }
+      this.validators.delete(endpoint);
+      this.validators.set(endpoint, { etag, body });
+    }
+    return body;
   }
 
   /** Fetches a text/CSV endpoint, used by the export and template downloads. */
