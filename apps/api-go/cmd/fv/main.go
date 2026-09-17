@@ -14,9 +14,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 	_ "time/tzdata" // the plant's zone must resolve inside a distroless image
@@ -52,9 +54,11 @@ import (
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/modules/workforce"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/async"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/auth"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/bootstrap"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/config"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/db"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/httpx"
+	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/migrate"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/observability"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/outbox"
 	"github.com/nugrohoindrag/factory-vision/apps/api-go/internal/platform/queue"
@@ -76,10 +80,14 @@ func main() {
 		err = serve()
 	case "worker":
 		err = worker()
+	case "migrate":
+		err = migrateCmd()
+	case "seed-demo":
+		err = seedDemo()
 	case "healthcheck":
 		err = healthcheck()
 	default:
-		err = fmt.Errorf("unknown command %q (serve | worker | healthcheck)", cmd)
+		err = fmt.Errorf("unknown command %q (serve | worker | migrate | seed-demo | healthcheck)", cmd)
 	}
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "[fv]", err)
@@ -264,9 +272,17 @@ func serve() error {
 	}
 
 	// Every install starts with the pilot tenant row and the bootstrap
-	// administrator; the demo seed and the trial tenants come later.
+	// administrator; the trial tenants come later.
 	if err := ensureTenant(ctx, pool, cfg); err != nil {
 		return err
+	}
+	// SEED_DEMO_DATA=true is the sales or pilot install: the demo tyre plant
+	// and sixty days of shop-floor history, idempotent, so every boot may run
+	// it. A real factory starts empty.
+	if cfg.SeedDemoData {
+		if err := runDemoSeed(ctx, log, bootstrap.DemoServices{Pool: pool, Master: master, Production: productionSvc, ShopFloor: shopfloorSvc}); err != nil {
+			return err
+		}
 	}
 	if _, err := roleSvc.Roles(ctx, config.PilotTenant); err != nil {
 		return fmt.Errorf("roles: %w", err)
@@ -332,6 +348,92 @@ func serve() error {
 		_ = tracing.Shutdown(shutdownCtx)
 	}
 	return err
+}
+
+// runDemoSeed writes the demo plant and its history, logging what changed
+// the way the Node boot did.
+func runDemoSeed(ctx context.Context, log *slog.Logger, svc bootstrap.DemoServices) error {
+	plant, err := bootstrap.SeedDemoPlant(ctx, config.PilotTenant, svc)
+	if err != nil {
+		return fmt.Errorf("seed demo plant: %w", err)
+	}
+	log.Info(fmt.Sprintf("[seed] demo plant: %d lines, %d products, %d production orders, 0 work orders", plant.Lines, plant.Products, plant.ProductionOrders))
+	history, err := bootstrap.SeedDemoHistory(ctx, config.PilotTenant, svc)
+	if err != nil {
+		return fmt.Errorf("seed demo history: %w", err)
+	}
+	log.Info(fmt.Sprintf("[seed] shop-floor history: %d production, %d downtime records across processes", history.ProductionCount, history.DowntimeCount))
+	return nil
+}
+
+// seedDemo is the boot-time demo seed as a command, for an install that
+// wants the demo plant written once under supervision rather than on every
+// boot: `fv seed-demo` against the application role.
+func seedDemo() error {
+	cfg, err := config.Load()
+	if err != nil {
+		return err
+	}
+	log := observability.Logger(cfg.IsProduction())
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+	pool, err := db.Open(ctx, cfg.DatabaseURL, db.Options{MaxConns: cfg.PoolMax, MinConns: cfg.PoolMin, SlowQuery: cfg.SlowQuery, Logger: log})
+	if err != nil {
+		return err
+	}
+	defer pool.Close()
+	if ok, err := pool.TableExists(ctx, "production_record"); err != nil {
+		return err
+	} else if !ok {
+		return errors.New("the production_record table is missing. Run `fv migrate` before seeding")
+	}
+	detached := async.NewRunner(8, 15*time.Second, log)
+	master, err := masterdata.NewService(pool)
+	if err != nil {
+		return err
+	}
+	ob := outbox.Repository{}
+	productionSvc := production.NewService(pool, ob, detached, log)
+	shopfloorSvc := shopfloor.NewService(pool, productionSvc, master, ob, cfg.Location, log)
+	if err := ensureTenant(ctx, pool, cfg); err != nil {
+		return err
+	}
+	err = runDemoSeed(ctx, log, bootstrap.DemoServices{Pool: pool, Master: master, Production: productionSvc, ShopFloor: shopfloorSvc})
+	detached.Drain(10 * time.Second)
+	return err
+}
+
+// migrateCmd applies db/migrations (and db/seeds when SEED_DEMO_DATA is on)
+// as the schema owner, then gives the application role its login. It reads
+// the environment the Node runner read, so the compose `migrate` service is
+// unchanged apart from the command.
+func migrateCmd() error {
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+	url := os.Getenv("MIGRATE_DATABASE_URL")
+	if url == "" {
+		url = os.Getenv("DATABASE_URL")
+	}
+	root := os.Getenv("MIGRATIONS_DIR")
+	if root == "" {
+		root = filepath.Join(mustGetwd(), "db")
+	}
+	_, err := migrate.Run(ctx, migrate.Options{
+		DatabaseURL: url, Root: root, AppRole: os.Getenv("APP_DB_USER"), AppPassword: os.Getenv("APP_DB_PASSWORD"),
+		SeedDemoData: config.Truthy(os.Getenv("SEED_DEMO_DATA")), Out: os.Stdout,
+	})
+	if err != nil {
+		return fmt.Errorf("migrate failed: %w", err)
+	}
+	return nil
+}
+
+func mustGetwd() string {
+	wd, err := os.Getwd()
+	if err != nil {
+		return "."
+	}
+	return wd
 }
 
 // worker runs the planning job queue and the outbox relay without serving

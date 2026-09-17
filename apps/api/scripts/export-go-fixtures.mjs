@@ -27,6 +27,27 @@ const { permissionForRoute, PUBLIC_API_PATHS } = await import(
   '../src/platform/auth/route-permissions.ts'
 );
 const { INDUSTRY_TEMPLATES } = await import('../src/modules/onboarding/industry-templates.ts');
+// The demo plant's reference rows are built at module load from
+// SEED_DEMO_DATA, so the flag is set before the service is imported; the
+// import is side-effect free (no pool is opened until a query runs).
+process.env.SEED_DEMO_DATA = 'true';
+const { MasterDataService } = await import('../src/modules/master-data/master-data.service.ts');
+const PILOT_TENANT = 'tenant-pilot-factory-01';
+const demoMaster = new MasterDataService();
+const demoPlant = {
+  tenant: { id: PILOT_TENANT, name: 'Factory Vision Tenant', timezone: 'Asia/Jakarta', plan: 'MID_MARKET', status: 'ACTIVE' },
+  plants: demoMaster.getPlants(PILOT_TENANT),
+  lines: demoMaster.getLines(PILOT_TENANT),
+  processes: demoMaster.getProcesses(PILOT_TENANT),
+  products: demoMaster.getProducts(PILOT_TENANT),
+  // The history seed resolved its ideal cycle times, operator and planned
+  // minutes from these in-memory rows before the reference data was
+  // hydrated from PostgreSQL, so the Go seed reads the same rows to write
+  // the same history.
+  machineRates: demoMaster.getProductMachineRates(PILOT_TENANT),
+  routings: demoMaster.getProductRoutings(PILOT_TENANT),
+  operators: demoMaster.getOperators(PILOT_TENANT),
+};
 
 // --- Route inventory ---------------------------------------------------
 //
@@ -170,6 +191,10 @@ write('endpoints.json', endpoints);
 // industry), so the Go onboarding module reads them from here rather than
 // transcribing eleven hundred lines of literals by hand.
 write('industry-templates.json', INDUSTRY_TEMPLATES);
+// The reference rows `syncReferenceData` upserts on a SEED_DEMO_DATA boot:
+// tenant, plants, lines, processes and products. `fv seed-demo` writes the
+// same rows with the same upsert semantics.
+write('demo-plant.json', demoPlant);
 
 console.log(
   `[fixtures] ${inventory.length} routes, ${golden.length} under /api/v1, ` +

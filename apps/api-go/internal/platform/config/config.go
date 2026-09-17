@@ -266,6 +266,10 @@ var truthyPattern = regexp.MustCompile(`(?i)^(1|true|yes)$`)
 
 func truthy(v string) bool { return truthyPattern.MatchString(v) }
 
+// Truthy reports whether a flag such as SEED_DEMO_DATA is on: 1, true or
+// yes, case-insensitively, as the Node API read it.
+func Truthy(v string) bool { return truthy(v) }
+
 func splitList(v string, normalise func(string) string) []string {
 	var out []string
 	for _, part := range strings.Split(v, ",") {

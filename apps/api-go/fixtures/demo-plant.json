@@ -1,0 +1,484 @@
+{
+  "tenant": {
+    "id": "tenant-pilot-factory-01",
+    "name": "Factory Vision Tenant",
+    "timezone": "Asia/Jakarta",
+    "plan": "MID_MARKET",
+    "status": "ACTIVE"
+  },
+  "plants": [
+    {
+      "id": "plant-cikarang-01",
+      "tenantId": "tenant-pilot-factory-01",
+      "name": "Main Plant Cikarang",
+      "location": "Kawasan Industri GIIC Cikarang Blok C-12, Jawa Barat",
+      "timezone": "Asia/Jakarta",
+      "status": "ACTIVE"
+    }
+  ],
+  "lines": [
+    {
+      "id": "line-01",
+      "tenantId": "tenant-pilot-factory-01",
+      "plantId": "plant-cikarang-01",
+      "code": "LINE-ALPHA",
+      "name": "Line Tire Production Alpha (Passenger Car)",
+      "status": "ACTIVE",
+      "plannedProductionTimeMinutes": 480
+    },
+    {
+      "id": "line-02",
+      "tenantId": "tenant-pilot-factory-01",
+      "plantId": "plant-cikarang-01",
+      "code": "LINE-BETA",
+      "name": "Line Tire Production Beta (SUV & Light Truck)",
+      "status": "ACTIVE",
+      "plannedProductionTimeMinutes": 480
+    },
+    {
+      "id": "line-03",
+      "tenantId": "tenant-pilot-factory-01",
+      "plantId": "plant-cikarang-01",
+      "code": "LINE-GAMMA",
+      "name": "Line Tire Production Gamma (Light Truck)",
+      "status": "ACTIVE",
+      "plannedProductionTimeMinutes": 480
+    }
+  ],
+  "processes": [
+    {
+      "id": "proc-mixing",
+      "tenantId": "tenant-pilot-factory-01",
+      "code": "MIX",
+      "name": "Mixing & Compounding",
+      "description": "Pencampuran karet alam, sintetis, dan bahan kimia Banbury",
+      "sequenceDefault": 1,
+      "status": "ACTIVE"
+    },
+    {
+      "id": "proc-calendering",
+      "tenantId": "tenant-pilot-factory-01",
+      "code": "CAL",
+      "name": "Fabric & Steel Calendering",
+      "description": "Pelapisan kawat baja dan serat nilon dengan kompon karet",
+      "sequenceDefault": 2,
+      "status": "ACTIVE"
+    },
+    {
+      "id": "proc-extrusion",
+      "tenantId": "tenant-pilot-factory-01",
+      "code": "EXT",
+      "name": "Extrusion (Tread & Sidewall)",
+      "description": "Ekstrusi profil tapak dan dinding samping ban",
+      "sequenceDefault": 3,
+      "status": "ACTIVE"
+    },
+    {
+      "id": "proc-cutting",
+      "tenantId": "tenant-pilot-factory-01",
+      "code": "CUT",
+      "name": "Component Cutting",
+      "description": "Pemotongan ply cord dan steel belt sesuai spesifikasi",
+      "sequenceDefault": 4,
+      "status": "ACTIVE"
+    },
+    {
+      "id": "proc-bead",
+      "tenantId": "tenant-pilot-factory-01",
+      "code": "BWD",
+      "name": "Bead Manufacturing",
+      "description": "Pembuatan kawat ring pengunci velg (bead core)",
+      "sequenceDefault": 5,
+      "status": "ACTIVE"
+    },
+    {
+      "id": "proc-building",
+      "tenantId": "tenant-pilot-factory-01",
+      "code": "TBM",
+      "name": "Tire Building (TBM)",
+      "description": "Perakitan komponen menjadi ban mentah (Green Tire)",
+      "sequenceDefault": 6,
+      "status": "ACTIVE"
+    },
+    {
+      "id": "proc-curing",
+      "tenantId": "tenant-pilot-factory-01",
+      "code": "CPR",
+      "name": "Curing / Vulcanizing",
+      "description": "Pemasakan ban dengan panas dan tekanan dalam cetakan (Curing Press)",
+      "sequenceDefault": 7,
+      "status": "ACTIVE"
+    },
+    {
+      "id": "proc-finishing",
+      "tenantId": "tenant-pilot-factory-01",
+      "code": "FIN",
+      "name": "Finishing & Trimming",
+      "description": "Pembersihan flash dan sisa cetakan vulkanisasi",
+      "sequenceDefault": 8,
+      "status": "ACTIVE"
+    },
+    {
+      "id": "proc-inspection",
+      "tenantId": "tenant-pilot-factory-01",
+      "code": "INS",
+      "name": "Quality & Uniformity Inspection",
+      "description": "Pemeriksaan visual, X-ray, dan balance test ban jadi",
+      "sequenceDefault": 9,
+      "status": "ACTIVE"
+    }
+  ],
+  "products": [
+    {
+      "id": "prod-tire-a",
+      "tenantId": "tenant-pilot-factory-01",
+      "sku": "TIRE-PCR-185",
+      "name": "Tire A: Passenger Car Radial 185/65 R15",
+      "unit": "PCS",
+      "idealCycleTimeSeconds": 150,
+      "status": "ACTIVE"
+    },
+    {
+      "id": "prod-tire-b",
+      "tenantId": "tenant-pilot-factory-01",
+      "sku": "TIRE-SUV-235",
+      "name": "Tire B: SUV All-Terrain 235/70 R16",
+      "unit": "PCS",
+      "idealCycleTimeSeconds": 180,
+      "status": "ACTIVE"
+    },
+    {
+      "id": "prod-tire-c",
+      "tenantId": "tenant-pilot-factory-01",
+      "sku": "TIRE-LTR-195",
+      "name": "Tire C: Light Truck Commercial 195 R14C",
+      "unit": "PCS",
+      "idealCycleTimeSeconds": 210,
+      "status": "ACTIVE"
+    },
+    {
+      "id": "mat-rub-01",
+      "tenantId": "tenant-pilot-factory-01",
+      "sku": "MAT-RUB-01",
+      "name": "Natural Rubber Tread Compound RSS-3",
+      "unit": "KG",
+      "idealCycleTimeSeconds": 0,
+      "status": "ACTIVE"
+    },
+    {
+      "id": "mat-stl-01",
+      "tenantId": "tenant-pilot-factory-01",
+      "sku": "MAT-STL-01",
+      "name": "High-Tensile Steel Belt Cord 3x0.28",
+      "unit": "METER",
+      "idealCycleTimeSeconds": 0,
+      "status": "ACTIVE"
+    },
+    {
+      "id": "mat-bdw-01",
+      "tenantId": "tenant-pilot-factory-01",
+      "sku": "MAT-BDW-01",
+      "name": "Bead Wire Carbon Steel 1.2mm",
+      "unit": "KG",
+      "idealCycleTimeSeconds": 0,
+      "status": "ACTIVE"
+    },
+    {
+      "id": "pkg-trw-01",
+      "tenantId": "tenant-pilot-factory-01",
+      "sku": "PKG-TRW-01",
+      "name": "Polyolefin Tire Wrapping Film",
+      "unit": "ROLL",
+      "idealCycleTimeSeconds": 0,
+      "status": "ACTIVE"
+    }
+  ],
+  "machineRates": [
+    {
+      "id": "pmr-a-tbm1",
+      "tenantId": "tenant-pilot-factory-01",
+      "productId": "prod-tire-a",
+      "machineId": "mc-tbm-01",
+      "idealCycleTimeSeconds": 150
+    },
+    {
+      "id": "pmr-a-cpr1",
+      "tenantId": "tenant-pilot-factory-01",
+      "productId": "prod-tire-a",
+      "machineId": "mc-cpr-01",
+      "idealCycleTimeSeconds": 750
+    },
+    {
+      "id": "pmr-b-tbm1",
+      "tenantId": "tenant-pilot-factory-01",
+      "productId": "prod-tire-b",
+      "machineId": "mc-tbm-01",
+      "idealCycleTimeSeconds": 180
+    },
+    {
+      "id": "pmr-b-cpr1",
+      "tenantId": "tenant-pilot-factory-01",
+      "productId": "prod-tire-b",
+      "machineId": "mc-cpr-01",
+      "idealCycleTimeSeconds": 900
+    },
+    {
+      "id": "pmr-c-tbm2",
+      "tenantId": "tenant-pilot-factory-01",
+      "productId": "prod-tire-c",
+      "machineId": "mc-tbm-02",
+      "idealCycleTimeSeconds": 210
+    },
+    {
+      "id": "pmr-c-cpr2",
+      "tenantId": "tenant-pilot-factory-01",
+      "productId": "prod-tire-c",
+      "machineId": "mc-cpr-02",
+      "idealCycleTimeSeconds": 1050
+    },
+    {
+      "id": "pmr-a-mix1",
+      "tenantId": "tenant-pilot-factory-01",
+      "productId": "prod-tire-a",
+      "machineId": "mc-mix-01",
+      "idealCycleTimeSeconds": 90
+    },
+    {
+      "id": "pmr-a-ext1",
+      "tenantId": "tenant-pilot-factory-01",
+      "productId": "prod-tire-a",
+      "machineId": "mc-ext-01",
+      "idealCycleTimeSeconds": 45
+    },
+    {
+      "id": "pmr-a-ins1",
+      "tenantId": "tenant-pilot-factory-01",
+      "productId": "prod-tire-a",
+      "machineId": "mc-ins-01",
+      "idealCycleTimeSeconds": 30
+    },
+    {
+      "id": "pmr-b-mix2",
+      "tenantId": "tenant-pilot-factory-01",
+      "productId": "prod-tire-b",
+      "machineId": "mc-mix-02",
+      "idealCycleTimeSeconds": 100
+    },
+    {
+      "id": "pmr-b-cal1",
+      "tenantId": "tenant-pilot-factory-01",
+      "productId": "prod-tire-b",
+      "machineId": "mc-cal-01",
+      "idealCycleTimeSeconds": 60
+    }
+  ],
+  "routings": [
+    {
+      "id": "rt-a-1",
+      "tenantId": "tenant-pilot-factory-01",
+      "productId": "prod-tire-a",
+      "processId": "proc-mixing",
+      "sequence": 1,
+      "workCenterId": "wc-mixing",
+      "machineId": "mc-mix-01",
+      "standardCycleTimeSeconds": 90,
+      "active": true
+    },
+    {
+      "id": "rt-b-1",
+      "tenantId": "tenant-pilot-factory-01",
+      "productId": "prod-tire-b",
+      "processId": "proc-mixing",
+      "sequence": 1,
+      "workCenterId": "wc-mixing",
+      "machineId": "mc-mix-01",
+      "standardCycleTimeSeconds": 100,
+      "active": true
+    },
+    {
+      "id": "rt-c-1",
+      "tenantId": "tenant-pilot-factory-01",
+      "productId": "prod-tire-c",
+      "processId": "proc-mixing",
+      "sequence": 1,
+      "workCenterId": "wc-mixing",
+      "machineId": "mc-mix-01",
+      "standardCycleTimeSeconds": 110,
+      "active": true
+    },
+    {
+      "id": "rt-a-2",
+      "tenantId": "tenant-pilot-factory-01",
+      "productId": "prod-tire-a",
+      "processId": "proc-extrusion",
+      "sequence": 2,
+      "workCenterId": "wc-extrusion",
+      "machineId": "mc-ext-01",
+      "standardCycleTimeSeconds": 45,
+      "active": true
+    },
+    {
+      "id": "rt-b-2",
+      "tenantId": "tenant-pilot-factory-01",
+      "productId": "prod-tire-b",
+      "processId": "proc-calendering",
+      "sequence": 2,
+      "workCenterId": "wc-calendering",
+      "machineId": "mc-cal-01",
+      "standardCycleTimeSeconds": 60,
+      "active": true
+    },
+    {
+      "id": "rt-c-2",
+      "tenantId": "tenant-pilot-factory-01",
+      "productId": "prod-tire-c",
+      "processId": "proc-extrusion",
+      "sequence": 2,
+      "workCenterId": "wc-extrusion",
+      "machineId": "mc-ext-01",
+      "standardCycleTimeSeconds": 50,
+      "active": true
+    },
+    {
+      "id": "rt-a-3",
+      "tenantId": "tenant-pilot-factory-01",
+      "productId": "prod-tire-a",
+      "processId": "proc-building",
+      "sequence": 3,
+      "workCenterId": "wc-building",
+      "machineId": "mc-tbm-01",
+      "standardCycleTimeSeconds": 150,
+      "active": true
+    },
+    {
+      "id": "rt-b-3",
+      "tenantId": "tenant-pilot-factory-01",
+      "productId": "prod-tire-b",
+      "processId": "proc-building",
+      "sequence": 3,
+      "workCenterId": "wc-building",
+      "machineId": "mc-tbm-01",
+      "standardCycleTimeSeconds": 180,
+      "active": true
+    },
+    {
+      "id": "rt-c-3",
+      "tenantId": "tenant-pilot-factory-01",
+      "productId": "prod-tire-c",
+      "processId": "proc-building",
+      "sequence": 3,
+      "workCenterId": "wc-building",
+      "machineId": "mc-tbm-02",
+      "standardCycleTimeSeconds": 210,
+      "active": true
+    },
+    {
+      "id": "rt-a-4",
+      "tenantId": "tenant-pilot-factory-01",
+      "productId": "prod-tire-a",
+      "processId": "proc-curing",
+      "sequence": 4,
+      "workCenterId": "wc-curing",
+      "machineId": "mc-cpr-01",
+      "standardCycleTimeSeconds": 750,
+      "active": true
+    },
+    {
+      "id": "rt-b-4",
+      "tenantId": "tenant-pilot-factory-01",
+      "productId": "prod-tire-b",
+      "processId": "proc-curing",
+      "sequence": 4,
+      "workCenterId": "wc-curing",
+      "machineId": "mc-cpr-01",
+      "standardCycleTimeSeconds": 900,
+      "active": true
+    },
+    {
+      "id": "rt-c-4",
+      "tenantId": "tenant-pilot-factory-01",
+      "productId": "prod-tire-c",
+      "processId": "proc-curing",
+      "sequence": 4,
+      "workCenterId": "wc-curing",
+      "machineId": "mc-cpr-02",
+      "standardCycleTimeSeconds": 1050,
+      "active": true
+    },
+    {
+      "id": "rt-a-5",
+      "tenantId": "tenant-pilot-factory-01",
+      "productId": "prod-tire-a",
+      "processId": "proc-inspection",
+      "sequence": 5,
+      "workCenterId": "wc-inspection",
+      "machineId": "mc-ins-01",
+      "standardCycleTimeSeconds": 30,
+      "active": true
+    },
+    {
+      "id": "rt-b-5",
+      "tenantId": "tenant-pilot-factory-01",
+      "productId": "prod-tire-b",
+      "processId": "proc-inspection",
+      "sequence": 5,
+      "workCenterId": "wc-inspection",
+      "machineId": "mc-ins-01",
+      "standardCycleTimeSeconds": 35,
+      "active": true
+    },
+    {
+      "id": "rt-c-5",
+      "tenantId": "tenant-pilot-factory-01",
+      "productId": "prod-tire-c",
+      "processId": "proc-inspection",
+      "sequence": 5,
+      "workCenterId": "wc-inspection",
+      "machineId": "mc-ins-01",
+      "standardCycleTimeSeconds": 40,
+      "active": true
+    }
+  ],
+  "operators": [
+    {
+      "id": "op-001",
+      "tenantId": "tenant-pilot-factory-01",
+      "employeeNumber": "OP-1001",
+      "name": "Budi Santoso",
+      "defaultLineId": "line-01",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "op-002",
+      "tenantId": "tenant-pilot-factory-01",
+      "employeeNumber": "OP-1002",
+      "name": "Siti Rahmawati",
+      "defaultLineId": "line-01",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "op-003",
+      "tenantId": "tenant-pilot-factory-01",
+      "employeeNumber": "OP-1003",
+      "name": "Agus Prasetyo",
+      "defaultLineId": "line-02",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "op-004",
+      "tenantId": "tenant-pilot-factory-01",
+      "employeeNumber": "OP-1004",
+      "name": "Dedi Kurniawan",
+      "defaultLineId": "line-03",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "op-005",
+      "tenantId": "tenant-pilot-factory-01",
+      "employeeNumber": "OP-1005",
+      "name": "Rina Kartika",
+      "defaultLineId": "line-03",
+      "status": "INACTIVE"
+    }
+  ]
+}
