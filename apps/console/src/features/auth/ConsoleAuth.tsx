@@ -161,8 +161,6 @@ const inputStyle: React.CSSProperties = {
   boxSizing: 'border-box',
 };
 
-type Mode = 'CONSOLE' | 'OPERATOR';
-
 /**
  * US-001, Login Aplikasi.
  *
@@ -170,16 +168,13 @@ type Mode = 'CONSOLE' | 'OPERATOR';
  * account is suspended, out of scope or simply wrong, and pretending otherwise
  * in the client is exactly the gap the acceptance criteria close.
  *
- * The screen is split because the two front doors in the PRD are genuinely
- * different: an application user signs in here with email and password
- * (US-001), while an operator signs in on the shop-floor terminal with an
- * employee number and a PIN (US-002). The segmented control says so rather
- * than leaving an operator to discover it by failing to log in.
+ * Only application users sign in here, with email and password (US-001).
+ * Operators sign in on the shop-floor terminal with an employee number and a
+ * PIN (US-002); that door is not advertised on this screen.
  */
 export const ConsoleAuth: React.FC = () => {
   const { login, verifyMfa } = useSession();
 
-  const [mode, setMode] = useState<Mode>('CONSOLE');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -273,53 +268,7 @@ export const ConsoleAuth: React.FC = () => {
             </p>
           </div>
 
-          {/* Segmented control. The selected segment fills solid primary,
- the one "this is the current choice" fill used product-wide. */}
-          <div
-            role="tablist"
-            aria-label="Pilih jenis akses"
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: 'var(--space-1)',
-              padding: 'var(--space-1)',
-              borderRadius: 'var(--radius-md, 12px)',
-              backgroundColor: 'var(--color-surface-container)',
-              border: '1px solid var(--color-border)',
-            }}
-          >
-            {[
-              { key: 'CONSOLE' as Mode, label: 'Konsol Manajemen' },
-              { key: 'OPERATOR' as Mode, label: 'Terminal Operator' },
-            ].map((tab) => {
-              const selected = mode === tab.key;
-              return (
-                <button
-                  key={tab.key}
-                  type="button"
-                  role="tab"
-                  aria-selected={selected}
-                  onClick={() => setMode(tab.key)}
-                  style={{
-                    padding: `var(--space-3) var(--space-3)`,
-                    borderRadius: 'var(--radius-sm, 8px)',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontFamily: 'var(--font-family)',
-                    fontSize: '13px',
-                    fontWeight: 700,
-                    backgroundColor: selected ? 'var(--color-primary)' : 'transparent',
-                    color: selected ? 'var(--color-on-primary)' : 'var(--color-on-surface-variant)',
-                    transition: 'background-color 150ms ease, color 150ms ease',
-                  }}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {mode === 'CONSOLE' && mfaStep ? (
+          {mfaStep ? (
             /* §5, second factor. The password step is finished; this asks for
  the code and nothing else, so there is no way to resubmit credentials
  here by accident. */
@@ -401,7 +350,7 @@ export const ConsoleAuth: React.FC = () => {
                 Kembali
               </Button>
             </form>
-          ) : mode === 'CONSOLE' ? (
+          ) : (
             <>
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                 <div>
@@ -522,90 +471,6 @@ export const ConsoleAuth: React.FC = () => {
                 Belum punya akses? Administrator workspace Anda yang membuat akun.
               </p>
             </>
-          ) : (
-            /* US-002, operators do not sign in here. Saying so is kinder than
- letting them fail against a form that has no PIN field. */
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-              <SurfaceCard padding="lg" railTone="primary">
-                <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'flex-start' }}>
-                  <Icon name="tablet_android" size={22} />
-                  <div>
-                    <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
-                      Operator masuk lewat terminal shop floor
-                    </div>
-                    <p
-                      style={{
-                        margin: `var(--space-2) 0 0`,
-                        fontSize: '12.5px',
-                        color: 'var(--color-on-surface-variant)',
-                        lineHeight: 1.65,
-                      }}
-                    >
-                      Terminal memakai <strong>nomor karyawan + PIN</strong> pada papan angka, bukan email dan
-                      kata sandi. Sesi terminal sengaja dibuat singkat dan keluar otomatis setelah 15 menit
-                      tanpa aktivitas, karena satu tablet dipakai bergantian di lantai produksi.
-                    </p>
-                  </div>
-                </div>
-              </SurfaceCard>
-
-              <SurfaceCard padding="lg">
-                <div
-                  style={{
-                    fontSize: '12px',
-                    fontWeight: 800,
-                    color: 'var(--color-on-surface)',
-                    marginBottom: 'var(--space-2)',
-                  }}
-                >
-                  Alamat terminal
-                </div>
-                <code
-                  style={{
-                    display: 'block',
-                    padding: `var(--space-3) var(--space-3)`,
-                    borderRadius: 'var(--radius-sm, 8px)',
-                    backgroundColor: 'var(--color-surface-container-high)',
-                    color: 'var(--color-on-surface)',
-                    fontSize: '12.5px',
-                    fontWeight: 700,
-                  }}
-                >
-                  {typeof window === 'undefined'
-                    ? 'http://<host>:3200'
-                    : `${window.location.protocol}//${window.location.hostname}:3200`}
-                </code>
-                <p
-                  style={{
-                    margin: `var(--space-3) 0 0`,
-                    fontSize: '11.5px',
-                    color: 'var(--color-on-surface-variant)',
-                    lineHeight: 1.6,
-                  }}
-                >
-                  Buka alamat itu di tablet, lalu tambahkan ke layar utama. Setelah termuat, pencatatan produksi
-                  tetap berjalan saat Wi-Fi terputus dan tersinkron otomatis ketika koneksi kembali.
-                </p>
-
-                <div style={{ marginTop: 'var(--space-4)' }}>
-                  <Button
-                    variant="filled"
-                    icon={<Icon name="open_in_new" size={16} />}
-                    onClick={() => {
-                      const operatorUrl =
-                        typeof window !== 'undefined' &&
-                        (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-                          ? `${window.location.protocol}//${window.location.hostname}:3200`
-                          : 'https://operator.factoryvision.id';
-                      window.open(operatorUrl, '_blank', 'noopener,noreferrer');
-                    }}
-                    style={{ width: '100%', height: '46px' }}
-                  >
-                    Buka Terminal Operator
-                  </Button>
-                </div>
-              </SurfaceCard>
-            </div>
           )}
         </div>
       </div>
