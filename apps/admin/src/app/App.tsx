@@ -7,9 +7,11 @@ import { AdminLogin } from '../features/auth/AdminLogin.js';
 import { PortfolioPage } from '../features/clients/PortfolioPage.js';
 import { ClientDetailPage } from '../features/clients/ClientDetailPage.js';
 import { AuditPage } from '../features/audit/AuditPage.js';
+import { ReferralCodesPage } from '../features/referrals/ReferralCodesPage.js';
 
 const NAV = [
   { path: '/', label: 'Portofolio Klien', icon: 'apartment' },
+  { path: '/referrals', label: 'Kode Referral', icon: 'key' },
   { path: '/audit', label: 'Audit Internal', icon: 'history' },
 ];
 
@@ -148,6 +150,7 @@ export const App: React.FC = () => {
         <Routes>
           <Route path="/" element={<PortfolioPage />} />
           <Route path="/clients/:id" element={<ClientDetailPage />} />
+          <Route path="/referrals" element={<ReferralCodesPage />} />
           <Route path="/audit" element={<AuditPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

@@ -53,8 +53,11 @@ type Client struct {
 	DeploymentMode  string  `json:"deploymentMode"`
 	OnboardedAt     *string `json:"onboardedAt"`
 	Notes           *string `json:"notes"`
-	CreatedAt       string  `json:"createdAt"`
-	UpdatedAt       string  `json:"updatedAt"`
+	// The referral code that admitted a trial; nil for accounts the vendor
+	// created by hand.
+	ReferralCode *string `json:"referralCode"`
+	CreatedAt    string  `json:"createdAt"`
+	UpdatedAt    string  `json:"updatedAt"`
 }
 
 // Subscription is the TypeScript ClientSubscription.
@@ -189,14 +192,14 @@ func (Repository) PlanByID(ctx context.Context, tx pgx.Tx, id string) (*Plan, er
 	return &p, nil
 }
 
-const clientColumns = `id, tenant_id, legal_name, display_name, industry, city, country, contact_name, contact_email, contact_phone, account_manager, lifecycle_status, deployment_mode, onboarded_at, notes, created_at, updated_at`
+const clientColumns = `id, tenant_id, legal_name, display_name, industry, city, country, contact_name, contact_email, contact_phone, account_manager, lifecycle_status, deployment_mode, onboarded_at, notes, referral_code, created_at, updated_at`
 
 func scanClient(row pgx.Row) (Client, error) {
 	var c Client
 	var onboarded *time.Time
 	var created, updated time.Time
 	if err := row.Scan(&c.ID, &c.TenantID, &c.LegalName, &c.DisplayName, &c.Industry, &c.City, &c.Country, &c.ContactName, &c.ContactEmail, &c.ContactPhone, &c.AccountManager,
-		&c.LifecycleStatus, &c.DeploymentMode, &onboarded, &c.Notes, &created, &updated); err != nil {
+		&c.LifecycleStatus, &c.DeploymentMode, &onboarded, &c.Notes, &c.ReferralCode, &created, &updated); err != nil {
 		return Client{}, err
 	}
 	c.OnboardedAt, c.CreatedAt, c.UpdatedAt = db.ISOPtr(onboarded), db.ISO(created), db.ISO(updated)

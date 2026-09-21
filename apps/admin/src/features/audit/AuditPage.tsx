@@ -17,6 +17,8 @@ const ACTION_LABEL: Record<string, string> = {
   SUPPORT_ACCESS_REVOKED: 'Akses dukungan dicabut',
   SUPPORT_ACCESS_USED: 'Akses dukungan dipakai',
   USAGE_CAPTURED: 'Sampel pemakaian diambil',
+  REFERRAL_CODE_CREATED: 'Kode referral dibuat',
+  REFERRAL_CODE_REVOKED: 'Kode referral dicabut',
 };
 
 /**

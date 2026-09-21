@@ -21,6 +21,7 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/nugrohoindrag/factory-vision/apps/api/fixtures"
+	"github.com/nugrohoindrag/factory-vision/apps/api/internal/modules/clientmgmt"
 	"github.com/nugrohoindrag/factory-vision/apps/api/internal/modules/identity"
 	"github.com/nugrohoindrag/factory-vision/apps/api/internal/modules/masterdata"
 	"github.com/nugrohoindrag/factory-vision/apps/api/internal/modules/production"
@@ -254,6 +255,40 @@ func (s *Service) RecordAnalyticsEvent(ctx context.Context, tenantID, eventName 
 type TrialInput struct {
 	FullName, Email, Password, FactoryName, Industry string
 	City, PlantScale                                 *string
+	// ReferralCode is issued from the internal console; see clientmgmt.
+	ReferralCode string
+}
+
+// The one message for every way a code can be wrong. Telling the form
+// "expired" versus "unknown" would let it probe which codes exist.
+var errReferralInvalid = httpx.Validation("Kode referral tidak valid atau sudah tidak berlaku.",
+	httpx.FieldError{Field: "referralCode", Code: "INVALID", Message: "Periksa kembali kode yang Anda terima dari tim Factory Vision."})
+
+// spendReferralCode admits one registration on the code, inside the trial's
+// own transaction: the row is locked, so two forms racing on a single-use
+// code cannot both get in.
+func spendReferralCode(ctx context.Context, tx pgx.Tx, raw string, now time.Time) (string, error) {
+	code := clientmgmt.NormalizeReferralCode(raw)
+	if code == "" {
+		return "", errReferralInvalid
+	}
+	var maxUses, useCount int
+	var expires, revoked *time.Time
+	err := tx.QueryRow(ctx, `SELECT max_uses, use_count, expires_at, revoked_at FROM referral_code WHERE code = $1 FOR UPDATE`, code).
+		Scan(&maxUses, &useCount, &expires, &revoked)
+	if db.IsNoRows(err) {
+		return "", errReferralInvalid
+	}
+	if err != nil {
+		return "", err
+	}
+	if revoked != nil || (expires != nil && !expires.After(now)) || useCount >= maxUses {
+		return "", errReferralInvalid
+	}
+	if _, err := tx.Exec(ctx, `UPDATE referral_code SET use_count = use_count + 1, last_used_at = CURRENT_TIMESTAMP WHERE code = $1`, code); err != nil {
+		return "", err
+	}
+	return code, nil
 }
 
 // RegisterTrial creates the tenant, its client account, the 14-day
@@ -272,6 +307,9 @@ func (s *Service) RegisterTrial(ctx context.Context, in TrialInput, client ident
 	}
 	if strings.TrimSpace(in.FactoryName) == "" {
 		return TrialRegistration{}, httpx.Validation("Nama pabrik wajib diisi.")
+	}
+	if strings.TrimSpace(in.ReferralCode) == "" {
+		return TrialRegistration{}, errReferralInvalid
 	}
 	email := strings.ToLower(strings.TrimSpace(in.Email))
 	tenantSlug := short(slug(in.FactoryName), 16)
@@ -293,19 +331,26 @@ func (s *Service) RegisterTrial(ctx context.Context, in TrialInput, client ident
 	}
 	hash := security.HashSecret(in.Password)
 	if err := s.pool.WithTenant(ctx, tenantID, func(tx pgx.Tx) error {
+		// First, before anything is created: a refused code must leave no
+		// tenant behind, and the row lock it takes is released with the
+		// rest of the transaction.
+		referral, err := spendReferralCode(ctx, tx, in.ReferralCode, now)
+		if err != nil {
+			return err
+		}
 		if _, err := tx.Exec(ctx, `INSERT INTO tenant (id, name, timezone, plan, status) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (id) DO NOTHING`, tenantID, in.FactoryName, "Asia/Jakarta", "TRIAL", "ACTIVE"); err != nil {
 			return err
 		}
-		if _, err := tx.Exec(ctx, `INSERT INTO client_account (id, tenant_id, legal_name, display_name, industry, city, contact_name, contact_email, lifecycle_status, deployment_mode, notes, onboarded_at)
-			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11, now()) ON CONFLICT (tenant_id) DO NOTHING`,
-			clientID, tenantID, in.FactoryName, in.FactoryName, in.Industry, city, in.FullName, email, "TRIAL", "CLOUD_MULTI_TENANT", notes); err != nil {
+		if _, err := tx.Exec(ctx, `INSERT INTO client_account (id, tenant_id, legal_name, display_name, industry, city, contact_name, contact_email, lifecycle_status, deployment_mode, notes, referral_code, onboarded_at)
+			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12, now()) ON CONFLICT (tenant_id) DO NOTHING`,
+			clientID, tenantID, in.FactoryName, in.FactoryName, in.Industry, city, in.FullName, email, "TRIAL", "CLOUD_MULTI_TENANT", notes, referral); err != nil {
 			return err
 		}
 		if _, err := tx.Exec(ctx, `INSERT INTO client_subscription (id, client_id, plan_id, status, started_at, renews_at) VALUES ($1,$2,$3,$4,$5::date,$6::date) ON CONFLICT (id) DO NOTHING`,
 			subID, clientID, "plan-trial", "ACTIVE", db.ISO(now)[:10], db.ISO(trialEnd)[:10]); err != nil {
 			return err
 		}
-		_, err := masterdata.Repository{}.UpsertUser(ctx, tx, masterdata.User{ID: userID, TenantID: tenantID, Email: email, Name: in.FullName, Role: "ADMIN", AccountType: "APPLICATION_USER",
+		_, err = masterdata.Repository{}.UpsertUser(ctx, tx, masterdata.User{ID: userID, TenantID: tenantID, Email: email, Name: in.FullName, Role: "ADMIN", AccountType: "APPLICATION_USER",
 			ScopeLevel: "TENANT", Status: "ACTIVE", CreatedAt: db.ISO(now)}, &hash)
 		if err != nil {
 			return err

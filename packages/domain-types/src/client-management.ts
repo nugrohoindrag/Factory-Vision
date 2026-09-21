@@ -75,6 +75,8 @@ export interface ClientAccount {
   deploymentMode: 'CLOUD_MULTI_TENANT' | 'ON_PREMISE_SINGLE_TENANT';
   onboardedAt: string | null;
   notes: string | null;
+  /** The referral code that admitted a trial; null for accounts created by hand. */
+  referralCode: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -181,6 +183,29 @@ export interface InternalUser {
   status: 'ACTIVE' | 'SUSPENDED';
   lastLoginAt: string | null;
   createdAt: string;
+}
+
+/**
+ * A referral code gates the public trial form: no code, no workspace. Issued
+ * from the internal console to someone the team has actually spoken to.
+ */
+export interface ReferralCode {
+  id: string;
+  /** FV-XXXX-XXXX, from an alphabet without 0/O and 1/I. */
+  code: string;
+  /** Who or what it was issued for. */
+  label: string;
+  createdBy: string;
+  createdAt: string;
+  /** null never expires. */
+  expiresAt: string | null;
+  maxUses: number;
+  useCount: number;
+  lastUsedAt: string | null;
+  revokedAt: string | null;
+  revokedBy: string | null;
+  /** Derived: not revoked, not expired, and with registrations left. */
+  active: boolean;
 }
 
 export interface InternalAuditEntry {

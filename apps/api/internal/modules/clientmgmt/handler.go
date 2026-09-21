@@ -306,6 +306,43 @@ func Mount(root chi.Router, svc *Service) {
 
 		// --- Audit and staff ------------------------------------------------
 
+		// --- Referral codes (trial gate) ----------------------------------
+
+		r.Get("/referral-codes", guard("client:view", func(w http.ResponseWriter, r *http.Request) error {
+			list, err := svc.ReferralCodes(r.Context())
+			if err != nil {
+				return err
+			}
+			return httpx.OK(w, list)
+		}))
+
+		r.Post("/referral-codes", guard("client:manage", func(w http.ResponseWriter, r *http.Request) error {
+			body, err := httpx.Body(r)
+			if err != nil {
+				return err
+			}
+			v := httpx.Validate(body)
+			label := v.String("label", httpx.Opt{Min: httpx.Min(3), Max: httpx.Max(255)})
+			maxUses := v.Int("maxUses", httpx.Opt{Optional: true, Min: httpx.Min(1), Max: httpx.Max(maxReferralUses)})
+			expiryDays := v.Int("expiryDays", httpx.Opt{Optional: true, Min: httpx.Min(0), Max: httpx.Max(365)})
+			if err := v.Done(); err != nil {
+				return err
+			}
+			code, err := svc.GenerateReferralCode(r.Context(), ReferralInput{Label: *label, MaxUses: db.Deref(maxUses, 1), ExpiryDays: db.Deref(expiryDays, 30)}, actorOf(r))
+			if err != nil {
+				return err
+			}
+			return httpx.Created(w, code)
+		}))
+
+		r.Delete("/referral-codes/{id}", guard("client:manage", func(w http.ResponseWriter, r *http.Request) error {
+			code, err := svc.RevokeReferralCode(r.Context(), chi.URLParam(r, "id"), actorOf(r))
+			if err != nil {
+				return err
+			}
+			return httpx.OK(w, code)
+		}))
+
 		r.Get("/audit", guard("audit:view", func(w http.ResponseWriter, r *http.Request) error {
 			limit := 100
 			if n, err := strconv.Atoi(q(r, "limit")); err == nil && n > 0 {

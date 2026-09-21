@@ -6,6 +6,7 @@ import type {
   ClientUsageSnapshot,
   InternalAuditEntry,
   InternalUser,
+  ReferralCode,
   SubscriptionPlan,
   SupportAccessGrant,
 } from '@factory-vision/domain-types';
@@ -162,6 +163,13 @@ export const api = {
       request<SupportAccessGrant>(`/support-access/${grantId}`, { method: 'DELETE' }),
     use: (grantId: string) =>
       post<{ tenantId: string; accessLevel: string; expiresAt: string }>(`/support-access/${grantId}/use`),
+  },
+
+  referrals: {
+    list: () => request<ReferralCode[]>('/referral-codes'),
+    create: (body: { label: string; maxUses?: number; expiryDays?: number }) =>
+      post<ReferralCode>('/referral-codes', body),
+    revoke: (id: string) => request<ReferralCode>(`/referral-codes/${id}`, { method: 'DELETE' }),
   },
 
   audit: (params: { clientId?: string; limit?: number } = {}) => {

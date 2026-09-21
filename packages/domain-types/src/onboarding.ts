@@ -168,6 +168,8 @@ export interface TrialRegistrationPayload {
   /** The company or plant name; becomes the tenant and client account name. */
   factoryName: string;
   industry: IndustryType;
+  /** Issued by the vendor from the internal console; the form is refused without one. */
+  referralCode: string;
   city?: string;
   /**
    * Free-text sizing hint from the form ("4-10 Lini Produksi"). Kept on the

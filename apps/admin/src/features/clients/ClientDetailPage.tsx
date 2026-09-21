@@ -182,6 +182,7 @@ export const ClientDetailPage: React.FC = () => {
           <Row label="Email" value={c.contactEmail ?? '—'} />
           <Row label="Telepon" value={c.contactPhone ?? '—'} />
           <Row label="Account Manager" value={c.accountManager ?? '—'} />
+          <Row label="Kode Referral" value={c.referralCode ?? '—'} />
           <Row label="Industri" value={c.industry ?? '—'} />
           <Row label="Kota" value={c.city ?? '—'} />
           <Row

@@ -43,6 +43,10 @@ const TENANT = process.env.DEFAULT_TENANT_ID || 'tenant-pilot-factory-01';
 
 const ADMIN_EMAIL = process.env.BOOTSTRAP_ADMIN_EMAIL || 'admin@pabrik.co.id';
 const ADMIN_PASSWORD = process.env.BOOTSTRAP_ADMIN_PASSWORD || 'ChangeMe-Local-Only';
+// The vendor console, which issues the referral code the trial form needs.
+// Throwaway values for the API this script boots; nothing here is real.
+const INTERNAL_EMAIL = process.env.INTERNAL_ADMIN_EMAIL || 'ops@factoryvision.local';
+const INTERNAL_PASSWORD = process.env.INTERNAL_ADMIN_PASSWORD || 'RahasiaKuatInternal2026';
 
 if (!APP_URL) {
   console.error('Set DATABASE_URL (and ideally OWNER_DATABASE_URL) before running.');
@@ -68,6 +72,8 @@ async function startApi() {
       SEED_DEMO_DATA: 'true',
       BOOTSTRAP_ADMIN_EMAIL: ADMIN_EMAIL,
       BOOTSTRAP_ADMIN_PASSWORD: ADMIN_PASSWORD,
+      INTERNAL_ADMIN_EMAIL: INTERNAL_EMAIL,
+      INTERNAL_ADMIN_PASSWORD: INTERNAL_PASSWORD,
     },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
@@ -946,17 +952,57 @@ async function main() {
   {
     const email = `verify-trial-${stamp}@example.invalid`;
     const factoryName = `PT Verifikasi Trial ${stamp}`;
+    const trialForm = (overrides = {}) => ({
+      fullName: 'Verifikasi Trial',
+      email,
+      password: 'RahasiaKuat2026',
+      factoryName,
+      industry: 'general',
+      plantScale: '1-3 Lini Produksi',
+      ...overrides,
+    });
+
+    // The form is gated: without a code issued from the vendor console a
+    // stranger gets a 422 naming the field, and no tenant is created.
+    const noCode = await fetch(`${BASE}/api/v1/auth/trial-register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(trialForm({ referralCode: 'FV-XXXX-XXXX' })),
+    });
+    const noCodeBody = await noCode.json().catch(() => undefined);
+    check(
+      '9 Trial',
+      'Kode referral yang tidak dikenal ditolak 422 tanpa membuat tenant',
+      noCode.status === 422 && noCodeBody?.error?.fields?.some((f) => f.field === 'referralCode'),
+      `${noCode.status} ${JSON.stringify(noCodeBody).slice(0, 160)}`
+    );
+
+    // Issue a single-use code the way an account manager does.
+    const internalLogin = await fetch(`${BASE}/api/internal/v1/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: INTERNAL_EMAIL, password: INTERNAL_PASSWORD }),
+    });
+    const internalToken = (await internalLogin.json().catch(() => ({})))?.token;
+    const issued = await fetch(`${BASE}/api/internal/v1/referral-codes`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${internalToken}` },
+      body: JSON.stringify({ label: `Verifikasi trial ${stamp}`, maxUses: 1, expiryDays: 1 }),
+    });
+    const issuedBody = await issued.json().catch(() => undefined);
+    const referralCode = issuedBody?.code;
+    check(
+      '9 Trial',
+      'Kode referral dapat dibuat dari konsol internal',
+      issued.status === 201 && /^FV-[A-Z2-9]{4}-[A-Z2-9]{4}$/.test(referralCode ?? ''),
+      `${issued.status} ${JSON.stringify(issuedBody).slice(0, 160)}`
+    );
+
     const res = await fetch(`${BASE}/api/v1/auth/trial-register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        fullName: 'Verifikasi Trial',
-        email,
-        password: 'RahasiaKuat2026',
-        factoryName,
-        industry: 'general',
-        plantScale: '1-3 Lini Produksi',
-      }),
+      // Lower-case and undashed on purpose: the code is typed by a person.
+      body: JSON.stringify(trialForm({ referralCode: String(referralCode ?? '').toLowerCase().replace(/-/g, '') })),
     });
     const body = await res.json().catch(() => undefined);
     check(
@@ -964,6 +1010,20 @@ async function main() {
       'Formulir yang valid menghasilkan 201 dan token sesi',
       res.status === 201 && typeof body?.token === 'string' && body.token.length > 0,
       `${res.status} ${JSON.stringify(body).slice(0, 200)}`
+    );
+
+    // Single use means single use: the same code cannot admit a second factory.
+    const reuse = await fetch(`${BASE}/api/v1/auth/trial-register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(trialForm({ email: `verify-trial-reuse-${stamp}@example.invalid`, factoryName: `${factoryName} Dua`, referralCode })),
+    });
+    const spent = await rows('SELECT use_count, max_uses FROM referral_code WHERE code = $1', [referralCode]);
+    check(
+      '9 Trial',
+      'Kode sekali pakai ditolak pada pendaftaran kedua dan use_count tercatat',
+      reuse.status === 422 && spent[0]?.use_count === 1 && spent[0]?.max_uses === 1,
+      `reuse ${reuse.status}, use_count ${spent[0]?.use_count}/${spent[0]?.max_uses}`
     );
 
     const trialTenant = body?.tenantId;
@@ -1026,6 +1086,7 @@ async function main() {
         password: 'RahasiaKuat2026',
         companyName: factoryName,
         industry: 'general',
+        referralCode: 'FV-XXXX-XXXX',
       }),
     });
     const legacyBody = await legacy.json().catch(() => undefined);

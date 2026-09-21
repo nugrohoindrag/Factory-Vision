@@ -41,10 +41,13 @@ func Mount(r chi.Router, svc *Service) {
 		factoryName := v.String("factoryName", httpx.Opt{Min: httpx.Min(2)})
 		industry := v.String("industry", httpx.Opt{Min: httpx.Min(2)})
 		plantScale := v.String("plantScale", httpx.Opt{Optional: true, Max: httpx.Max(64)})
+		// The code is the proof that somebody at the vendor has spoken to this
+		// person; the form is public, the workspace it creates is not cheap.
+		referralCode := v.String("referralCode", httpx.Opt{Min: httpx.Min(4), Max: httpx.Max(32)})
 		if err := v.DoneWith("Lengkapi semua kolom formulir trial."); err != nil {
 			return err
 		}
-		in := TrialInput{FullName: *fullName, Email: *email, Password: *password, FactoryName: *factoryName, Industry: db.Deref(industry, "general"), PlantScale: plantScale}
+		in := TrialInput{FullName: *fullName, Email: *email, Password: *password, FactoryName: *factoryName, Industry: db.Deref(industry, "general"), PlantScale: plantScale, ReferralCode: *referralCode}
 		if city, ok := body["city"].(string); ok {
 			in.City = &city
 		}

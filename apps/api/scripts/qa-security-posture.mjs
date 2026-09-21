@@ -118,6 +118,7 @@ console.log(`\nSecurity posture — ${BASE}\n`);
       password: 'short12',
       factoryName: `QA Posture ${Date.now()}`,
       industry: 'general',
+      referralCode: 'FV-XXXX-XXXX',
     },
   });
   check(

@@ -74,7 +74,7 @@ distroless container. Details and the layout are in `apps/api/README.md`.
 - **Gates before a push**, all against the binary alone on the CI-identical Postgres: `go test
   ./...`, `go test -tags integration ./...`, `qa-security-posture.mjs` (13/13),
   `verify-user-stories.mjs` (81/81, needs `SEED_DEMO_DATA=true`), `pnpm verify:improvement`
-  (73/73), `verify:persistence`, `qa:posture`, `qa:mold-crud`, `qa:batch`, `qa:sales-boundary`.
+  (76/76), `verify:persistence`, `qa:posture`, `qa:mold-crud`, `qa:batch`, `qa:sales-boundary`.
   The scripts that read rows back take `DATABASE_URL` as the owner connection. On Git Bash pass
   `MSYS_NO_PATHCONV=1` to scripts that take URL paths as arguments.
 

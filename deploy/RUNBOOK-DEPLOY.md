@@ -264,6 +264,20 @@ Kredensial awal:
 > Get-NetTCPConnection -LocalPort 3100 -State Listen
 > ```
 
+### Kode referral untuk uji coba gratis
+
+Formulir *Coba Gratis* di landing page **menolak pendaftaran tanpa kode
+referral** (migrasi 037). Kode dibuat dari Admin console → **Kode Referral**
+oleh peran OWNER atau ACCOUNT_MANAGER: isi untuk siapa kode itu, berapa kali
+boleh dipakai (bawaan 1), dan masa berlakunya (bawaan 30 hari). Bentuknya
+`FV-XXXX-XXXX`; huruf besar-kecil dan tanda hubung tidak berpengaruh saat
+diketik. Kode yang dicabut atau habis tetap tercantum, dan akun klien yang
+masuk lewat kode itu menyimpannya di kolom `referral_code`. Lewat API:
+
+```bash
+curl -s -X POST http://127.0.0.1:3300/api/internal/v1/referral-codes   -H "Authorization: Bearer <token internal>" -H 'Content-Type: application/json'   -d '{"label":"PT Contoh — demo 24 Sep","maxUses":1,"expiryDays":30}'
+```
+
 ---
 
 ## 8. TLS dan domain publik (opsional)

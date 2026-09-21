@@ -23,6 +23,7 @@ export const TrialSignupModal: React.FC<TrialSignupModalProps> = ({ isOpen, onCl
     companyName: '',
     email: '',
     password: '',
+    referralCode: '',
     industry: 'automotive' as IndustryType,
     plantScale: '1-3 Lini Produksi',
   });
@@ -47,6 +48,7 @@ export const TrialSignupModal: React.FC<TrialSignupModalProps> = ({ isOpen, onCl
         factoryName: formData.companyName,
         industry: formData.industry,
         plantScale: formData.plantScale,
+        referralCode: formData.referralCode.trim().toUpperCase(),
       };
       const res = await fetch('/api/v1/auth/trial-register', {
         method: 'POST',
@@ -287,6 +289,40 @@ export const TrialSignupModal: React.FC<TrialSignupModalProps> = ({ isOpen, onCl
                     }}
                   />
                 </div>
+              </div>
+
+              {/* The referral code is the proof of a real conversation with the
+                  team; the API refuses the form without a valid one. */}
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: 'var(--space-1)', color: 'var(--color-on-surface)' }}>
+                  Kode Referral *
+                </label>
+                <input
+                  type="text"
+                  required
+                  autoComplete="off"
+                  autoCapitalize="characters"
+                  spellCheck={false}
+                  placeholder="FV-XXXX-XXXX"
+                  value={formData.referralCode}
+                  onChange={(e) => setFormData({ ...formData, referralCode: e.target.value.toUpperCase() })}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px solid var(--color-outline-variant)',
+                    backgroundColor: 'var(--color-surface-container-low)',
+                    color: 'var(--color-on-surface)',
+                    fontSize: '13px',
+                    fontFamily: 'var(--font-family-mono, monospace)',
+                    letterSpacing: '0.08em',
+                    boxSizing: 'border-box',
+                  }}
+                />
+                <p style={{ margin: 'var(--space-1) 0 0', fontSize: '11px', color: 'var(--color-on-surface-variant)' }}>
+                  Kode diberikan oleh tim Factory Vision setelah demo atau permintaan uji coba. Belum punya?{' '}
+                  Jadwalkan demo dulu.
+                </p>
               </div>
 
               {/* Industry Selection */}
