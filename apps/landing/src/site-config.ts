@@ -18,6 +18,32 @@ export interface SiteConfig {
   siteDescription: string;
   gaMeasurementId: string;
   searchConsoleToken: string;
+  whatsappNumber: string;
+  whatsappLabel: string;
+}
+
+/** What the page shows before the API answers, and if it never does. */
+export const DEFAULT_SITE_CONFIG: SiteConfig = {
+  siteName: 'Factory Vision',
+  siteUrl: 'https://factoryvision.id',
+  siteDescription: '',
+  gaMeasurementId: '',
+  searchConsoleToken: '',
+  whatsappNumber: '6281382258620',
+  whatsappLabel: 'Ask our Team',
+};
+
+let pending: Promise<SiteConfig> | null = null;
+
+/** Fetches the configuration once; every caller shares the same request. */
+export function getSiteConfig(): Promise<SiteConfig> {
+  if (!pending) {
+    pending = fetch('/site/config.json', { headers: { Accept: 'application/json' } })
+      .then((res) => (res.ok ? (res.json() as Promise<SiteConfig>) : DEFAULT_SITE_CONFIG))
+      .then((cfg) => ({ ...DEFAULT_SITE_CONFIG, ...cfg }))
+      .catch(() => DEFAULT_SITE_CONFIG);
+  }
+  return pending;
 }
 
 const GA_ID = /^G-[A-Z0-9]{4,16}$/;
@@ -45,11 +71,5 @@ export function applySiteConfig(config: SiteConfig): void {
 
 /** Fetches and applies the configuration. A failure leaves the page as built. */
 export async function bootstrapSiteConfig(): Promise<void> {
-  try {
-    const res = await fetch('/site/config.json', { headers: { Accept: 'application/json' } });
-    if (!res.ok) return;
-    applySiteConfig((await res.json()) as SiteConfig);
-  } catch {
-    /* offline or API down: the page still renders, only analytics is missing */
-  }
+  applySiteConfig(await getSiteConfig());
 }

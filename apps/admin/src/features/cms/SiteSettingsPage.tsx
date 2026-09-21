@@ -8,7 +8,14 @@ import { useSession } from '../../app/SessionContext.js';
 
 type Form = Pick<
   SiteSettings,
-  'siteName' | 'siteUrl' | 'siteDescription' | 'gaMeasurementId' | 'searchConsoleToken' | 'searchConsoleFile'
+  | 'siteName'
+  | 'siteUrl'
+  | 'siteDescription'
+  | 'gaMeasurementId'
+  | 'searchConsoleToken'
+  | 'searchConsoleFile'
+  | 'whatsappNumber'
+  | 'whatsappLabel'
 >;
 
 const EMPTY: Form = {
@@ -18,6 +25,8 @@ const EMPTY: Form = {
   gaMeasurementId: '',
   searchConsoleToken: '',
   searchConsoleFile: '',
+  whatsappNumber: '',
+  whatsappLabel: '',
 };
 
 /**
@@ -37,8 +46,8 @@ export const SiteSettingsPage: React.FC = () => {
 
   useEffect(() => {
     if (settings.data) {
-      const { siteName, siteUrl, siteDescription, gaMeasurementId, searchConsoleToken, searchConsoleFile } = settings.data;
-      setForm({ siteName, siteUrl, siteDescription, gaMeasurementId, searchConsoleToken, searchConsoleFile });
+      const { siteName, siteUrl, siteDescription, gaMeasurementId, searchConsoleToken, searchConsoleFile, whatsappNumber, whatsappLabel } = settings.data;
+      setForm({ siteName, siteUrl, siteDescription, gaMeasurementId, searchConsoleToken, searchConsoleFile, whatsappNumber, whatsappLabel });
     }
   }, [settings.data]);
 
@@ -139,6 +148,18 @@ export const SiteSettingsPage: React.FC = () => {
             mono
             disabled={readOnly}
           />
+        </div>
+      </SurfaceCard>
+
+      <SurfaceCard padding="lg">
+        <SectionTitle icon="chat">Tombol WhatsApp</SectionTitle>
+        <p style={help}>
+          Tombol mengambang di pojok kanan bawah landing page dan halaman artikel yang membuka chat WhatsApp ke nomor
+          ini. Tulis dengan kode negara (0813… otomatis menjadi 62813…); kosongkan nomor untuk menyembunyikan tombol.
+        </p>
+        <div style={grid}>
+          <Field label="Nomor WhatsApp" value={form.whatsappNumber} onChange={set('whatsappNumber')} error={fieldErrors.whatsappNumber} placeholder="6281382258620" mono disabled={readOnly} />
+          <Field label="Label tombol" value={form.whatsappLabel} onChange={set('whatsappLabel')} error={fieldErrors.whatsappLabel} placeholder="Ask our Team" disabled={readOnly} />
         </div>
       </SurfaceCard>
 

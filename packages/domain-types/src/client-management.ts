@@ -219,6 +219,9 @@ export interface SiteSettings {
   searchConsoleToken: string;
   /** Search Console's HTML-file verification name, googleXXXX.html. */
   searchConsoleFile: string;
+  /** Floating WhatsApp button on the landing page: digits with country code (6281…); empty hides it. */
+  whatsappNumber: string;
+  whatsappLabel: string;
   updatedAt: string;
   updatedBy: string;
 }

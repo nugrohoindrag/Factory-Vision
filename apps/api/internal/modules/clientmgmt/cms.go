@@ -35,8 +35,13 @@ type SiteSettings struct {
 	// The name of Search Console's HTML-file verification, googleXXXX.html,
 	// served at the site root by site.go.
 	SearchConsoleFile string `json:"searchConsoleFile"`
-	UpdatedAt         string `json:"updatedAt"`
-	UpdatedBy         string `json:"updatedBy"`
+	// The floating WhatsApp button on the landing page: an international
+	// number without "+" (6281…), and the label beside the icon. An empty
+	// number hides the button.
+	WhatsAppNumber string `json:"whatsappNumber"`
+	WhatsAppLabel  string `json:"whatsappLabel"`
+	UpdatedAt      string `json:"updatedAt"`
+	UpdatedBy      string `json:"updatedBy"`
 }
 
 // The keys as stored. Kept in one place so the read and the write agree.
@@ -47,11 +52,14 @@ var settingKeys = map[string]func(*SiteSettings) *string{
 	"ga_measurement_id":    func(s *SiteSettings) *string { return &s.GAMeasurementID },
 	"search_console_token": func(s *SiteSettings) *string { return &s.SearchConsoleToken },
 	"search_console_file":  func(s *SiteSettings) *string { return &s.SearchConsoleFile },
+	"whatsapp_number":      func(s *SiteSettings) *string { return &s.WhatsAppNumber },
+	"whatsapp_label":       func(s *SiteSettings) *string { return &s.WhatsAppLabel },
 }
 
 func defaultSettings() SiteSettings {
 	return SiteSettings{SiteName: "Factory Vision", SiteURL: "https://factoryvision.id",
-		SiteDescription: "Manufacturing Execution System untuk manufaktur menengah Indonesia."}
+		SiteDescription: "Manufacturing Execution System untuk manufaktur menengah Indonesia.",
+		WhatsAppNumber:  "6281382258620", WhatsAppLabel: "Ask our Team"}
 }
 
 func (Repository) SiteSettings(ctx context.Context, tx pgx.Tx) (SiteSettings, error) {
@@ -90,7 +98,19 @@ var (
 	gaIDPattern    = regexp.MustCompile(`^G-[A-Z0-9]{4,16}$`)
 	scFilePattern  = regexp.MustCompile(`^google[0-9a-f]{8,32}\.html$`)
 	scTokenPattern = regexp.MustCompile(`^[A-Za-z0-9_-]{8,128}$`)
+	waNumberStrip  = regexp.MustCompile(`[^0-9]`)
+	waNumberOK     = regexp.MustCompile(`^[1-9][0-9]{7,15}$`)
 )
+
+// NormalizeWhatsApp turns what people type (081382258620, +62 813-8225-8620)
+// into the digits wa.me wants: an Indonesian leading 0 becomes 62.
+func NormalizeWhatsApp(s string) string {
+	d := waNumberStrip.ReplaceAllString(s, "")
+	if strings.HasPrefix(d, "0") {
+		d = "62" + d[1:]
+	}
+	return d
+}
 
 // GetSiteSettings reads the settings for the console.
 func (s *Service) GetSiteSettings(ctx context.Context) (SiteSettings, error) {
@@ -124,6 +144,13 @@ func (s *Service) UpdateSiteSettings(ctx context.Context, in SiteSettings, actor
 	}
 	if in.SearchConsoleFile != "" && !scFilePattern.MatchString(in.SearchConsoleFile) {
 		fields = append(fields, httpx.FieldError{Field: "searchConsoleFile", Code: "INVALID_FORMAT", Message: "Nama file verifikasi berbentuk google1234abcd.html."})
+	}
+	in.WhatsAppNumber, in.WhatsAppLabel = NormalizeWhatsApp(in.WhatsAppNumber), strings.TrimSpace(in.WhatsAppLabel)
+	if in.WhatsAppNumber != "" && !waNumberOK.MatchString(in.WhatsAppNumber) {
+		fields = append(fields, httpx.FieldError{Field: "whatsappNumber", Code: "INVALID_FORMAT", Message: "Nomor WhatsApp dengan kode negara, misalnya 6281382258620."})
+	}
+	if in.WhatsAppNumber != "" && in.WhatsAppLabel == "" {
+		in.WhatsAppLabel = "Ask our Team"
 	}
 	if len(fields) > 0 {
 		return SiteSettings{}, httpx.Validation("Periksa kembali pengaturan situs.", fields...)

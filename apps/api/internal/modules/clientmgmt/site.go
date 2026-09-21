@@ -31,6 +31,8 @@ type SiteConfig struct {
 	SiteDescription    string `json:"siteDescription"`
 	GAMeasurementID    string `json:"gaMeasurementId"`
 	SearchConsoleToken string `json:"searchConsoleToken"`
+	WhatsAppNumber     string `json:"whatsappNumber"`
+	WhatsAppLabel      string `json:"whatsappLabel"`
 }
 
 // MountSite registers the public pages at the root of the API router.
@@ -41,7 +43,8 @@ func MountSite(root chi.Router, svc *Service) {
 			return err
 		}
 		w.Header().Set("Cache-Control", "public, max-age=300")
-		return httpx.OK(w, SiteConfig{SiteName: s.SiteName, SiteURL: s.SiteURL, SiteDescription: s.SiteDescription, GAMeasurementID: s.GAMeasurementID, SearchConsoleToken: s.SearchConsoleToken})
+		return httpx.OK(w, SiteConfig{SiteName: s.SiteName, SiteURL: s.SiteURL, SiteDescription: s.SiteDescription, GAMeasurementID: s.GAMeasurementID, SearchConsoleToken: s.SearchConsoleToken,
+			WhatsAppNumber: s.WhatsAppNumber, WhatsAppLabel: s.WhatsAppLabel})
 	}))
 
 	// The tag's bootstrap as a same-origin script, so neither the landing
@@ -286,6 +289,8 @@ article blockquote{margin:0;padding:8px 16px;border-left:3px solid var(--blue);c
 .list{display:grid;gap:16px}.card{display:block;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;text-decoration:none;color:inherit}
 .card h2{margin:0 0 6px;font-size:20px;color:var(--navy)}.card p{margin:0;color:#5A626E}.card .meta{margin:8px 0 0}
 footer{color:var(--steel);font-size:13px;border-top:1px solid var(--border)}
+.wa{position:fixed;right:16px;bottom:16px;display:inline-flex;align-items:center;gap:10px;padding:12px 18px 12px 14px;border-radius:999px;background:#1E7A48;color:#fff;font-weight:700;font-size:14px;text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.18);z-index:50}
+.wa svg{width:22px;height:22px;fill:#fff}@media (max-width:480px){.wa span{display:none}.wa{padding:14px}}
 </style>
 </head>
 <body>
@@ -311,5 +316,6 @@ footer{color:var(--steel);font-size:13px;border-top:1px solid var(--border)}
 {{end}}
 </div></main>
 <footer><div class="wrap">© {{.Settings.SiteName}} · <a href="/">Beranda</a> · <a href="/sitemap.xml">Sitemap</a></div></footer>
+{{if .Settings.WhatsAppNumber}}<a class="wa" href="https://wa.me/{{.Settings.WhatsAppNumber}}?text={{urlquery "Halo tim Factory Vision, saya ingin bertanya tentang Factory Vision."}}" target="_blank" rel="noopener noreferrer" aria-label="{{.Settings.WhatsAppLabel}} via WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 14.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.2-.3-.3-.6-.4zM12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2z"/></svg><span>{{.Settings.WhatsAppLabel}}</span></a>{{end}}
 </body>
 </html>`))

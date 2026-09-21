@@ -18,6 +18,7 @@ import { CtaSection } from './components/CtaSection';
 import { Footer } from './components/Footer';
 import { BookDemoModal } from './components/BookDemoModal';
 import { TrialSignupModal } from './components/TrialSignupModal';
+import { WhatsAppButton } from './components/WhatsAppButton';
 
 export const App: React.FC = () => {
   const [demoModalOpen, setDemoModalOpen] = useState(false);
@@ -89,6 +90,7 @@ export const App: React.FC = () => {
 
       {/* Self-Service 14-Day Trial Registration Modal */}
       <TrialSignupModal isOpen={trialModalOpen} onClose={handleCloseTrial} />
+      <WhatsAppButton />
     </div>
   );
 };

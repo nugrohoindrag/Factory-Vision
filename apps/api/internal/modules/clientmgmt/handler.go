@@ -366,6 +366,8 @@ func Mount(root chi.Router, svc *Service) {
 				GAMeasurementID:    db.Deref(v.String("gaMeasurementId", httpx.Opt{Optional: true, Max: httpx.Max(32)}), ""),
 				SearchConsoleToken: db.Deref(v.String("searchConsoleToken", httpx.Opt{Optional: true, Max: httpx.Max(128)}), ""),
 				SearchConsoleFile:  db.Deref(v.String("searchConsoleFile", httpx.Opt{Optional: true, Max: httpx.Max(64)}), ""),
+				WhatsAppNumber:     db.Deref(v.String("whatsappNumber", httpx.Opt{Optional: true, Max: httpx.Max(32)}), ""),
+				WhatsAppLabel:      db.Deref(v.String("whatsappLabel", httpx.Opt{Optional: true, Max: httpx.Max(60)}), ""),
 			}
 			if err := v.Done(); err != nil {
 				return err
