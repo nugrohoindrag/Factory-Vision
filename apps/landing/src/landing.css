@@ -438,3 +438,97 @@ body {
   position: relative;
   color: var(--color-on-surface);
 }
+
+/* ---------------------------------------------------------------------------
+ * Responsive: phones and small tablets.
+ *
+ * The sections lay themselves out with inline grids, which is fine on a
+ * desktop but leaves `1fr` tracks that refuse to shrink below their content
+ * on a phone, so cards ran past the viewport and the page scrolled sideways.
+ * These rules let every grid track shrink, stack text-heavy two-column grids
+ * on narrow phones, and trim the padding that a 40px card gutter costs when
+ * the whole screen is 390px wide.
+ * ------------------------------------------------------------------------- */
+
+html,
+body {
+  overflow-x: clip;
+}
+
+.fv-landing-container,
+.fv-card,
+.fv-card-on-blue,
+.fv-browser-frame,
+section [style*="display: grid"] > *,
+section [style*="display: flex"] > * {
+  min-width: 0;
+}
+
+.fv-browser-header {
+  gap: var(--space-2);
+}
+
+.fv-browser-address-bar {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.fv-browser-address-bar span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  section [style*="grid-template-columns: repeat(2"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  section [style*="grid-template-columns: repeat(3"],
+  section [style*="grid-template-columns: repeat(4"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .fv-card,
+  .fv-card-on-blue {
+    padding: var(--space-5) !important;
+    border-radius: 16px;
+  }
+
+  .fv-browser-header {
+    padding: var(--space-2) var(--space-3);
+  }
+
+  /* The live badge beside the address bar has no room on a phone. */
+  .fv-browser-header-meta {
+    display: none !important;
+  }
+
+  .fv-modal-content {
+    padding: var(--space-6);
+    border-radius: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Two columns of copy at 150px each read worse than one column. */
+  section [style*="grid-template-columns: repeat(2, 1fr)"],
+  section [style*="grid-template-columns: repeat(3"],
+  section [style*="grid-template-columns: repeat(4"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  .fv-nav-demo {
+    display: none !important;
+  }
+
+  .fv-nav-trial {
+    padding: var(--space-2) var(--space-3) !important;
+  }
+}
+
+@media (max-width: 400px) {
+  .fv-nav-trial-label {
+    display: none;
+  }
+}

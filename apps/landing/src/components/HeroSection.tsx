@@ -129,7 +129,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenDemo, onOpenTria
                 <Icon name="lock" size={12} />
                 <span>app.factoryvision.io/executive-dashboard</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              <div className="fv-browser-header-meta" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                 <span className="fv-status-dot running" />
                 <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-success)' }}>
                   LIVE SHOPFLOOR STREAM

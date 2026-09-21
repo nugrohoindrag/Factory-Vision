@@ -104,7 +104,7 @@ export const LiveProductionSection: React.FC = () => {
                   <Icon name="devices" size={14} />
                   <span>terminal.factoryvision.io/station-cnc-02</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                <div className="fv-browser-header-meta" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                   <span className="fv-status-dot running" />
                   <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-success)' }}>RUNNING</span>
                 </div>

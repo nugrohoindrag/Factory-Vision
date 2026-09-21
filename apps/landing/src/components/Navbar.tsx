@@ -133,7 +133,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onOpenTrial }) => {
           {/* Secondary Demo CTA */}
           <button
             onClick={onOpenDemo}
-            className="fv-btn-secondary"
+            className="fv-btn-secondary fv-nav-demo"
             style={{
               padding: `var(--space-2) var(--space-4)`,
               fontSize: '13.5px',
@@ -145,7 +145,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onOpenTrial }) => {
           {/* Primary Trial CTA */}
           <button
             onClick={onOpenTrial || onOpenDemo}
-            className="fv-btn-primary"
+            className="fv-btn-primary fv-nav-trial"
             style={{
               padding: `var(--space-2) var(--space-5)`,
               fontSize: '13.5px',
@@ -153,7 +153,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onOpenTrial }) => {
             }}
           >
             <Icon name="rocket_launch" size={16} />
-            Coba Gratis
+            <span className="fv-nav-trial-label">Coba Gratis</span>
           </button>
 
           {/* Mobile Menu Toggle */}
