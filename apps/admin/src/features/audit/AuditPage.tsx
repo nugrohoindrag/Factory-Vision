@@ -19,6 +19,13 @@ const ACTION_LABEL: Record<string, string> = {
   USAGE_CAPTURED: 'Sampel pemakaian diambil',
   REFERRAL_CODE_CREATED: 'Kode referral dibuat',
   REFERRAL_CODE_REVOKED: 'Kode referral dicabut',
+  SITE_SETTINGS_UPDATED: 'Pengaturan situs diubah',
+  ARTICLE_CREATED: 'Artikel dibuat',
+  ARTICLE_UPDATED: 'Artikel diperbarui',
+  ARTICLE_PUBLISHED: 'Artikel diterbitkan',
+  ARTICLE_UNPUBLISHED: 'Artikel ditarik',
+  ARTICLE_ARCHIVED: 'Artikel diarsipkan',
+  ARTICLE_DELETED: 'Artikel dihapus',
 };
 
 /**

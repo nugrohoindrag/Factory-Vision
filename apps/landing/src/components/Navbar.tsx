@@ -33,6 +33,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onOpenTrial }) => {
     { label: 'OEE & Analytics', href: '#oee' },
     { label: 'Showcase', href: '#showcase' },
     { label: 'Deployment', href: '#deployment' },
+    // Rendered by the API, not a section of this page (see site-config.ts).
+    { label: 'Artikel', href: '/blog' },
   ];
 
   return (

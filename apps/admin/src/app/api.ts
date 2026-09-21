@@ -4,9 +4,11 @@ import type {
   ClientPortfolioSummary,
   ClientSubscription,
   ClientUsageSnapshot,
+  CmsArticle,
   InternalAuditEntry,
   InternalUser,
   ReferralCode,
+  SiteSettings,
   SubscriptionPlan,
   SupportAccessGrant,
 } from '@factory-vision/domain-types';
@@ -170,6 +172,21 @@ export const api = {
     create: (body: { label: string; maxUses?: number; expiryDays?: number }) =>
       post<ReferralCode>('/referral-codes', body),
     revoke: (id: string) => request<ReferralCode>(`/referral-codes/${id}`, { method: 'DELETE' }),
+  },
+
+  cms: {
+    settings: () => request<SiteSettings>('/cms/settings'),
+    saveSettings: (body: Partial<SiteSettings>) =>
+      request<SiteSettings>('/cms/settings', { method: 'PUT', body: JSON.stringify(body) }),
+    articles: () => request<CmsArticle[]>('/cms/articles'),
+    article: (id: string) => request<CmsArticle>(`/cms/articles/${id}`),
+    createArticle: (body: Record<string, unknown>) => post<CmsArticle>('/cms/articles', body),
+    updateArticle: (id: string, body: Record<string, unknown>) =>
+      request<CmsArticle>(`/cms/articles/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+    setArticleStatus: (id: string, status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED') =>
+      request<CmsArticle>(`/cms/articles/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+    deleteArticle: (id: string) =>
+      request<{ success: boolean }>(`/cms/articles/${id}`, { method: 'DELETE' }),
   },
 
   audit: (params: { clientId?: string; limit?: number } = {}) => {

@@ -343,6 +343,126 @@ func Mount(root chi.Router, svc *Service) {
 			return httpx.OK(w, code)
 		}))
 
+		// --- CMS: site settings and articles --------------------------------
+
+		r.Get("/cms/settings", guard("cms:view", func(w http.ResponseWriter, r *http.Request) error {
+			s, err := svc.GetSiteSettings(r.Context())
+			if err != nil {
+				return err
+			}
+			return httpx.OK(w, s)
+		}))
+
+		r.Put("/cms/settings", guard("cms:manage", func(w http.ResponseWriter, r *http.Request) error {
+			body, err := httpx.Body(r)
+			if err != nil {
+				return err
+			}
+			v := httpx.Validate(body)
+			in := SiteSettings{
+				SiteName:           db.Deref(v.String("siteName", httpx.Opt{Optional: true, Max: httpx.Max(120)}), ""),
+				SiteURL:            db.Deref(v.String("siteUrl", httpx.Opt{Optional: true, Max: httpx.Max(255)}), ""),
+				SiteDescription:    db.Deref(v.String("siteDescription", httpx.Opt{Optional: true, Max: httpx.Max(500)}), ""),
+				GAMeasurementID:    db.Deref(v.String("gaMeasurementId", httpx.Opt{Optional: true, Max: httpx.Max(32)}), ""),
+				SearchConsoleToken: db.Deref(v.String("searchConsoleToken", httpx.Opt{Optional: true, Max: httpx.Max(128)}), ""),
+				SearchConsoleFile:  db.Deref(v.String("searchConsoleFile", httpx.Opt{Optional: true, Max: httpx.Max(64)}), ""),
+			}
+			if err := v.Done(); err != nil {
+				return err
+			}
+			out, err := svc.UpdateSiteSettings(r.Context(), in, actorOf(r))
+			if err != nil {
+				return err
+			}
+			return httpx.OK(w, out)
+		}))
+
+		articleInput := func(body map[string]any) (ArticleInput, error) {
+			v := httpx.Validate(body)
+			in := ArticleInput{
+				Title:         db.Deref(v.String("title", httpx.Opt{Min: httpx.Min(3), Max: httpx.Max(255)}), ""),
+				Slug:          db.Deref(v.String("slug", httpx.Opt{Optional: true, Max: httpx.Max(160)}), ""),
+				BodyMarkdown:  db.Deref(v.String("bodyMarkdown", httpx.Opt{Optional: true, Max: httpx.Max(200000)}), ""),
+				Excerpt:       v.String("excerpt", httpx.Opt{Optional: true, Max: httpx.Max(500)}),
+				CoverImageURL: v.String("coverImageUrl", httpx.Opt{Optional: true, Max: httpx.Max(1000)}),
+				AuthorName:    v.String("authorName", httpx.Opt{Optional: true, Max: httpx.Max(255)}),
+				SEOTitle:      v.String("seoTitle", httpx.Opt{Optional: true, Max: httpx.Max(255)}),
+			}
+			return in, v.Done()
+		}
+
+		r.Get("/cms/articles", guard("cms:view", func(w http.ResponseWriter, r *http.Request) error {
+			list, err := svc.Articles(r.Context())
+			if err != nil {
+				return err
+			}
+			return httpx.OK(w, list)
+		}))
+
+		r.Post("/cms/articles", guard("cms:manage", func(w http.ResponseWriter, r *http.Request) error {
+			body, err := httpx.Body(r)
+			if err != nil {
+				return err
+			}
+			in, err := articleInput(body)
+			if err != nil {
+				return err
+			}
+			a, err := svc.CreateArticle(r.Context(), in, actorOf(r))
+			if err != nil {
+				return err
+			}
+			return httpx.Created(w, a)
+		}))
+
+		r.Get("/cms/articles/{id}", guard("cms:view", func(w http.ResponseWriter, r *http.Request) error {
+			a, err := svc.ArticleByID(r.Context(), chi.URLParam(r, "id"))
+			if err != nil {
+				return err
+			}
+			return httpx.OK(w, a)
+		}))
+
+		r.Put("/cms/articles/{id}", guard("cms:manage", func(w http.ResponseWriter, r *http.Request) error {
+			body, err := httpx.Body(r)
+			if err != nil {
+				return err
+			}
+			in, err := articleInput(body)
+			if err != nil {
+				return err
+			}
+			a, err := svc.UpdateArticle(r.Context(), chi.URLParam(r, "id"), in, actorOf(r))
+			if err != nil {
+				return err
+			}
+			return httpx.OK(w, a)
+		}))
+
+		r.Patch("/cms/articles/{id}/status", guard("cms:manage", func(w http.ResponseWriter, r *http.Request) error {
+			body, err := httpx.Body(r)
+			if err != nil {
+				return err
+			}
+			v := httpx.Validate(body)
+			status := v.OneOf("status", []string{"DRAFT", "PUBLISHED", "ARCHIVED"}, httpx.Opt{})
+			if err := v.Done(); err != nil {
+				return err
+			}
+			a, err := svc.SetArticleStatus(r.Context(), chi.URLParam(r, "id"), *status, actorOf(r))
+			if err != nil {
+				return err
+			}
+			return httpx.OK(w, a)
+		}))
+
+		r.Delete("/cms/articles/{id}", guard("cms:manage", func(w http.ResponseWriter, r *http.Request) error {
+			if err := svc.DeleteArticle(r.Context(), chi.URLParam(r, "id"), actorOf(r)); err != nil {
+				return err
+			}
+			return httpx.OK(w, map[string]any{"success": true})
+		}))
+
 		r.Get("/audit", guard("audit:view", func(w http.ResponseWriter, r *http.Request) error {
 			limit := 100
 			if n, err := strconv.Atoi(q(r, "limit")); err == nil && n > 0 {

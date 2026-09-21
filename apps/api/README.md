@@ -53,7 +53,7 @@ Gate black-box (skrip di `scripts/`, bahasa-agnostik: hanya HTTP + membaca DB se
 ```bash
 QA_API=http://localhost:4000 node apps/api/scripts/qa-security-posture.mjs     # 13 kontrol MUST
 API_BASE=http://localhost:4000 node scripts/verify-user-stories.mjs             # 81/81 (perlu SEED_DEMO_DATA=true)
-pnpm verify:improvement                                                         # PRD §50, 76/76; mem-boot bin/fv sendiri di :4097
+pnpm verify:improvement                                                         # PRD §50, 83/83; mem-boot bin/fv sendiri di :4097
 pnpm verify:persistence && pnpm qa:posture && pnpm --filter @factory-vision/api qa
 ```
 

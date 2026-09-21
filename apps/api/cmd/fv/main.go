@@ -371,6 +371,7 @@ func serve() error {
 		},
 		Root: []func(chi.Router){
 			func(r chi.Router) { clientmgmt.Mount(r, internalSvc) },
+			func(r chi.Router) { clientmgmt.MountSite(r, internalSvc) },
 		},
 	})
 

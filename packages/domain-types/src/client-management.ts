@@ -208,6 +208,41 @@ export interface ReferralCode {
   active: boolean;
 }
 
+/** Settings the public landing page reads at load; edited from the internal console. */
+export interface SiteSettings {
+  siteName: string;
+  siteUrl: string;
+  siteDescription: string;
+  /** GA4 measurement id, G-XXXXXXXXXX; empty disables the tag. */
+  gaMeasurementId: string;
+  /** The `content` of Search Console's google-site-verification meta tag. */
+  searchConsoleToken: string;
+  /** Search Console's HTML-file verification name, googleXXXX.html. */
+  searchConsoleFile: string;
+  updatedAt: string;
+  updatedBy: string;
+}
+
+export type CmsArticleStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+
+/** A Markdown article the API renders at /blog/<slug>. */
+export interface CmsArticle {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  coverImageUrl: string | null;
+  bodyMarkdown: string;
+  status: CmsArticleStatus;
+  authorName: string | null;
+  seoTitle: string | null;
+  publishedAt: string | null;
+  createdBy: string;
+  createdAt: string;
+  updatedBy: string | null;
+  updatedAt: string;
+}
+
 export interface InternalAuditEntry {
   id: number;
   actorEmail: string;

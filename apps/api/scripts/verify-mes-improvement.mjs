@@ -1150,6 +1150,106 @@ async function main() {
   }
 
   // ==================================================================
+  // Scenario 11 — The marketing site's CMS
+  // ==================================================================
+  //
+  // Articles are written from the internal console and served by the API as
+  // plain HTML under /blog, with a sitemap and the analytics settings the
+  // landing page reads at load. All of it is public and none of it has a
+  // session, so a regression would be invisible from inside the product.
+  {
+    const internalLogin = await fetch(`${BASE}/api/internal/v1/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: INTERNAL_EMAIL, password: INTERNAL_PASSWORD }),
+    });
+    const internalToken = (await internalLogin.json().catch(() => ({})))?.token;
+    const internal = (path, init = {}) =>
+      fetch(`${BASE}/api/internal/v1${path}`, {
+        ...init,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${internalToken}`, ...(init.headers || {}) },
+      });
+
+    const saved = await internal('/cms/settings', {
+      method: 'PUT',
+      body: JSON.stringify({ siteName: 'Factory Vision', siteUrl: 'https://factoryvision.id', siteDescription: 'MES untuk manufaktur menengah.',
+        gaMeasurementId: 'G-VERIFY1234', searchConsoleToken: 'verify-token-ABCDEFGH', searchConsoleFile: 'google0123456789abcdef.html' }),
+    });
+    const config = await fetch(`${BASE}/site/config.json`);
+    const configBody = await config.json().catch(() => undefined);
+    check(
+      '11 CMS',
+      'Pengaturan situs tersimpan dan terbaca di /site/config.json',
+      saved.status === 200 && config.status === 200 && configBody?.gaMeasurementId === 'G-VERIFY1234' && configBody?.searchConsoleToken === 'verify-token-ABCDEFGH',
+      `${saved.status} ${config.status} ${JSON.stringify(configBody).slice(0, 160)}`
+    );
+
+    const gtag = await fetch(`${BASE}/site/gtag.js`);
+    const gtagBody = await gtag.text();
+    const verification = await fetch(`${BASE}/google0123456789abcdef.html`);
+    const other = await fetch(`${BASE}/googleffffffffffffffff.html`);
+    check(
+      '11 CMS',
+      'Bootstrap GA dan file verifikasi Search Console dilayani hanya sesuai pengaturan',
+      gtag.status === 200 && gtagBody.includes('G-VERIFY1234') && verification.status === 200 && (await verification.text()).includes('google0123456789abcdef.html') && other.status === 404,
+      `gtag ${gtag.status}, file ${verification.status}, lainnya ${other.status}`
+    );
+
+    const rejected = await internal('/cms/settings', { method: 'PUT', body: JSON.stringify({ siteName: 'Factory Vision', gaMeasurementId: 'UA-12345-1' }) });
+    check('11 CMS', 'Measurement ID yang bukan GA4 ditolak 422', rejected.status === 422, String(rejected.status));
+
+    const created = await internal('/cms/articles', {
+      method: 'POST',
+      body: JSON.stringify({ title: `Verifikasi OEE ${stamp}`, excerpt: 'Ringkasan verifikasi.', authorName: 'Tim Verifikasi',
+        bodyMarkdown: '## Mengapa OEE\n\nParagraf **penting** dengan [tautan](https://factoryvision.id).\n\n<script>alert(1)</script>' }),
+    });
+    const article = await created.json().catch(() => undefined);
+    check(
+      '11 CMS',
+      'Artikel dibuat sebagai draf dengan slug dari judul',
+      created.status === 201 && article?.status === 'DRAFT' && article?.slug === `verifikasi-oee-${stamp}`,
+      `${created.status} ${JSON.stringify(article).slice(0, 160)}`
+    );
+
+    const hidden = await fetch(`${BASE}/blog/${article?.slug}`);
+    const published = await internal(`/cms/articles/${article?.id}/status`, { method: 'PATCH', body: JSON.stringify({ status: 'PUBLISHED' }) });
+    const page = await fetch(`${BASE}/blog/${article?.slug}`);
+    const html = await page.text();
+    check(
+      '11 CMS',
+      'Draf tidak tampil; setelah terbit halaman /blog/<slug> dirender sebagai HTML tanpa script mentah',
+      hidden.status === 404 && published.status === 200 && page.status === 200 && html.includes('<h2>Mengapa OEE</h2>') && html.includes('<strong>penting</strong>') && !html.includes('<script>alert') && html.includes('googletagmanager.com/gtag/js?id=G-VERIFY1234'),
+      `draf ${hidden.status}, terbit ${published.status}, halaman ${page.status}`
+    );
+
+    const sitemap = await fetch(`${BASE}/sitemap.xml`);
+    const sitemapBody = await sitemap.text();
+    const index = await fetch(`${BASE}/blog`);
+    const indexBody = await index.text();
+    check(
+      '11 CMS',
+      'Sitemap dan indeks /blog memuat artikel yang terbit',
+      sitemap.status === 200 && sitemapBody.includes(`https://factoryvision.id/blog/${article?.slug}`) && index.status === 200 && indexBody.includes(`Verifikasi OEE ${stamp}`),
+      `sitemap ${sitemap.status}, indeks ${index.status}`
+    );
+
+    const renamed = await internal(`/cms/articles/${article?.id}`, { method: 'PUT', body: JSON.stringify({ title: `Verifikasi OEE ${stamp}`, slug: 'slug-baru', bodyMarkdown: '## x' }) });
+    const deleting = await internal(`/cms/articles/${article?.id}`, { method: 'DELETE' });
+    check(
+      '11 CMS',
+      'Slug dan penghapusan artikel yang terbit ditolak (409)',
+      renamed.status === 409 && deleting.status === 409,
+      `slug ${renamed.status}, hapus ${deleting.status}`
+    );
+
+    // Housekeeping: unpublish and delete, so a rerun starts clean and the
+    // pilot database is not left with verification content.
+    await internal(`/cms/articles/${article?.id}/status`, { method: 'PATCH', body: JSON.stringify({ status: 'DRAFT' }) });
+    await internal(`/cms/articles/${article?.id}`, { method: 'DELETE' });
+    await internal('/cms/settings', { method: 'PUT', body: JSON.stringify({ siteName: 'Factory Vision', siteUrl: 'https://factoryvision.id', siteDescription: 'MES untuk manufaktur menengah.' }) });
+  }
+
+  // ==================================================================
   // Report
   // ==================================================================
   await stopApi();

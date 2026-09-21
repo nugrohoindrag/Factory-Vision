@@ -13,6 +13,11 @@ export default defineConfig({
         target: API_TARGET,
         changeOrigin: true,
       },
+      // The CMS pages the API renders (see deploy/nginx.landing.conf).
+      '^/(site/|blog(/|$)|sitemap\\.xml$|robots\\.txt$|google[0-9a-f]+\\.html$)': {
+        target: API_TARGET,
+        changeOrigin: true,
+      },
     },
   },
 });

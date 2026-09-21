@@ -110,9 +110,9 @@ type Actor struct {
 
 // What each internal role may do. Support cannot change commercial terms.
 var roleRights = map[string][]string{
-	"OWNER":           {"client:view", "client:manage", "subscription:manage", "support:grant", "audit:view", "staff:manage"},
-	"ACCOUNT_MANAGER": {"client:view", "client:manage", "subscription:manage", "support:grant", "audit:view"},
-	"SUPPORT":         {"client:view", "support:grant", "audit:view"},
+	"OWNER":           {"client:view", "client:manage", "subscription:manage", "support:grant", "audit:view", "staff:manage", "cms:view", "cms:manage"},
+	"ACCOUNT_MANAGER": {"client:view", "client:manage", "subscription:manage", "support:grant", "audit:view", "cms:view", "cms:manage"},
+	"SUPPORT":         {"client:view", "support:grant", "audit:view", "cms:view"},
 }
 
 // Service is the vendor console: reads, writes and its own authentication.

@@ -8,10 +8,14 @@ import { PortfolioPage } from '../features/clients/PortfolioPage.js';
 import { ClientDetailPage } from '../features/clients/ClientDetailPage.js';
 import { AuditPage } from '../features/audit/AuditPage.js';
 import { ReferralCodesPage } from '../features/referrals/ReferralCodesPage.js';
+import { ArticlesPage } from '../features/cms/ArticlesPage.js';
+import { SiteSettingsPage } from '../features/cms/SiteSettingsPage.js';
 
 const NAV = [
   { path: '/', label: 'Portofolio Klien', icon: 'apartment' },
   { path: '/referrals', label: 'Kode Referral', icon: 'key' },
+  { path: '/cms/articles', label: 'Artikel', icon: 'article' },
+  { path: '/cms/settings', label: 'Pengaturan Situs', icon: 'language' },
   { path: '/audit', label: 'Audit Internal', icon: 'history' },
 ];
 
@@ -151,6 +155,8 @@ export const App: React.FC = () => {
           <Route path="/" element={<PortfolioPage />} />
           <Route path="/clients/:id" element={<ClientDetailPage />} />
           <Route path="/referrals" element={<ReferralCodesPage />} />
+          <Route path="/cms/articles" element={<ArticlesPage />} />
+          <Route path="/cms/settings" element={<SiteSettingsPage />} />
           <Route path="/audit" element={<AuditPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

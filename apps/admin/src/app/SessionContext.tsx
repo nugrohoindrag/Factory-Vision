@@ -18,9 +18,9 @@ interface SessionValue {
 }
 
 const ROLE_RIGHTS: Record<InternalPrincipal['role'], string[]> = {
-  OWNER: ['client:view', 'client:manage', 'subscription:manage', 'support:grant', 'audit:view', 'staff:manage'],
-  ACCOUNT_MANAGER: ['client:view', 'client:manage', 'subscription:manage', 'support:grant', 'audit:view'],
-  SUPPORT: ['client:view', 'support:grant', 'audit:view'],
+  OWNER: ['client:view', 'client:manage', 'subscription:manage', 'support:grant', 'audit:view', 'staff:manage', 'cms:view', 'cms:manage'],
+  ACCOUNT_MANAGER: ['client:view', 'client:manage', 'subscription:manage', 'support:grant', 'audit:view', 'cms:view', 'cms:manage'],
+  SUPPORT: ['client:view', 'support:grant', 'audit:view', 'cms:view'],
 };
 
 const SessionContext = createContext<SessionValue | null>(null);

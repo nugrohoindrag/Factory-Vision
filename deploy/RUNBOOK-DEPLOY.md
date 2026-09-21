@@ -278,6 +278,21 @@ masuk lewat kode itu menyimpannya di kolom `referral_code`. Lewat API:
 curl -s -X POST http://127.0.0.1:3300/api/internal/v1/referral-codes   -H "Authorization: Bearer <token internal>" -H 'Content-Type: application/json'   -d '{"label":"PT Contoh — demo 24 Sep","maxUses":1,"expiryDays":30}'
 ```
 
+### CMS: Google Analytics, Search Console, dan artikel
+
+Admin console → **Pengaturan Situs** menyimpan Measurement ID GA4, token
+verifikasi Google Search Console (meta tag dan/atau nama file
+`googleXXXX.html`), serta nama, URL, dan deskripsi situs (migrasi 038). Landing
+page membaca `/site/config.json` saat dimuat dan baru memasang tag GA bila ada
+ID-nya; tidak ada rilis ulang. **Artikel** ditulis dalam Markdown, disimpan
+sebagai draf, lalu diterbitkan; API merender halamannya sebagai HTML di
+`/blog/<slug>` dan mencantumkannya di `/sitemap.xml` (`/robots.txt` menunjuk ke
+sana). Image landing memakai `deploy/nginx.landing.conf`, yang mem-proxy
+`/blog`, `/site/`, `/sitemap.xml`, `/robots.txt`, dan `/google*.html` ke API,
+dengan CSP yang mengizinkan googletagmanager.com dan google-analytics.com.
+Setelah verifikasi Search Console berhasil, kirim `https://<domain>/sitemap.xml`
+dari halaman Sitemaps.
+
 ---
 
 ## 8. TLS dan domain publik (opsional)
