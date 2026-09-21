@@ -6,6 +6,11 @@
  * verification token, is fetched at load from the API and applied to the
  * document. Nothing here is inline script: the analytics bootstrap comes from
  * `/site/gtag.js` on this origin, which is what the landing CSP allows.
+ *
+ * In production nginx already splices the same tags into the raw index.html
+ * (an SSI include of `/site/head.html`), because Google's verification
+ * crawler runs no script. This client-side pass is the dev-server fallback
+ * and is a no-op when the tags are already present.
  */
 export interface SiteConfig {
   siteName: string;

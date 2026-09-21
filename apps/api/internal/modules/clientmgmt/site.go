@@ -57,6 +57,23 @@ func MountSite(root chi.Router, svc *Service) {
 		fmt.Fprintf(w, "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config',%q,{anonymize_ip:true});\n", s.GAMeasurementID)
 	})
 
+	// The <head> fragment nginx splices into the landing page's index.html
+	// with a server-side include, so the Search Console meta tag and the
+	// analytics tag are in the raw HTML a crawler reads, not added by script.
+	root.Get("/site/head.html", func(w http.ResponseWriter, r *http.Request) {
+		s := svc.siteSettings(r.Context())
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.Header().Set("Cache-Control", "public, max-age=300")
+		var b strings.Builder
+		if scTokenPattern.MatchString(s.SearchConsoleToken) {
+			b.WriteString(`<meta name="google-site-verification" content="` + template.HTMLEscapeString(s.SearchConsoleToken) + `">` + "\n")
+		}
+		if gaIDPattern.MatchString(s.GAMeasurementID) {
+			b.WriteString(`<script async src="https://www.googletagmanager.com/gtag/js?id=` + template.HTMLEscapeString(s.GAMeasurementID) + `"></script><script src="/site/gtag.js"></script>` + "\n")
+		}
+		_, _ = w.Write([]byte(b.String()))
+	})
+
 	root.Get("/blog", func(w http.ResponseWriter, r *http.Request) { svc.blogIndex(w, r) })
 	root.Get("/blog/", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/blog", http.StatusMovedPermanently)
