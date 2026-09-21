@@ -140,13 +140,15 @@ type Bom struct {
 	UpdatedAt       string    `json:"updatedAt"`
 }
 
-// Operator is a shop-floor worker who signs in with a PIN.
+// Operator is a shop-floor worker. They sign in on the terminal with the
+// email and password held here; the hash never leaves the process.
 type Operator struct {
 	ID             string  `json:"id"`
 	TenantID       string  `json:"tenantId"`
 	EmployeeNumber string  `json:"employeeNumber"`
 	Name           string  `json:"name"`
-	PinHash        *string `json:"pinHash,omitempty"`
+	Email          *string `json:"email,omitempty"`
+	PasswordHash   *string `json:"-"`
 	DefaultLineID  *string `json:"defaultLineId,omitempty"`
 	Status         string  `json:"status"`
 }

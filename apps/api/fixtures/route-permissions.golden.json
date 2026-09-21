@@ -1380,8 +1380,8 @@
   },
   {
     "method": "POST",
-    "path": "/api/v1/operators/:id/pin",
-    "concretePath": "/api/v1/operators/x/pin",
+    "path": "/api/v1/operators/:id/password",
+    "concretePath": "/api/v1/operators/x/password",
     "public": false,
     "permission": "user:edit"
   },

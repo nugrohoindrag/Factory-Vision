@@ -23,7 +23,7 @@ func TestOnboardingProgressPersists(t *testing.T) {
 		t.Fatal(err)
 	}
 	prod := production.NewService(pools.App, nil, nil, nil)
-	svc, err := NewService(pools.App, master, prod, nil, security.NewPolicy(12, 6))
+	svc, err := NewService(pools.App, master, prod, nil, security.NewPolicy(12))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -55,7 +55,7 @@ func TestOnboardingProgressPersists(t *testing.T) {
 	}
 
 	// A fresh service instance sees what the first one wrote.
-	again, err := NewService(pools.App, master, prod, nil, security.NewPolicy(12, 6))
+	again, err := NewService(pools.App, master, prod, nil, security.NewPolicy(12))
 	if err != nil {
 		t.Fatal(err)
 	}

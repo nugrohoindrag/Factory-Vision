@@ -151,7 +151,7 @@ func (s *Service) Bootstrap(ctx context.Context, email, password, name string) e
 		s.log.Warn("[internal-auth] INTERNAL_ADMIN_EMAIL / INTERNAL_ADMIN_PASSWORD not set. The admin console has no way in.")
 		return nil
 	}
-	if problem := s.policy.Describe(password, "password"); problem != "" {
+	if problem := s.policy.Describe(password); problem != "" {
 		s.log.Warn("[internal-auth] INTERNAL_ADMIN_PASSWORD rejected: " + problem + " The admin console has no way in.")
 		return nil
 	}

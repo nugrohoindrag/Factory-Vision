@@ -64,7 +64,7 @@ const TOUR_STEPS: TourStep[] = [
     summary:
       'Antarmuka khusus tablet di samping mesin. Cepat, bebas latensi, dan tetap berfungsi saat jaringan Wi-Fi pabrik terputus.',
     details: [
-      'Masuk menggunakan nomor karyawan dan PIN tanpa perlu mengetik email.',
+      'Operator masuk dengan email dan kata sandi, lalu langsung mencatat produksi.',
       'Pencatatan unit Good dan Reject dalam sekali sentuh.',
       'Sinkronisasi otomatis ke server saat koneksi internet kembali.',
     ],

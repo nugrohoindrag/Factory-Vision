@@ -303,7 +303,7 @@ func serve() error {
 	// tenant, its client account, the trial subscription and the
 	// administrator in one transaction; the vendor API lives under
 	// /api/internal/v1 with its own staff, sessions and audit trail.
-	policy := security.NewPolicy(cfg.PasswordMinLength, cfg.PINMinLength)
+	policy := security.NewPolicy(cfg.PasswordMinLength)
 	onboardingSvc, err := onboarding.NewService(pool, master, productionSvc, identitySvc, policy)
 	if err != nil {
 		return err

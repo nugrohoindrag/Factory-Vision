@@ -55,7 +55,7 @@ func NewService(cfg *config.Config, master *masterdata.Service, rs *roles.Servic
 	sessions *SessionRepository, resolver *auth.Resolver, mfa *MFA, events *security.Events, log *slog.Logger) *Service {
 	return &Service{
 		cfg: cfg, master: master, roles: rs, audit: auditor, sessions: sessions, resolver: resolver,
-		policy: security.NewPolicy(cfg.PasswordMinLength, cfg.PINMinLength), events: events, MFA: mfa, log: log,
+		policy: security.NewPolicy(cfg.PasswordMinLength), events: events, MFA: mfa, log: log,
 	}
 }
 
@@ -204,38 +204,39 @@ func (s *Service) VerifyMfaLogin(ctx context.Context, challengeToken, code strin
 	return s.completeLogin(ctx, verified.TenantID, *user, c, true, verified.UsedRecoveryCode)
 }
 
-// OperatorLogin is US-002. A PIN pad has ten keys, so this is the smallest
-// keyspace in the product and the one that most needs a lock, keyed per
-// employee number, not per address: the whole plant shares one.
-func (s *Service) OperatorLogin(ctx context.Context, tenantID, employeeNumber, pin string, c ClientContext) (*LoginResponse, error) {
-	guardKey := tenantID + ":" + strings.ToLower(strings.TrimSpace(employeeNumber))
-	if err := security.PinGuard.AssertAvailable(guardKey, "PIN terkunci sementara karena terlalu banyak percobaan. Hubungi supervisor."); err != nil {
+// OperatorLogin is US-002. The terminal takes the same email and password
+// as the console, and a missing operator and a wrong password are reported
+// identically for the same reason as in Login. The guard is the login guard,
+// keyed per email: a locked operator must not lock the whole plant.
+func (s *Service) OperatorLogin(ctx context.Context, tenantID, email, password string, c ClientContext) (*LoginResponse, error) {
+	guardKey := tenantID + ":operator:" + strings.ToLower(strings.TrimSpace(email))
+	if err := security.LoginGuard.AssertAvailable(guardKey, "Terlalu banyak percobaan login yang gagal. Coba lagi dalam beberapa menit."); err != nil {
 		return nil, err
 	}
-	operator, err := s.master.OperatorByEmployeeNumber(ctx, tenantID, employeeNumber)
+	operator, err := s.master.OperatorByEmail(ctx, tenantID, email)
 	if err != nil {
 		return nil, err
 	}
-	if operator == nil || !security.VerifySecret(pin, operator.PinHash) {
-		locked := security.PinGuard.RecordFailure(guardKey)
+	if operator == nil || !security.VerifySecret(password, operator.PasswordHash) {
+		locked := security.LoginGuard.RecordFailure(guardKey)
 		action := "OPERATOR_LOGIN_FAILED"
 		if locked {
 			action = "OPERATOR_LOGIN_LOCKED"
 		}
-		if err := s.auditLogin(ctx, tenantID, "SYSTEM", employeeNumber, employeeNumber, action, map[string]any{"reason": "INVALID_CREDENTIALS", "locked": locked}, c); err != nil {
+		if err := s.auditLogin(ctx, tenantID, "SYSTEM", email, email, action, map[string]any{"reason": "INVALID_CREDENTIALS", "locked": locked}, c); err != nil {
 			return nil, err
 		}
 		if locked {
 			s.events.Record(security.Event{
 				Type: "OPERATOR_LOGIN_LOCKED", Severity: security.SeverityWarning,
-				Message:  "PIN operator " + employeeNumber + " dikunci sementara setelah percobaan berulang.",
-				TenantID: tenantID, Actor: employeeNumber, IP: db.StrOr(c.IP, ""),
+				Message:  "Akun operator " + email + " dikunci sementara setelah percobaan login berulang.",
+				TenantID: tenantID, Actor: email, IP: db.StrOr(c.IP, ""),
 			})
-			return nil, httpx.RateLimited("PIN terkunci sementara karena terlalu banyak percobaan. Hubungi supervisor.", 0)
+			return nil, httpx.RateLimited("Terlalu banyak percobaan login yang gagal. Coba lagi dalam beberapa menit.", 0)
 		}
-		return nil, httpx.Unauthenticated("Nomor karyawan atau PIN salah.")
+		return nil, httpx.Unauthenticated("Email atau kata sandi salah.")
 	}
-	security.PinGuard.RecordSuccess(guardKey)
+	security.LoginGuard.RecordSuccess(guardKey)
 	if operator.Status != "ACTIVE" {
 		return nil, httpx.Forbidden("Operator tidak aktif. Hubungi supervisor.")
 	}
@@ -382,8 +383,9 @@ func (s *Service) SetUserPassword(ctx context.Context, tenantID, userID, passwor
 	return err
 }
 
-// SetOperatorPin resets a PIN and drops the operator's sessions.
-func (s *Service) SetOperatorPin(ctx context.Context, tenantID, operatorID, pin, actorID string) error {
+// SetOperatorPassword resets an operator's password and drops their
+// sessions.
+func (s *Service) SetOperatorPassword(ctx context.Context, tenantID, operatorID, password, actorID string) error {
 	operator, err := s.master.OperatorByID(ctx, tenantID, operatorID)
 	if err != nil {
 		return err
@@ -391,10 +393,10 @@ func (s *Service) SetOperatorPin(ctx context.Context, tenantID, operatorID, pin,
 	if operator == nil {
 		return httpx.NotFound("Operator tidak ditemukan.")
 	}
-	if err := s.policy.AssertPIN(pin, ""); err != nil {
+	if err := s.policy.AssertPassword(password, ""); err != nil {
 		return err
 	}
-	if err := s.master.SaveOperatorPin(ctx, tenantID, operatorID, security.HashSecret(pin), &actorID); err != nil {
+	if err := s.master.SaveOperatorPassword(ctx, tenantID, operatorID, security.HashSecret(password)); err != nil {
 		return err
 	}
 	if _, err := s.RevokeSessions(ctx, tenantID, nil, &operatorID, actorID); err != nil {
@@ -402,15 +404,29 @@ func (s *Service) SetOperatorPin(ctx context.Context, tenantID, operatorID, pin,
 	}
 	_, err = s.audit.Record(ctx, audit.Entry{
 		TenantID: tenantID, ActorType: "USER", ActorID: actorID, EntityType: "operator", EntityID: operatorID,
-		Action: "PIN_RESET", NewValue: map[string]any{"by": actorID},
+		Action: "PASSWORD_RESET", NewValue: map[string]any{"by": actorID},
 	})
 	return err
+}
+
+// AssertPassword applies the password policy without storing anything.
+func (s *Service) AssertPassword(password string) error {
+	return s.policy.AssertPassword(password, "")
 }
 
 // RegisterUserPassword sets the initial password of a user created through
 // Settings so the account can log in straight away.
 func (s *Service) RegisterUserPassword(ctx context.Context, tenantID, userID, password string) error {
 	return s.master.SaveUserPassword(ctx, tenantID, userID, security.HashSecret(password))
+}
+
+// RegisterOperatorPassword is the operator counterpart, applied when an
+// operator is created with a password from Settings.
+func (s *Service) RegisterOperatorPassword(ctx context.Context, tenantID, operatorID, password string) error {
+	if err := s.policy.AssertPassword(password, ""); err != nil {
+		return err
+	}
+	return s.master.SaveOperatorPassword(ctx, tenantID, operatorID, security.HashSecret(password))
 }
 
 // StartSessionSweeper purges expired rows on an interval. Expired rows are
@@ -446,7 +462,7 @@ func (s *Service) BootstrapAdminCredential(ctx context.Context) error {
 		s.log.Warn("identity: no BOOTSTRAP_ADMIN_EMAIL / BOOTSTRAP_ADMIN_PASSWORD set, no account can sign in. Set both and restart to create the first administrator.")
 		return nil
 	}
-	if problem := s.policy.Describe(password, "password"); problem != "" {
+	if problem := s.policy.Describe(password); problem != "" {
 		s.log.Warn("identity: BOOTSTRAP_ADMIN_PASSWORD rejected; no account can sign in until it is fixed", "problem", problem)
 		return nil
 	}
@@ -476,33 +492,5 @@ func (s *Service) BootstrapAdminCredential(ctx context.Context) error {
 	}
 	s.log.Info("identity: bootstrap administrator ready", "email", user.Email)
 
-	// A shared starting PIN for the shop-floor terminals is offered only
-	// when the installer asks for one. Applying it to every operator on every
-	// boot would silently reset a PIN an administrator had issued, so only
-	// operators with no PIN receive it.
-	if pin := s.cfg.BootstrapOperatorPIN; pin != "" {
-		if problem := s.policy.Describe(pin, "pin"); problem != "" {
-			s.log.Warn("identity: BOOTSTRAP_OPERATOR_PIN rejected; no starting PIN was applied", "problem", problem)
-			return nil
-		}
-		operators, err := s.master.Operators(ctx, tenantID)
-		if err != nil {
-			return err
-		}
-		seeded := 0
-		for _, op := range operators {
-			if op.PinHash != nil {
-				continue
-			}
-			by := "bootstrap"
-			if err := s.master.SaveOperatorPin(ctx, tenantID, op.ID, security.HashSecret(pin), &by); err != nil {
-				return err
-			}
-			seeded++
-		}
-		if seeded > 0 {
-			s.log.Info("identity: shop-floor terminals seeded with the configured starting PIN", "count", seeded)
-		}
-	}
 	return nil
 }

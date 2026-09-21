@@ -53,7 +53,6 @@ CORS_ALLOWED_ORIGINS=        # kosong = same-origin saja
 SECURITY_ALERT_WEBHOOK=      # kosong = alert hanya ke log
 BACKUP_PASSPHRASE=<passphrase backup>    # wajib bila backup keluar dari pabrik
 BOOTSTRAP_ADMIN_NAME=Administrator
-BOOTSTRAP_OPERATOR_PIN=<6–12 digit>  # PIN awal terminal, hanya untuk operator yang belum punya
 TZ=Asia/Jakarta
 ```
 
@@ -219,25 +218,41 @@ Kredensial awal:
 - **Administrator** — `BOOTSTRAP_ADMIN_EMAIL` + `BOOTSTRAP_ADMIN_PASSWORD`.
   Password ditulis ulang setiap boot, jadi mengubah `.env` lalu restart API
   adalah cara reset yang sah.
-- **Operator** — masuk dengan **nomor karyawan + PIN**, bukan email. PIN diambil
-  dari `BOOTSTRAP_OPERATOR_PIN` dan hanya diberikan kepada operator yang
-  `pin_hash`-nya masih kosong; PIN yang sudah diterbitkan administrator tidak
-  akan tertimpa.
+- **Operator** — masuk di terminal dengan **email + kata sandi** miliknya sendiri,
+  yang disetel administrator di Settings → Operator (email lewat Edit, kata
+  sandi lewat tombol "Kata sandi"). Tidak ada kredensial operator bawaan pada
+  instalasi pabrik sungguhan.
 
-  Operator pada seed demo:
+- **Akun demo** (`SEED_DEMO_DATA=true`, `db/seeds/003_demo_accounts.sql`) — satu
+  akun per role dengan kata sandi yang dipublikasikan, khusus untuk demo:
 
-  | Nomor karyawan | Nama | Line default |
+  | Email | Role | Kata sandi |
   |---|---|---|
-  | `OP-1001` | Budi Santoso | `line-01` |
-  | `OP-1002` | Siti Rahmawati | `line-01` |
-  | `OP-1003` | Agus Prasetyo | `line-02` |
+  | `admin@factoryvision.id` | ADMIN | `Admin#FV2026!` |
+  | `executive@factoryvision.id` | EXECUTIVE | `Executive#FV2026` |
+  | `manager@factoryvision.id` | PRODUCTION_MANAGER | `Manager#FV2026` |
+  | `supervisor@factoryvision.id` | SUPERVISOR | `Supervisor#FV2026` |
+  | `ppic@factoryvision.id` | PPIC | `PPIC#FV2026!` |
+  | `quality@factoryvision.id` | QUALITY | `Quality#FV2026` |
+  | `maintenance@factoryvision.id` | MAINTENANCE | `Maintenance#FV2026` |
+  | `warehouse@factoryvision.id` | WAREHOUSE | `Warehouse#FV2026` |
+  | `workforce@factoryvision.id` | WORKFORCE_ADMIN | `Workforce#FV2026` |
+  | `sales@factoryvision.id` | SALES | `Sales#FV2026!` |
+
+  Operator pada seed demo (login terminal):
+
+  | Nomor karyawan | Nama | Email | Kata sandi | Line default |
+  |---|---|---|---|---|
+  | `OP-1001` | Budi Santoso | `budi.santoso@factoryvision.id` | `Operator#FV2026` | `line-01` |
+  | `OP-1002` | Siti Rahmawati | `siti.rahmawati@factoryvision.id` | `Operator#FV2026` | `line-01` |
+  | `OP-1003` | Agus Prasetyo | `agus.prasetyo@factoryvision.id` | `Operator#FV2026` | `line-02` |
 
   Uji dari host:
 
   ```bash
   curl -s -X POST http://127.0.0.1:3200/api/v1/auth/operator-login \
     -H 'Content-Type: application/json' \
-    --data-binary '{"employeeNumber":"OP-1001","pin":"<BOOTSTRAP_OPERATOR_PIN>"}'
+    --data-binary '{"email":"budi.santoso@factoryvision.id","password":"Operator#FV2026"}'
   # → {"token":"…","principal":{…,"kind":"OPERATOR"},…}
   ```
 
@@ -545,27 +560,19 @@ ada, password kurang dari 12 karakter atau `BOOTSTRAP_ADMIN_EMAIL` kosong.
 Bila ada, pastikan Anda memukul container dan bukan dev server — lihat catatan
 `127.0.0.1` di bagian 7.
 
-### Operator 401 walau PIN sesuai `BOOTSTRAP_OPERATOR_PIN`
+### Operator 401 walau kata sandi benar
 
-Periksa isi kolomnya — harus berupa digest, bukan PIN mentah:
-
-```bash
-docker compose -f deploy/docker-compose.yml --env-file deploy/.env exec -T db \
-  psql -U factory -d factory_vision \
-  -c "SELECT id, employee_number, left(pin_hash,7) FROM operator ORDER BY id;"
-```
-
-Nilai yang benar diawali `scrypt$`. Bila berisi PIN mentah, database itu diisi
-oleh seed lama: nilainya tidak akan pernah cocok, **dan** karena kolomnya tidak
-NULL bootstrap melewati operator tersebut sehingga PIN yang sah tidak pernah
-diterbitkan. Kosongkan lalu restart API supaya bootstrap mengisinya:
+Operator hanya bisa masuk bila barisnya punya email **dan** digest kata sandi:
 
 ```bash
 docker compose -f deploy/docker-compose.yml --env-file deploy/.env exec -T db \
   psql -U factory -d factory_vision \
-  -c "UPDATE operator SET pin_hash = NULL WHERE pin_hash NOT LIKE 'scrypt\$%';"
-docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d api
+  -c "SELECT id, employee_number, email, left(password_hash,7) FROM operator ORDER BY id;"
 ```
+
+Nilai yang benar diawali `scrypt$`. Bila email kosong atau digest NULL, setel
+keduanya dari Settings → Operator; login dicocokkan ke email tanpa membedakan
+huruf besar-kecil, dan satu email hanya boleh dipakai satu operator per tenant.
 
 ### `migrate` gagal di tahap seed
 

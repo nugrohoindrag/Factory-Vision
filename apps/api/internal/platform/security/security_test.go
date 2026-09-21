@@ -132,20 +132,17 @@ func TestRequestLimiterSlidingWindow(t *testing.T) {
 }
 
 func TestPolicyMessages(t *testing.T) {
-	p := NewPolicy(8, 4) // clamped to 12 / 6
-	if p.PasswordMin != 12 || p.PINMin != 6 {
+	p := NewPolicy(8) // clamped to 12
+	if p.PasswordMin != 12 {
 		t.Fatalf("policy must not weaken below the baseline: %+v", p)
 	}
-	if got := p.Describe("short", "password"); got != "Kata sandi minimal 12 karakter." {
+	if got := p.Describe("short"); got != "Kata sandi minimal 12 karakter." {
 		t.Fatalf("got %q", got)
 	}
-	if got := p.Describe("123456", "pin"); got != "PIN tidak boleh berupa angka berurutan atau berulang." {
+	if got := p.Describe("            "); got != "Kata sandi tidak boleh hanya berisi spasi." {
 		t.Fatalf("got %q", got)
 	}
-	if got := p.Describe("284617", "pin"); got != "" {
-		t.Fatalf("valid pin rejected: %q", got)
-	}
-	if got := p.Describe("12", "pin"); got != "PIN harus 6-12 digit angka." {
-		t.Fatalf("got %q", got)
+	if got := p.Describe("Operator#Line01"); got != "" {
+		t.Fatalf("valid password rejected: %q", got)
 	}
 }

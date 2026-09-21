@@ -19,6 +19,10 @@ import (
 // setting an initial password and dropping sessions when access changes.
 type Credentials interface {
 	RegisterUserPassword(ctx context.Context, tenantID, userID, password string) error
+	// AssertPassword applies the password policy without storing anything,
+	// so a create can refuse a weak password before it writes the record.
+	AssertPassword(password string) error
+	RegisterOperatorPassword(ctx context.Context, tenantID, operatorID, password string) error
 	RevokeSessions(ctx context.Context, tenantID string, sessionID, subjectID *string, actorID string) (int, error)
 }
 
@@ -171,10 +175,32 @@ func (h *Handler) mountProducts(r chi.Router) {
 }
 
 func (h *Handler) mountOperators(r chi.Router) {
+	// An operator may be created with their password in the same request,
+	// as a user can, so the terminal account works from the first shift.
+	// The policy runs before the record is written: a refused password must
+	// not leave behind an operator who cannot sign in.
+	create := func(ctx context.Context, tenantID string, body Patch) (Operator, error) {
+		password, _ := body["password"].(string)
+		if password != "" {
+			if err := h.creds.AssertPassword(password); err != nil {
+				return Operator{}, err
+			}
+		}
+		created, err := h.svc.CreateOperator(ctx, tenantID, body)
+		if err != nil {
+			return Operator{}, err
+		}
+		if password != "" {
+			if err := h.creds.RegisterOperatorPassword(ctx, tenantID, created.ID, password); err != nil {
+				return Operator{}, err
+			}
+		}
+		return created, nil
+	}
 	mountCrud(r, h, crud[Operator]{
 		path: "/master/operators", entity: "operator", message: "Operator deleted successfully",
 		list:   func(r *http.Request) (any, error) { return h.svc.Operators(r.Context(), tenant(r)) },
-		create: h.svc.CreateOperator, update: h.svc.UpdateOperator, remove: h.svc.DeleteOperator,
+		create: create, update: h.svc.UpdateOperator, remove: h.svc.DeleteOperator,
 		idOf: func(o Operator) string { return o.ID }, auditWrite: true,
 	})
 }

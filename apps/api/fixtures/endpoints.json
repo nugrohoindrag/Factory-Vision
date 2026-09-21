@@ -7,7 +7,7 @@
   {
     "method": "POST",
     "path": "/api/v1/auth/operator-login",
-    "summary": "Login operator (employee number + PIN)"
+    "summary": "Login operator terminal (email + password)"
   },
   {
     "method": "POST",

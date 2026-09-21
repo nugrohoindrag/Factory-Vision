@@ -106,7 +106,7 @@ func TestEveryMutatingRouteHasAnExplicitRule(t *testing.T) {
 	wipSvc := wip.NewService(nil, master, productionSvc, qualitySvc, nil, 24, 72)
 	boardSvc := board.NewService(master, productionSvc, maintenanceSvc, materialSvc, workforceSvc, nil, nil)
 	planningSvc := planning.NewService(nil, nil, nil, nil, nil)
-	onboardingSvc, err := onboarding.NewService(nil, master, productionSvc, identitySvc, security.NewPolicy(12, 6))
+	onboardingSvc, err := onboarding.NewService(nil, master, productionSvc, identitySvc, security.NewPolicy(12))
 	if err != nil {
 		t.Fatal(err)
 	}

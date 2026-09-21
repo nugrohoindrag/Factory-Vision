@@ -1277,8 +1277,10 @@ interface OperatorModalProps {
   onSave: (payload: {
     employeeNumber: string;
     name: string;
+    email: string;
     defaultLineId: string;
     status: 'ACTIVE' | 'INACTIVE';
+    password?: string;
   }) => void;
   isLoading: boolean;
   initialData?: Operator | null;
@@ -1294,6 +1296,10 @@ const OperatorFormModal: React.FC<OperatorModalProps> = ({
 }) => {
   const [employeeNumber, setEmployeeNumber] = useState('');
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  // Only on create. An existing operator's password is changed from the
+  // list, through the dialog that also revokes their sessions.
+  const [password, setPassword] = useState('');
   const [defaultLineId, setDefaultLineId] = useState(lines[0]?.id || 'line-01');
   const [status, setStatus] = useState<'ACTIVE' | 'INACTIVE'>('ACTIVE');
 
@@ -1301,19 +1307,29 @@ const OperatorFormModal: React.FC<OperatorModalProps> = ({
     if (initialData) {
       setEmployeeNumber(initialData.employeeNumber || '');
       setName(initialData.name || '');
+      setEmail(initialData.email || '');
       setDefaultLineId(initialData.defaultLineId || lines[0]?.id || 'line-01');
       setStatus(initialData.status || 'ACTIVE');
     } else {
       setEmployeeNumber('');
       setName('');
+      setEmail('');
       setDefaultLineId(lines[0]?.id || 'line-01');
       setStatus('ACTIVE');
     }
+    setPassword('');
   }, [initialData, isOpen, lines]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({ employeeNumber, name, defaultLineId, status });
+    onSave({
+      employeeNumber,
+      name,
+      email: email.trim(),
+      defaultLineId,
+      status,
+      ...(initialData || !password ? {} : { password }),
+    });
   };
 
   return (
@@ -1365,6 +1381,53 @@ const OperatorFormModal: React.FC<OperatorModalProps> = ({
             style={inputStyle}
           />
         </div>
+        <div>
+          <label
+            style={{
+              display: 'block',
+              fontSize: '11px',
+              fontWeight: 700,
+              color: 'var(--color-on-surface-variant)',
+              marginBottom: 'var(--space-1)',
+            }}
+          >
+            EMAIL (LOGIN TERMINAL)
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="e.g. danang.kusuma@perusahaan.co.id"
+            autoComplete="off"
+            required
+            style={inputStyle}
+          />
+        </div>
+        {!initialData && (
+          <div>
+            <label
+              style={{
+                display: 'block',
+                fontSize: '11px',
+                fontWeight: 700,
+                color: 'var(--color-on-surface-variant)',
+                marginBottom: 'var(--space-1)',
+              }}
+            >
+              KATA SANDI AWAL
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Minimal 12 karakter"
+              autoComplete="new-password"
+              minLength={12}
+              required
+              style={inputStyle}
+            />
+          </div>
+        )}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
           <div>
             <label
@@ -1865,9 +1928,9 @@ const UserFormModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, isLo
               too, which would have made a role that exists everywhere else
               impossible to actually assign.
 
-              OPERATOR is the one deliberate exclusion: an operator signs in with
-              an employee number and PIN through a registered terminal (§22.1),
-              so it is created on the Operator master, not here.
+              OPERATOR is the one deliberate exclusion: an operator signs in on
+              the shop-floor terminal with the email and password held on the
+              Operator master (§22.1), so it is created there, not here.
             */}
             <select value={role} onChange={(e) => setRole(e.target.value as UserRole)} style={inputStyle}>
               {Object.values(UserRole)
@@ -2506,8 +2569,10 @@ export const SettingsPage: React.FC = () => {
     mutationFn: (payload: {
       employeeNumber: string;
       name: string;
+      email: string;
       defaultLineId: string;
       status: 'ACTIVE' | 'INACTIVE';
+      password?: string;
     }) => {
       if (selectedOperator) {
         return api.master.updateOperator(selectedOperator.id, payload);
@@ -3177,21 +3242,19 @@ export const SettingsPage: React.FC = () => {
   ];
 
   // Operator Columns
-  // Issuing an operator's PIN (§22.1 "Reset operator PIN where applicable").
-  // The API has always had `POST /operators/:id/pin` and the client has always
-  // wrapped it, but nothing in the console called it — so on an install where
-  // BOOTSTRAP_OPERATOR_PIN was left empty, no operator could sign in to a
-  // terminal and an administrator had no way to fix it from the product.
+  // Resetting an operator's password (§22.1 "Reset operator credential where
+  // applicable"): the API drops the operator's sessions with it, so a lost
+  // tablet stops being a way in the moment the password changes.
   const [pinOperator, setPinOperator] = useState<Operator | null>(null);
   const [pinValue, setPinValue] = useState('');
   const [pinConfirm, setPinConfirm] = useState('');
   const [pinError, setPinError] = useState<string | null>(null);
   const [pinDone, setPinDone] = useState<string | null>(null);
 
-  const setOperatorPin = useMutation({
-    mutationFn: () => api.auth.setOperatorPin(pinOperator!.id, pinValue),
+  const setOperatorPassword = useMutation({
+    mutationFn: () => api.auth.setOperatorPassword(pinOperator!.id, pinValue),
     onSuccess: () => {
-      setPinDone(`PIN untuk ${pinOperator?.name} berhasil disetel.`);
+      setPinDone(`Kata sandi untuk ${pinOperator?.name} berhasil disetel.`);
       setPinOperator(null);
       setPinValue('');
       setPinConfirm('');
@@ -3199,7 +3262,7 @@ export const SettingsPage: React.FC = () => {
       window.setTimeout(() => setPinDone(null), 4000);
     },
     onError: (error: unknown) => {
-      setPinError(error instanceof Error ? error.message : 'Gagal menyetel PIN.');
+      setPinError(error instanceof Error ? error.message : 'Gagal menyetel kata sandi.');
     },
   });
 
@@ -3211,6 +3274,13 @@ export const SettingsPage: React.FC = () => {
       render: (o) => <strong>{o.employeeNumber}</strong>,
     },
     { key: 'name', header: 'Nama', sortable: true },
+    {
+      key: 'email',
+      header: 'Email Terminal',
+      sortable: true,
+      render: (o) =>
+        o.email || <span style={{ color: 'var(--color-on-surface-variant)' }}>Belum ada, tidak bisa masuk</span>,
+    },
     {
       key: 'defaultLineId',
       header: 'Production Line Default',
@@ -3263,9 +3333,9 @@ export const SettingsPage: React.FC = () => {
               setPinConfirm('');
               setPinError(null);
             }}
-            title="Setel PIN terminal untuk operator ini"
+            title="Setel kata sandi terminal untuk operator ini"
           >
-            PIN
+            Kata sandi
           </Button>
           <Button
             variant="text"
@@ -3892,13 +3962,13 @@ export const SettingsPage: React.FC = () => {
       <Dialog
         isOpen={Boolean(pinOperator)}
         onClose={() => setPinOperator(null)}
-        title={pinOperator ? `Setel PIN — ${pinOperator.name}` : 'Setel PIN'}
+        title={pinOperator ? `Setel kata sandi — ${pinOperator.name}` : 'Setel kata sandi'}
         maxWidth="440px"
       >
         <p style={{ margin: `0 0 var(--space-4)`, fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
-          PIN 6–12 digit untuk masuk ke terminal shop floor dengan nomor karyawan{' '}
-          <strong>{pinOperator?.employeeNumber}</strong>. PIN lama langsung tidak berlaku, dan
-          perubahan tercatat di audit log.
+          Kata sandi minimal 12 karakter untuk masuk ke terminal shop floor dengan email{' '}
+          <strong>{pinOperator?.email || '(belum diisi)'}</strong>. Kata sandi lama langsung tidak
+          berlaku, sesi terminal yang aktif dicabut, dan perubahan tercatat di audit log.
         </p>
         <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
           <div>
@@ -3911,14 +3981,13 @@ export const SettingsPage: React.FC = () => {
                 marginBottom: 'var(--space-1)',
               }}
             >
-              PIN BARU
+              KATA SANDI BARU
             </label>
             <input
               type="password"
-              inputMode="numeric"
               autoComplete="new-password"
               value={pinValue}
-              onChange={(e) => setPinValue(e.target.value.replace(/\D/g, '').slice(0, 8))}
+              onChange={(e) => setPinValue(e.target.value)}
               style={inputStyle}
             />
           </div>
@@ -3932,14 +4001,13 @@ export const SettingsPage: React.FC = () => {
                 marginBottom: 'var(--space-1)',
               }}
             >
-              ULANGI PIN
+              ULANGI KATA SANDI
             </label>
             <input
               type="password"
-              inputMode="numeric"
               autoComplete="new-password"
               value={pinConfirm}
-              onChange={(e) => setPinConfirm(e.target.value.replace(/\D/g, '').slice(0, 8))}
+              onChange={(e) => setPinConfirm(e.target.value)}
               style={inputStyle}
             />
           </div>
@@ -3949,7 +4017,7 @@ export const SettingsPage: React.FC = () => {
         )}
         {pinValue && pinConfirm && pinValue !== pinConfirm && (
           <p style={{ margin: `var(--space-3) 0 0`, fontSize: '12px', color: 'var(--color-error)' }}>
-            Kedua PIN belum sama.
+            Kedua kata sandi belum sama.
           </p>
         )}
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-5)' }}>
@@ -3959,13 +4027,13 @@ export const SettingsPage: React.FC = () => {
           <Button
             variant="filled"
             disabled={
-              setOperatorPin.isPending ||
-              pinValue.length < 6 ||
+              setOperatorPassword.isPending ||
+              pinValue.length < 12 ||
               pinValue !== pinConfirm
             }
-            onClick={() => setOperatorPin.mutate()}
+            onClick={() => setOperatorPassword.mutate()}
           >
-            {setOperatorPin.isPending ? 'Menyimpan…' : 'Setel PIN'}
+            {setOperatorPassword.isPending ? 'Menyimpan…' : 'Setel kata sandi'}
           </Button>
         </div>
       </Dialog>

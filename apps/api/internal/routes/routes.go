@@ -200,7 +200,7 @@ func pattern(re string) func(string) bool {
 // every limit whose path matches is consumed, in order, and the first
 // refusal answers. Keyed on the identity being attacked as well as the
 // address: one factory leaves through one IP, so limiting only by address
-// would lock a whole shift out the first time somebody fat-fingers a PIN.
+// would lock a whole shift out the first time somebody mistypes a password.
 func pathLimits(events *security.Events) func(http.Handler) http.Handler {
 	bodyKeyed := func(prefixKey string, fields ...string) security.KeyFunc {
 		return func(r *http.Request) (string, *http.Request) {
@@ -224,7 +224,7 @@ func pathLimits(events *security.Events) func(http.Handler) http.Handler {
 		{prefix("/api/v1/auth/login"), security.NewRequestLimiter(40, 15*time.Minute),
 			"Terlalu banyak percobaan login. Coba lagi beberapa saat.", bodyKeyed("login", "email")},
 		{prefix("/api/v1/auth/operator-login"), security.NewRequestLimiter(40, 10*time.Minute),
-			"Terlalu banyak percobaan PIN. Coba lagi beberapa saat.", bodyOnly("pin", "employeeNumber")},
+			"Terlalu banyak percobaan login. Coba lagi beberapa saat.", bodyOnly("operator-login", "email")},
 		// A six-digit code is guessable in a hundred thousand tries; the
 		// challenge is single-use, and this keeps attempts per challenge in
 		// single figures.
@@ -247,7 +247,7 @@ func pathLimits(events *security.Events) func(http.Handler) http.Handler {
 	limits = append(limits,
 		pathLimit{pattern(`^/api/v1/(users|master/users)/[^/]+/password$`), credential,
 			"Terlalu banyak perubahan kredensial. Coba lagi beberapa saat.", byClient},
-		pathLimit{pattern(`^/api/v1/operators/[^/]+/pin$`), credential,
+		pathLimit{pattern(`^/api/v1/operators/[^/]+/password$`), credential,
 			"Terlalu banyak perubahan kredensial. Coba lagi beberapa saat.", byClient},
 		pathLimit{pattern(`^/api/v1/csv/[^/]+/(export|import)$`), security.NewRequestLimiter(30, 15*time.Minute),
 			"Terlalu banyak permintaan export/import. Coba lagi beberapa saat.", byClient},

@@ -288,7 +288,6 @@ unformed ligature looks like.
 | `BOOTSTRAP_ADMIN_EMAIL` | — | **Required.** Without it no account can sign in and the API says so at boot |
 | `BOOTSTRAP_ADMIN_PASSWORD` | — | **Required**, minimum 12 characters; a shorter one is refused |
 | `BOOTSTRAP_ADMIN_NAME` | `Administrator` | Display name of the first administrator |
-| `BOOTSTRAP_OPERATOR_PIN` | — | Starting PIN for shop-floor terminals. Applied **only** to operators that have none, so it never resets a PIN an administrator issued. Leave it unset and issue PINs from Settings → Operator → PIN instead |
 | `PLANNING_JOB_INTERVAL_MS` | `5000` | How often the planning queue (forecast, capacity recalculation) is drained |
 | `DOCUMENT_STORAGE_DIR` | `<cwd>/var/documents` | Where Customer Order source documents are written. **Mount a volume**, or attachments are lost on redeploy |
 | `TZ` | `Asia/Jakarta` | Affects `shift_date` derivation |
@@ -334,13 +333,14 @@ curl -s -X POST http://<host>:4000/api/v1/auth/login \
   -H 'Content-Type: application/json' \
   -d '{"email":"<BOOTSTRAP_ADMIN_EMAIL>","password":"<BOOTSTRAP_ADMIN_PASSWORD>"}'
 
-# 4. Every operator who will use a terminal has a PIN. Without one they cannot
-#    sign in, and the terminal gives no clue why.
+# 4. Every operator who will use a terminal has an email and a password.
+#    Without both they cannot sign in, and the terminal gives no clue why.
 docker compose -f deploy/docker-compose.yml exec -T db \
   sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
-     -c "select o.employee_number, (c.operator_id is not null) as has_pin
-           from operator o left join operator_credential c on c.operator_id = o.id"'
-# → every row true. Issue the missing ones in Settings → Operator → PIN.
+     -c "select employee_number, email, (password_hash is not null) as has_password
+           from operator order by employee_number"'
+# → every row has an email and true. Fill the missing ones in
+#   Settings → Operator (Edit for the email, "Kata sandi" for the password).
 
 # 5. Master data survives a restart, i.e. it is really in PostgreSQL.
 docker compose -f deploy/docker-compose.yml restart api

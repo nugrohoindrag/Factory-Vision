@@ -112,51 +112,46 @@ try {
   const title = await page.title();
   check('halaman terminal termuat', Boolean(title), title);
 
-  // The operator signs in with an employee number and a PIN.
+  // The operator signs in with an email and a password. The seeded operator
+  // (db/seeds/003_demo_accounts.sql) is the default; a real plant passes
+  // OPERATOR_EMAIL / OPERATOR_PASSWORD for one of its own.
   const operator = await db.query(
-    `SELECT o.id, o.employee_number FROM operator o
-      JOIN operator_credential c ON c.operator_id = o.id
-     WHERE o.tenant_id = $1 LIMIT 1`,
+    `SELECT o.id, o.email FROM operator o
+     WHERE o.tenant_id = $1 AND o.email IS NOT NULL AND o.password_hash IS NOT NULL
+     ORDER BY o.employee_number LIMIT 1`,
     [TENANT]
   );
   check(
-    'ada operator dengan PIN tersimpan untuk login',
+    'ada operator dengan kata sandi tersimpan untuk login',
     operator.rows.length === 1,
     `${operator.rows.length}`
   );
 
   const bodyText = await page.evaluate(() => document.body.innerText.slice(0, 400));
-  console.log(`     [layar] ${bodyText.replace(/\n+/g, ' | ').slice(0, 200)}`);
+  console.log(`     [layar] ${bodyText.replace(/
++/g, ' | ').slice(0, 200)}`);
 
-  // The terminal wants an employee number and then a 4-digit PIN on the keypad.
-  const pinButtons = await page.locator('button', { hasText: /^[0-9]$/ }).count();
-  check('keypad PIN tersedia di layar login', pinButtons >= 10, `${pinButtons} tombol angka`);
+  const emailField = page.locator('input[type="email"]').first();
+  const passwordField = page.locator('input[type="password"]').first();
+  check(
+    'formulir email + kata sandi tersedia di layar login',
+    (await emailField.count()) === 1 && (await passwordField.count()) === 1,
+    `${await emailField.count()} email, ${await passwordField.count()} kata sandi`
+  );
 
-  const employeeNumber = process.env.OPERATOR_EMPLOYEE_NUMBER || operator.rows[0]?.employee_number;
-  const pin = process.env.OPERATOR_PIN || '284617';
+  const email = process.env.OPERATOR_EMAIL || operator.rows[0]?.email;
+  const password = process.env.OPERATOR_PASSWORD || 'Operator#FV2026';
 
-  // Prefer the operator card if the roster rendered; fall back to typing the
-  // number, which is what the screen offers when the roster is empty.
-  const card = page.locator('button').filter({ hasText: employeeNumber }).first();
-  if (await card.count()) {
-    await card.click();
-  } else {
-    const field = page.locator('input').first();
-    await field.fill(employeeNumber);
-  }
+  await emailField.fill(email);
+  await passwordField.fill(password);
   await page.waitForTimeout(400);
-
-  for (const digit of pin.split('')) {
-    await page.locator('button', { hasText: new RegExp(`^${digit}$`) }).first().click();
-    await page.waitForTimeout(140);
-  }
 
   await page.getByRole('button', { name: /Masuk Terminal/i }).click();
   await page.waitForTimeout(4000);
 
   await page.screenshot({ path: `${OUT}/pwa-02-after-login.png` });
   const afterLogin = await page.evaluate(() => document.body.innerText.slice(0, 300));
-  const signedIn = !/PIN|Masuk Terminal/i.test(afterLogin) || /Work Order|WO-/i.test(afterLogin);
+  const signedIn = !/Masuk Terminal/i.test(afterLogin) || /Work Order|WO-/i.test(afterLogin);
   check('operator masuk ke terminal', signedIn, afterLogin.replace(/\n+/g, ' | ').slice(0, 160));
 
   console.log('\n2. Jaringan diputus');

@@ -13,8 +13,8 @@ import (
 	"github.com/nugrohoindrag/factory-vision/apps/api/internal/platform/httpx"
 )
 
-// Password and PIN hashing (US-001, US-002), byte-compatible with the Node
-// API so every stored credential keeps working after the cutover.
+// Password hashing (US-001, US-002), byte-compatible with the Node API so
+// every stored credential keeps working after the cutover.
 //
 // The stored form is `scrypt$<salt hex>$<hash hex>`. Node's scryptSync used
 // N=16384, r=8, p=1 and a 64-byte key, and — the detail that matters — took
@@ -28,7 +28,7 @@ const (
 	scryptKeyLen = 64
 )
 
-// HashSecret hashes a password or PIN with a fresh salt.
+// HashSecret hashes a password with a fresh salt.
 func HashSecret(secret string) string {
 	var salt [16]byte
 	if _, err := rand.Read(salt[:]); err != nil {
@@ -63,24 +63,21 @@ func VerifySecret(secret string, stored *string) bool {
 	return subtle.ConstantTimeCompare(derived, expected) == 1
 }
 
-// Policy is the one password and PIN policy, applied on every path that
-// sets a credential (§4.1, §8, §20). A credential is only as strong as the
-// weakest door that can set it, so there is exactly one door.
+// Policy is the one password policy, applied on every path that sets a
+// credential (§4.1, §8, §20) — application users and shop-floor operators
+// alike. A credential is only as strong as the weakest door that can set
+// it, so there is exactly one door.
 type Policy struct {
 	PasswordMin int
-	PINMin      int
 }
 
-// NewPolicy clamps the configured minimums to the defaults, as the Node API
+// NewPolicy clamps the configured minimum to the default, as the Node API
 // did: a configuration cannot weaken the baseline, only raise it.
-func NewPolicy(passwordMin, pinMin int) Policy {
+func NewPolicy(passwordMin int) Policy {
 	if passwordMin < 12 {
 		passwordMin = 12
 	}
-	if pinMin < 6 {
-		pinMin = 6
-	}
-	return Policy{PasswordMin: passwordMin, PINMin: pinMin}
+	return Policy{PasswordMin: passwordMin}
 }
 
 var onlySpaces = regexp.MustCompile(`^\s+$`)
@@ -101,42 +98,11 @@ func (p Policy) AssertPassword(password, field string) error {
 	return nil
 }
 
-// AssertPIN rejects a PIN below policy. A keypad has ten keys, so the
-// obvious sequences are named.
-func (p Policy) AssertPIN(pin, field string) error {
-	if field == "" {
-		field = "pin"
-	}
-	pattern := regexp.MustCompile(fmt.Sprintf(`^\d{%d,12}$`, p.PINMin))
-	if !pattern.MatchString(pin) {
-		msg := fmt.Sprintf("PIN harus %d-12 digit angka.", p.PINMin)
-		return httpx.Validation(msg, httpx.FieldError{Field: field, Code: "INVALID_FORMAT", Message: msg})
-	}
-	if isTrivialPIN(pin) {
-		msg := "PIN tidak boleh berupa angka berurutan atau berulang."
-		return httpx.Validation(msg, httpx.FieldError{Field: field, Code: "TOO_WEAK", Message: msg})
-	}
-	return nil
-}
-
-func isTrivialPIN(pin string) bool {
-	// 000000, 111111: every digit the same.
-	if len(pin) > 0 && strings.Count(pin, string(pin[0])) == len(pin) {
-		return true
-	}
-	return strings.Contains("0123456789012345", pin) || strings.Contains("9876543210987654", pin)
-}
-
 // Describe is the policy check without the error type, for configuration
 // read at boot: a bad BOOTSTRAP_ADMIN_PASSWORD should be reported and
 // ignored, not crash the process into a restart loop.
-func (p Policy) Describe(secret, kind string) string {
-	var err error
-	if kind == "password" {
-		err = p.AssertPassword(secret, "")
-	} else {
-		err = p.AssertPIN(secret, "")
-	}
+func (p Policy) Describe(secret string) string {
+	err := p.AssertPassword(secret, "")
 	if err == nil {
 		return ""
 	}

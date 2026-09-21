@@ -142,17 +142,17 @@ console.log(`\nSecurity posture — ${BASE}\n`);
   check('login gagal berulang memicu penguncian sementara', sawLock, 'no 429 within 12 attempts');
 }
 
-// --- §8 Operator PIN lockout ------------------------------------------
+// --- §8 Operator login lockout ----------------------------------------
 {
-  const employeeNumber = `QA-${Date.now()}`;
+  const email = `qa-${Date.now()}@factoryvision.id`;
   let sawLock = false;
-  for (let attempt = 0; attempt < 10 && !sawLock; attempt += 1) {
+  for (let attempt = 0; attempt < 12 && !sawLock; attempt += 1) {
     const res = await call('POST', '/api/v1/auth/operator-login', {
-      body: { employeeNumber, pin: '284617' },
+      body: { email, password: 'Salah#Sekali-2026' },
     });
     if (res.status === 429) sawLock = true;
   }
-  check('PIN operator terkunci setelah percobaan berulang', sawLock, 'no 429 within 10 attempts');
+  check('login operator terkunci setelah percobaan berulang', sawLock, 'no 429 within 12 attempts');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

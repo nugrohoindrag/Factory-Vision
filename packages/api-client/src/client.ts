@@ -427,7 +427,7 @@ export class FactoryVisionApiClient {
 
     // Operators
     getOperators: () => this.request<Operator[]>('/api/v1/master/operators'),
-    createOperator: (body: Omit<Operator, 'id' | 'tenantId'>) =>
+    createOperator: (body: Omit<Operator, 'id' | 'tenantId'> & { password?: string }) =>
       this.request<Operator>('/api/v1/master/operators', { method: 'POST', body: JSON.stringify(body) }),
     updateOperator: (id: string, body: Partial<Omit<Operator, 'id' | 'tenantId'>>) =>
       this.request<Operator>(`/api/v1/master/operators/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
@@ -898,10 +898,10 @@ export class FactoryVisionApiClient {
         method: 'POST',
         body: JSON.stringify({ code }),
       }),
-    operatorLogin: (employeeNumber: string, pin: string) =>
+    operatorLogin: (email: string, password: string) =>
       this.request<LoginResponse>('/api/v1/auth/operator-login', {
         method: 'POST',
-        body: JSON.stringify({ employeeNumber, pin }),
+        body: JSON.stringify({ email, password }),
       }),
     session: () =>
       this.request<{ principal: SessionPrincipal; user?: AppUser; operator?: Operator }>(
@@ -924,10 +924,10 @@ export class FactoryVisionApiClient {
         method: 'POST',
         body: JSON.stringify({ password }),
       }),
-    setOperatorPin: (operatorId: string, pin: string) =>
-      this.request<{ success: boolean; message: string }>(`/api/v1/operators/${operatorId}/pin`, {
+    setOperatorPassword: (operatorId: string, password: string) =>
+      this.request<{ success: boolean; message: string }>(`/api/v1/operators/${operatorId}/password`, {
         method: 'POST',
-        body: JSON.stringify({ pin }),
+        body: JSON.stringify({ password }),
       }),
   };
 

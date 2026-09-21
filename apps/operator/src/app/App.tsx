@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import {
   FactoryVisionApiClient,
   setAuthToken,
@@ -32,17 +31,6 @@ export const App: React.FC = () => {
   const { mode: themeMode, toggle: toggleTheme } = useOperatorTheme();
 
   const lastActivity = useRef<number>(Date.now());
-
-  // The roster is a convenience for the picker, not a prerequisite for signing
-  // in: reading it needs a session, and the operator does not have one yet. The
-  // query is allowed to fail, and the login screen falls back to typing an
-  // employee number.
-  const { data: operators } = useQuery({
-    queryKey: ['master-operators'],
-    queryFn: () => api.master.getOperators(),
-    retry: false,
-    enabled: Boolean(getAuthToken()),
-  });
 
   const endSession = useCallback(() => {
     clearAuth();
@@ -168,8 +156,8 @@ export const App: React.FC = () => {
     };
   }, [principal, idleSeconds, endSession]);
 
-  const handleAuthenticate = useCallback(async (employeeNumber: string, pin: string) => {
-    const result = await api.auth.operatorLogin(employeeNumber, pin);
+  const handleAuthenticate = useCallback(async (email: string, password: string) => {
+    const result = await api.auth.operatorLogin(email, password);
     setAuthToken(result.token);
     setOperator(result.operator ?? null);
     setPrincipal(result.principal);
@@ -210,7 +198,6 @@ export const App: React.FC = () => {
       <>
         {notice}
         <OperatorAuth
-          operators={operators || []}
           onAuthenticate={handleAuthenticate}
           themeMode={themeMode}
           onToggleTheme={toggleTheme}

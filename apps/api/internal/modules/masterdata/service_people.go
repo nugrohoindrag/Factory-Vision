@@ -131,20 +131,41 @@ func (s *Service) OperatorByID(ctx context.Context, tenantID, id string) (*Opera
 	return nil, nil
 }
 
-// OperatorByEmployeeNumber is the operator-login lookup, case-insensitive.
-func (s *Service) OperatorByEmployeeNumber(ctx context.Context, tenantID, employeeNumber string) (*Operator, error) {
+// OperatorByEmail is the operator-login lookup, case-insensitive. An
+// operator without an email has no way to sign in and never matches.
+func (s *Service) OperatorByEmail(ctx context.Context, tenantID, email string) (*Operator, error) {
 	ops, err := s.Operators(ctx, tenantID)
 	if err != nil {
 		return nil, err
 	}
-	wanted := lower(employeeNumber)
+	wanted := lower(strings.TrimSpace(email))
+	if wanted == "" {
+		return nil, nil
+	}
 	for i := range ops {
-		if lower(ops[i].EmployeeNumber) == wanted {
+		if ops[i].Email != nil && lower(*ops[i].Email) == wanted {
 			o := ops[i]
 			return &o, nil
 		}
 	}
 	return nil, nil
+}
+
+// assertOperatorEmailFree is the uniqueness check behind the partial unique
+// index, done here so a duplicate is a 409 naming the field rather than a
+// constraint violation quoting the index.
+func (s *Service) assertOperatorEmailFree(ctx context.Context, tenantID string, email *string, exceptID string) error {
+	if email == nil {
+		return nil
+	}
+	existing, err := s.OperatorByEmail(ctx, tenantID, *email)
+	if err != nil {
+		return err
+	}
+	if existing != nil && existing.ID != exceptID {
+		return httpx.Conflict("Email tersebut sudah dipakai operator lain.")
+	}
+	return nil
 }
 
 func (s *Service) CreateOperator(ctx context.Context, tenantID string, body Patch) (Operator, error) {
@@ -154,8 +175,12 @@ func (s *Service) CreateOperator(ctx context.Context, tenantID string, body Patc
 	o := Operator{ID: newID("op"), TenantID: tenantID, Status: "ACTIVE"}
 	body.str("employeeNumber", &o.EmployeeNumber)
 	body.str("name", &o.Name)
+	body.optStr("email", &o.Email)
 	body.optStr("defaultLineId", &o.DefaultLineID)
 	body.str("status", &o.Status)
+	if err := s.assertOperatorEmailFree(ctx, tenantID, o.Email, o.ID); err != nil {
+		return Operator{}, err
+	}
 	var stored Operator
 	err := s.pool.WithTenant(ctx, tenantID, func(tx pgx.Tx) error {
 		var err error
@@ -177,10 +202,14 @@ func (s *Service) UpdateOperator(ctx context.Context, tenantID, id string, body 
 	o := *existing
 	body.str("employeeNumber", &o.EmployeeNumber)
 	body.str("name", &o.Name)
+	body.optStr("email", &o.Email)
 	body.optStr("defaultLineId", &o.DefaultLineID)
 	body.str("status", &o.Status)
-	// The PIN is never set through this path: nil leaves the stored hash.
-	o.PinHash = nil
+	if err := s.assertOperatorEmailFree(ctx, tenantID, o.Email, o.ID); err != nil {
+		return Operator{}, err
+	}
+	// The password is never set through this path: nil leaves the stored hash.
+	o.PasswordHash = nil
 	var stored Operator
 	err = s.pool.WithTenant(ctx, tenantID, func(tx pgx.Tx) error {
 		var err error
@@ -208,11 +237,11 @@ func (s *Service) DeleteOperator(ctx context.Context, tenantID, id string) error
 	return nil
 }
 
-// SaveOperatorPin stores an operator's PIN hash, the shop floor's only
-// credential.
-func (s *Service) SaveOperatorPin(ctx context.Context, tenantID, operatorID, pinHash string, updatedBy *string) error {
+// SaveOperatorPassword stores an operator's password hash, the shop floor's
+// only credential.
+func (s *Service) SaveOperatorPassword(ctx context.Context, tenantID, operatorID, passwordHash string) error {
 	err := s.pool.WithTenant(ctx, tenantID, func(tx pgx.Tx) error {
-		return s.repo.SetOperatorPin(ctx, tx, tenantID, operatorID, pinHash, updatedBy)
+		return s.repo.SetOperatorPassword(ctx, tx, tenantID, operatorID, passwordHash)
 	})
 	s.operators.Invalidate(tenantID)
 	return err

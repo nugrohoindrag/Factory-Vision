@@ -64,7 +64,6 @@ async function startApi(label) {
       SEED_DEMO_DATA: 'true',
       BOOTSTRAP_ADMIN_EMAIL: ADMIN_EMAIL,
       BOOTSTRAP_ADMIN_PASSWORD: ADMIN_PASSWORD,
-      BOOTSTRAP_OPERATOR_PIN: process.env.BOOTSTRAP_OPERATOR_PIN || '284617',
     },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
@@ -354,22 +353,20 @@ async function main() {
     body: JSON.stringify({
       employeeNumber: `OP-P-${stamp}`,
       name: 'Operator Persistence',
+      email: `op-p-${stamp}@factoryvision.id`,
       status: 'ACTIVE',
     }),
   });
   ids.operatorId = opCreated.body?.id;
-  // Six digits and not a sequence: the credential policy now requires 6-12
-  // digits and rejects runs and repeats, so the old four-digit '4321' was
-  // refused with a 422 and this check failed for the credential rather than
-  // for the persistence it exists to prove.
-  const pinSet = await api(`/api/v1/operators/${ids.operatorId}/pin`, {
+  // Twelve characters: the one credential policy applies to operators too.
+  const pinSet = await api(`/api/v1/operators/${ids.operatorId}/password`, {
     method: 'POST',
-    body: JSON.stringify({ pin: '493028' }),
+    body: JSON.stringify({ password: 'Persist#Op-493028' }),
   });
   check(
-    'operator created and given a PIN',
+    'operator created and given a password',
     opCreated.status === 201 && pinSet.status < 300,
-    `create ${opCreated.status}, pin ${pinSet.status}`
+    `create ${opCreated.status}, password ${pinSet.status}`
   );
 
   const userCreated = await api('/api/v1/master/users', {
@@ -499,14 +496,14 @@ async function main() {
     `${opList?.length ?? 0} operators served`
   );
 
-  // The PIN is the shop floor's only credential; losing it locks an operator
-  // out of the terminal until an administrator reissues one.
+  // The password is the shop floor's only credential; losing it locks an
+  // operator out of the terminal until an administrator reissues one.
   const pinRow = await owner.query(
-    'SELECT pin_hash FROM operator WHERE tenant_id = $1 AND id = $2', [TENANT, ids.operatorId]);
+    'SELECT password_hash FROM operator WHERE tenant_id = $1 AND id = $2', [TENANT, ids.operatorId]);
   check(
-    "the operator's PIN hash survives the restart",
-    Boolean(pinRow.rows[0]?.pin_hash),
-    pinRow.rows[0]?.pin_hash ? 'stored' : 'gone'
+    "the operator's password hash survives the restart",
+    Boolean(pinRow.rows[0]?.password_hash),
+    pinRow.rows[0]?.password_hash ? 'stored' : 'gone'
   );
 
   const userAfter = await api('/api/v1/master/users');
@@ -612,11 +609,6 @@ async function main() {
   // to prove they persist; leaving them behind pollutes the pilot tenant, and
   // the operator rows in particular end up looking like real shop-floor staff
   // on the terminal's sign-in screen.
-  await owner.query(
-    `DELETE FROM operator_credential WHERE operator_id IN
-       (SELECT id FROM operator WHERE tenant_id = $1 AND employee_number LIKE 'OP-P-%')`,
-    [TENANT]
-  );
   await owner.query(
     `DELETE FROM operator WHERE tenant_id = $1 AND employee_number LIKE 'OP-P-%'
        AND NOT EXISTS (SELECT 1 FROM production_record pr WHERE pr.operator_id = operator.id)`,

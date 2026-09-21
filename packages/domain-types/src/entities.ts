@@ -233,7 +233,8 @@ export interface Operator {
   tenantId: string;
   employeeNumber: string;
   name: string;
-  pinHash?: string;
+  /** Terminal login; an operator without one cannot sign in. */
+  email?: string;
   defaultLineId?: string;
   status: 'ACTIVE' | 'INACTIVE';
 }

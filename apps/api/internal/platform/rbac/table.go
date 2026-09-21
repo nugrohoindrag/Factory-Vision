@@ -60,7 +60,7 @@ var Rules = []Rule{
 	{"GET", "/api/v1/security/summary", "configuration:manage"},
 	{"GET", "/api/v1/sessions", "user:view"},
 	{"DELETE", "/api/v1/sessions*", "user:deactivate"},
-	{"POST", "/api/v1/operators/:id/pin", "user:edit"},
+	{"POST", "/api/v1/operators/:id/password", "user:edit"},
 
 	// --- Demand & planning (MES Improvement v1.0) -------------------
 	{"GET", "/api/v1/customers*", "customer:view"},

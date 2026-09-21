@@ -168,9 +168,9 @@ const inputStyle: React.CSSProperties = {
  * account is suspended, out of scope or simply wrong, and pretending otherwise
  * in the client is exactly the gap the acceptance criteria close.
  *
- * Only application users sign in here, with email and password (US-001).
- * Operators sign in on the shop-floor terminal with an employee number and a
- * PIN (US-002); that door is not advertised on this screen.
+ * Only application users sign in here (US-001). Operators sign in on the
+ * shop-floor terminal with their own email and password (US-002); that door
+ * is not advertised on this screen.
  */
 export const ConsoleAuth: React.FC = () => {
   const { login, verifyMfa } = useSession();

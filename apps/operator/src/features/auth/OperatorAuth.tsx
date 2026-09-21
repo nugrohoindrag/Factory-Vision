@@ -1,87 +1,66 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Operator } from '@factory-vision/domain-types';
 import { ApiRequestError } from '@factory-vision/api-client';
 import { Button, Icon, M3_TRANSITIONS } from '@factory-vision/ui';
 import { FactoryVisionLogo } from '@factory-vision/ui/fv';
 import { ThemeToggle } from '../../app/ThemeToggle.js';
 import type { ThemeMode } from '../../app/theme.js';
 
-/**
- * Digits the pad collects before it will submit.
- *
- * Six, not four: the API enforces a six-digit minimum because a shared
- * terminal on the shop floor is the smallest keyspace in the product, and a
- * pad that only accepts four would refuse every valid PIN.
- */
-const PIN_LENGTH = 6;
-
 interface OperatorAuthProps {
-  operators: Operator[];
-  /** Resolves the employee number + PIN against the API (US-002). */
-  onAuthenticate: (employeeNumber: string, pin: string) => Promise<void>;
+  /** Resolves the email + password against the API (US-002). */
+  onAuthenticate: (email: string, password: string) => Promise<void>;
   themeMode: ThemeMode;
   onToggleTheme: () => void;
 }
 
+const labelStyle: React.CSSProperties = {
+  fontSize: '11px',
+  fontWeight: 700,
+  color: 'var(--color-on-surface-variant)',
+  textTransform: 'uppercase',
+  letterSpacing: '0.04em',
+};
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  minHeight: '52px',
+  padding: `var(--space-3) var(--space-4)`,
+  fontSize: '16px',
+  fontWeight: 700,
+  fontFamily: 'var(--font-family)',
+  color: 'var(--color-on-surface)',
+  backgroundColor: 'var(--color-surface-container)',
+  border: '1px solid var(--color-border)',
+  borderRadius: 'var(--radius-sm, 8px)',
+  outline: 'none',
+  boxSizing: 'border-box',
+};
+
 /**
  * US-002, Operator Login.
  *
- * Employee number + PIN on a numeric pad, because the operator is wearing
- * gloves at a machine, not sitting at a keyboard. Verification is a real
- * server call: an inactive operator is refused by the API, which is the only
- * place that can know it.
+ * The same email and password as every other account, on a form sized for
+ * a tablet. Verification is a real server call: an inactive operator is
+ * refused by the API, which is the only place that can know it.
  */
-export const OperatorAuth: React.FC<OperatorAuthProps> = ({
-  operators,
-  onAuthenticate,
-  themeMode,
-  onToggleTheme,
-}) => {
-  const [pin, setPin] = useState<string>('');
-  /*
-   * Deliberately empty, not `operators[0]`.
-   *
-   * BOOTSTRAP_OPERATOR_PIN issues one starting PIN to every operator who has
-   * none, so a pre-filled name plus a shared PIN signs somebody in as the
-   * wrong person and records their shift's production under that name.
-   */
-  const [selectedOperator, setSelectedOperator] = useState<Operator | null>(null);
-  // Used when the roster is not readable, which is the normal case before a
-  // session exists.
-  const [typedEmployeeNumber, setTypedEmployeeNumber] = useState<string>('');
+export const OperatorAuth: React.FC<OperatorAuthProps> = ({ onAuthenticate, themeMode, onToggleTheme }) => {
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [submitting, setSubmitting] = useState<boolean>(false);
 
-  const handleDigit = (digit: string) => {
-    if (pin.length < PIN_LENGTH) {
-      setPin((prev) => prev + digit);
-      setError('');
-    }
-  };
+  const canSubmit = email.trim().length > 0 && password.length > 0 && !submitting;
 
-  const handleBackspace = () => {
-    setPin((prev) => prev.slice(0, -1));
-    setError('');
-  };
-
-  const handleClear = () => {
-    setPin('');
-    setError('');
-  };
-
-  const handleSubmit = async () => {
-    const employeeNumber = selectedOperator?.employeeNumber ?? typedEmployeeNumber.trim();
-    if (!employeeNumber) {
-      setError('Masukkan nomor karyawan terlebih dahulu');
-      return;
-    }
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!canSubmit) return;
     setSubmitting(true);
     setError('');
     try {
-      await onAuthenticate(employeeNumber, pin);
+      await onAuthenticate(email.trim(), password);
     } catch (err) {
-      setPin('');
+      setPassword('');
       setError(
         err instanceof ApiRequestError ? err.message : 'Tidak dapat menghubungi server. Periksa koneksi.'
       );
@@ -111,7 +90,8 @@ export const OperatorAuth: React.FC<OperatorAuthProps> = ({
         <ThemeToggle mode={themeMode} onToggle={onToggleTheme} />
       </div>
 
-      <motion.div
+      <motion.form
+        onSubmit={(e) => void handleSubmit(e)}
         initial={{ opacity: 0, scale: 0.95, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={M3_TRANSITIONS.enter}
@@ -152,146 +132,76 @@ export const OperatorAuth: React.FC<OperatorAuthProps> = ({
               TERMINAL OPERATOR
             </h1>
             <p style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', margin: 'var(--space-1) 0 0' }}>
-              Pilih nomor karyawan lalu masukkan PIN 4 digit
+              Masuk dengan email dan kata sandi operator Anda
             </p>
           </div>
         </div>
 
-        {/* Operator Selector */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-          <label
-            style={{
-              fontSize: '11px',
-              fontWeight: 700,
-              color: 'var(--color-on-surface-variant)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.04em',
-            }}
-          >
-            Nomor Karyawan
+          <label htmlFor="fv-operator-email" style={labelStyle}>
+            Email
           </label>
-          {operators.length === 0 ? (
-            <input
-              value={typedEmployeeNumber}
-              onChange={(e) => {
-                setTypedEmployeeNumber(e.target.value);
-                setError('');
-              }}
-              placeholder="Contoh: OP-1001"
-              autoComplete="off"
-              style={{
-                width: '100%',
-                padding: `var(--space-3) var(--space-4)`,
-                fontSize: '16px',
-                fontWeight: 700,
-                letterSpacing: '0.04em',
-                fontFamily: 'var(--font-family)',
-                color: 'var(--color-on-surface)',
-                backgroundColor: 'var(--color-surface-container)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-sm, 8px)',
-                outline: 'none',
-                boxSizing: 'border-box',
-              }}
-            />
-          ) : (
-            /*
-             * A dropdown, not a grid of faces.
-             *
-             * The roster grows with the plant: a dozen buttons stopped fitting
-             * the card long before a real shift's worth of operators would.
-             * The native control also opens the platform's own picker, which
-             * is already sized for a gloved finger on a tablet.
-             */
-            <div style={{ position: 'relative' }}>
-              <select
-                value={selectedOperator?.id ?? ''}
-                onChange={(e) => {
-                  setSelectedOperator(operators.find((op) => op.id === e.target.value) ?? null);
-                  setError('');
-                }}
-                style={{
-                  width: '100%',
-                  minHeight: '52px',
-                  padding: `var(--space-3) var(--space-7, 44px) var(--space-3) var(--space-4)`,
-                  fontSize: '16px',
-                  fontWeight: 700,
-                  fontFamily: 'var(--font-family)',
-                  color: selectedOperator ? 'var(--color-on-surface)' : 'var(--color-on-surface-variant)',
-                  backgroundColor: 'var(--color-surface-container)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-sm, 8px)',
-                  outline: 'none',
-                  boxSizing: 'border-box',
-                  appearance: 'none',
-                  WebkitAppearance: 'none',
-                  cursor: 'pointer',
-                }}
-              >
-                <option value="">Pilih nomor karyawan…</option>
-                {operators.map((op) => (
-                  <option key={op.id} value={op.id}>
-                    {op.employeeNumber} · {op.name}
-                  </option>
-                ))}
-              </select>
-              <Icon
-                name="expand_more"
-                size={22}
-                style={{
-                  position: 'absolute',
-                  right: 'var(--space-3)',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: 'var(--color-on-surface-variant)',
-                  pointerEvents: 'none',
-                }}
-              />
-            </div>
-          )}
+          <input
+            id="fv-operator-email"
+            type="email"
+            inputMode="email"
+            autoComplete="username"
+            autoCapitalize="none"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setError('');
+            }}
+            placeholder="nama@perusahaan.co.id"
+            style={inputStyle}
+          />
         </div>
 
-        {/* PIN field — a labelled box, matching the employee-number field above */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-          <label
-            style={{
-              fontSize: '11px',
-              fontWeight: 700,
-              color: 'var(--color-on-surface-variant)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.04em',
-            }}
-          >
-            Masukkan PIN Anda
+          <label htmlFor="fv-operator-password" style={labelStyle}>
+            Kata sandi
           </label>
-          <div
-            style={{
-              minHeight: '52px',
-              padding: 'var(--space-3) var(--space-4)',
-              backgroundColor: 'var(--color-surface-container)',
-              border: `1px solid ${error ? 'var(--color-error)' : 'var(--color-border)'}`,
-              borderRadius: 'var(--radius-sm, 8px)',
-              boxSizing: 'border-box',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 'var(--space-4)',
-            }}
-          >
-            {/* Fixed slots, not a free-text box: the field has to say how many
-                digits are expected, and how many are already in. */}
-            {Array.from({ length: PIN_LENGTH }, (_, idx) => idx).map((idx) => (
-              <motion.div
-                key={idx}
-                animate={{
-                  scale: pin.length > idx ? [1, 1.2, 1] : 1,
-                  backgroundColor:
-                    pin.length > idx ? 'var(--color-primary)' : 'var(--color-surface-container-highest)',
-                }}
-                transition={{ duration: 0.15 }}
-                style={{ width: '14px', height: '14px', borderRadius: '50%' }}
-              />
-            ))}
+          <div style={{ position: 'relative' }}>
+            <input
+              id="fv-operator-password"
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setError('');
+              }}
+              placeholder="••••••••••••"
+              style={{
+                ...inputStyle,
+                paddingRight: 'var(--space-9, 56px)',
+                borderColor: error ? 'var(--color-error)' : 'var(--color-border)',
+              }}
+            />
+            {/* A tablet keyboard hides what was typed; a glove hides it
+                twice. The toggle is large enough to hit on the first try. */}
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
+              style={{
+                position: 'absolute',
+                right: 'var(--space-2)',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                minWidth: '40px',
+                minHeight: '40px',
+                border: 'none',
+                background: 'transparent',
+                color: 'var(--color-on-surface-variant)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Icon name={showPassword ? 'visibility_off' : 'visibility'} size={20} />
+            </button>
           </div>
         </div>
 
@@ -309,52 +219,12 @@ export const OperatorAuth: React.FC<OperatorAuthProps> = ({
           )}
         </AnimatePresence>
 
-        {/* Touch Numpad */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-2)' }}>
-          {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', '⌫'].map((btn) => (
-            <motion.button
-              key={btn}
-              whileHover={{ scale: 1.04, y: -1 }}
-              whileTap={{ scale: 0.94 }}
-              onClick={() => {
-                // These two were written without their call parentheses, so
-                // the keys rendered, animated, and did nothing at all.
-                if (btn === 'C') handleClear();
-                else if (btn === '⌫') handleBackspace();
-                else handleDigit(btn);
-              }}
-              style={{
-                minHeight: '52px',
-                borderRadius: 'var(--radius-md, 8px)',
-                // The lightest surface step: white under the light theme, and
-                // its near-black counterpart under the dark one, so a night
-                // shift is not staring at twelve white tiles.
-                backgroundColor: 'var(--color-surface-container-lowest)',
-                border: '1px solid var(--color-border)',
-                color: 'var(--color-on-surface)',
-                fontWeight: 800,
-                fontSize: '18px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: 'var(--elevation-1)',
-              }}
-            >
-              {btn}
-            </motion.button>
-          ))}
-        </div>
-
         {/* Submit Button */}
-        <motion.div
-          whileHover={{ scale: pin.length === PIN_LENGTH ? 1.02 : 1 }}
-          whileTap={{ scale: pin.length === PIN_LENGTH ? 0.98 : 1 }}
-        >
+        <motion.div whileHover={{ scale: canSubmit ? 1.02 : 1 }} whileTap={{ scale: canSubmit ? 0.98 : 1 }}>
           <Button
+            type="submit"
             variant="filled"
-            onClick={() => void handleSubmit()}
-            disabled={pin.length !== PIN_LENGTH || submitting}
+            disabled={!canSubmit}
             style={{
               width: '100%',
               height: '46px',
@@ -366,7 +236,20 @@ export const OperatorAuth: React.FC<OperatorAuthProps> = ({
             {submitting ? 'Memverifikasi…' : 'Masuk Terminal'}
           </Button>
         </motion.div>
-      </motion.div>
+
+        <p
+          style={{
+            margin: 0,
+            textAlign: 'center',
+            fontSize: '11.5px',
+            color: 'var(--color-on-surface-variant)',
+            lineHeight: 1.6,
+          }}
+        >
+          Sesi terminal berakhir otomatis setelah 15 menit tanpa aktivitas, karena satu tablet dipakai
+          bergantian di lantai produksi.
+        </p>
+      </motion.form>
     </div>
   );
 };

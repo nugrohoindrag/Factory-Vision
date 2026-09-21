@@ -68,7 +68,6 @@ async function startApi() {
       SEED_DEMO_DATA: 'true',
       BOOTSTRAP_ADMIN_EMAIL: ADMIN_EMAIL,
       BOOTSTRAP_ADMIN_PASSWORD: ADMIN_PASSWORD,
-      BOOTSTRAP_OPERATOR_PIN: process.env.BOOTSTRAP_OPERATOR_PIN || '284617',
     },
     stdio: ['ignore', 'pipe', 'pipe'],
   });

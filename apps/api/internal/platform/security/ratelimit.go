@@ -171,11 +171,11 @@ func (g *CredentialGuard) RecordSuccess(key string) {
 	delete(g.attempts, key)
 }
 
-// The shared guards. Login and PIN are separate instances so that a locked
-// office account never blocks a shop-floor terminal, and the other way round.
+// The shared guards. The login guard is keyed per account, and the operator
+// login prefixes its key, so a locked office account never blocks a
+// shop-floor terminal, and the other way round.
 var (
 	LoginGuard         = NewCredentialGuard(8, 15*time.Minute, 15*time.Minute)
-	PinGuard           = NewCredentialGuard(6, 10*time.Minute, 10*time.Minute)
 	InternalLoginGuard = NewCredentialGuard(5, 15*time.Minute, 30*time.Minute)
 )
 

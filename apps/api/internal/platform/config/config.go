@@ -43,7 +43,6 @@ type Config struct {
 	BootstrapAdminEmail    string
 	BootstrapAdminPassword string
 	BootstrapAdminName     string
-	BootstrapOperatorPIN   string
 	InternalAdminEmail     string
 	InternalAdminPassword  string
 	InternalAdminName      string
@@ -51,7 +50,6 @@ type Config struct {
 	MFAEncryptionKey  string
 	MFARequiredRoles  []string
 	PasswordMinLength int
-	PINMinLength      int
 
 	SecurityAlertWebhook string
 	LargeExportRows      int
@@ -132,7 +130,6 @@ func Load() (*Config, error) {
 	if c.BootstrapAdminName == "" {
 		c.BootstrapAdminName = "Administrator"
 	}
-	c.BootstrapOperatorPIN = get("BOOTSTRAP_OPERATOR_PIN", "")
 	c.InternalAdminEmail = strings.TrimSpace(get("INTERNAL_ADMIN_EMAIL", ""))
 	c.InternalAdminPassword = get("INTERNAL_ADMIN_PASSWORD", "")
 	c.InternalAdminName = get("INTERNAL_ADMIN_NAME", "Internal Administrator")
@@ -140,7 +137,6 @@ func Load() (*Config, error) {
 	c.MFAEncryptionKey = get("MFA_ENCRYPTION_KEY", "")
 	c.MFARequiredRoles = splitList(get("MFA_REQUIRED_ROLES", "ADMIN"), strings.ToUpper)
 	c.PasswordMinLength = getInt("PASSWORD_MIN_LENGTH", 12)
-	c.PINMinLength = getInt("PIN_MIN_LENGTH", 6)
 
 	c.SecurityAlertWebhook = strings.TrimSpace(get("SECURITY_ALERT_WEBHOOK", ""))
 	c.LargeExportRows = getInt("LARGE_EXPORT_ROWS", 5000)

@@ -136,17 +136,14 @@ ON CONFLICT (id) DO NOTHING;
 
 -- 14. Operators
 --
--- pin_hash is deliberately left NULL. The column holds a scrypt digest, and the
--- seed used to write the literal string '1234' into it, which no operator could
--- ever log in with — and, worse, a non-null value makes the bootstrap skip that
--- operator, so BOOTSTRAP_OPERATOR_PIN silently never applied either. An
--- operator receives a PIN from BOOTSTRAP_OPERATOR_PIN on first boot, or from an
--- administrator; a plaintext credential is never seeded.
-INSERT INTO operator (id, tenant_id, employee_number, name, pin_hash, default_line_id, status)
+-- The terminal login (email + password hash) is issued by 003_demo_accounts.sql,
+-- which only fills it in where it is still empty; an operator created here
+-- without one cannot sign in until an administrator sets a password.
+INSERT INTO operator (id, tenant_id, employee_number, name, default_line_id, status)
 VALUES
-  ('op-001', 'tenant-pilot-factory-01', 'OP-1001', 'Budi Santoso', NULL, 'line-01', 'ACTIVE'),
-  ('op-002', 'tenant-pilot-factory-01', 'OP-1002', 'Siti Rahmawati', NULL, 'line-01', 'ACTIVE'),
-  ('op-003', 'tenant-pilot-factory-01', 'OP-1003', 'Agus Prasetyo', NULL, 'line-02', 'ACTIVE')
+  ('op-001', 'tenant-pilot-factory-01', 'OP-1001', 'Budi Santoso', 'line-01', 'ACTIVE'),
+  ('op-002', 'tenant-pilot-factory-01', 'OP-1002', 'Siti Rahmawati', 'line-01', 'ACTIVE'),
+  ('op-003', 'tenant-pilot-factory-01', 'OP-1003', 'Agus Prasetyo', 'line-02', 'ACTIVE')
 ON CONFLICT (id) DO NOTHING;
 
 -- 15. Production Orders & Batches

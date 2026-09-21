@@ -19,7 +19,7 @@ cd apps/api && go build -o bin/fv ./cmd/fv          # atau: pnpm --filter @facto
 PORT=4000 NODE_ENV=test TZ=Asia/Jakarta AUTH_REQUIRED=true SEED_DEMO_DATA=true \
   DATABASE_URL=postgresql://factory_app:ci-app-role-password@localhost:5432/factory_vision \
   BOOTSTRAP_ADMIN_EMAIL=admin@pabrik.co.id BOOTSTRAP_ADMIN_PASSWORD=ChangeMe-Local-Only \
-  BOOTSTRAP_OPERATOR_PIN=284617 MFA_ENCRYPTION_KEY=local-test-key ./bin/fv serve
+  MFA_ENCRYPTION_KEY=local-test-key ./bin/fv serve
 ```
 
 Variabel lingkungan ada di `.env.example`; `.env` di direktori ini dan di root repo dibaca tanpa
@@ -108,8 +108,8 @@ internal/modules/
   meta        /health, /meta/deployment, /meta/openapi.json, /docs
   event       /events, /events/timeline, /events/summary (+ ?cursor= keyset aditif), Recorder detached berbatas
   audit       /audit-logs, Recorder (awaited / detached / in-transaction)
-  identity    login, operator-login, MFA (verify/status/enroll/confirm/disable), session, logout, sessions, password, PIN,
-              bootstrap admin & PIN awal, sweeper sesi, repository app_session
+  identity    login, operator-login (email + password), MFA (verify/status/enroll/confirm/disable), session, logout,
+              sessions, password (user & operator), bootstrap admin, sweeper sesi, repository app_session
   roles       /permissions, /roles CRUD; PermissionsFor / ResolveScope / LandingPathFor untuk resolver
   masterdata  62 route /master/* (plants, lines, work centers, machines, products, BOM, operators, reasons, users, devices,
               processes, routings, machine-rates, kpi-targets, shifts) — DB adalah rekaman, cache per tenant TTL 30 s

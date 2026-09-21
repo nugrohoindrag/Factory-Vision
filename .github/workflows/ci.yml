@@ -142,7 +142,6 @@ jobs:
           # with them; nothing here is a real credential.
           BOOTSTRAP_ADMIN_EMAIL: admin@pabrik.co.id
           BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
-          BOOTSTRAP_OPERATOR_PIN: '284617'
           MFA_ENCRYPTION_KEY: ci-only-mfa-key
           INTERNAL_ADMIN_EMAIL: ops@factoryvision.local
           INTERNAL_ADMIN_PASSWORD: RahasiaKuatInternal2026
@@ -165,7 +164,6 @@ jobs:
           API_BASE: http://localhost:4000
           BOOTSTRAP_ADMIN_EMAIL: admin@pabrik.co.id
           BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
-          BOOTSTRAP_OPERATOR_PIN: '284617'
         run: node scripts/verify-user-stories.mjs
 
       - name: API log on failure
@@ -283,7 +281,6 @@ jobs:
           AUTH_REQUIRED: 'true'
           BOOTSTRAP_ADMIN_EMAIL: admin@pabrik.co.id
           BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
-          BOOTSTRAP_OPERATOR_PIN: '284617'
           MFA_ENCRYPTION_KEY: ci-only-mfa-key
         run: pnpm verify:persistence
 
@@ -310,7 +307,6 @@ jobs:
           AUTH_REQUIRED: 'true'
           BOOTSTRAP_ADMIN_EMAIL: admin@pabrik.co.id
           BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
-          BOOTSTRAP_OPERATOR_PIN: '284617'
           MFA_ENCRYPTION_KEY: ci-only-mfa-key
         run: pnpm verify:improvement
 
@@ -401,7 +397,6 @@ jobs:
           # Throwaway values for this job only; nothing here is a real credential.
           BOOTSTRAP_ADMIN_EMAIL: admin@pabrik.co.id
           BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
-          BOOTSTRAP_OPERATOR_PIN: '284617'
           MFA_ENCRYPTION_KEY: ci-only-mfa-key
           INTERNAL_ADMIN_EMAIL: ops@factoryvision.local
           INTERNAL_ADMIN_PASSWORD: RahasiaKuatInternal2026
@@ -424,7 +419,6 @@ jobs:
           AUTH_REQUIRED: 'true'
           BOOTSTRAP_ADMIN_EMAIL: admin@pabrik.co.id
           BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
-          BOOTSTRAP_OPERATOR_PIN: '284617'
           MFA_ENCRYPTION_KEY: ci-only-mfa-key
         run: node apps/api/scripts/qa-mold-crud.mjs
 
@@ -444,7 +438,6 @@ jobs:
           AUTH_REQUIRED: 'true'
           BOOTSTRAP_ADMIN_EMAIL: admin@pabrik.co.id
           BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
-          BOOTSTRAP_OPERATOR_PIN: '284617'
           MFA_ENCRYPTION_KEY: ci-only-mfa-key
         run: node apps/api/scripts/qa-batch-integrity.mjs
 
@@ -455,7 +448,6 @@ jobs:
           AUTH_REQUIRED: 'true'
           BOOTSTRAP_ADMIN_EMAIL: admin@pabrik.co.id
           BOOTSTRAP_ADMIN_PASSWORD: RahasiaKuat2026
-          BOOTSTRAP_OPERATOR_PIN: '284617'
           MFA_ENCRYPTION_KEY: ci-only-mfa-key
         run: node apps/api/scripts/qa-sales-http-boundary.mjs
 

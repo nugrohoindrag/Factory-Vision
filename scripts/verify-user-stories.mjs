@@ -7,7 +7,7 @@
  *
  *   BOOTSTRAP_ADMIN_EMAIL=admin@pabrik.co.id \
  *   BOOTSTRAP_ADMIN_PASSWORD=<password admin> \
- *   BOOTSTRAP_OPERATOR_PIN=284617 pnpm dev:api
+ *   SEED_DEMO_DATA=true pnpm dev:api
  *
  *   node scripts/verify-user-stories.mjs
  *
@@ -18,7 +18,9 @@
 const BASE = process.env.API_BASE || 'http://localhost:4000';
 const ADMIN_EMAIL = process.env.BOOTSTRAP_ADMIN_EMAIL || 'admin@pabrik.co.id';
 const ADMIN_PASSWORD = process.env.BOOTSTRAP_ADMIN_PASSWORD || 'ChangeMe-Local-Only';
-const OPERATOR_PIN = process.env.BOOTSTRAP_OPERATOR_PIN || '284617';
+// The seeded operator OP-1001 (db/seeds/003_demo_accounts.sql).
+const OPERATOR_EMAIL = process.env.OPERATOR_EMAIL || 'budi.santoso@factoryvision.id';
+const OPERATOR_PASSWORD = process.env.OPERATOR_PASSWORD || 'Operator#FV2026';
 
 const results = [];
 let adminToken = '';
@@ -98,10 +100,10 @@ async function authentication() {
     return body.principal.landingPath;
   });
 
-  await check('US-002', 'Operator signs in with employee number + PIN', async () => {
+  await check('US-002', 'Operator signs in with email + password', async () => {
     const { body } = await api('/api/v1/auth/operator-login', {
       method: 'POST',
-      body: { employeeNumber: 'OP-1001', pin: OPERATOR_PIN },
+      body: { email: OPERATOR_EMAIL, password: OPERATOR_PASSWORD },
       expect: 200,
     });
     assert(body.token, 'no token');
@@ -117,10 +119,10 @@ async function authentication() {
     return `${lifetime}h absolute`;
   });
 
-  await check('US-002', 'Wrong PIN is refused', async () => {
+  await check('US-002', 'Wrong operator password is refused', async () => {
     const { status } = await api('/api/v1/auth/operator-login', {
       method: 'POST',
-      body: { employeeNumber: 'OP-1001', pin: '999999' },
+      body: { email: OPERATOR_EMAIL, password: 'Salah#Sekali-2026' },
     });
     assert(status === 401, `expected 401, got ${status}`);
     return '401';

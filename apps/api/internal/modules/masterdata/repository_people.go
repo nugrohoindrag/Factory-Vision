@@ -61,15 +61,15 @@ func (Repository) UpsertShift(ctx context.Context, tx pgx.Tx, s Shift) (Shift, e
 
 // --- Operators --------------------------------------------------------
 
-const operatorColumns = `id, tenant_id, employee_number, name, pin_hash, default_line_id, status`
+const operatorColumns = `id, tenant_id, employee_number, name, email, password_hash, default_line_id, status`
 
 func scanOperator(r pgx.Rows) (Operator, error) {
 	var o Operator
 	var status *string
-	if err := r.Scan(&o.ID, &o.TenantID, &o.EmployeeNumber, &o.Name, &o.PinHash, &o.DefaultLineID, &status); err != nil {
+	if err := r.Scan(&o.ID, &o.TenantID, &o.EmployeeNumber, &o.Name, &o.Email, &o.PasswordHash, &o.DefaultLineID, &status); err != nil {
 		return o, err
 	}
-	o.PinHash, o.DefaultLineID = db.Str(o.PinHash), db.Str(o.DefaultLineID)
+	o.Email, o.PasswordHash, o.DefaultLineID = db.Str(o.Email), db.Str(o.PasswordHash), db.Str(o.DefaultLineID)
 	o.Status = db.StrOr(status, "ACTIVE")
 	return o, nil
 }
@@ -82,18 +82,19 @@ func (Repository) ListOperators(ctx context.Context, tx pgx.Tx, tenantID string)
 	return collect(rows, scanOperator)
 }
 
-// UpsertOperator writes an operator. A nil pin hash means "unchanged", not
-// "cleared": saving an operator's name must never revoke their PIN.
+// UpsertOperator writes an operator. A nil password hash means "unchanged",
+// not "cleared": saving an operator's name must never revoke their login.
 func (Repository) UpsertOperator(ctx context.Context, tx pgx.Tx, o Operator) (Operator, error) {
 	rows, err := tx.Query(ctx,
-		`INSERT INTO operator (id, tenant_id, employee_number, name, pin_hash, default_line_id, status)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7)
+		`INSERT INTO operator (id, tenant_id, employee_number, name, email, password_hash, default_line_id, status)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
 		 ON CONFLICT (id) DO UPDATE SET
 		   employee_number = EXCLUDED.employee_number, name = EXCLUDED.name,
-		   pin_hash = COALESCE(EXCLUDED.pin_hash, operator.pin_hash),
+		   email = EXCLUDED.email,
+		   password_hash = COALESCE(EXCLUDED.password_hash, operator.password_hash),
 		   default_line_id = EXCLUDED.default_line_id, status = EXCLUDED.status
 		 RETURNING `+operatorColumns,
-		o.ID, o.TenantID, o.EmployeeNumber, o.Name, o.PinHash, o.DefaultLineID, orDefault(o.Status, "ACTIVE"))
+		o.ID, o.TenantID, o.EmployeeNumber, o.Name, o.Email, o.PasswordHash, o.DefaultLineID, orDefault(o.Status, "ACTIVE"))
 	if err != nil {
 		return o, err
 	}
@@ -104,19 +105,9 @@ func (Repository) UpsertOperator(ctx context.Context, tx pgx.Tx, o Operator) (Op
 	return out[0], nil
 }
 
-// SetOperatorPin stores a PIN hash in both places the schema keeps one:
-// operator.pin_hash is what the record carries; operator_credential records
-// when it was last set and by whom.
-func (Repository) SetOperatorPin(ctx context.Context, tx pgx.Tx, tenantID, operatorID, pinHash string, updatedBy *string) error {
-	if _, err := tx.Exec(ctx, `UPDATE operator SET pin_hash = $3 WHERE tenant_id = $1 AND id = $2`, tenantID, operatorID, pinHash); err != nil {
-		return err
-	}
-	_, err := tx.Exec(ctx,
-		`INSERT INTO operator_credential (operator_id, tenant_id, pin_hash, updated_at, updated_by)
-		 VALUES ($1, $2, $3, now(), $4)
-		 ON CONFLICT (operator_id) DO UPDATE SET
-		   pin_hash = EXCLUDED.pin_hash, updated_at = now(), updated_by = EXCLUDED.updated_by`,
-		operatorID, tenantID, pinHash, updatedBy)
+// SetOperatorPassword stores an operator's password hash.
+func (Repository) SetOperatorPassword(ctx context.Context, tx pgx.Tx, tenantID, operatorID, passwordHash string) error {
+	_, err := tx.Exec(ctx, `UPDATE operator SET password_hash = $3 WHERE tenant_id = $1 AND id = $2`, tenantID, operatorID, passwordHash)
 	return err
 }
 
@@ -151,7 +142,7 @@ func (Repository) ListUsers(ctx context.Context, tx pgx.Tx, tenantID string) ([]
 	return collect(rows, scanUser)
 }
 
-// UpsertUser writes a user. As with the operator PIN, a nil hash means
+// UpsertUser writes a user. As with the operator password, a nil hash means
 // "leave it alone".
 func (Repository) UpsertUser(ctx context.Context, tx pgx.Tx, u User, passwordHash *string) (StoredUser, error) {
 	var lastLogin *time.Time

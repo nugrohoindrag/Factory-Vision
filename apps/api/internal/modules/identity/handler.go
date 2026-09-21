@@ -92,16 +92,16 @@ func Mount(r chi.Router, s *Service, master *masterdata.Service) {
 			return err
 		}
 		v := httpx.Validate(body)
-		employeeNumber := v.String("employeeNumber", httpx.Opt{Min: httpx.Min(1)})
-		pin := v.String("pin", httpx.Opt{Min: httpx.Min(1), Max: httpx.Max(32)})
-		if err := v.DoneWith("Nomor karyawan dan PIN wajib diisi."); err != nil {
+		email := v.String("email", httpx.Opt{Min: httpx.Min(1), Max: httpx.Max(255)})
+		password := v.String("password", httpx.Opt{Min: httpx.Min(1), Max: httpx.Max(256)})
+		if err := v.DoneWith("Email dan kata sandi wajib diisi."); err != nil {
 			return err
 		}
 		tenantID := tenancy.TenantID(r.Context())
 		if tenantID == "" {
 			tenantID = config.PilotTenant
 		}
-		resp, err := s.OperatorLogin(r.Context(), tenantID, *employeeNumber, *pin, clientContext(r))
+		resp, err := s.OperatorLogin(r.Context(), tenantID, *email, *password, clientContext(r))
 		if err != nil {
 			return err
 		}
@@ -291,20 +291,20 @@ func Mount(r chi.Router, s *Service, master *masterdata.Service) {
 		}
 		return httpx.OK(w, success{Success: true, Message: "Kata sandi diperbarui dan sesi aktif dicabut."})
 	}))
-	r.Post("/operators/{id}/pin", httpx.Handle(func(w http.ResponseWriter, r *http.Request) error {
+	r.Post("/operators/{id}/password", httpx.Handle(func(w http.ResponseWriter, r *http.Request) error {
 		body, err := httpx.Body(r)
 		if err != nil {
 			return err
 		}
 		v := httpx.Validate(body)
-		pin := v.String("pin", httpx.Opt{Min: httpx.Min(4), Max: httpx.Max(8)})
+		password := v.String("password", httpx.Opt{Min: httpx.Min(8)})
 		if err := v.Done(); err != nil {
 			return err
 		}
-		if err := s.SetOperatorPin(r.Context(), tenancy.TenantID(r.Context()), chi.URLParam(r, "id"), *pin, auth.ActorID(r.Context())); err != nil {
+		if err := s.SetOperatorPassword(r.Context(), tenancy.TenantID(r.Context()), chi.URLParam(r, "id"), *password, auth.ActorID(r.Context())); err != nil {
 			return err
 		}
-		return httpx.OK(w, success{Success: true, Message: "PIN operator diperbarui dan sesi aktif dicabut."})
+		return httpx.OK(w, success{Success: true, Message: "Kata sandi operator diperbarui dan sesi aktif dicabut."})
 	}))
 }
 
