@@ -1,0 +1,11 @@
+# torch / torchvision come from the CPU index first (see README / Dockerfile):
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+ultralytics==8.4.161
+# ByteTrack is deprecated in supervision 0.28 and removed in 0.31: keep the pin.
+supervision==0.30.5
+openvino==2026.4.0
+psycopg[binary]==3.3.6
+PyYAML==6.0.3
+# Dashboard (`python -m fv_vision serve`).
+fastapi==0.141.1
+uvicorn[standard]==0.53.0

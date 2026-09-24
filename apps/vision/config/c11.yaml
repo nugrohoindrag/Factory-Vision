@@ -1,0 +1,59 @@
+# CCTV JKP Satpol PP Jl. Jend. Gatot Subroto C11 CCTV-01 (DKI public CCTV,
+# Bali Tower). Measured 2026-09-24: 640x360, 20 fps, fMP4 segments of 7.5 s.
+# People are 11-61 px tall here, nobody reaches 150 px: F3 cannot run on this
+# camera (PRD "Kelayakan Teknis"), which is why it stays off.
+camera_id: c11
+source: https://dki-jkt.balitower.co.id:7028/502507_JKP_SATPOL-PP_JL.-JEND.-GATOT-SUBROTO-C11_CCTV-01/tracks-v1/index.fmp4.m3u8
+
+# 1 of every N frames. At 20 fps, 4 gives 5 frames/s to analyse; the CPU
+# decides how many of them actually are (PRD target >= 1 FPS).
+frame_stride: 4
+# PRD: YOLO11s at 960 wide (upscaled from 640x360: people here are tiny),
+# as [height, width] so an OpenVINO export of the same shape can be used.
+# The image runs the OpenVINO export of it (VISION_MODEL); run `bench` on the
+# host to confirm it beats PyTorch there.
+model: yolo11s.pt
+imgsz: [544, 960]
+confidence: 0.25
+
+blur_faces: false
+snapshot_retention_days: 30
+
+crowd:
+  enabled: true
+  rider_vehicles: [motorcycle]
+  median_window: 10
+  # Placeholders until the open question "ambang per kamera" is answered:
+  # the pavement this camera sees holds a few people at most.
+  alert_count: 15
+  alert_hold_seconds: 60
+  alert_growth_per_min: 8
+  alert_cooldown_seconds: 600
+
+traffic:
+  enabled: true
+  vehicles: [car, motorcycle, bus, truck]
+  # Uncalibrated. Occupancy here is dominated by the vehicles nearest the
+  # camera (one car at the bottom covers ~10 % of the zone): 0.20 called
+  # visibly free traffic padat on 2026-09-24. Tune against a manual reading.
+  congestion:
+    occupancy_padat: 0.35
+    occupancy_macet: 0.55
+    speed_padat_px: 30
+    speed_macet_px: 8
+    hold_seconds: 30
+  zones:
+    # Draft from one frame; redraw with `python -m fv_vision roi`.
+    - id: gatsu-jalur-utama
+      name: Gatsu jalur utama
+      polygon: [[0.21, 1.0], [0.31, 0.27], [0.36, 0.27], [0.99, 0.82], [0.99, 1.0]]
+
+weapon:
+  enabled: false
+  model: null
+  classes: []
+  confidence: 0.5
+  min_person_height_px: 150
+  hits: 3
+  window: 5
+  max_crops_per_frame: 4

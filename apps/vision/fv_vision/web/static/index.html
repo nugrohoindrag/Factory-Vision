@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CV Vision</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/theme.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><b>CV Vision</b><span>Factory Vision</span></div>
+    <nav class="tabs" role="tablist">
+      <button class="tab" role="tab" data-view="pantau" aria-selected="true">Pemantauan</button>
+      <button class="tab" role="tab" data-view="riwayat" aria-selected="false">Riwayat</button>
+    </nav>
+    <select class="control" id="camera" aria-label="Kamera"></select>
+    <span class="pill neutral" id="stream-pill">Menghubungkan…</span>
+    <div class="spacer"></div>
+    <div class="user"><b id="user-name"></b><span id="user-role"></span></div>
+    <button class="btn" id="theme" type="button">Mode gelap</button>
+    <button class="btn" id="logout" type="button">Keluar</button>
+  </header>
+
+  <main>
+    <!-- Pemantauan -->
+    <section id="view-pantau" class="grid">
+      <div class="stack">
+        <div class="card" id="card-live">
+          <div class="card-head">
+            <h2 id="live-title">Live view</h2>
+            <div class="spacer"></div>
+            <div class="segmented" role="tablist" aria-label="Sumber tampilan">
+              <button data-mode="deteksi" aria-selected="true">Deteksi</button>
+              <button data-mode="video" aria-selected="false">Video langsung</button>
+            </div>
+          </div>
+          <div class="screen">
+            <img id="live-img" alt="Frame terakhir dengan hasil deteksi">
+            <video id="live-video" class="hidden" muted playsinline autoplay></video>
+            <div class="overlay-msg hidden" id="live-msg"></div>
+          </div>
+          <div class="live-meta">
+            <span id="meta-mode">Deteksi: frame yang dianalisis, kotak = orang (biru), pengendara (abu), kendaraan (terang)</span>
+            <span class="num" id="meta-fps"></span>
+            <span class="num" id="meta-age"></span>
+          </div>
+        </div>
+
+        <div class="card" id="card-trend">
+          <div class="card-head">
+            <h2>Jumlah orang per menit</h2>
+            <div class="spacer"></div>
+            <div class="chips" id="range">
+              <button class="chip" data-range="1h" aria-pressed="false">1 jam</button>
+              <button class="chip" data-range="today" aria-pressed="true">Hari ini</button>
+              <button class="chip" data-range="7d" aria-pressed="false">7 hari</button>
+            </div>
+          </div>
+          <svg class="chart" id="chart" role="img" aria-label="Grafik jumlah orang"></svg>
+          <div class="chart-tip num" id="chart-tip"></div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="stats">
+          <div class="stat wide" id="stat-people">
+            <div class="label">Orang terlihat sekarang</div>
+            <div class="value num" id="v-people">–</div>
+            <div class="sub" id="s-people">Pengendara motor tidak dihitung</div>
+          </div>
+          <div class="stat" id="stat-peak">
+            <div class="label">Puncak hari ini</div>
+            <div class="value num" id="v-peak">–</div>
+            <div class="sub num" id="s-peak"></div>
+          </div>
+          <div class="stat" id="stat-growth">
+            <div class="label">Laju per menit</div>
+            <div class="value num" id="v-growth">–</div>
+            <div class="sub num" id="s-growth"></div>
+          </div>
+          <div class="stat wide" id="stat-traffic">
+            <div class="label">Lalu lintas</div>
+            <div class="zones" id="zones"><div class="sub">Tidak ada zona jalan untuk kamera ini</div></div>
+          </div>
+          <div class="stat wide" id="stat-weapon">
+            <div class="label">Deteksi potensi senjata tajam</div>
+            <div class="sub" id="s-weapon"></div>
+          </div>
+        </div>
+
+        <div class="card" id="card-alerts">
+          <div class="card-head">
+            <h2>Alert</h2>
+            <span class="badge hidden" id="pending-badge" title="Menunggu verifikasi"></span>
+            <div class="spacer"></div>
+          </div>
+          <div class="alerts" id="alerts"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Riwayat -->
+    <section id="view-riwayat" class="hidden">
+      <div class="card">
+        <div class="filters">
+          <label class="field">Dari<input class="control" type="date" id="f-start"></label>
+          <label class="field">Sampai<input class="control" type="date" id="f-end"></label>
+          <label class="field">Tipe
+            <select class="control" id="f-type">
+              <option value="semua">Semua alert</option>
+              <option value="kerumunan">Kerumunan</option>
+              <option value="senjata">Potensi senjata tajam</option>
+            </select>
+          </label>
+          <button class="btn primary" id="f-apply" type="button">Tampilkan</button>
+          <div class="spacer"></div>
+          <a class="btn" id="export-alerts" href="#">Ekspor CSV alert</a>
+          <a class="btn" id="export-people" href="#">Ekspor CSV jumlah orang</a>
+        </div>
+        <div class="table-scroll">
+          <table class="fv-table">
+            <thead>
+              <tr><th>Waktu (WIB)</th><th>Kamera</th><th>Tipe</th><th>Keterangan</th>
+                  <th>Status</th><th>Diverifikasi oleh</th><th class="fv-num">Waktu verifikasi</th></tr>
+            </thead>
+            <tbody id="history"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast-host" id="toasts" aria-live="polite"></div>
+
+  <dialog id="dlg-snapshot">
+    <h3 id="snap-title">Snapshot</h3>
+    <img id="snap-img" alt="Snapshot alert">
+    <div class="row"><button class="btn" type="button" data-close>Tutup</button></div>
+  </dialog>
+
+  <dialog id="dlg-verify">
+    <h3 id="verify-title">Verifikasi alert</h3>
+    <p class="muted" id="verify-desc"></p>
+    <label class="field" for="verify-note">Catatan (opsional)</label>
+    <textarea id="verify-note" maxlength="500" placeholder="mis. payung, bukan senjata"></textarea>
+    <div class="row">
+      <button class="btn" type="button" data-close>Batal</button>
+      <button class="btn primary" type="button" id="verify-ok">Simpan</button>
+    </div>
+  </dialog>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

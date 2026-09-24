@@ -77,3 +77,11 @@ apps/landing/src/**/*.js
 apps/landing/src/**/*.js.map
 apps/landing/src/**/*.d.ts
 apps/landing/src/**/*.d.ts.map
+
+# Vision worker: local virtualenv, downloaded / exported model weights.
+.venv/
+*.pt
+*_openvino_model/
+# OpenVINO's GPU plugin drops this beside the process when a kernel fails to compile.
+kernel.errors.txt
+Ultralytics/

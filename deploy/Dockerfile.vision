@@ -1,0 +1,57 @@
+# Factory Vision — camera analytics worker (apps/vision)
+#
+# Python, not the Go binary: detection and tracking live in the PyTorch /
+# OpenCV ecosystem, and the worker only ever talks to its own database. CPU
+# only — the target is a VPS or a plant server without a GPU.
+#
+# Not published by CI: the image is ~3.2 GB and changes rarely, so the host
+# builds it in place (`--profile vision up -d --build vision`).
+
+FROM python:3.12-slim
+
+# libgl / glib: OpenCV's shared-library dependencies even in a headless run.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends libgl1 libglib2.0-0 \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# CPU wheels of torch first; the default index would pull ~3 GB of CUDA.
+RUN pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu
+COPY apps/vision/requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+# The weights and their OpenVINO export are baked in, so the container needs
+# no network at start other than the camera. OpenVINO is the default: in this
+# image on a 4-core dev box it took 346 ms a frame against PyTorch's 581. Both
+# ship because the ratio depends on the CPU (natively on Windows it was the
+# other way round), so `bench` on the host decides and VISION_MODEL picks.
+# The export's input shape must match the config's imgsz.
+ENV YOLO_CONFIG_DIR=/tmp/ultralytics
+RUN mkdir -p /models && cd /models \
+ && python -c "from ultralytics import YOLO; YOLO('yolo11s.pt').export(format='openvino', imgsz=[544, 960])" \
+ && rm -rf /tmp/ultralytics
+
+COPY apps/vision/fv_vision ./fv_vision
+COPY apps/vision/config ./config
+
+# Non-root; the data volume is seeded from this directory, ownership included.
+# snapshots/ holds event snapshots, live/ the newest annotated frame the
+# worker hands to the dashboard.
+RUN useradd --uid 10001 --no-create-home vision \
+ && mkdir -p /var/lib/fv-vision/snapshots /var/lib/fv-vision/live \
+ && chown -R 10001:10001 /var/lib/fv-vision
+USER 10001
+
+ENV VISION_MODEL=/models/yolo11s_openvino_model \
+    VISION_SNAPSHOT_DIR=/var/lib/fv-vision/snapshots \
+    VISION_LIVE_DIR=/var/lib/fv-vision/live \
+    VISION_CONFIG=/app/config/c11.yaml \
+    VISION_CONFIG_DIR=/app/config \
+    PYTHONUNBUFFERED=1
+
+# One image, two processes: `run` (the worker, default) and `serve` (the
+# dashboard on 8000), as two compose services sharing the data volume.
+EXPOSE 8000
+ENTRYPOINT ["python", "-m", "fv_vision"]
+CMD ["run"]

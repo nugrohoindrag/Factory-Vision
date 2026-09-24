@@ -373,6 +373,104 @@ services:
       traefik.http.routers.fv-admin.tls.certresolver: le
       traefik.http.services.fv-admin.loadbalancer.server.port: '80'
 
+  # Camera analytics (apps/vision), only with `--profile vision`: people
+  # counting, crowd alerts, potential-weapon alerts for operator verification,
+  # vehicle density. CPU only; results in its own database `fv_vision` on the
+  # same PostgreSQL server. Off by default: it is a prototype, and a factory
+  # that has not bought it should not pay its CPU.
+  #
+  #   COMPOSE_PROFILES=proxy,vision docker compose ... up -d --build vision vision-web
+  #
+  # The variables below default to empty rather than `:?`: compose interpolates
+  # every service, profile or not, and a required variable here would stop the
+  # MES itself from deploying on a host that never enabled vision.
+  vision-init:
+    image: postgres:16-alpine
+    profiles: ['vision']
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGHOST: db
+      PGUSER: ${POSTGRES_USER:-factory}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-}
+      PGDATABASE: ${POSTGRES_DB:-factory_vision}
+      VISION_DB_PASSWORD: ${VISION_DB_PASSWORD:-}
+    volumes:
+      - ./vision-init.sql:/vision-init.sql:ro
+    entrypoint: ['/bin/sh', '-c']
+    command:
+      - |
+        [ -n "$$VISION_DB_PASSWORD" ] || { echo "set VISION_DB_PASSWORD in deploy/.env"; exit 1; }
+        psql -v ON_ERROR_STOP=1 -v pw="$$VISION_DB_PASSWORD" -f /vision-init.sql
+
+  vision:
+    image: factory-vision-vision:local
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.vision
+    # Built on the host, never pulled: CI does not publish this image.
+    pull_policy: build
+    profiles: ['vision']
+    restart: unless-stopped
+    depends_on:
+      vision-init:
+        condition: service_completed_successfully
+    # Leaves headroom for the API on the same host: YOLO will take every core
+    # it is given, and the shop floor's capture endpoint must stay responsive.
+    cpus: ${VISION_CPUS:-3}
+    mem_limit: ${VISION_MEM_LIMIT:-3g}
+    environment:
+      TZ: ${TZ:-Asia/Jakarta}
+      VISION_DATABASE_URL: postgresql://fv_vision:${VISION_DB_PASSWORD:-}@db:5432/fv_vision
+      VISION_CONFIG: /app/config/${VISION_CAMERA:-c11}.yaml
+      # /models/yolo11s_openvino_model or /models/yolo11s.pt, whichever
+      # `run --rm vision bench <both>` finds faster on this CPU.
+      VISION_MODEL: ${VISION_MODEL:-/models/yolo11s_openvino_model}
+      # Point at a recorded sample for an offline demo when the live stream is down.
+      VISION_SOURCE: ${VISION_SOURCE:-}
+      LOG_LEVEL: ${VISION_LOG_LEVEL:-INFO}
+    volumes:
+      - vision-data:/var/lib/fv-vision
+
+  # The CV Vision dashboard: live view, counts, alerts with Konfirmasi / Tolak,
+  # history and CSV export. Same image as the worker, started as `serve`; a
+  # separate container so it restarts without interrupting detection. It reads
+  # the live frame and snapshots from the shared volume.
+  vision-web:
+    image: factory-vision-vision:local
+    pull_policy: build
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.vision
+    profiles: ['vision']
+    restart: unless-stopped
+    command: ['serve']
+    depends_on:
+      vision-init:
+        condition: service_completed_successfully
+    environment:
+      TZ: ${TZ:-Asia/Jakarta}
+      VISION_DATABASE_URL: postgresql://fv_vision:${VISION_DB_PASSWORD:-}@db:5432/fv_vision
+      # Signs the session cookie; without it every restart logs everyone out.
+      VISION_SESSION_SECRET: ${VISION_SESSION_SECRET:-}
+      # Behind Traefik the page is https, so the cookie is Secure.
+      VISION_COOKIE_SECURE: ${VISION_COOKIE_SECURE:-1}
+      # The first admin, created only while no dashboard account exists.
+      VISION_ADMIN_USER: ${VISION_ADMIN_USER:-}
+      VISION_ADMIN_PASSWORD: ${VISION_ADMIN_PASSWORD:-}
+      VISION_ADMIN_NAME: ${VISION_ADMIN_NAME:-Administrator}
+    volumes:
+      - vision-data:/var/lib/fv-vision:ro
+    ports:
+      - '${WEB_BIND:-0.0.0.0}:${VISION_PORT:-3400}:8000'
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.fv-vision.rule: Host(`${VISION_DOMAIN:-vision.localhost}`)
+      traefik.http.routers.fv-vision.entrypoints: websecure
+      traefik.http.routers.fv-vision.tls.certresolver: le
+      traefik.http.services.fv-vision.loadbalancer.server.port: '8000'
+
   # Public edge, only with `--profile proxy` (§11, §12, §27). Terminates TLS,
   # redirects HTTP, and is the single service that needs a public port. Traefik
   # rather than nginx here because it issues and renews the Let's Encrypt
@@ -418,4 +516,7 @@ volumes:
   # The same attachments under the s3 driver. Unused unless the minio profile
   # is started.
   minio-data:
+  # Vision worker output: event snapshots (full video is never recorded) and
+  # the newest annotated frame, read by the dashboard.
+  vision-data:
   letsencrypt:

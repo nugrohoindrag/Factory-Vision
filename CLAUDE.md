@@ -7,6 +7,7 @@ apps/api        The API: one Go binary `fv` (chi + pgx) — serve | worker | mig
 apps/console    Supervisor / manager web console (Vite + React, port 3100)
 apps/operator   Shop-floor operator terminal, offline-capable via IndexedDB (port 3200)
 apps/admin      Internal client-management console (port 3300)
+apps/vision     Camera analytics worker (Python, YOLO + ByteTrack): people counting, crowd / potential-weapon alerts, vehicle density; own DB `fv_vision`, compose profile `vision`
 packages/ui     Design system mirror + Factory Vision extension layer
 packages/api-client, domain-types, i18n
 db/             SQL migrations and seeds

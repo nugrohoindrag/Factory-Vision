@@ -43,3 +43,11 @@ coverage
 .temp
 .tmp-fonts
 .pnpm-store
+
+# The vision worker's local virtualenv (~2 GB of torch) and model weights: the
+# image installs and exports its own.
+**/.venv
+**/__pycache__
+**/*.pt
+**/*_openvino_model
+var
