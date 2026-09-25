@@ -95,7 +95,7 @@ export const MonitoringSection: React.FC = () => {
             style={{
               padding: 'var(--space-5)',
               backgroundColor: 'var(--color-surface)',
-              border: filter === 'all' ? '2px solid var(--color-primary)' : '1px solid var(--color-outline-variant)',
+              border: filter === 'all' ? '1px solid var(--color-primary)' : '1px solid var(--color-border)',
               borderRadius: '16px',
               cursor: 'pointer',
               boxShadow: 'var(--elevation-2)',
@@ -115,7 +115,7 @@ export const MonitoringSection: React.FC = () => {
             style={{
               padding: 'var(--space-5)',
               backgroundColor: 'var(--color-surface)',
-              border: filter === 'running' ? '2px solid var(--color-success)' : '1px solid var(--color-outline-variant)',
+              border: filter === 'running' ? '1px solid var(--color-success)' : '1px solid var(--color-border)',
               borderRadius: '16px',
               cursor: 'pointer',
               boxShadow: 'var(--elevation-2)',
@@ -136,7 +136,7 @@ export const MonitoringSection: React.FC = () => {
             style={{
               padding: 'var(--space-5)',
               backgroundColor: 'var(--color-surface)',
-              border: filter === 'idle' ? '2px solid var(--color-warning)' : '1px solid var(--color-outline-variant)',
+              border: filter === 'idle' ? '1px solid var(--color-warning)' : '1px solid var(--color-border)',
               borderRadius: '16px',
               cursor: 'pointer',
               boxShadow: 'var(--elevation-2)',
@@ -157,7 +157,7 @@ export const MonitoringSection: React.FC = () => {
             style={{
               padding: 'var(--space-5)',
               backgroundColor: 'var(--color-surface)',
-              border: filter === 'downtime' ? '2px solid var(--color-error)' : '1px solid var(--color-outline-variant)',
+              border: filter === 'downtime' ? '1px solid var(--color-error)' : '1px solid var(--color-border)',
               borderRadius: '16px',
               cursor: 'pointer',
               boxShadow: 'var(--elevation-2)',
@@ -249,8 +249,7 @@ export const MonitoringSection: React.FC = () => {
                 {/* Product & Operator */}
                 <div
                   style={{
-                    backgroundColor: 'var(--color-surface-container-low)',
-                    border: '1px solid var(--color-outline-variant)',
+                    backgroundColor: 'var(--color-surface-container)',
                     padding: `var(--space-3) var(--space-4)`,
                     borderRadius: '12px',
                     display: 'flex',

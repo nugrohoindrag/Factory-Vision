@@ -121,8 +121,7 @@ export const OeePerformanceSection: React.FC = () => {
                 <div
                   key={loss.category}
                   style={{
-                    backgroundColor: 'var(--color-surface-container-low)',
-                    border: '1px solid var(--color-outline-variant)',
+                    backgroundColor: 'var(--color-surface-container)',
                     borderRadius: '12px',
                     padding: `var(--space-3) var(--space-4)`,
                     display: 'flex',
@@ -145,7 +144,6 @@ export const OeePerformanceSection: React.FC = () => {
                       color: loss.color,
                       padding: `var(--space-1) var(--space-3)`,
                       backgroundColor: 'var(--color-surface)',
-                      border: '1px solid var(--color-outline-variant)',
                       borderRadius: '9999px',
                     }}
                     className="fv-num"

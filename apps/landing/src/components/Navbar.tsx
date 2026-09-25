@@ -45,7 +45,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onOpenTrial }) => {
         zIndex: 100,
         width: '100%',
         backgroundColor: 'var(--color-surface)',
-        borderBottom: '1px solid var(--color-outline-variant)',
+        borderBottom: '1px solid var(--color-border)',
         boxShadow: scrolled
           ? 'var(--elevation-2)'
           : 'var(--elevation-1)',
@@ -121,7 +121,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onOpenTrial }) => {
               width: '40px',
               height: '40px',
               borderRadius: '9999px',
-              border: '1px solid var(--color-outline-variant)',
+              border: '1px solid var(--color-border)',
               backgroundColor: 'var(--color-surface)',
               color: 'var(--color-primary)',
               cursor: 'pointer',
@@ -170,7 +170,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onOpenTrial }) => {
               width: '40px',
               height: '40px',
               borderRadius: '10px',
-              border: '1px solid var(--color-outline-variant)',
+              border: '1px solid var(--color-border)',
               backgroundColor: 'var(--color-surface)',
               color: 'var(--color-on-surface)',
               cursor: 'pointer',
@@ -186,7 +186,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onOpenTrial }) => {
         <div
           style={{
             backgroundColor: 'var(--color-surface)',
-            borderBottom: '1px solid var(--color-outline-variant)',
+            borderBottom: '1px solid var(--color-border)',
             padding: `var(--space-4) var(--space-6)`,
             display: 'flex',
             flexDirection: 'column',

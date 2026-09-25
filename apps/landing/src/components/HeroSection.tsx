@@ -248,7 +248,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenDemo, onOpenTria
               bottom: '-24px',
               right: '48px',
               background: 'var(--color-surface)',
-              border: '1px solid var(--color-outline-variant)',
+              border: '1px solid var(--color-border)',
               borderRadius: '16px',
               padding: `var(--space-4) var(--space-5)`,
               boxShadow: 'var(--elevation-3)',

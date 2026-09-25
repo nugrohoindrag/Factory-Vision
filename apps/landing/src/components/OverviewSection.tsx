@@ -67,7 +67,7 @@ export const OverviewSection: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               className="fv-card"
-              style={{ padding: 'var(--space-6)', backgroundColor: 'var(--color-surface-container-low)', border: '1px solid var(--color-outline-variant)' }}
+              style={{ padding: 'var(--space-6)', backgroundColor: 'var(--color-surface-container)', borderColor: 'transparent', boxShadow: 'none' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
                 <div
@@ -117,7 +117,7 @@ export const OverviewSection: React.FC = () => {
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
               className="fv-card"
-              style={{ padding: 'var(--space-6)', backgroundColor: 'var(--color-surface-container-low)', border: '1px solid var(--color-outline-variant)' }}
+              style={{ padding: 'var(--space-6)', backgroundColor: 'var(--color-surface-container)', borderColor: 'transparent', boxShadow: 'none' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
                 <div
@@ -167,7 +167,7 @@ export const OverviewSection: React.FC = () => {
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
               className="fv-card"
-              style={{ padding: 'var(--space-6)', backgroundColor: 'var(--color-surface-container-low)', border: '1px solid var(--color-outline-variant)' }}
+              style={{ padding: 'var(--space-6)', backgroundColor: 'var(--color-surface-container)', borderColor: 'transparent', boxShadow: 'none' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
                 <div
@@ -214,7 +214,7 @@ export const OverviewSection: React.FC = () => {
           {/* Bottom Aggregate Layer: Quality, OEE & Insights */}
           <div
             style={{
-              borderTop: '1px solid var(--color-outline-variant)',
+              borderTop: '1px solid var(--color-border)',
               paddingTop: 'var(--space-8)',
               display: 'grid',
               gridTemplateColumns: 'repeat(3, 1fr)',
@@ -224,8 +224,7 @@ export const OverviewSection: React.FC = () => {
           >
             <div
               style={{
-                backgroundColor: 'var(--color-surface)',
-                border: '1px solid var(--color-outline-variant)',
+                backgroundColor: 'var(--color-surface-container)',
                 borderRadius: '16px',
                 padding: `var(--space-4) var(--space-5)`,
                 display: 'flex',
@@ -256,8 +255,7 @@ export const OverviewSection: React.FC = () => {
 
             <div
               style={{
-                backgroundColor: 'var(--color-surface)',
-                border: '1px solid var(--color-outline-variant)',
+                backgroundColor: 'var(--color-surface-container)',
                 borderRadius: '16px',
                 padding: `var(--space-4) var(--space-5)`,
                 display: 'flex',
@@ -288,8 +286,7 @@ export const OverviewSection: React.FC = () => {
 
             <div
               style={{
-                backgroundColor: 'var(--color-surface)',
-                border: '1px solid var(--color-outline-variant)',
+                backgroundColor: 'var(--color-surface-container)',
                 borderRadius: '16px',
                 padding: `var(--space-4) var(--space-5)`,
                 display: 'flex',

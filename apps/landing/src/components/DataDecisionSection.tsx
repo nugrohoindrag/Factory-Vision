@@ -63,8 +63,7 @@ export const DataDecisionSection: React.FC = () => {
                 <div
                   key={ev.name}
                   style={{
-                    backgroundColor: 'var(--color-surface-container-low)',
-                    border: '1px solid var(--color-outline-variant)',
+                    backgroundColor: 'var(--color-surface-container)',
                     borderRadius: '12px',
                     padding: `var(--space-3) var(--space-4)`,
                     display: 'flex',
@@ -138,8 +137,7 @@ export const DataDecisionSection: React.FC = () => {
                 <div
                   key={out.title}
                   style={{
-                    backgroundColor: 'var(--color-surface-container-low)',
-                    border: '1px solid var(--color-outline-variant)',
+                    backgroundColor: 'var(--color-surface-container)',
                     borderRadius: '12px',
                     padding: `var(--space-3) var(--space-4)`,
                   }}

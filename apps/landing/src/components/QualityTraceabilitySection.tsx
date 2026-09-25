@@ -55,8 +55,7 @@ export const QualityTraceabilitySection: React.FC = () => {
             {/* Live Sample Batch Trace Card */}
             <div
               style={{
-                backgroundColor: 'var(--color-surface-container-low)',
-                border: '1px solid var(--color-outline-variant)',
+                backgroundColor: 'var(--color-surface-container)',
                 borderRadius: '16px',
                 padding: 'var(--space-6)',
                 display: 'flex',
@@ -89,15 +88,15 @@ export const QualityTraceabilitySection: React.FC = () => {
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-3)' }}>
-                <div style={{ backgroundColor: 'var(--color-surface)', padding: 'var(--space-3)', borderRadius: '10px', border: '1px solid var(--color-outline-variant)' }}>
+                <div style={{ backgroundColor: 'var(--color-surface)', padding: 'var(--space-3)', borderRadius: '10px' }}>
                   <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', fontWeight: 600 }}>Inspected</div>
                   <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-on-surface)' }}>150 pcs</div>
                 </div>
-                <div style={{ backgroundColor: 'var(--color-surface)', padding: 'var(--space-3)', borderRadius: '10px', border: '1px solid var(--color-outline-variant)' }}>
+                <div style={{ backgroundColor: 'var(--color-surface)', padding: 'var(--space-3)', borderRadius: '10px' }}>
                   <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', fontWeight: 600 }}>Defect Rate</div>
                   <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-success)' }}>0.00%</div>
                 </div>
-                <div style={{ backgroundColor: 'var(--color-surface)', padding: 'var(--space-3)', borderRadius: '10px', border: '1px solid var(--color-outline-variant)' }}>
+                <div style={{ backgroundColor: 'var(--color-surface)', padding: 'var(--space-3)', borderRadius: '10px' }}>
                   <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', fontWeight: 600 }}>Inspector</div>
                   <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-primary)' }}>QC Station 1</div>
                 </div>

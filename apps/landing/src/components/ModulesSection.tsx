@@ -194,8 +194,7 @@ export const ModulesSection: React.FC = () => {
                     style={{
                       padding: 'var(--space-4)',
                       borderRadius: '14px',
-                      backgroundColor: 'var(--color-surface-container-low)',
-                      border: '1px solid var(--color-outline-variant)',
+                      backgroundColor: 'var(--color-surface-container)',
                     }}
                   >
                     <div style={{ fontWeight: 800, fontSize: '14px', color: 'var(--color-primary)', marginBottom: 'var(--space-1)' }}>

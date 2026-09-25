@@ -160,8 +160,7 @@ export const UsersInterfacesSection: React.FC = () => {
                     key={b}
                     style={{
                       padding: `var(--space-4) var(--space-5)`,
-                      backgroundColor: 'var(--color-surface-container-low)',
-                      border: '1px solid var(--color-outline-variant)',
+                      backgroundColor: 'var(--color-surface-container)',
                       borderRadius: '12px',
                       display: 'flex',
                       alignItems: 'center',

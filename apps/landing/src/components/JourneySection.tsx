@@ -47,7 +47,7 @@ export const JourneySection: React.FC = () => {
               alignItems: 'center',
               justifyContent: 'space-between',
               paddingBottom: 'var(--space-6)',
-              borderBottom: '1px solid var(--color-outline-variant)',
+              borderBottom: '1px solid var(--color-border)',
               marginBottom: 'var(--space-8)',
               flexWrap: 'wrap',
               gap: 'var(--space-3)',
@@ -114,8 +114,7 @@ export const JourneySection: React.FC = () => {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     padding: `var(--space-4) var(--space-5)`,
-                    backgroundColor: 'var(--color-surface-container-low)',
-                    border: '1px solid var(--color-outline-variant)',
+                    backgroundColor: 'var(--color-surface-container)',
                     borderRadius: '14px',
                     gap: 'var(--space-4)',
                   }}

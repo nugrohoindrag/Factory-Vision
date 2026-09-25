@@ -149,8 +149,7 @@ export const LiveProductionSection: React.FC = () => {
             {/* Live Telemetry Tally Box */}
             <div
               style={{
-                backgroundColor: 'var(--color-surface-container-low)',
-                border: '1px solid var(--color-outline-variant)',
+                backgroundColor: 'var(--color-surface-container)',
                 borderRadius: '16px',
                 padding: 'var(--space-5)',
                 display: 'grid',

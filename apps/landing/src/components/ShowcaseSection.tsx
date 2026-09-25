@@ -179,8 +179,7 @@ export const ShowcaseSection: React.FC = () => {
                   <span
                     key={hl}
                     style={{
-                      backgroundColor: 'var(--color-surface-container-low)',
-                      border: '1px solid var(--color-outline-variant)',
+                      backgroundColor: 'var(--color-surface-container)',
                       color: 'var(--color-on-surface)',
                       padding: `var(--space-2) var(--space-4)`,
                       borderRadius: '10px',

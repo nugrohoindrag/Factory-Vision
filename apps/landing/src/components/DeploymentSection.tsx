@@ -28,8 +28,8 @@ export const DeploymentSection: React.FC = () => {
             className="fv-card"
             style={{
               padding: 'var(--space-10)',
-              backgroundColor: 'var(--color-surface-container-low)',
-              border: '1px solid var(--color-outline-variant)',
+              backgroundColor: 'var(--color-surface)',
+              border: '1px solid var(--color-border)',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
@@ -78,8 +78,7 @@ export const DeploymentSection: React.FC = () => {
               style={{
                 marginTop: 'var(--space-8)',
                 padding: `var(--space-4) var(--space-5)`,
-                backgroundColor: 'var(--color-surface-container-low)',
-                border: '1px solid var(--color-outline-variant)',
+                backgroundColor: 'var(--color-surface-container)',
                 borderRadius: '12px',
                 fontSize: '13px',
                 color: 'var(--color-on-surface)',
@@ -94,8 +93,8 @@ export const DeploymentSection: React.FC = () => {
             className="fv-card"
             style={{
               padding: 'var(--space-10)',
-              backgroundColor: 'var(--color-surface-container-low)',
-              border: '1px solid var(--color-outline-variant)',
+              backgroundColor: 'var(--color-surface)',
+              border: '1px solid var(--color-border)',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
@@ -144,8 +143,7 @@ export const DeploymentSection: React.FC = () => {
               style={{
                 marginTop: 'var(--space-8)',
                 padding: `var(--space-4) var(--space-5)`,
-                backgroundColor: 'var(--color-surface-container-low)',
-                border: '1px solid var(--color-outline-variant)',
+                backgroundColor: 'var(--color-surface-container)',
                 borderRadius: '12px',
                 fontSize: '13px',
                 color: 'var(--color-on-surface)',
@@ -176,7 +174,7 @@ export const DeploymentSection: React.FC = () => {
               style={{
                 padding: 'var(--space-5)',
                 backgroundColor: 'var(--color-surface-container-low)',
-                border: '1px solid var(--color-outline-variant)',
+                border: '1px solid var(--color-border)',
                 borderRadius: '16px',
                 boxShadow: 'var(--fv-card-shadow)',
               }}

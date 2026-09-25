@@ -86,7 +86,7 @@ export const TrialSignupModal: React.FC<TrialSignupModalProps> = ({ isOpen, onCl
           padding: 'var(--space-6)',
           borderRadius: 'var(--radius-xl)',
           backgroundColor: 'var(--color-surface)',
-          border: '1px solid var(--color-outline-variant)',
+          border: '1px solid var(--color-border)',
           boxShadow: 'var(--elevation-4)',
           position: 'relative',
         }}
@@ -343,7 +343,7 @@ export const TrialSignupModal: React.FC<TrialSignupModalProps> = ({ isOpen, onCl
                           gap: 'var(--space-2)',
                           padding: 'var(--space-2) var(--space-3)',
                           borderRadius: 'var(--radius-md)',
-                          border: `1.5px solid ${isSelected ? 'var(--color-primary)' : 'var(--color-outline-variant)'}`,
+                          border: `1px solid ${isSelected ? 'var(--color-primary)' : 'var(--color-outline-variant)'}`,
                           backgroundColor: isSelected ? 'var(--color-surface-container-high)' : 'var(--color-surface-container-low)',
                           cursor: 'pointer',
                           transition: 'all 0.15s ease',
