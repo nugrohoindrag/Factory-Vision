@@ -15,7 +15,7 @@ import {
   FilterChip,
   Gauge,
 } from '@factory-vision/ui/fv';
-import { WorkOrderStatus } from '@factory-vision/domain-types';
+import { WorkOrderStatus, statusLabel } from '@factory-vision/domain-types';
 
 const api = new FactoryVisionApiClient({ baseUrl: '' });
 
@@ -27,6 +27,10 @@ export const LiveBoardPage: React.FC = () => {
     queryFn: () => api.analytics.getLiveProductionBoard(),
     refetchInterval: 3000,
   });
+  // The board carries ids only; names come from the master data other screens
+  // already cache under the same keys.
+  const { data: lines = [] } = useQuery({ queryKey: ['lines'], queryFn: () => api.master.getLines() });
+  const { data: machines = [] } = useQuery({ queryKey: ['machines'], queryFn: () => api.master.getMachines() });
 
   const filteredBoard = (liveBoard || []).filter((item) => {
     if (selectedArea === 'ALL') return true;
@@ -139,70 +143,24 @@ export const LiveBoardPage: React.FC = () => {
 
             const accentColor = toneColor[tone];
 
-            return (
-              <SurfaceCard
-                key={item.workOrder.id}
-                style={{
-                  borderLeft: `4px solid ${accentColor}`,
-                  boxShadow: 'var(--elevation-1)',
-                  padding: `var(--space-4) var(--space-5)`,
-                  position: 'relative',
-                  overflow: 'hidden',
-                }}
-              >
-                {/* Decorative Living Conveyor Motion Vectors in Top Corner */}
-                <svg
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    right: 0,
-                    width: '140px',
-                    height: '50px',
-                    pointerEvents: 'none',
-                    opacity: 0.15,
-                  }}
-                  viewBox="0 0 140 50"
-                  fill="none"
-                >
-                  <motion.line
-                    x1="0"
-                    y1="15"
-                    x2="140"
-                    y2="15"
-                    stroke={accentColor}
-                    strokeWidth="2"
-                    strokeDasharray="6 6"
-                    animate={{ strokeDashoffset: isNormal ? [0, -24] : [0, 0] }}
-                    transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
-                  />
-                  <motion.line
-                    x1="20"
-                    y1="35"
-                    x2="140"
-                    y2="35"
-                    stroke={accentColor}
-                    strokeWidth="1.5"
-                    strokeDasharray="4 4"
-                    animate={{ strokeDashoffset: isNormal ? [0, -16] : [0, 0] }}
-                    transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
-                  />
-                </svg>
+            const line = lines.find((l) => l.id === item.lineId);
+            const machine = machines.find((m) => m.id === item.workOrder.machineId);
 
-                {/* Line & Machine Title */}
+            return (
+              <SurfaceCard key={item.workOrder.id} padding="md" railTone={tone}>
                 <div
                   style={{
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'flex-start',
+                    gap: 'var(--space-2)',
                     marginBottom: 'var(--space-3)',
-                    position: 'relative',
-                    zIndex: 1,
                   }}
                 >
-                  <div>
+                  <div style={{ minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                      <h2 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: accentColor }}>
-                        {item.lineId.toUpperCase()}
+                      <h2 style={{ fontSize: '13px', fontWeight: 700, margin: 0, color: 'var(--color-on-surface)' }}>
+                        {line?.name ?? item.lineId}
                       </h2>
                       {isNormal && (
                         <motion.span
@@ -214,109 +172,66 @@ export const LiveBoardPage: React.FC = () => {
                             borderRadius: '50%',
                             backgroundColor: toneColor.success,
                             display: 'inline-block',
+                            flexShrink: 0,
                           }}
                         />
                       )}
                     </div>
-                    <div
-                      style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}
-                    >
-                      Machine: {item.workOrder.machineId || 'Mechanical Press'}
+                    <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: '2px' }}>
+                      {machine
+                        ? `${machine.code} · ${machine.name}`
+                        : item.workOrder.machineId || 'Mesin belum ditetapkan'}
                     </div>
                   </div>
 
                   <span
                     style={{
-                      padding: `var(--space-1) var(--space-3)`,
+                      padding: `2px var(--space-2)`,
                       borderRadius: 'var(--radius-pill)',
                       fontSize: '10px',
                       fontWeight: 800,
+                      letterSpacing: '0.03em',
+                      whiteSpace: 'nowrap',
                       backgroundColor: toneContainer[tone],
                       color: toneOnContainer[tone],
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 'var(--space-2)',
                     }}
                   >
-                    <span
-                      style={{
-                        width: '5px',
-                        height: '5px',
-                        borderRadius: '50%',
-                        backgroundColor: 'currentColor',
-                      }}
-                    />
-                    {isDowntime ? 'DOWNTIME ACTIVE' : item.workOrder.status}
+                    {isDowntime ? 'Downtime' : statusLabel(item.workOrder.status)}
                   </span>
                 </div>
 
-                {/* Gauge Chart & Output Summary Split */}
                 <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: '110px 1fr',
-                    gap: 'var(--space-3)',
-                    alignItems: 'center',
-                    marginBottom: 'var(--space-3)',
-                    position: 'relative',
-                    zIndex: 1,
-                  }}
+                  style={{ display: 'grid', gridTemplateColumns: '96px 1fr', gap: 'var(--space-4)', alignItems: 'center' }}
                 >
-                  <div>
-                    <Gauge
-                      value={item.oee}
-                      title={`${item.oee}%`}
-                      subtitle="OEE Score"
-                      size={105}
-                      strokeWidth={10}
-                      color={accentColor}
-                    />
-                  </div>
+                  <Gauge value={item.oee} title="" subtitle="OEE" size={96} strokeWidth={9} color={accentColor} />
 
-                  {/* Active Work Order Telemetry */}
-                  <div
-                    style={{
-                      backgroundColor: 'var(--color-surface-container)',
-                      borderRadius: 'var(--radius-md)',
-                      padding: `var(--space-3) var(--space-3)`,
-                      border: '1px solid var(--color-border)',
-                    }}
-                  >
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: '10.5px', color: 'var(--color-on-surface-variant)' }}>Work Order</div>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-on-surface)' }}>
+                      {item.workOrder.woNumber}
+                    </div>
                     <div
                       style={{
                         display: 'flex',
                         justifyContent: 'space-between',
                         fontSize: '11px',
-                        marginBottom: 'var(--space-1)',
+                        margin: `var(--space-2) 0 var(--space-1)`,
+                        color: 'var(--color-on-surface-variant)',
+                        fontFeatureSettings: '"tnum" 1',
                       }}
                     >
-                      <span style={{ color: 'var(--color-on-surface-variant)' }}>WO:</span>
-                      <strong style={{ color: 'var(--color-on-surface)' }}>{item.workOrder.woNumber}</strong>
+                      <span>
+                        {item.workOrder.outputQuantity.toLocaleString('id-ID')} /{' '}
+                        {item.workOrder.plannedQuantity.toLocaleString('id-ID')}
+                      </span>
+                      <strong style={{ color: 'var(--color-on-surface)' }}>{item.achievementPct}%</strong>
                     </div>
-
                     <div
                       style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        fontSize: '11px',
-                        marginBottom: 'var(--space-1)',
-                      }}
-                    >
-                      <span style={{ color: 'var(--color-on-surface-variant)' }}>Target Progress</span>
-                      <strong style={{ color: 'var(--color-on-surface)', fontFeatureSettings: '"tnum" 1' }}>
-                        {item.workOrder.outputQuantity.toLocaleString('en-US')} /{' '}
-                        {item.workOrder.plannedQuantity.toLocaleString('en-US')} ({item.achievementPct}%)
-                      </strong>
-                    </div>
-
-                    {/* Progress Bar with Motion Light Tip */}
-                    <div
-                      style={{
-                        height: '5px',
+                        height: '6px',
                         borderRadius: 'var(--radius-pill)',
                         backgroundColor: 'var(--color-surface-container-high)',
                         overflow: 'hidden',
-                        position: 'relative',
                       }}
                     >
                       <motion.div
@@ -333,97 +248,38 @@ export const LiveBoardPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* OEE Score Breakdown */}
                 <div
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(4, 1fr)',
-                    gap: 'var(--space-2)',
-                    textAlign: 'center',
-                    position: 'relative',
-                    zIndex: 1,
+                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    marginTop: 'var(--space-3)',
+                    paddingTop: 'var(--space-3)',
+                    borderTop: '1px solid var(--color-border)',
                   }}
                 >
-                  <div
-                    style={{
-                      backgroundColor: 'var(--color-surface-container)',
-                      padding: `var(--space-2) var(--space-1)`,
-                      borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--color-border)',
-                    }}
-                  >
-                    <div style={{ fontSize: '10px', color: 'var(--color-on-surface-variant)' }}>OEE</div>
-                    <div
-                      style={{
-                        fontSize: '13px',
-                        fontWeight: 800,
-                        color: accentColor,
-                        fontFeatureSettings: '"tnum" 1',
-                      }}
-                    >
-                      {item.oee}%
+                  {[
+                    { label: 'Availability', value: item.availability, color: 'var(--color-on-surface)' },
+                    { label: 'Performance', value: item.performance, color: 'var(--color-on-surface)' },
+                    {
+                      label: 'Quality',
+                      value: item.quality,
+                      color: item.quality >= 98 ? 'var(--color-on-surface)' : toneColor.error,
+                    },
+                  ].map((figure) => (
+                    <div key={figure.label}>
+                      <div style={{ fontSize: '10.5px', color: 'var(--color-on-surface-variant)' }}>{figure.label}</div>
+                      <div
+                        style={{
+                          fontSize: '14px',
+                          fontWeight: 700,
+                          color: figure.color,
+                          fontFeatureSettings: '"tnum" 1',
+                        }}
+                      >
+                        {figure.value}%
+                      </div>
                     </div>
-                  </div>
-                  <div
-                    style={{
-                      backgroundColor: 'var(--color-surface-container)',
-                      padding: `var(--space-2) var(--space-1)`,
-                      borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--color-border)',
-                    }}
-                  >
-                    <div style={{ fontSize: '10px', color: 'var(--color-on-surface-variant)' }}>Avail</div>
-                    <div
-                      style={{
-                        fontSize: '13px',
-                        fontWeight: 800,
-                        color: 'var(--color-on-surface)',
-                        fontFeatureSettings: '"tnum" 1',
-                      }}
-                    >
-                      {item.availability}%
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      backgroundColor: 'var(--color-surface-container)',
-                      padding: `var(--space-2) var(--space-1)`,
-                      borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--color-border)',
-                    }}
-                  >
-                    <div style={{ fontSize: '10px', color: 'var(--color-on-surface-variant)' }}>Perf</div>
-                    <div
-                      style={{
-                        fontSize: '13px',
-                        fontWeight: 800,
-                        color: 'var(--color-on-surface)',
-                        fontFeatureSettings: '"tnum" 1',
-                      }}
-                    >
-                      {item.performance}%
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      backgroundColor: 'var(--color-surface-container)',
-                      padding: `var(--space-2) var(--space-1)`,
-                      borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--color-border)',
-                    }}
-                  >
-                    <div style={{ fontSize: '10px', color: 'var(--color-on-surface-variant)' }}>Qual</div>
-                    <div
-                      style={{
-                        fontSize: '13px',
-                        fontWeight: 800,
-                        color: item.quality >= 98 ? toneColor.success : toneColor.error,
-                        fontFeatureSettings: '"tnum" 1',
-                      }}
-                    >
-                      {item.quality}%
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </SurfaceCard>
             );
