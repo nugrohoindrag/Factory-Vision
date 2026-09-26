@@ -393,9 +393,8 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
         >
           <div style={{ flex: '1 1 260px', minWidth: '220px' }}>
             <FilledTextField
-              label="Cari BOM"
-              placeholder="Nomor BOM, nama, atau SKU"
-              leadingIcon={<Icon name="search" size={18} />}
+              label="Cari nomor BOM, nama, atau SKU"
+              trailingIcon={<Icon name="search" size={18} />}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
