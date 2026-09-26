@@ -9,8 +9,16 @@ import type {
   CreateBomInput,
   Product,
 } from '@factory-vision/domain-types';
-import { Button, Icon, Modal } from '@factory-vision/ui';
-import { SurfaceCard, FilterChip, Dialog } from '@factory-vision/ui/fv';
+import { Button, FilledTextField, Icon, Modal, Select } from '@factory-vision/ui';
+import {
+  SurfaceCard,
+  FilterChip,
+  Dialog,
+  RowActionMenu,
+  toneContainer,
+  toneOnContainer,
+  type Tone,
+} from '@factory-vision/ui/fv';
 import { useSession } from '../../../app/SessionContext.js';
 import { useNewlyCreated } from '../../common/useNewlyCreated.js';
 
@@ -79,6 +87,31 @@ const emptyItem: FormItem = {
   scrapPercentage: 0,
   sequence: 1,
   notes: '',
+};
+
+const BOM_STATUS: Record<string, { label: string; tone: Tone }> = {
+  ACTIVE: { label: 'AKTIF', tone: 'success' },
+  DRAFT: { label: 'DRAF', tone: 'warning' },
+  INACTIVE: { label: 'NONAKTIF', tone: 'neutral' },
+};
+
+const BomStatusPill: React.FC<{ status: string }> = ({ status }) => {
+  const { label, tone } = BOM_STATUS[status] ?? BOM_STATUS.INACTIVE;
+  return (
+    <span
+      style={{
+        padding: `2px var(--space-2)`,
+        borderRadius: 'var(--radius-pill)',
+        fontSize: '10px',
+        fontWeight: 800,
+        letterSpacing: '0.03em',
+        backgroundColor: toneContainer[tone],
+        color: toneOnContainer[tone],
+      }}
+    >
+      {label}
+    </span>
+  );
 };
 
 export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToast }) => {
@@ -358,51 +391,27 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
             borderTop: '1px solid var(--color-border)',
           }}
         >
-          {/* Search */}
-          <div style={{ position: 'relative', minWidth: '240px', flex: 1 }}>
-            <span
-              style={{
-                position: 'absolute',
-                left: '10px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: 'var(--color-on-surface-variant)',
-                pointerEvents: 'none',
-              }}
-            >
-              <Icon name="search" size={16} />
-            </span>
-            <input
-              type="text"
-              placeholder="Cari nomor BOM, nama, SKU..."
+          <div style={{ flex: '1 1 260px', minWidth: '220px' }}>
+            <FilledTextField
+              label="Cari BOM"
+              placeholder="Nomor BOM, nama, atau SKU"
+              leadingIcon={<Icon name="search" size={18} />}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{
-                ...inputStyle,
-                paddingLeft: '32px',
-                height: '38px',
-              }}
             />
           </div>
 
-          {/* Product Filter */}
-          <div style={{ minWidth: '200px' }}>
-            <select
+          <div style={{ width: '300px' }}>
+            <Select
+              label="Produk"
+              searchable
               value={productFilter}
-              onChange={(e) => setProductFilter(e.target.value)}
-              style={{
-                ...inputStyle,
-                height: '38px',
-                cursor: 'pointer',
-              }}
-            >
-              <option value="ALL">Semua Produk ({products.length})</option>
-              {products.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.sku} - {p.name}
-                </option>
-              ))}
-            </select>
+              onChange={setProductFilter}
+              options={[
+                { value: 'ALL', label: `Semua produk (${products.length})` },
+                ...products.map((p) => ({ value: p.id, label: `${p.sku} · ${p.name}` })),
+              ]}
+            />
           </div>
 
           {/* Status Filter Chips */}
@@ -462,20 +471,7 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
             const isExpanded = expandedBomId === bom.id;
 
             return (
-              <SurfaceCard
-                key={bom.id}
-                padding="md"
-                style={{
-                  border: isHighlighted
-                    ? '1.5px solid var(--color-success)'
-                    : '1px solid var(--color-border)',
-                  backgroundColor: isHighlighted
-                    ? 'color-mix(in srgb, var(--color-success) 4%, var(--color-surface))'
-                    : undefined,
-                  transition: 'all 0.2s ease',
-                }}
-              >
-                {/* Main BOM Row Header */}
+              <SurfaceCard key={bom.id} padding="md" railTone={isHighlighted ? 'success' : undefined}>
                 <div
                   style={{
                     display: 'flex',
@@ -485,191 +481,78 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
                     gap: 'var(--space-3)',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                    <div
-                      style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: 'var(--radius-md, 8px)',
-                        backgroundColor:
-                          bom.status === 'ACTIVE'
-                            ? 'color-mix(in srgb, var(--color-success) 14%, transparent)'
-                            : 'var(--color-surface-container-high)',
-                        color:
-                          bom.status === 'ACTIVE'
-                            ? 'var(--color-success)'
-                            : 'var(--color-on-surface-variant)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <Icon name="schema" size={20} />
-                    </div>
-
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                        <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
-                          {bom.bomNumber}
-                        </span>
-                        <span
-                          style={{
-                            fontSize: '11px',
-                            fontWeight: 700,
-                            padding: '1px 6px',
-                            borderRadius: 'var(--radius-xs, 4px)',
-                            backgroundColor: 'var(--color-surface-container-high)',
-                            color: 'var(--color-on-surface-variant)',
-                          }}
-                        >
-                          {bom.version}
-                        </span>
-                        {bom.productRevision && (
-                          <span
-                            style={{
-                              fontSize: '10.5px',
-                              padding: '1px 5px',
-                              borderRadius: 'var(--radius-xs, 4px)',
-                              backgroundColor: 'var(--color-surface-container)',
-                              color: 'var(--color-on-surface-variant)',
-                            }}
-                          >
-                            Rev {bom.productRevision}
-                          </span>
-                        )}
-                        {/* Visual Highlight Badge */}
-                        {isHighlighted && <NewlyCreatedBadge />}
-                      </div>
-
-                      <div
-                        style={{
-                          fontSize: '13px',
-                          fontWeight: 600,
-                          color: 'var(--color-on-surface)',
-                          marginTop: '2px',
-                        }}
-                      >
+                  <div style={{ minWidth: 0, flex: '1 1 320px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-on-surface)' }}>
                         {bom.bomName}
-                      </div>
-
+                      </span>
+                      <BomStatusPill status={bom.status} />
+                      {isHighlighted && <NewlyCreatedBadge />}
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: '2px' }}>
+                      {[bom.bomNumber, bom.version, bom.productRevision, `${bom.productSku} · ${bom.productName}`]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </div>
+                    {bom.description && (
                       <div
                         style={{
-                          fontSize: '11.5px',
+                          fontSize: '12px',
                           color: 'var(--color-on-surface-variant)',
-                          marginTop: '2px',
+                          marginTop: 'var(--space-1)',
                         }}
                       >
-                        Produk: <strong>{bom.productSku}</strong> - {bom.productName}
+                        {bom.description}
                       </div>
-                    </div>
+                    )}
                   </div>
 
-                  {/* Status & Actions */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                    {/* Status Badge */}
-                    <span
-                      style={{
-                        padding: '3px 10px',
-                        borderRadius: 'var(--radius-pill, 9999px)',
-                        fontSize: '11px',
-                        fontWeight: 800,
-                        backgroundColor:
-                          bom.status === 'ACTIVE'
-                            ? 'color-mix(in srgb, var(--color-success) 14%, transparent)'
-                            : bom.status === 'DRAFT'
-                              ? 'color-mix(in srgb, var(--color-warning) 14%, transparent)'
-                              : 'var(--color-surface-container-high)',
-                        color:
-                          bom.status === 'ACTIVE'
-                            ? 'var(--color-success)'
-                            : bom.status === 'DRAFT'
-                              ? 'var(--color-warning)'
-                              : 'var(--color-on-surface-variant)',
-                        border:
-                          bom.status === 'ACTIVE'
-                            ? '1px solid color-mix(in srgb, var(--color-success) 30%, transparent)'
-                            : bom.status === 'DRAFT'
-                              ? '1px solid color-mix(in srgb, var(--color-warning) 30%, transparent)'
-                              : '1px solid var(--color-border)',
-                      }}
-                    >
-                      {bom.status === 'ACTIVE'
-                        ? 'AKTIF'
-                        : bom.status === 'DRAFT'
-                          ? 'DRAF'
-                          : 'NONAKTIF'}
-                    </span>
-
-                    {/* Toggle Breakdown Items */}
                     <Button
                       variant="text"
-                      icon={<Icon name={isExpanded ? 'expand_less' : 'expand_more'} size={18} />}
+                      size="sm"
+                      icon={<Icon name={isExpanded ? 'expand_less' : 'expand_more'} size={16} />}
                       onClick={() => setExpandedBomId(isExpanded ? null : bom.id)}
                     >
-                      {bom.components.length} Komponen
+                      {bom.components.length} komponen
                     </Button>
 
                     {editable && (
                       <>
-                        {/* Status Switcher Button */}
                         {bom.status === 'ACTIVE' ? (
                           <Button
                             variant="outlined"
-                            onClick={() =>
-                              setPendingStatusChange({ bom, newStatus: 'INACTIVE' })
-                            }
+                            size="sm"
+                            onClick={() => setPendingStatusChange({ bom, newStatus: 'INACTIVE' })}
                           >
                             Nonaktifkan
                           </Button>
                         ) : (
                           <Button
                             variant="filled"
-                            onClick={() =>
-                              setPendingStatusChange({ bom, newStatus: 'ACTIVE' })
-                            }
+                            size="sm"
+                            onClick={() => setPendingStatusChange({ bom, newStatus: 'ACTIVE' })}
                           >
                             Aktifkan
                           </Button>
                         )}
-
-                        {/* Edit Button */}
-                        <Button
-                          variant="outlined"
-                          icon={<Icon name="edit" size={16} />}
-                          onClick={() => openEditModal(bom)}
-                        >
-                          Ubah
-                        </Button>
-
-                        {/* Delete Button */}
-                        <Button
-                          variant="text"
-                          icon={<Icon name="delete" size={16} />}
-                          onClick={() => setPendingDelete(bom)}
-                          style={{ color: 'var(--color-error)' }}
-                        >
-                          Hapus
-                        </Button>
+                        <RowActionMenu
+                          label={`Aksi untuk ${bom.bomNumber}`}
+                          items={[
+                            { id: 'edit', label: 'Ubah', icon: 'edit', onClick: () => openEditModal(bom) },
+                            {
+                              id: 'delete',
+                              label: 'Hapus',
+                              icon: 'delete',
+                              danger: true,
+                              onClick: () => setPendingDelete(bom),
+                            },
+                          ]}
+                        />
                       </>
                     )}
                   </div>
                 </div>
-
-                {/* Description if present */}
-                {bom.description && (
-                  <div
-                    style={{
-                      marginTop: 'var(--space-2)',
-                      padding: 'var(--space-2) var(--space-3)',
-                      backgroundColor: 'var(--color-surface-container-low)',
-                      borderRadius: 'var(--radius-sm, 6px)',
-                      fontSize: '12px',
-                      color: 'var(--color-on-surface-variant)',
-                    }}
-                  >
-                    {bom.description}
-                  </div>
-                )}
 
                 {/* Expanded Components Table */}
                 {isExpanded && (
