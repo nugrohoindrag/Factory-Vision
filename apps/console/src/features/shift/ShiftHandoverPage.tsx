@@ -316,7 +316,7 @@ export const ShiftHandoverPage: React.FC = () => {
                         borderRadius: 'var(--radius-sm, 8px)',
                       }}
                     />
-                    <Button variant="tonal" onClick={addIssue}>
+                    <Button variant="outlined" onClick={addIssue}>
                       Tambah
                     </Button>
                   </div>

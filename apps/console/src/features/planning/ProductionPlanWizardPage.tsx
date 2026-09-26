@@ -722,8 +722,13 @@ export const ProductionPlanWizardPage: React.FC = () => {
 
       <Section>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Button variant="outlined" disabled={step === 1} onClick={() => goTo(step - 1)}>
-            <Icon name="arrow_back" size={16} /> Step sebelumnya
+          <Button
+            variant="outlined"
+            disabled={step === 1}
+            onClick={() => goTo(step - 1)}
+            icon={<Icon name="arrow_back" size={16} />}
+          >
+            Step sebelumnya
           </Button>
           <Button variant="filled" disabled={step === 6} onClick={() => goTo(step + 1)}>
             Step berikutnya <Icon name="arrow_forward" size={16} />

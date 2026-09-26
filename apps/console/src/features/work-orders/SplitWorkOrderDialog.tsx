@@ -143,7 +143,7 @@ export const SplitWorkOrderDialog: React.FC<SplitWorkOrderDialogProps> = ({
               tone={remainder === 0 ? 'success' : 'error'}
             />
             <div style={{ flex: 1 }} />
-            <Button variant="tonal" size="sm" onClick={distributeEvenly}>
+            <Button variant="outlined" size="sm" onClick={distributeEvenly}>
               Bagi rata
             </Button>
           </div>
@@ -240,8 +240,14 @@ export const SplitWorkOrderDialog: React.FC<SplitWorkOrderDialogProps> = ({
           ))}
         </div>
 
-        <Button variant="tonal" size="sm" onClick={addPart} style={{ alignSelf: 'flex-start' }}>
-          <Icon name="add" size={16} /> Tambah bagian
+        <Button
+          variant="outlined"
+          size="sm"
+          onClick={addPart}
+          style={{ alignSelf: 'flex-start' }}
+          icon={<Icon name="add" size={16} />}
+        >
+          Tambah bagian
         </Button>
 
         <p style={{ margin: 0, fontSize: '12px', color: 'var(--color-on-surface-variant)', lineHeight: 1.5 }}>

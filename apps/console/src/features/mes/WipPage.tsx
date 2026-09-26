@@ -377,34 +377,38 @@ export const WipPage: React.FC = () => {
                   </div>
                   <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                     {row.status !== 'ON_HOLD' && can('wip:transfer') ? (
-                      <Button variant="filled" size="sm" onClick={() => setTransferring(row)}>
-                        <Icon name="swap_horiz" size={16} />
+                      <Button
+                        variant="filled"
+                        size="sm"
+                        onClick={() => setTransferring(row)}
+                        icon={<Icon name="swap_horiz" size={16} />}
+                      >
                         Transfer ke Proses Berikutnya
                       </Button>
                     ) : null}
                     {row.status !== 'ON_HOLD' && can('wip:hold') ? (
                       <Button
-                        variant="tonal"
+                        variant="outlined"
                         size="sm"
                         onClick={() =>
                           hold.mutate({ id: row.id, reason: 'Ditahan menunggu keputusan kualitas.' })
                         }
                         disabled={hold.isPending}
+                        icon={<Icon name="pan_tool" size={16} />}
                       >
-                        <Icon name="pan_tool" size={16} />
                         Tahan
                       </Button>
                     ) : null}
                     {row.status === 'ON_HOLD' && can('wip:release') ? (
                       <Button
-                        variant="tonal"
+                        variant="outlined"
                         size="sm"
                         onClick={() =>
                           release.mutate({ id: row.id, reason: 'Dilepas setelah verifikasi kualitas.' })
                         }
                         disabled={release.isPending}
+                        icon={<Icon name="lock_open" size={16} />}
                       >
-                        <Icon name="lock_open" size={16} />
                         Lepas
                       </Button>
                     ) : null}
@@ -424,8 +428,12 @@ export const WipPage: React.FC = () => {
             expandable
             renderExpandedRow={(row) =>
               row.status === 'IN_TRANSIT' && can('wip:receive') ? (
-                <Button variant="filled" size="sm" onClick={() => setReceiving(row)}>
-                  <Icon name="inbox" size={16} />
+                <Button
+                  variant="filled"
+                  size="sm"
+                  onClick={() => setReceiving(row)}
+                  icon={<Icon name="inbox" size={16} />}
+                >
                   Terima di Proses Tujuan
                 </Button>
               ) : (

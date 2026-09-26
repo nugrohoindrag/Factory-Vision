@@ -178,14 +178,21 @@ export const MaintenancePage: React.FC = () => {
           actions={
             <>
               {can('maintenance:create') ? (
-                <Button variant="outlined" onClick={() => generate.mutate()} disabled={generate.isPending}>
-                  <Icon name="event_repeat" size={18} />
+                <Button
+                  variant="outlined"
+                  onClick={() => generate.mutate()}
+                  disabled={generate.isPending}
+                  icon={<Icon name="event_repeat" size={16} />}
+                >
                   Terbitkan PM Jatuh Tempo
                 </Button>
               ) : null}
               {can('maintenance:execute') ? (
-                <Button variant="filled" onClick={() => setEmergencyOpen(true)}>
-                  <Icon name="e911_emergency" size={18} />
+                <Button
+                  variant="filled"
+                  onClick={() => setEmergencyOpen(true)}
+                  icon={<Icon name="e911_emergency" size={16} />}
+                >
                   Emergency
                 </Button>
               ) : null}
@@ -286,18 +293,22 @@ export const MaintenancePage: React.FC = () => {
                   <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                     {row.status !== 'COMPLETED' && row.status !== 'IN_PROGRESS' && can('maintenance:execute') ? (
                       <Button
-                        variant="tonal"
+                        variant="outlined"
                         size="sm"
                         onClick={() => startWork.mutate(row.id)}
                         disabled={startWork.isPending}
+                        icon={<Icon name="play_arrow" size={16} />}
                       >
-                        <Icon name="play_arrow" size={16} />
                         Mulai Pekerjaan
                       </Button>
                     ) : null}
                     {row.status !== 'COMPLETED' && can('maintenance:complete') ? (
-                      <Button variant="filled" size="sm" onClick={() => setCompleting(row)}>
-                        <Icon name="task_alt" size={16} />
+                      <Button
+                        variant="filled"
+                        size="sm"
+                        onClick={() => setCompleting(row)}
+                        icon={<Icon name="task_alt" size={16} />}
+                      >
                         Selesaikan
                       </Button>
                     ) : null}
@@ -311,8 +322,11 @@ export const MaintenancePage: React.FC = () => {
           <>
             {can('maintenance:create') ? (
               <div style={{ marginBottom: 'var(--space-3)' }}>
-                <Button variant="tonal" onClick={() => setPlanOpen(true)}>
-                  <Icon name="add" size={18} />
+                <Button
+                  variant="outlined"
+                  onClick={() => setPlanOpen(true)}
+                  icon={<Icon name="add" size={16} />}
+                >
                   Preventive Plan Baru
                 </Button>
               </div>
@@ -349,8 +363,8 @@ export const MaintenancePage: React.FC = () => {
                   size="sm"
                   onClick={() => acceptRequest.mutate(row.id)}
                   disabled={acceptRequest.isPending}
+                  icon={<Icon name="check" size={16} />}
                 >
-                  <Icon name="check" size={16} />
                   Terima & Buat Pekerjaan
                 </Button>
               ) : (

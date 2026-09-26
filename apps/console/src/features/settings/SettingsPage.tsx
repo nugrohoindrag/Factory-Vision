@@ -2791,7 +2791,7 @@ export const SettingsPage: React.FC = () => {
       render: (p) => (
         <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
           <Button
-            variant="tonal"
+            variant="outlined"
             size="sm"
             icon={<Icon name="edit" size={15} />}
             onClick={() => {
@@ -2886,7 +2886,7 @@ export const SettingsPage: React.FC = () => {
       render: (r) => (
         <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
           <Button
-            variant="tonal"
+            variant="outlined"
             size="sm"
             icon={<Icon name="edit" size={15} />}
             onClick={() => {
@@ -2948,7 +2948,7 @@ export const SettingsPage: React.FC = () => {
       render: (r) => (
         <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
           <Button
-            variant="tonal"
+            variant="outlined"
             size="sm"
             icon={<Icon name="edit" size={15} />}
             onClick={() => {
@@ -3029,7 +3029,7 @@ export const SettingsPage: React.FC = () => {
       render: (b) => (
         <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
           <Button
-            variant="tonal"
+            variant="outlined"
             size="sm"
             icon={<Icon name="edit" size={15} />}
             onClick={() => {
@@ -3086,7 +3086,7 @@ export const SettingsPage: React.FC = () => {
       render: (p) => (
         <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
           <Button
-            variant="tonal"
+            variant="outlined"
             size="sm"
             icon={<Icon name="edit" size={15} />}
             onClick={() => {
@@ -3150,7 +3150,7 @@ export const SettingsPage: React.FC = () => {
       render: (m) => (
         <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
           <Button
-            variant="tonal"
+            variant="outlined"
             size="sm"
             icon={<Icon name="edit" size={15} />}
             onClick={() => {
@@ -3213,7 +3213,7 @@ export const SettingsPage: React.FC = () => {
       render: (l) => (
         <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
           <Button
-            variant="tonal"
+            variant="outlined"
             size="sm"
             icon={<Icon name="edit" size={15} />}
             onClick={() => {
@@ -3312,7 +3312,7 @@ export const SettingsPage: React.FC = () => {
       render: (o) => (
         <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
           <Button
-            variant="tonal"
+            variant="outlined"
             size="sm"
             icon={<Icon name="edit" size={15} />}
             onClick={() => {
@@ -3399,7 +3399,7 @@ export const SettingsPage: React.FC = () => {
       render: (dt) => (
         <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
           <Button
-            variant="tonal"
+            variant="outlined"
             size="sm"
             icon={<Icon name="edit" size={15} />}
             onClick={() => {
@@ -3461,7 +3461,7 @@ export const SettingsPage: React.FC = () => {
       render: (rej) => (
         <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
           <Button
-            variant="tonal"
+            variant="outlined"
             size="sm"
             icon={<Icon name="edit" size={15} />}
             onClick={() => {
@@ -3543,7 +3543,7 @@ export const SettingsPage: React.FC = () => {
       render: (u) => (
         <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
           <Button
-            variant="tonal"
+            variant="outlined"
             size="sm"
             icon={<Icon name="edit" size={15} />}
             onClick={() => {
@@ -3597,7 +3597,7 @@ export const SettingsPage: React.FC = () => {
       render: (d) => (
         <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
           <Button
-            variant="tonal"
+            variant="outlined"
             size="sm"
             icon={<Icon name="edit" size={15} />}
             onClick={() => {

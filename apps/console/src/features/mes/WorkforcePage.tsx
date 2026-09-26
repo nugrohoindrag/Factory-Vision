@@ -220,14 +220,20 @@ export const WorkforcePage: React.FC = () => {
           actions={
             <>
               {can('workforce:manage') ? (
-                <Button variant="outlined" onClick={() => setAddingSkill(true)}>
-                  <Icon name="workspace_premium" size={18} />
+                <Button
+                  variant="outlined"
+                  onClick={() => setAddingSkill(true)}
+                  icon={<Icon name="workspace_premium" size={16} />}
+                >
                   Skill Baru
                 </Button>
               ) : null}
               {can('workforce:qualification') ? (
-                <Button variant="filled" onClick={() => setQualifying(true)}>
-                  <Icon name="add" size={18} />
+                <Button
+                  variant="filled"
+                  onClick={() => setQualifying(true)}
+                  icon={<Icon name="add" size={16} />}
+                >
                   Catat Kualifikasi
                 </Button>
               ) : null}
@@ -311,8 +317,12 @@ export const WorkforcePage: React.FC = () => {
               expandable
               renderExpandedRow={(row) =>
                 can('workforce:availability') ? (
-                  <Button variant="tonal" size="sm" onClick={() => setChangingState(row)}>
-                    <Icon name="edit" size={16} />
+                  <Button
+                    variant="outlined"
+                    size="sm"
+                    onClick={() => setChangingState(row)}
+                    icon={<Icon name="edit" size={16} />}
+                  >
                     Ubah Status
                   </Button>
                 ) : (

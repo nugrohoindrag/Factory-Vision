@@ -360,8 +360,12 @@ export const QualityPage: React.FC = () => {
                   {row.result === 'FAIL' && !row.dispositionId ? (
                     <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                       {can('quality:hold') ? (
-                        <Button variant="tonal" size="sm" onClick={() => setHoldingFor(row)}>
-                          <Icon name="pan_tool" size={16} />
+                        <Button
+                          variant="outlined"
+                          size="sm"
+                          onClick={() => setHoldingFor(row)}
+                          icon={<Icon name="pan_tool" size={16} />}
+                        >
                           Tahan Kuantitas
                         </Button>
                       ) : null}
@@ -370,8 +374,8 @@ export const QualityPage: React.FC = () => {
                           variant="filled"
                           size="sm"
                           onClick={() => setDispositioning({ inspection: row })}
+                          icon={<Icon name="rule" size={16} />}
                         >
-                          <Icon name="rule" size={16} />
                           Tetapkan Disposition
                         </Button>
                       ) : null}
@@ -399,20 +403,24 @@ export const QualityPage: React.FC = () => {
                 <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                   {can('quality:release') ? (
                     <Button
-                      variant="tonal"
+                      variant="outlined"
                       size="sm"
                       onClick={() =>
                         releaseHold.mutate({ id: row.id, reason: 'Dilepas setelah verifikasi kualitas.' })
                       }
                       disabled={releaseHold.isPending}
+                      icon={<Icon name="lock_open" size={16} />}
                     >
-                      <Icon name="lock_open" size={16} />
                       Lepas Hold
                     </Button>
                   ) : null}
                   {can('quality:disposition') ? (
-                    <Button variant="filled" size="sm" onClick={() => setDispositioning({ hold: row })}>
-                      <Icon name="rule" size={16} />
+                    <Button
+                      variant="filled"
+                      size="sm"
+                      onClick={() => setDispositioning({ hold: row })}
+                      icon={<Icon name="rule" size={16} />}
+                    >
                       Tetapkan Disposition
                     </Button>
                   ) : null}

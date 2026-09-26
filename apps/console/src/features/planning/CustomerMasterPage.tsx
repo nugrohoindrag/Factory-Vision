@@ -159,8 +159,8 @@ export const CustomerMasterPage: React.FC = () => {
               terbaca pada order lama.
             </p>
           </div>
-          <Button variant="filled" onClick={openCreate}>
-            <Icon name="add" size={16} /> Customer Baru
+          <Button variant="filled" onClick={openCreate} icon={<Icon name="add" size={16} />}>
+            Customer Baru
           </Button>
         </div>
       </Section>

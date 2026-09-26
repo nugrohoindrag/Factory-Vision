@@ -114,7 +114,7 @@ export const ImportExportTab: React.FC<{ onToast: (message: string) => void }> =
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
             <Button
-              variant="tonal"
+              variant="outlined"
               icon={<Icon name="download" size={16} />}
               onClick={() => template && downloadText(`template-${entity}.csv`, template.csv)}
             >
@@ -157,7 +157,7 @@ export const ImportExportTab: React.FC<{ onToast: (message: string) => void }> =
 
             <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
               <Button
-                variant="tonal"
+                variant="outlined"
                 disabled={!content || runImport.isPending || !canImport}
                 onClick={() => runImport.mutate(true)}
               >

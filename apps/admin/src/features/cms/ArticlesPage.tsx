@@ -196,12 +196,17 @@ export const ArticlesPage: React.FC = () => {
 
           {manage && (
             <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-4)', flexWrap: 'wrap', alignItems: 'center' }}>
-              <Button variant="filled" icon={<Icon name="save" size={16} />} disabled={save.isPending || draft.title.trim().length < 3} onClick={() => save.mutate()}>
+              <Button
+                variant="filled"
+                icon={<Icon name="save" size={16} />}
+                disabled={save.isPending || draft.title.trim().length < 3}
+                onClick={() => save.mutate()}
+              >
                 {save.isPending ? 'Menyimpan…' : current ? 'Simpan perubahan' : 'Simpan sebagai draf'}
               </Button>
               {current && current.status !== 'PUBLISHED' && (
                 <Button
-                  variant="tonal"
+                  variant="outlined"
                   icon={<Icon name="publish" size={16} />}
                   disabled={setStatus.isPending || !current.bodyMarkdown.trim()}
                   onClick={() => setStatus.mutate({ id: current.id, status: 'PUBLISHED' })}
@@ -211,7 +216,12 @@ export const ArticlesPage: React.FC = () => {
                 </Button>
               )}
               {current?.status === 'PUBLISHED' && (
-                <Button variant="tonal" icon={<Icon name="unpublished" size={16} />} disabled={setStatus.isPending} onClick={() => setStatus.mutate({ id: current.id, status: 'DRAFT' })}>
+                <Button
+                  variant="outlined"
+                  icon={<Icon name="unpublished" size={16} />}
+                  disabled={setStatus.isPending}
+                  onClick={() => setStatus.mutate({ id: current.id, status: 'DRAFT' })}
+                >
                   Tarik dari publikasi
                 </Button>
               )}
@@ -260,7 +270,12 @@ export const ArticlesPage: React.FC = () => {
                     {a.updatedBy ? ` · ${a.updatedBy}` : ''}
                   </td>
                   <td style={cell}>
-                    <Button variant="text" size="sm" icon={<Icon name="edit" size={14} />} onClick={() => setEditing(a)}>
+                    <Button
+                      variant="text"
+                      size="sm"
+                      icon={<Icon name="edit" size={14} />}
+                      onClick={() => setEditing(a)}
+                    >
                       {manage ? 'Edit' : 'Lihat'}
                     </Button>
                   </td>

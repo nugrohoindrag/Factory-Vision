@@ -215,7 +215,7 @@ export const ShiftsTab: React.FC<{ onToast: (message: string) => void }> = ({ on
 
               {editable && (
                 <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
-                  <Button variant="tonal" onClick={() => openEdit(shift)}>
+                  <Button variant="outlined" onClick={() => openEdit(shift)}>
                     Ubah
                   </Button>
                   <Button variant="text" onClick={() => remove.mutate(shift.id)}>

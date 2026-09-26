@@ -130,8 +130,12 @@ export const MrpPage: React.FC = () => {
           title="Material Requirements Planning"
           subtitle="Kebutuhan bersih material dari demand di dalam horizon perencanaan. MRP memberi rekomendasi, tidak membuat purchase order."
           actions={
-            <Button variant="filled" onClick={() => runMrp.mutate()} disabled={runMrp.isPending}>
-              <Icon name={runMrp.isPending ? 'hourglass_top' : 'play_arrow'} size={18} />
+            <Button
+              variant="filled"
+              onClick={() => runMrp.mutate()}
+              disabled={runMrp.isPending}
+              icon={<Icon name={runMrp.isPending ? 'hourglass_top' : 'play_arrow'} size={16} />}
+            >
               {runMrp.isPending ? 'Menjalankan…' : 'Jalankan MRP'}
             </Button>
           }

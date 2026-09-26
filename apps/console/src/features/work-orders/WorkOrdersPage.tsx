@@ -997,7 +997,7 @@ export const WorkOrdersPage: React.FC = () => {
                         )}
 
                         <Button
-                          variant="tonal"
+                          variant="outlined"
                           size="sm"
                           icon={<Icon name="add" size={14} />}
                           onClick={() => {
@@ -1015,7 +1015,7 @@ export const WorkOrdersPage: React.FC = () => {
                             setShowCreateModal(true);
                           }}
                         >
-                          + WO Manual
+                          WO Manual
                         </Button>
 
                         <Button
@@ -1861,7 +1861,7 @@ export const WorkOrdersPage: React.FC = () => {
 
               <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                 <Button
-                  variant="tonal"
+                  variant="outlined"
                   onClick={() => {
                     setShowDetailModal(false);
                     handleOpenEditWo(selectedWo);
@@ -1884,7 +1884,7 @@ export const WorkOrdersPage: React.FC = () => {
 
                 {selectedWo.status === WorkOrderStatus.IN_PRODUCTION && (
                   <Button
-                    variant="tonal"
+                    variant="outlined"
                     style={{ color: 'var(--color-warning)' }}
                     onClick={() => {
                       cancelMutation.mutate(selectedWo.id);

@@ -529,17 +529,17 @@ const DispatchDialog: React.FC<{
             ) : null}
             {canDispatch ? (
               <Button
-                variant="tonal"
+                variant="outlined"
                 onClick={() => onSubmit({ action: 'CONFIRM', workOrderId: item.workOrderId! })}
                 disabled={pending || item.status !== 'SCHEDULED'}
+                icon={<Icon name="check" size={16} />}
               >
-                <Icon name="check" size={16} />
                 Konfirmasi
               </Button>
             ) : null}
             {canReschedule ? (
               <Button
-                variant="tonal"
+                variant="outlined"
                 onClick={() =>
                   onSubmit({
                     action: 'REPRIORITISE',
@@ -565,8 +565,8 @@ const DispatchDialog: React.FC<{
                   })
                 }
                 disabled={pending}
+                icon={<Icon name="event_repeat" size={16} />}
               >
-                <Icon name="event_repeat" size={16} />
                 Jadwalkan Ulang
               </Button>
             ) : null}

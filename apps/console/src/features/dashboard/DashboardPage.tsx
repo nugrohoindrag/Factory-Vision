@@ -182,7 +182,7 @@ export const DashboardPage: React.FC = () => {
           </div>
 
           <Button
-            variant="tonal"
+            variant="outlined"
             size="sm"
             icon={<Icon name="refresh" size={14} />}
             onClick={() => window.location.reload()}

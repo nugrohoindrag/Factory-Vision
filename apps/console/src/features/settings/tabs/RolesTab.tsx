@@ -213,7 +213,7 @@ export const RolesTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
                   </Button>
                   {editable && !role.system && (
                     <>
-                      <Button variant="tonal" onClick={() => openEdit(role)}>
+                      <Button variant="outlined" onClick={() => openEdit(role)}>
                         Ubah
                       </Button>
                       <Button variant="text" onClick={() => remove.mutate(role.id)}>

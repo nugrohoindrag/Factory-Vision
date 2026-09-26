@@ -634,7 +634,7 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
 
                         {/* Edit Button */}
                         <Button
-                          variant="tonal"
+                          variant="outlined"
                           icon={<Icon name="edit" size={16} />}
                           onClick={() => openEditModal(bom)}
                         >

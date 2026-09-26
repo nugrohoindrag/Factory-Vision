@@ -287,8 +287,12 @@ export const MaterialsPage: React.FC = () => {
                     {fmtDateTime(row.updatedAt)}
                   </span>
                   {can('material:adjust') ? (
-                    <Button variant="tonal" size="sm" onClick={() => setAdjusting(row)}>
-                      <Icon name="tune" size={16} />
+                    <Button
+                      variant="outlined"
+                      size="sm"
+                      onClick={() => setAdjusting(row)}
+                      icon={<Icon name="tune" size={16} />}
+                    >
                       Sesuaikan Stok
                     </Button>
                   ) : null}

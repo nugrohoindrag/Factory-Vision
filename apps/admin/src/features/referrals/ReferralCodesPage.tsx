@@ -155,7 +155,11 @@ export const ReferralCodesPage: React.FC = () => {
                   {issued.expiresAt ? `berlaku sampai ${new Date(issued.expiresAt).toLocaleDateString('id-ID')}` : 'tanpa batas waktu'}
                 </div>
               </div>
-              <Button variant="tonal" icon={<Icon name="content_copy" size={16} />} onClick={() => void copy(issued.code)}>
+              <Button
+                variant="outlined"
+                icon={<Icon name="content_copy" size={16} />}
+                onClick={() => void copy(issued.code)}
+              >
                 {copied === issued.code ? 'Tersalin' : 'Salin kode'}
               </Button>
             </div>
