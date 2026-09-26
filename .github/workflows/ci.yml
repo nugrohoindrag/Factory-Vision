@@ -519,8 +519,7 @@ jobs:
       # what ships inside the images. Build tooling is reported but does not
       # fail the run: a Vite dev-server advisory is real for a developer's
       # laptop and irrelevant to a factory, where nginx serves a static
-      # bundle and no dev server exists. Tracked exceptions live in
-      # SECURITY-EXCEPTIONS.md with an owner and a review date.
+      # bundle and no dev server exists.
       - name: Dependency audit (production tree, blocking)
         run: pnpm audit --prod --audit-level high
 

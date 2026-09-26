@@ -46,6 +46,9 @@ Docs/
 .claude/
 CLAUDE.md
 
+# The security-exception register is internal, kept out of the public repository.
+SECURITY-EXCEPTIONS.md
+
 # Python bytecode from local helper scripts.
 __pycache__/
 *.pyc
