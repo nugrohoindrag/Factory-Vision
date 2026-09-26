@@ -139,7 +139,7 @@ export const CapacityPlanningPage: React.FC = () => {
   const productName = (productId?: string) => {
     if (!productId) return 'Seluruh product';
     const product = productsQuery.data?.find((p) => p.id === productId);
-    return product ? `${product.sku} — ${product.name}` : productId;
+    return product ? `${product.sku} · ${product.name}` : productId;
   };
 
   const plan = currentQuery.data?.plan;
@@ -165,45 +165,54 @@ export const CapacityPlanningPage: React.FC = () => {
   return (
     <Page>
       <Section>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
-              Capacity Planning
-            </h1>
-            <p style={{ margin: `var(--space-1) 0 0`, fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
-              Kapasitas diturunkan dari shift, mesin yang compatible, dan ideal cycle time — bukan
-              angka yang diketik.
-            </p>
-          </div>
-          <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'flex-end' }}>
+        <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
+          Capacity Planning
+        </h1>
+        <p style={{ margin: `var(--space-1) 0 0`, fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
+          Kapasitas diturunkan dari shift, mesin yang compatible, dan ideal cycle time, bukan dari angka
+          yang diketik.
+        </p>
+      </Section>
+
+      <Section>
+        <SurfaceCard padding="md" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-3)', alignItems: 'flex-end' }}>
             <DateField
               label="Periode mulai"
               type="date"
               value={periodStart}
               onChange={(e) => setPeriodStart(e.target.value)}
+              style={{ width: '200px' }}
             />
             <DateField
               label="Periode selesai"
               type="date"
               value={periodEnd}
               onChange={(e) => setPeriodEnd(e.target.value)}
+              style={{ width: '200px' }}
             />
-            <Button variant="filled" onClick={() => compute.mutate()} disabled={compute.isPending}>
-              {compute.isPending ? 'Menghitung…' : 'Hitung Kapasitas'}
-            </Button>
-            {plan && (
+            <div style={{ display: 'flex', gap: 'var(--space-2)', marginLeft: 'auto', whiteSpace: 'nowrap' }}>
+              {plan && (
+                <Button
+                  variant="outlined"
+                  icon={<Icon name="refresh" size={16} />}
+                  onClick={() => recalculate.mutate(plan.id)}
+                  disabled={recalculate.isPending || Boolean(jobId)}
+                >
+                  {jobId ? 'Menghitung…' : 'Rekalkulasi'}
+                </Button>
+              )}
               <Button
-                variant="outlined"
-                onClick={() => recalculate.mutate(plan.id)}
-                disabled={recalculate.isPending || Boolean(jobId)}
+                variant="filled"
+                icon={<Icon name="calculate" size={16} />}
+                onClick={() => compute.mutate()}
+                disabled={compute.isPending}
               >
-                {jobId ? 'Menghitung…' : 'Rekalkulasi'}
+                {compute.isPending ? 'Menghitung…' : 'Hitung Kapasitas'}
               </Button>
-            )}
+            </div>
           </div>
-        </div>
-        {lastJob && (
-          <div style={{ marginTop: 'var(--space-3)' }}>
+          {lastJob && (
             <JobProgress
               status={lastJob.status}
               label="Rekalkulasi capacity plan"
@@ -216,13 +225,11 @@ export const CapacityPlanningPage: React.FC = () => {
                     : 'Rekalkulasi berjalan sebagai job di worker; halaman ini memantau statusnya.'
               }
             />
-          </div>
-        )}
-        {notice && (
-          <p style={{ margin: `var(--space-3) 0 0`, fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
-            {notice}
-          </p>
-        )}
+          )}
+          {notice && (
+            <p style={{ margin: 0, fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>{notice}</p>
+          )}
+        </SurfaceCard>
       </Section>
 
       {currentQuery.isError && (
@@ -338,34 +345,31 @@ export const CapacityPlanningPage: React.FC = () => {
           <Section>
             <SurfaceCard padding="lg">
               <h2 style={{ margin: `0 0 var(--space-3)`, fontSize: '15px', fontWeight: 700 }}>Kapasitas per Product</h2>
-              <div style={{ overflowX: 'auto' }}>
+              <div className="fv-table-scroll">
                 <table className="fv-table">
                   <thead>
                     <tr>
                       <th>Product</th>
-                      <th>Demand</th>
-                      <th>Total</th>
-                      <th>Planning</th>
-                      <th>Buffer</th>
-                      <th>Utilization</th>
-                      <th>Gap</th>
-                      <th>Status</th>
+                      <th className="fv-num">Demand</th>
+                      <th className="fv-num">Total</th>
+                      <th className="fv-num">Planning</th>
+                      <th className="fv-num">Buffer</th>
+                      <th className="fv-num">Utilization</th>
+                      <th className="fv-num">Gap</th>
+                      <th style={{ textAlign: 'center' }}>Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {lines.map((line) => (
                       <tr key={line.id}>
                         <td>{productName(line.productId)}</td>
-                        <td>{line.demandQuantity.toLocaleString('id-ID')}</td>
-                        <td>{line.totalCapacity.toLocaleString('id-ID')}</td>
-                        <td>
-                          {line.planningCapacity.toLocaleString('id-ID')}
-                        </td>
-                        <td>{line.capacityBuffer.toLocaleString('id-ID')}</td>
-                        <td>
-                          {(line.capacityUtilization * 100).toFixed(1)}%
-                        </td>
+                        <td className="fv-num">{line.demandQuantity.toLocaleString('id-ID')}</td>
+                        <td className="fv-num">{line.totalCapacity.toLocaleString('id-ID')}</td>
+                        <td className="fv-num">{line.planningCapacity.toLocaleString('id-ID')}</td>
+                        <td className="fv-num">{line.capacityBuffer.toLocaleString('id-ID')}</td>
+                        <td className="fv-num">{(line.capacityUtilization * 100).toFixed(1)}%</td>
                         <td
+                          className="fv-num"
                           style={{
                             fontWeight: line.capacityGap > 0 ? 700 : 400,
                             color: line.capacityGap > 0 ? 'var(--color-error)' : undefined,
@@ -373,7 +377,7 @@ export const CapacityPlanningPage: React.FC = () => {
                         >
                           {line.capacityGap.toLocaleString('id-ID')}
                         </td>
-                        <td>
+                        <td style={{ textAlign: 'center' }}>
                           <CapacityBadge status={line.capacityStatus} />
                         </td>
                       </tr>
