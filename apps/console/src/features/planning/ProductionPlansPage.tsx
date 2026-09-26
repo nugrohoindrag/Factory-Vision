@@ -255,16 +255,16 @@ export const ProductionPlansPage: React.FC = () => {
               Customer Order terkait ke status Planned.
             </p>
           </div>
-          <Button variant="filled" onClick={() => setShowCreate(true)}>
-            <Icon name="add" size={16} /> Plan Baru
+          <Button variant="filled" onClick={() => setShowCreate(true)} icon={<Icon name="add" size={16} />}>
+            Plan Baru
           </Button>
         </div>
       </Section>
 
       <Section>
         <SurfaceCard padding="md">
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-3)', alignItems: 'end' }}>
-            <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-3)', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap', flex: '1 1 480px' }}>
               <FilterChip selected={statusFilter === 'ALL'} onClick={() => setStatusFilter('ALL')}>
                 Semua
               </FilterChip>
@@ -278,18 +278,22 @@ export const ProductionPlansPage: React.FC = () => {
                 </FilterChip>
               ))}
             </div>
-            <DateField
-              label="Periode dari"
-              type="date"
-              value={periodStart}
-              onChange={(e) => setPeriodStart(e.target.value)}
-            />
-            <DateField
-              label="Periode sampai"
-              type="date"
-              value={periodEnd}
-              onChange={(e) => setPeriodEnd(e.target.value)}
-            />
+            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+              <DateField
+                label="Periode dari"
+                type="date"
+                value={periodStart}
+                onChange={(e) => setPeriodStart(e.target.value)}
+                style={{ width: '170px' }}
+              />
+              <DateField
+                label="Periode sampai"
+                type="date"
+                value={periodEnd}
+                onChange={(e) => setPeriodEnd(e.target.value)}
+                style={{ width: '170px' }}
+              />
+            </div>
           </div>
         </SurfaceCard>
       </Section>

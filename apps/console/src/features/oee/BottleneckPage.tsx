@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { FactoryVisionApiClient } from '@factory-vision/api-client';
 import type { BottleneckRow } from '@factory-vision/domain-types';
-import { Button, Icon } from '@factory-vision/ui';
+import { Button, Icon, Select } from '@factory-vision/ui';
 import { MetricCard, SurfaceCard, Page, Section, FilterChip } from '@factory-vision/ui/fv';
 
 const api = new FactoryVisionApiClient({ baseUrl: '' });
@@ -72,45 +72,39 @@ export const BottleneckPage: React.FC = () => {
         </p>
       </Section>
 
-      <Section style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap', alignItems: 'center' }}>
-        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <FilterChip selected={kind === 'MACHINE'} onClick={() => setKind('MACHINE')}>
-            Per Mesin
-          </FilterChip>
-          <FilterChip selected={kind === 'PROCESS'} onClick={() => setKind('PROCESS')}>
-            Per Proses Produksi
-          </FilterChip>
-        </div>
+      <Section>
+        <SurfaceCard padding="md">
+          <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+              <FilterChip selected={kind === 'MACHINE'} onClick={() => setKind('MACHINE')}>
+                Per Mesin
+              </FilterChip>
+              <FilterChip selected={kind === 'PROCESS'} onClick={() => setKind('PROCESS')}>
+                Per Proses Produksi
+              </FilterChip>
+            </div>
 
-        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          {WINDOWS.map((option) => (
-            <FilterChip key={option} selected={days === option} onClick={() => setDays(option)}>
-              {option} hari
-            </FilterChip>
-          ))}
-        </div>
+            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+              {WINDOWS.map((option) => (
+                <FilterChip key={option} selected={days === option} onClick={() => setDays(option)}>
+                  {option} hari
+                </FilterChip>
+              ))}
+            </div>
 
-        <select
-          value={lineId}
-          onChange={(event) => setLineId(event.target.value)}
-          aria-label="Filter production line"
-          style={{
-            padding: `var(--space-2) var(--space-3)`,
-            fontSize: '12px',
-            fontFamily: 'var(--font-family)',
-            borderRadius: 'var(--radius-full, 999px)',
-            border: '1px solid var(--color-border)',
-            backgroundColor: 'var(--color-surface-container)',
-            color: 'var(--color-on-surface)',
-          }}
-        >
-          <option value="">Semua Production Line</option>
-          {lines.map((line) => (
-            <option key={line.id} value={line.id}>
-              {line.name}
-            </option>
-          ))}
-        </select>
+            <div style={{ width: '300px', marginLeft: 'auto' }}>
+              <Select
+                label="Production Line"
+                value={lineId}
+                onChange={setLineId}
+                options={[
+                  { value: '', label: 'Semua production line' },
+                  ...lines.map((line) => ({ value: line.id, label: line.name })),
+                ]}
+              />
+            </div>
+          </div>
+        </SurfaceCard>
       </Section>
 
       <Section

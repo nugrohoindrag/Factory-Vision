@@ -94,8 +94,20 @@ export const WorkCentersTab: React.FC<{ onToast: (message: string) => void }> = 
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-      {editable && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: 'var(--space-3)',
+          flexWrap: 'wrap',
+        }}
+      >
+        <p style={{ margin: 0, fontSize: '12px', color: 'var(--color-on-surface-variant)', maxWidth: '640px' }}>
+          Work center mengikat mesin ke production line, sehingga OEE, downtime, dan filter per line terhitung
+          lewat work center. Urutan menentukan alur proses di line.
+        </p>
+        {editable && (
           <Button
             variant="filled"
             icon={<Icon name="add" size={16} />}
@@ -103,8 +115,8 @@ export const WorkCentersTab: React.FC<{ onToast: (message: string) => void }> = 
           >
             Tambah Work Center
           </Button>
-        </div>
-      )}
+        )}
+      </div>
 
       {error && (
         <div
@@ -139,18 +151,16 @@ export const WorkCentersTab: React.FC<{ onToast: (message: string) => void }> = 
       ) : (
         byLine.map(({ line, centers }) => (
           <SurfaceCard key={line.id} padding="md">
-            <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
-              {line.name}
-            </div>
-            <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginBottom: 'var(--space-3)' }}>
+            <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-on-surface)' }}>{line.name}</div>
+            <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginBottom: 'var(--space-2)' }}>
               {line.code} · {centers.length} work center
             </div>
 
             {centers.length === 0 ? (
               <Empty label="Belum ada work center pada line ini." />
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-                {centers.map((center) => {
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {centers.map((center, index) => {
                   const centerMachines = machines.filter((m) => m.workCenterId === center.id);
                   return (
                     <div
@@ -158,17 +168,33 @@ export const WorkCentersTab: React.FC<{ onToast: (message: string) => void }> = 
                       style={{
                         display: 'flex',
                         justifyContent: 'space-between',
-                        alignItems: 'flex-start',
+                        alignItems: 'center',
                         gap: 'var(--space-3)',
-                        padding: `var(--space-3) var(--space-3)`,
-                        borderRadius: 'var(--radius-sm, 8px)',
-                        border: '1px solid var(--color-border)',
-                        backgroundColor: 'var(--color-surface-container)',
+                        padding: `var(--space-2) 0`,
+                        borderTop: index === 0 ? 'none' : '1px solid var(--color-border)',
                       }}
                     >
-                      <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '24px',
+                            height: '24px',
+                            flexShrink: 0,
+                            borderRadius: 'var(--radius-pill)',
+                            backgroundColor: 'var(--color-surface-container-high)',
+                            color: 'var(--color-on-surface-variant)',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                          }}
+                        >
+                          {center.sequence}
+                        </span>
+                        <div>
                         <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-on-surface)' }}>
-                          #{center.sequence} · {center.name}
+                          {center.name}
                         </div>
                         <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)' }}>
                           {center.code} ·{' '}
@@ -176,12 +202,14 @@ export const WorkCentersTab: React.FC<{ onToast: (message: string) => void }> = 
                             ? centerMachines.map((m) => m.code).join(', ')
                             : 'belum ada mesin'}
                         </div>
+                        </div>
                       </div>
 
                       {editable && (
                         <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
                           <Button
                             variant="text"
+                            size="sm"
                             onClick={() =>
                               setForm({
                                 id: center.id,
@@ -194,7 +222,7 @@ export const WorkCentersTab: React.FC<{ onToast: (message: string) => void }> = 
                           >
                             Ubah
                           </Button>
-                          <Button variant="text" onClick={() => remove.mutate(center.id)}>
+                          <Button variant="text" size="sm" onClick={() => remove.mutate(center.id)}>
                             Hapus
                           </Button>
                         </div>
