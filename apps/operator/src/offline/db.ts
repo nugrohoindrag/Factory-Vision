@@ -138,7 +138,12 @@ export function isUpgradeDeferred(): boolean {
 export function setUpgradeDeferred(value: boolean): void {
   if (deferred !== value) {
     deferred = value;
+    // Close the connection being replaced, not just forget it: a versionless
+    // handle left open blocks the v2 upgrade from this very tab, and `blocked`
+    // then waits forever — every queued write on a fresh terminal hangs.
+    const previous = handle;
     handle = null;
+    previous?.then((db) => db.close()).catch(() => undefined);
   }
 }
 
