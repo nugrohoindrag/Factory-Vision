@@ -2,8 +2,8 @@ import { statusLabel } from '@factory-vision/domain-types';
 import React, { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { FactoryVisionApiClient, ApiRequestError } from '@factory-vision/api-client';
-import { Button, Icon } from '@factory-vision/ui';
-import { MetricCard, SurfaceCard, Page, Section } from '@factory-vision/ui/fv';
+import { Button, Icon, Select } from '@factory-vision/ui';
+import { MetricCard, SurfaceCard, Page, Section, FilterBar, FilterField } from '@factory-vision/ui/fv';
 import { useSession } from '../../app/SessionContext.js';
 
 const api = new FactoryVisionApiClient({ baseUrl: '' });
@@ -109,23 +109,31 @@ export const ShiftHandoverPage: React.FC = () => {
         </p>
       </Section>
 
-      <Section style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
-        <SelectField label="Production Line" value={lineId} onChange={setLineId}>
-          {lines.map((line) => (
-            <option key={line.id} value={line.id}>
-              {line.name}
-            </option>
-          ))}
-        </SelectField>
-
-        <SelectField label="Shift" value={shiftId} onChange={setShiftId}>
-          <option value="">Shift berjalan</option>
-          {shifts.map((shift) => (
-            <option key={shift.id} value={shift.id}>
-              {shift.name} ({shift.startTime}-{shift.endTime})
-            </option>
-          ))}
-        </SelectField>
+      <Section>
+        <FilterBar>
+          <FilterField width="320px">
+            <Select
+              label="Production Line"
+              value={lineId}
+              onChange={setLineId}
+              options={lines.map((line) => ({ value: line.id, label: line.name }))}
+            />
+          </FilterField>
+          <FilterField width="260px">
+            <Select
+              label="Shift"
+              value={shiftId}
+              onChange={setShiftId}
+              options={[
+                { value: '', label: 'Shift berjalan' },
+                ...shifts.map((shift) => ({
+                  value: shift.id,
+                  label: `${shift.name} (${shift.startTime}-${shift.endTime})`,
+                })),
+              ]}
+            />
+          </FilterField>
+        </FilterBar>
       </Section>
 
       {!lineId ? (
@@ -455,33 +463,6 @@ export const ShiftHandoverPage: React.FC = () => {
     </Page>
   );
 };
-
-const SelectField: React.FC<{
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  children: React.ReactNode;
-}> = ({ label, value, onChange, children }) => (
-  <label style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-    <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface-variant)' }}>{label}</span>
-    <select
-      value={value}
-      onChange={(event) => onChange(event.target.value)}
-      style={{
-        padding: `var(--space-2) var(--space-3)`,
-        fontSize: '12px',
-        fontFamily: 'var(--font-family)',
-        borderRadius: 'var(--radius-sm, 8px)',
-        border: '1px solid var(--color-border)',
-        backgroundColor: 'var(--color-surface-container)',
-        color: 'var(--color-on-surface)',
-        minWidth: '220px',
-      }}
-    >
-      {children}
-    </select>
-  </label>
-);
 
 const Placeholder: React.FC<{ label: string; tone?: 'error' }> = ({ label, tone }) => (
   <div

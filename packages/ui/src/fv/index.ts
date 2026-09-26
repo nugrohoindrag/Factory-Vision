@@ -18,6 +18,7 @@ export * from './PlantOverviewHero.js';
 export * from './PageMotion.js';
 export * from './FactoryVisionLogo.js';
 export * from './FilterChip.js';
+export * from './FilterBar.js';
 export * from './RowActionMenu.js';
 export * from './DateField.js';
 export * from './Gauge.js';

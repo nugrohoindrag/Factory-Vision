@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { FactoryVisionApiClient } from '@factory-vision/api-client';
-import { Button, ColumnDef, Icon } from '@factory-vision/ui';
-import { DataTable, Page, Section, SurfaceCard, FilterChip, DateField } from '@factory-vision/ui/fv';
+import { Button, ColumnDef, Icon, Select } from '@factory-vision/ui';
+import { DataTable, Page, Section, SurfaceCard, FilterChip, DateField, FilterBar, FilterField } from '@factory-vision/ui/fv';
 import type { MrpResult, MrpRun } from '@factory-vision/domain-types';
 import { EmptyState, KpiRow, KpiTile, PageHeading, StatusPill, fmt, fmtDate, fmtDateTime } from './shared.js';
 
@@ -143,45 +143,33 @@ export const MrpPage: React.FC = () => {
       </Section>
 
       <Section>
-        <SurfaceCard padding="md">
-          <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+        <FilterBar
+          footer={
+            runMrp.isError ? (
+              <p style={{ margin: 0, fontSize: '12px', color: 'var(--color-error)' }}>
+                MRP gagal dijalankan: {(runMrp.error as Error).message}
+              </p>
+            ) : null
+          }
+        >
+          <FilterField>
             <DateField label="Awal Horizon" value={horizonStart} onChange={(e) => setHorizonStart(e.target.value)} />
+          </FilterField>
+          <FilterField>
             <DateField label="Akhir Horizon" value={horizonEnd} onChange={(e) => setHorizonEnd(e.target.value)} />
-            <div style={{ flex: 1, minWidth: '200px' }}>
-              <div
-                style={{
-                  fontSize: '10px',
-                  fontWeight: 800,
-                  letterSpacing: '0.06em',
-                  textTransform: 'uppercase',
-                  color: 'var(--color-on-surface-variant)',
-                  marginBottom: 'var(--space-1)',
-                }}
-              >
-                Riwayat Run
-              </div>
-              <div style={{ display: 'flex', gap: 'var(--space-1)', flexWrap: 'wrap' }}>
-                <FilterChip selected={selectedRunId === null} onClick={() => setSelectedRunId(null)}>
-                  Terbaru
-                </FilterChip>
-                {(runs ?? []).slice(0, 6).map((item) => (
-                  <FilterChip
-                    key={item.id}
-                    selected={selectedRunId === item.id}
-                    onClick={() => setSelectedRunId(item.id)}
-                  >
-                    {item.runNumber}
-                  </FilterChip>
-                ))}
-              </div>
-            </div>
-          </div>
-          {runMrp.isError ? (
-            <p style={{ margin: `var(--space-2) 0 0`, fontSize: '12px', color: 'var(--color-error)' }}>
-              MRP gagal dijalankan: {(runMrp.error as Error).message}
-            </p>
-          ) : null}
-        </SurfaceCard>
+          </FilterField>
+          <FilterField width="240px">
+            <Select
+              label="Riwayat Run"
+              value={selectedRunId ?? ''}
+              onChange={(value) => setSelectedRunId(value || null)}
+              options={[
+                { value: '', label: 'Run terbaru' },
+                ...(runs ?? []).map((item) => ({ value: item.id, label: item.runNumber })),
+              ]}
+            />
+          </FilterField>
+        </FilterBar>
       </Section>
 
       {run ? (

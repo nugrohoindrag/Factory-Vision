@@ -2,7 +2,19 @@ import React, { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { FactoryVisionApiClient } from '@factory-vision/api-client';
 import { Button, FilledTextField, Icon, Select } from '@factory-vision/ui';
-import { Page, Section, SurfaceCard, Dialog, FilterChip, toneContainer, toneOnContainer } from '@factory-vision/ui/fv';
+import {
+  Page,
+  Section,
+  SurfaceCard,
+  Dialog,
+  FilterChip,
+  FilterBar,
+  FilterField,
+  FilterChipGroup,
+  DateField,
+  toneContainer,
+  toneOnContainer,
+} from '@factory-vision/ui/fv';
 import type { BoardItem, BoardViewMode, ProductionBoard } from '@factory-vision/domain-types';
 import { useSession } from '../../app/SessionContext.js';
 import { EmptyState, Field, KpiRow, KpiTile, PageHeading, StatusPill, fmt, fmtDateTime, statusTone } from './shared.js';
@@ -61,38 +73,33 @@ export const ProductionBoardPage: React.FC = () => {
       </Section>
 
       <Section>
-        <SurfaceCard padding="md">
-          <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-            <div style={{ minWidth: '160px' }}>
-              <Select
-                label="Tampilan"
-                value={viewMode}
-                onChange={(value) => setViewMode(value as BoardViewMode)}
-                options={[
-                  { value: 'MACHINE', label: 'Machine View' },
-                  { value: 'LINE', label: 'Line View' },
-                  { value: 'PROCESS', label: 'Process View' },
-                  { value: 'SHIFT', label: 'Shift View' },
-                  { value: 'CALENDAR', label: 'Calendar View' },
-                  { value: 'TIMELINE', label: 'Timeline View' },
-                ]}
-              />
-            </div>
-            <FilledTextField
-              label="Tanggal"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
+        <FilterBar>
+          <FilterField width="200px">
+            <Select
+              label="Tampilan"
+              value={viewMode}
+              onChange={(value) => setViewMode(value as BoardViewMode)}
+              options={[
+                { value: 'MACHINE', label: 'Machine View' },
+                { value: 'LINE', label: 'Line View' },
+                { value: 'PROCESS', label: 'Process View' },
+                { value: 'SHIFT', label: 'Shift View' },
+                { value: 'CALENDAR', label: 'Calendar View' },
+                { value: 'TIMELINE', label: 'Timeline View' },
+              ]}
             />
-            <div style={{ display: 'flex', gap: 'var(--space-1)', alignItems: 'center' }}>
-              {[1, 3, 7].map((option) => (
-                <FilterChip key={option} selected={days === option} onClick={() => setDays(option)}>
-                  {option} hari
-                </FilterChip>
-              ))}
-            </div>
-          </div>
-        </SurfaceCard>
+          </FilterField>
+          <FilterField>
+            <DateField label="Tanggal" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          </FilterField>
+          <FilterChipGroup>
+            {[1, 3, 7].map((option) => (
+              <FilterChip key={option} selected={days === option} onClick={() => setDays(option)}>
+                {option} hari
+              </FilterChip>
+            ))}
+          </FilterChipGroup>
+        </FilterBar>
       </Section>
 
       <Section>
