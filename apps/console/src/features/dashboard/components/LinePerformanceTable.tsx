@@ -16,7 +16,7 @@ const STATUS_TONE: Record<LinePerformanceRow['status'], Tone> = {
   CRITICAL: 'error',
 };
 
-const StatusPill: React.FC<{ status: LinePerformanceRow['status'] }> = ({ status }) => {
+export const StatusPill: React.FC<{ status: LinePerformanceRow['status'] }> = ({ status }) => {
   const tone = STATUS_TONE[status];
   return (
     <span
@@ -38,7 +38,7 @@ const StatusPill: React.FC<{ status: LinePerformanceRow['status'] }> = ({ status
 
 // Header fill, cell rhythm and numeric alignment come from `.fv-table`; only
 // what that rule does not decide is set here.
-const CELL: React.CSSProperties = { whiteSpace: 'nowrap' };
+export const CELL: React.CSSProperties = { whiteSpace: 'nowrap' };
 
 /**
  * Plant / Production Line Performance, "Where is the biggest problem?"

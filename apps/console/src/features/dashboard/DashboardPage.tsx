@@ -247,11 +247,11 @@ export const DashboardPage: React.FC = () => {
         />
       </Section>
 
-      {/*b Multi-Process Performance Breakdown */}
+      {/* Process Performance */}
       <SectionHeading
         icon="hub"
-        title="Multi-Process Performance ( &)"
-        question="Bagaimana performa OEE terisolasi pada setiap stasiun proses (Mixing, Extrusion, Building, Curing, Inspection)?"
+        title="Process Performance"
+        question="Di tahapan proses mana efisiensi paling banyak hilang?"
       />
       <Section>
         <ProcessPerformanceTable processes={processPerformance ?? []} isLoading={processLoading} />

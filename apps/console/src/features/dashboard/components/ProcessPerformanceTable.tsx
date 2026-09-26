@@ -1,213 +1,91 @@
 import React from 'react';
-import { ProcessPerformanceRow } from '@factory-vision/domain-types';
-import { StatusBadge, Icon } from '@factory-vision/ui';
+import type { ProcessPerformanceRow } from '@factory-vision/domain-types';
+import { SurfaceCard } from '@factory-vision/ui/fv';
+import { CELL, StatusPill } from './LinePerformanceTable.js';
 
 interface ProcessPerformanceTableProps {
   processes: ProcessPerformanceRow[];
   isLoading?: boolean;
 }
 
-export const ProcessPerformanceTable: React.FC<ProcessPerformanceTableProps> = ({ processes, isLoading }) => {
-  if (isLoading) {
-    return (
-      <div
-        style={{
-          backgroundColor: 'var(--color-surface)',
-          borderRadius: 'var(--radius-lg, 16px)',
-          border: '1px solid var(--color-border)',
-          padding: 'var(--space-6)',
-          textAlign: 'center',
-          color: 'var(--color-on-surface-variant)',
-          fontSize: '13px',
-        }}
-      >
-        Memuat performa multi-proses produksi, ...
-      </div>
-    );
-  }
+const rejectRate = (proc: ProcessPerformanceRow): string => {
+  const total = proc.goodQuantity + proc.rejectQuantity;
+  return total > 0 ? ((proc.rejectQuantity / total) * 100).toFixed(2) : '0';
+};
 
-  const getOeeStatus = (oee: number) => {
-    if (oee >= 85) return { label: 'GOOD', color: 'var(--color-success)' };
-    if (oee >= 70) return { label: 'WATCH', color: 'var(--color-warning)' };
-    return { label: 'CRITICAL', color: 'var(--color-error)' };
-  };
-
+/**
+ * Process Performance, "Which process step is losing efficiency?"
+ *
+ * The same card, table and status pill as Plant / Line Performance above it,
+ * one row per routing step with its OEE broken into Availability, Performance
+ * and Quality. Rows arrive in routing sequence from the API, so the flow
+ * reads top to bottom, and the status is the API's own classification against
+ * the tenant's KPI targets, the same verdict the line rows carry.
+ */
+export const ProcessPerformanceTable: React.FC<ProcessPerformanceTableProps> = ({ processes: rows, isLoading }) => {
   return (
-    <div
-      style={{
-        backgroundColor: 'var(--color-surface)',
-        borderRadius: 'var(--radius-lg, 16px)',
-        border: '1px solid var(--color-border)',
-        overflow: 'hidden',
-        boxShadow: 'var(--elevation-1)',
-      }}
-    >
-      <div
-        style={{
-          padding: `var(--space-4) var(--space-5)`,
-          borderBottom: '1px solid var(--color-border)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          backgroundColor: 'var(--color-surface-container)',
-        }}
-      >
-        <div>
-          <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
-            Performa Efisiensi Berdasarkan Tahapan Proses ( &)
-          </h3>
-          <p style={{ margin: `var(--space-1) 0 0`, fontSize: '11px', color: 'var(--color-on-surface-variant)' }}>
-            Monitoring OEE, Availability, Performance, dan Quality terisolasi pada setiap stasiun manufaktur
-          </p>
-        </div>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--space-2)',
-            fontSize: '11.5px',
-            color: 'var(--color-on-surface-variant)',
-          }}
-        >
-          <Icon name="hub" size={16} />
-          <span>{processes.length} Tahapan Terintegrasi</span>
+    <SurfaceCard padding="md" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+      <div>
+        <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 700 }}>Process Performance</h3>
+        <div style={{ fontSize: '10.5px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}>
+          OEE, Availability, Performance dan Quality per tahapan proses, urut sesuai routing
+          {rows.length > 0 && ` · ${rows.length} tahapan`}
         </div>
       </div>
 
-      <div className="fv-table-scroll">
-        <table className="fv-table">
-          <thead>
-            <tr>
-              <th>Tahapan Proses</th>
-              <th>Target vs Aktual</th>
-              <th>Achievement</th>
-              <th>Jumlah Reject</th>
-              <th>Downtime</th>
-              <th>Availability</th>
-              <th>Performance</th>
-              <th>Quality</th>
-              <th>OEE Proses</th>
-            </tr>
-          </thead>
-          <tbody>
-            {processes.map((proc) => {
-              const status = getOeeStatus(proc.oee);
-              return (
+      {isLoading ? (
+        <div style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', padding: `var(--space-3) 0` }}>
+          Memuat performa proses…
+        </div>
+      ) : rows.length === 0 ? (
+        <div style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', padding: `var(--space-3) 0` }}>
+          Belum ada data performa proses untuk periode ini.
+        </div>
+      ) : (
+        <div className="fv-table-scroll">
+          <table className="fv-table" style={{ minWidth: '900px' }}>
+            <thead>
+              <tr>
+                <th>Proses</th>
+                <th className="fv-num">OEE</th>
+                <th className="fv-num">Output</th>
+                <th className="fv-num">Target</th>
+                <th className="fv-num">Achievement</th>
+                <th className="fv-num">Downtime</th>
+                <th className="fv-num">Reject</th>
+                <th className="fv-num">Availability</th>
+                <th className="fv-num">Performance</th>
+                <th className="fv-num">Quality</th>
+                <th style={{ textAlign: 'center' }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((proc) => (
                 <tr key={proc.processId}>
                   <td>
-                    <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--color-on-surface)' }}>
-                      {proc.processName}
-                    </div>
-                    <div
-                      style={{ fontSize: '10.5px', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)' }}
-                    >
-                      Kode: <strong>{proc.processCode}</strong>
-                    </div>
-                  </td>
-
-                  <td>
-                    <div style={{ fontWeight: 700, color: 'var(--color-on-surface)' }}>
-                      {proc.goodQuantity.toLocaleString('en-US')} PCS
-                    </div>
+                    <div style={{ fontWeight: 700 }}>{proc.processName}</div>
                     <div style={{ fontSize: '10.5px', color: 'var(--color-on-surface-variant)' }}>
-                      Target: {proc.targetQuantity.toLocaleString('en-US')} PCS
+                      {proc.processCode}
                     </div>
                   </td>
-
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                      <span
-                        style={{
-                          fontWeight: 800,
-                          color: proc.achievementPct >= 90 ? 'var(--color-success)' : 'var(--color-warning)',
-                        }}
-                      >
-                        {proc.achievementPct}%
-                      </span>
-                    </div>
-                    <div
-                      style={{
-                        width: '80px',
-                        height: '4px',
-                        backgroundColor: 'var(--color-surface-container-high)',
-                        borderRadius: 'var(--radius-pill)',
-                        overflow: 'hidden',
-                        marginTop: 'var(--space-1)',
-                      }}
-                    >
-                      <div
-                        style={{
-                          height: '100%',
-                          width: `${Math.min(100, proc.achievementPct)}%`,
-                          backgroundColor:
-                            proc.achievementPct >= 90 ? 'var(--color-success)' : 'var(--color-warning)',
-                          borderRadius: 'var(--radius-pill)',
-                        }}
-                      />
-                    </div>
-                  </td>
-
-                  <td>
-                    <div
-                      style={{
-                        fontWeight: 700,
-                        color: proc.rejectQuantity > 0 ? 'var(--color-error)' : 'var(--color-on-surface)',
-                      }}
-                    >
-                      {proc.rejectQuantity.toLocaleString('en-US')} PCS
-                    </div>
-                    <div style={{ fontSize: '10.5px', color: 'var(--color-on-surface-variant)' }}>
-                      Rate:{' '}
-                      {proc.goodQuantity + proc.rejectQuantity > 0
-                        ? ((proc.rejectQuantity / (proc.goodQuantity + proc.rejectQuantity)) * 100).toFixed(1)
-                        : 0}
-                      %
-                    </div>
-                  </td>
-
-                  <td>
-                    <span
-                      style={{
-                        fontWeight: 700,
-                        color: proc.downtimeMinutes > 60 ? 'var(--color-error)' : 'var(--color-on-surface)',
-                      }}
-                    >
-                      {proc.downtimeMinutes} Menit
-                    </span>
-                  </td>
-
-                  <td style={{ fontWeight: 700 }}>{proc.availability}%</td>
-
-                  <td style={{ fontWeight: 700 }}>{proc.performance}%</td>
-
-                  <td style={{ fontWeight: 700 }}>{proc.quality}%</td>
-
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                      <span style={{ fontWeight: 900, fontSize: '14px', color: status.color }}>
-                        {proc.oee}%
-                      </span>
-                      <span
-                        style={{
-                          padding: `var(--space-1) var(--space-2)`,
-                          borderRadius: 'var(--radius-pill)',
-                          fontSize: '9.5px',
-                          fontWeight: 800,
-                          backgroundColor: `${status.color}18`,
-                          color: status.color,
-                          border: `1px solid ${status.color}35`,
-                        }}
-                      >
-                        {status.label}
-                      </span>
-                    </div>
+                  <td className="fv-num" style={{ ...CELL, fontWeight: 800 }}>{proc.oee}%</td>
+                  <td className="fv-num" style={CELL}>{proc.goodQuantity.toLocaleString('en-US')}</td>
+                  <td className="fv-num" style={CELL}>{proc.targetQuantity.toLocaleString('en-US')}</td>
+                  <td className="fv-num" style={CELL}>{proc.achievementPct}%</td>
+                  <td className="fv-num" style={CELL}>{proc.downtimeMinutes.toLocaleString('en-US')} min</td>
+                  <td className="fv-num" style={CELL}>{rejectRate(proc)}%</td>
+                  <td className="fv-num" style={CELL}>{proc.availability}%</td>
+                  <td className="fv-num" style={CELL}>{proc.performance}%</td>
+                  <td className="fv-num" style={CELL}>{proc.quality}%</td>
+                  <td style={{ ...CELL, textAlign: 'center' }}>
+                    <StatusPill status={proc.status} />
                   </td>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </SurfaceCard>
   );
 };
