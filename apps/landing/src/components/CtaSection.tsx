@@ -27,7 +27,6 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ onOpenDemo, onOpenTrial 
             overflow: 'hidden',
           }}
         >
-          {/* Ambient light glow */}
           <div
             style={{
               position: 'absolute',

@@ -244,7 +244,6 @@ export const ConsoleAuth: React.FC = () => {
     <div className="fv-login">
       <style>{LAYOUT_CSS}</style>
 
-      {/* ───────────────────────── Form column ───────────────────────── */}
       <div className="fv-login__form-col">
         <div
           style={{ width: '100%', maxWidth: '460px', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}
@@ -475,7 +474,6 @@ export const ConsoleAuth: React.FC = () => {
         </div>
       </div>
 
-      {/* ───────────────────────── Hero column ───────────────────────── */}
       <div className="fv-login__hero-col">
         <div
           style={{

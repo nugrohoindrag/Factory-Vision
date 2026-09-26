@@ -374,11 +374,9 @@ export class FactoryVisionApiClient {
     return response.text();
   }
 
-  // Master Data API
   readonly master = {
     getPlants: () => this.request<Plant[]>('/api/v1/master/plants'),
 
-    // Production Lines
     getLines: () => this.request<ProductionLine[]>('/api/v1/master/lines'),
     createLine: (body: Omit<ProductionLine, 'id' | 'tenantId'>) =>
       this.request<ProductionLine>('/api/v1/master/lines', { method: 'POST', body: JSON.stringify(body) }),
@@ -387,7 +385,6 @@ export class FactoryVisionApiClient {
     deleteLine: (id: string) =>
       this.request<{ success: boolean; message: string }>(`/api/v1/master/lines/${id}`, { method: 'DELETE' }),
 
-    // Machines
     getMachines: () => this.request<Machine[]>('/api/v1/master/machines'),
     createMachine: (body: Omit<Machine, 'id' | 'tenantId' | 'currentState' | 'currentStateSince'>) =>
       this.request<Machine>('/api/v1/master/machines', { method: 'POST', body: JSON.stringify(body) }),
@@ -398,7 +395,6 @@ export class FactoryVisionApiClient {
         method: 'DELETE',
       }),
 
-    // Products / SKUs
     getProducts: () => this.request<Product[]>('/api/v1/master/products'),
     createProduct: (body: Omit<Product, 'id' | 'tenantId'>) =>
       this.request<Product>('/api/v1/master/products', { method: 'POST', body: JSON.stringify(body) }),
@@ -425,7 +421,6 @@ export class FactoryVisionApiClient {
     deleteBom: (id: string) =>
       this.request<{ success: boolean; message: string }>(`/api/v1/master/bom/${id}`, { method: 'DELETE' }),
 
-    // Operators
     getOperators: () => this.request<Operator[]>('/api/v1/master/operators'),
     createOperator: (body: Omit<Operator, 'id' | 'tenantId'> & { password?: string }) =>
       this.request<Operator>('/api/v1/master/operators', { method: 'POST', body: JSON.stringify(body) }),
@@ -436,10 +431,8 @@ export class FactoryVisionApiClient {
         method: 'DELETE',
       }),
 
-    // Shifts
     getShifts: () => this.request<Shift[]>('/api/v1/master/shifts'),
 
-    // Downtime Reasons
     getDowntimeReasons: () => this.request<DowntimeReason[]>('/api/v1/master/downtime-reasons'),
     createDowntimeReason: (body: Omit<DowntimeReason, 'id' | 'tenantId'>) =>
       this.request<DowntimeReason>('/api/v1/master/downtime-reasons', {
@@ -456,7 +449,6 @@ export class FactoryVisionApiClient {
         method: 'DELETE',
       }),
 
-    // Reject Reasons
     getRejectReasons: () => this.request<RejectReason[]>('/api/v1/master/reject-reasons'),
     createRejectReason: (body: Omit<RejectReason, 'id' | 'tenantId'>) =>
       this.request<RejectReason>('/api/v1/master/reject-reasons', {
@@ -508,7 +500,6 @@ export class FactoryVisionApiClient {
         body: JSON.stringify(body),
       }),
 
-    // Production Processes
     getProcesses: () => this.request<ProductionProcess[]>('/api/v1/master/processes'),
     createProcess: (body: Omit<ProductionProcess, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>) =>
       this.request<ProductionProcess>('/api/v1/master/processes', {
@@ -528,7 +519,6 @@ export class FactoryVisionApiClient {
         method: 'DELETE',
       }),
 
-    // Product Routings
     getRoutings: (params?: { productId?: string }) =>
       this.request<ProductRouting[]>(`/api/v1/master/routings${qs(params)}`),
     createRouting: (body: Omit<ProductRouting, 'id' | 'tenantId'>) =>
@@ -556,7 +546,6 @@ export class FactoryVisionApiClient {
         method: 'DELETE',
       }),
 
-    // Batches & Lots
     getBatches: (params?: { productId?: string; status?: string }) =>
       this.request<ProductionBatch[]>(`/api/v1/master/batches${qs(params)}`),
     createBatch: (body: Omit<ProductionBatch, 'id' | 'tenantId' | 'createdAt'>) =>
@@ -568,7 +557,6 @@ export class FactoryVisionApiClient {
       }),
   };
 
-  // Production Orders API
   readonly productionOrders = {
     list: () => this.request<ProductionOrder[]>('/api/v1/production-orders'),
     get: (id: string) => this.request<ProductionOrder>(`/api/v1/production-orders/${id}`),
@@ -599,7 +587,6 @@ export class FactoryVisionApiClient {
       this.request<ProductionOrder>(`/api/v1/production-orders/${id}/release`, { method: 'POST' }),
   };
 
-  // Work Orders API
   readonly workOrders = {
     list: (params?: { lineId?: string; status?: string; processId?: string }) => {
       const query = new URLSearchParams(params as Record<string, string>).toString();
@@ -688,7 +675,6 @@ export class FactoryVisionApiClient {
       }),
   };
 
-  // Shop Floor Execution API
   readonly shopFloor = {
     recordOutput: (body: {
       workOrderId: string;
@@ -736,7 +722,6 @@ export class FactoryVisionApiClient {
       }),
   };
 
-  // Analytics API
   readonly analytics = {
     getLiveProductionBoard: () =>
       this.request<
@@ -806,7 +791,6 @@ export class FactoryVisionApiClient {
       this.request<DailyPerformancePoint[]>(`/api/v1/analytics/daily-performance${qs(params)}`),
   };
 
-  // Reporting & Export API
   readonly reports = {
     getProduction: (params?: { lineId?: string; shiftDate?: string }) => {
       const query = new URLSearchParams(params as Record<string, string>).toString();
@@ -826,7 +810,6 @@ export class FactoryVisionApiClient {
     },
   };
 
-  // Data Correction Workflow API
   readonly corrections = {
     list: (status?: CorrectionStatus) => {
       const query = status ? `?status=${status}` : '';
@@ -853,7 +836,6 @@ export class FactoryVisionApiClient {
       }),
   };
 
-  // Audit Logs API
   readonly audit = {
     list: (params?: { entityType?: string; action?: string }) => {
       const query = new URLSearchParams(params as Record<string, string>).toString();

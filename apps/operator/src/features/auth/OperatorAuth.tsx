@@ -108,7 +108,6 @@ export const OperatorAuth: React.FC<OperatorAuthProps> = ({ onAuthenticate, them
           boxShadow: 'var(--elevation-3)',
         }}
       >
-        {/* Brand Header */}
         <div
           style={{
             textAlign: 'center',
@@ -205,7 +204,6 @@ export const OperatorAuth: React.FC<OperatorAuthProps> = ({ onAuthenticate, them
           </div>
         </div>
 
-        {/* Error Notification */}
         <AnimatePresence>
           {error && (
             <motion.div
@@ -219,7 +217,6 @@ export const OperatorAuth: React.FC<OperatorAuthProps> = ({ onAuthenticate, them
           )}
         </AnimatePresence>
 
-        {/* Submit Button */}
         <motion.div whileHover={{ scale: canSubmit ? 1.02 : 1 }} whileTap={{ scale: canSubmit ? 0.98 : 1 }}>
           <Button
             type="submit"

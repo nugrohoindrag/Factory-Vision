@@ -100,7 +100,6 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({ is
           overflow: 'hidden',
         }}
       >
-        {/* Modal Header */}
         <div
           style={{
             padding: `var(--space-4) var(--space-6)`,
@@ -156,9 +155,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({ is
           </button>
         </div>
 
-        {/* Modal Body */}
         <div style={{ flex: 1, padding: `var(--space-6)`, overflowY: 'auto' }}>
-          {/* STEP 1: FACTORY PROFILE */}
           {step === 1 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
               <p style={{ margin: 0, fontSize: '13.5px', color: 'var(--color-on-surface-variant)', lineHeight: 1.6 }}>
@@ -291,7 +288,6 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({ is
             </div>
           )}
 
-          {/* STEP 2: INDUSTRY SELECTION */}
           {step === 2 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
               <p style={{ margin: 0, fontSize: '13.5px', color: 'var(--color-on-surface-variant)', lineHeight: 1.6 }}>
@@ -357,7 +353,6 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({ is
             </div>
           )}
 
-          {/* STEP 3: EXPERIENCE OPTION */}
           {step === 3 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
               <p style={{ margin: 0, fontSize: '13.5px', color: 'var(--color-on-surface-variant)', lineHeight: 1.6 }}>
@@ -365,7 +360,6 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({ is
               </p>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                {/* Option 1: Template */}
                 <div
                   onClick={() => setExperience('template')}
                   style={{
@@ -418,7 +412,6 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({ is
                   </div>
                 </div>
 
-                {/* Option 2: Blank */}
                 <div
                   onClick={() => setExperience('blank')}
                   style={{
@@ -457,7 +450,6 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({ is
                   </div>
                 </div>
 
-                {/* Option 3: Demo */}
                 <div
                   onClick={() => setExperience('demo')}
                   style={{
@@ -499,7 +491,6 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({ is
             </div>
           )}
 
-          {/* STEP 4: TEMPLATE REVIEW & APPLY */}
           {step === 4 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
               <p style={{ margin: 0, fontSize: '13.5px', color: 'var(--color-on-surface-variant)', lineHeight: 1.6 }}>
@@ -534,7 +525,6 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({ is
                     </div>
                   </div>
 
-                  {/* Checklist of what will be generated */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'var(--space-3)', margin: `var(--space-3) 0` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: '13px' }}>
                       <Icon name="check_circle" size={16} style={{ color: toneColor.success }} />
@@ -579,7 +569,6 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({ is
             </div>
           )}
 
-          {/* STEP 5: SUCCESS / COMPLETED */}
           {step === 5 && (
             <div style={{ textAlign: 'center', padding: `var(--space-6) 0` }}>
               <div
@@ -631,7 +620,6 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({ is
           )}
         </div>
 
-        {/* Modal Footer Controls */}
         {step < 5 && (
           <div
             style={{

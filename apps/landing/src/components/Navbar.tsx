@@ -62,7 +62,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onOpenTrial }) => {
           height: '76px',
         }}
       >
-        {/* Brand Logo */}
         <a
           href="#"
           style={{
@@ -76,7 +75,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onOpenTrial }) => {
           <FactoryVisionLogo size="md" variant="full" tagline="Manufacturing Execution System" />
         </a>
 
-        {/* Desktop Nav Links */}
         <nav
           style={{
             display: 'none',
@@ -108,9 +106,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onOpenTrial }) => {
           ))}
         </nav>
 
-        {/* Action Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
-          {/* Theme Switcher */}
           <button
             onClick={toggleTheme}
             aria-label="Toggle Theme"
@@ -132,7 +128,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onOpenTrial }) => {
             <Icon name={theme === 'light' ? 'dark_mode' : 'light_mode'} size={18} />
           </button>
 
-          {/* Secondary Demo CTA */}
           <button
             onClick={onOpenDemo}
             className="fv-btn-secondary fv-nav-demo"
@@ -144,7 +139,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onOpenTrial }) => {
             Demo
           </button>
 
-          {/* Primary Trial CTA */}
           <button
             onClick={onOpenTrial || onOpenDemo}
             className="fv-btn-primary fv-nav-trial"
@@ -158,7 +152,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onOpenTrial }) => {
             <span className="fv-nav-trial-label">Coba Gratis</span>
           </button>
 
-          {/* Mobile Menu Toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="fv-mobile-toggle"
@@ -181,7 +174,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onOpenTrial }) => {
         </div>
       </div>
 
-      {/* Mobile Dropdown Menu */}
       {mobileMenuOpen && (
         <div
           style={{

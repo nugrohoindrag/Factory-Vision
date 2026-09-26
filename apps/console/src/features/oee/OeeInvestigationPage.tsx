@@ -295,7 +295,6 @@ export const OeeInvestigationPage: React.FC = () => {
         </Section>
       )}
 
-      {/* Level 1, Process */}
       {!selectedProcessId && (
         <Section>
           <SurfaceCard padding="md">
@@ -376,7 +375,6 @@ export const OeeInvestigationPage: React.FC = () => {
         </Section>
       )}
 
-      {/* Level 2, Machine */}
       {selectedProcessId && (
         <Section>
           <SurfaceCard padding="md">

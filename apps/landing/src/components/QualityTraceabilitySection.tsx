@@ -14,7 +14,6 @@ export const QualityTraceabilitySection: React.FC = () => {
   return (
     <section className="fv-section-py" style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)' }}>
       <div className="fv-landing-container">
-        {/* Header */}
         <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }}>
           <div className="fv-eyebrow-on-blue">
             <Icon name="verified" size={16} />
@@ -29,7 +28,6 @@ export const QualityTraceabilitySection: React.FC = () => {
           </p>
         </div>
 
-        {/* 2-Column Showcase */}
         <div
           className="fv-card-on-blue"
           style={{
@@ -41,7 +39,6 @@ export const QualityTraceabilitySection: React.FC = () => {
             alignItems: 'center',
           }}
         >
-          {/* Left: Quality Workflow & Sample Lot Card */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
             <div>
               <h3 style={{ fontSize: '26px', fontWeight: 800, color: 'var(--color-primary)', marginBottom: 'var(--space-2)' }}>
@@ -52,7 +49,6 @@ export const QualityTraceabilitySection: React.FC = () => {
               </p>
             </div>
 
-            {/* Live Sample Batch Trace Card */}
             <div
               style={{
                 backgroundColor: 'var(--color-surface-container)',
@@ -103,7 +99,6 @@ export const QualityTraceabilitySection: React.FC = () => {
               </div>
             </div>
 
-            {/* Quality Workflow Checklist */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
               {steps.map((st, i) => (
                 <div key={st.title} style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)' }}>
@@ -139,7 +134,6 @@ export const QualityTraceabilitySection: React.FC = () => {
             </div>
           </div>
 
-          {/* Right: Inspection Photo & Screenshot */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
             <div style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', height: '220px' }}>
               <img

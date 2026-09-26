@@ -2206,7 +2206,6 @@ export const SettingsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'products';
 
-  // Live Toast Notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -2219,56 +2218,45 @@ export const SettingsPage: React.FC = () => {
   const [selectedProcess, setSelectedProcess] = useState<ProductionProcess | null>(null);
   const [showDeleteProcessDialog, setShowDeleteProcessDialog] = useState<boolean>(false);
 
-  // Product Routing
   const [showRoutingModal, setShowRoutingModal] = useState<boolean>(false);
   const [selectedRouting, setSelectedRouting] = useState<ProductRouting | null>(null);
   const [showDeleteRoutingDialog, setShowDeleteRoutingDialog] = useState<boolean>(false);
 
-  // Product Machine Rates
   const [showRateModal, setShowRateModal] = useState<boolean>(false);
   const [selectedRate, setSelectedRate] = useState<ProductMachineRate | null>(null);
   const [showDeleteRateDialog, setShowDeleteRateDialog] = useState<boolean>(false);
 
-  // Batches & Lots
   const [showBatchModal, setShowBatchModal] = useState<boolean>(false);
   const [selectedBatch, setSelectedBatch] = useState<ProductionBatch | null>(null);
 
-  // Product
   const [showProductModal, setShowProductModal] = useState<boolean>(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showDeleteProductDialog, setShowDeleteProductDialog] = useState<boolean>(false);
 
-  // Machine
   const [showMachineModal, setShowMachineModal] = useState<boolean>(false);
   const [selectedMachine, setSelectedMachine] = useState<Machine | null>(null);
   const [showDeleteMachineDialog, setShowDeleteMachineDialog] = useState<boolean>(false);
 
-  // Line
   const [showLineModal, setShowLineModal] = useState<boolean>(false);
   const [selectedLine, setSelectedLine] = useState<ProductionLine | null>(null);
   const [showDeleteLineDialog, setShowDeleteLineDialog] = useState<boolean>(false);
 
-  // Operator
   const [showOperatorModal, setShowOperatorModal] = useState<boolean>(false);
   const [selectedOperator, setSelectedOperator] = useState<Operator | null>(null);
   const [showDeleteOperatorDialog, setShowDeleteOperatorDialog] = useState<boolean>(false);
 
-  // Downtime Reason
   const [showDtModal, setShowDtModal] = useState<boolean>(false);
   const [selectedDt, setSelectedDt] = useState<DowntimeReason | null>(null);
   const [showDeleteDtDialog, setShowDeleteDtDialog] = useState<boolean>(false);
 
-  // Reject Reason
   const [showRejModal, setShowRejModal] = useState<boolean>(false);
   const [selectedRej, setSelectedRej] = useState<RejectReason | null>(null);
   const [showDeleteRejDialog, setShowDeleteRejDialog] = useState<boolean>(false);
 
-  // User
   const [showUserModal, setShowUserModal] = useState<boolean>(false);
   const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
   const [showDeleteUserDialog, setShowDeleteUserDialog] = useState<boolean>(false);
 
-  // Device Terminal
   const [showDeviceModal, setShowDeviceModal] = useState<boolean>(false);
   const [selectedDevice, setSelectedDevice] = useState<DeviceTerminal | null>(null);
   const [showDeleteDeviceDialog, setShowDeleteDeviceDialog] = useState<boolean>(false);
@@ -2377,7 +2365,6 @@ export const SettingsPage: React.FC = () => {
     onError: (err: any) => showToast(err.message || 'Gagal menghapus proses'),
   });
 
-  // Routing
   const saveRoutingMutation = useMutation({
     mutationFn: (payload: {
       productId: string;
@@ -2411,7 +2398,6 @@ export const SettingsPage: React.FC = () => {
     onError: (err: any) => showToast(err.message || 'Gagal menghapus routing'),
   });
 
-  // Rates
   const saveRateMutation = useMutation({
     mutationFn: (payload: { productId: string; machineId: string; idealCycleTimeSeconds: number }) => {
       return api.master.upsertProductMachineRate(payload);
@@ -2434,7 +2420,6 @@ export const SettingsPage: React.FC = () => {
     onError: (err: any) => showToast(err.message || 'Gagal menghapus rate'),
   });
 
-  // Batches
   const saveBatchMutation = useMutation({
     mutationFn: (payload: {
       batchNumber: string;
@@ -2458,7 +2443,6 @@ export const SettingsPage: React.FC = () => {
     onError: (err: any) => showToast(err.message || 'Gagal menyimpan batch'),
   });
 
-  // Product
   const saveProductMutation = useMutation({
     mutationFn: (payload: {
       sku: string;
@@ -2493,7 +2477,6 @@ export const SettingsPage: React.FC = () => {
     onError: (err: any) => showToast(err.message || 'Gagal menghapus Produk'),
   });
 
-  // Machine
   const saveMachineMutation = useMutation({
     mutationFn: (payload: {
       code: string;
@@ -2528,7 +2511,6 @@ export const SettingsPage: React.FC = () => {
     onError: (err: any) => showToast(err.message || 'Gagal menghapus mesin'),
   });
 
-  // Line
   const saveLineMutation = useMutation({
     mutationFn: (payload: {
       code: string;
@@ -2564,7 +2546,6 @@ export const SettingsPage: React.FC = () => {
     onError: (err: any) => showToast(err.message || 'Gagal menghapus lini'),
   });
 
-  // Operator
   const saveOperatorMutation = useMutation({
     mutationFn: (payload: {
       employeeNumber: string;
@@ -2602,7 +2583,6 @@ export const SettingsPage: React.FC = () => {
     onError: (err: any) => showToast(err.message || 'Gagal menghapus operator'),
   });
 
-  // Downtime Reason
   const saveDtMutation = useMutation({
     mutationFn: (payload: {
       code: string;
@@ -2640,7 +2620,6 @@ export const SettingsPage: React.FC = () => {
     onError: (err: any) => showToast(err.message || 'Gagal menghapus downtime reason'),
   });
 
-  // Reject Reason
   const saveRejMutation = useMutation({
     mutationFn: (payload: {
       code: string;
@@ -2677,7 +2656,6 @@ export const SettingsPage: React.FC = () => {
     onError: (err: any) => showToast(err.message || 'Gagal menghapus reject reason'),
   });
 
-  // User
   const saveUserMutation = useMutation({
     mutationFn: (payload: {
       name: string;
@@ -2711,7 +2689,6 @@ export const SettingsPage: React.FC = () => {
     onError: (err: any) => showToast(err.message || 'Gagal menghapus user'),
   });
 
-  // Device
   const saveDeviceMutation = useMutation({
     mutationFn: (payload: {
       deviceCode: string;
@@ -2819,7 +2796,6 @@ export const SettingsPage: React.FC = () => {
     },
   ];
 
-  // Product Routing Columns
   const routingColumns: ColumnDef<ProductRouting>[] = [
     {
       key: 'productId',
@@ -2914,7 +2890,6 @@ export const SettingsPage: React.FC = () => {
     },
   ];
 
-  // Rate Columns
   const rateColumns: ColumnDef<ProductMachineRate>[] = [
     {
       key: 'productId',
@@ -2976,7 +2951,6 @@ export const SettingsPage: React.FC = () => {
     },
   ];
 
-  // Batch Columns
   const batchColumns: ColumnDef<ProductionBatch>[] = [
     {
       key: 'batchNumber',
@@ -3045,7 +3019,6 @@ export const SettingsPage: React.FC = () => {
     },
   ];
 
-  // Product Columns
   const productColumns: ColumnDef<Product>[] = [
     { key: 'sku', header: 'Kode Produk', sortable: true, render: (p) => <strong>{p.sku}</strong> },
     { key: 'name', header: 'Nama Produk', sortable: true },
@@ -3114,7 +3087,6 @@ export const SettingsPage: React.FC = () => {
     },
   ];
 
-  // Machine Columns
   const machineColumns: ColumnDef<Machine>[] = [
     { key: 'code', header: 'Kode Mesin', sortable: true, render: (m) => <strong>{m.code}</strong> },
     { key: 'name', header: 'Nama Mesin', sortable: true },
@@ -3178,7 +3150,6 @@ export const SettingsPage: React.FC = () => {
     },
   ];
 
-  // Line Columns
   const lineColumns: ColumnDef<ProductionLine>[] = [
     { key: 'code', header: 'Kode Production Line', sortable: true, render: (l) => <strong>{l.code}</strong> },
     { key: 'name', header: 'Nama Production Line', sortable: true },
@@ -3354,7 +3325,6 @@ export const SettingsPage: React.FC = () => {
     },
   ];
 
-  // Downtime Reason Columns
   const downtimeColumns: ColumnDef<DowntimeReason>[] = [
     { key: 'code', header: 'Kode Alasan Downtime', sortable: true, render: (dt) => <strong>{dt.code}</strong> },
     { key: 'name', header: 'Nama Alasan', sortable: true },
@@ -3427,7 +3397,6 @@ export const SettingsPage: React.FC = () => {
     },
   ];
 
-  // Reject Reason Columns
   const rejectColumns: ColumnDef<RejectReason>[] = [
     { key: 'code', header: 'Kode Alasan Reject', sortable: true, render: (rej) => <strong>{rej.code}</strong> },
     { key: 'name', header: 'Nama Alasan Reject', sortable: true },
@@ -3489,7 +3458,6 @@ export const SettingsPage: React.FC = () => {
     },
   ];
 
-  // Users Columns
   const userColumns: ColumnDef<AppUser>[] = [
     { key: 'name', header: 'Nama', sortable: true, render: (u) => <strong>{u.name}</strong> },
     { key: 'email', header: 'Email', sortable: true },
@@ -3571,7 +3539,6 @@ export const SettingsPage: React.FC = () => {
     },
   ];
 
-  // Device Columns
   const deviceColumns: ColumnDef<DeviceTerminal>[] = [
     {
       key: 'deviceCode',
@@ -3674,7 +3641,6 @@ export const SettingsPage: React.FC = () => {
 
   return (
     <Page>
-      {/* Header with Direct Action Trigger */}
       <Section
         style={{
           display: 'flex',
@@ -3869,7 +3835,6 @@ export const SettingsPage: React.FC = () => {
         </div>
       </Section>
 
-      {/* Active Tab Data Table Content */}
       {activeTab === 'processes' && (
         <DataTable
           columns={processColumns}
@@ -4101,8 +4066,6 @@ export const SettingsPage: React.FC = () => {
       {activeTab === 'acl' && <AclMatrixTab onToast={showToast} />}
       {activeTab === 'bom' && <BomTab onToast={showToast} />}
 
-      {/* --- MODAL FORMS --- */}
-      {/* 0. Process Form Modal */}
       <ProcessFormModal
         isOpen={showProcessModal}
         onClose={() => setShowProcessModal(false)}
@@ -4123,7 +4086,6 @@ export const SettingsPage: React.FC = () => {
         }}
       />
 
-      {/* 0b. Routing Form Modal */}
       <RoutingFormModal
         isOpen={showRoutingModal}
         onClose={() => setShowRoutingModal(false)}
@@ -4147,7 +4109,6 @@ export const SettingsPage: React.FC = () => {
         }}
       />
 
-      {/* 0c. Rate Form Modal */}
       <RateFormModal
         isOpen={showRateModal}
         onClose={() => setShowRateModal(false)}
@@ -4170,7 +4131,6 @@ export const SettingsPage: React.FC = () => {
         }}
       />
 
-      {/* 0d. Batch Form Modal */}
       <BatchFormModal
         isOpen={showBatchModal}
         onClose={() => setShowBatchModal(false)}
@@ -4181,7 +4141,6 @@ export const SettingsPage: React.FC = () => {
         isLoading={saveBatchMutation.isPending}
       />
 
-      {/* 1. Product Form Modal */}
       <ProductFormModal
         isOpen={showProductModal}
         onClose={() => setShowProductModal(false)}
@@ -4202,7 +4161,6 @@ export const SettingsPage: React.FC = () => {
         }}
       />
 
-      {/* 2. Machine Form Modal */}
       <MachineFormModal
         isOpen={showMachineModal}
         onClose={() => setShowMachineModal(false)}
@@ -4223,7 +4181,6 @@ export const SettingsPage: React.FC = () => {
         }}
       />
 
-      {/* 3. Line Form Modal */}
       <LineFormModal
         isOpen={showLineModal}
         onClose={() => setShowLineModal(false)}
@@ -4244,7 +4201,6 @@ export const SettingsPage: React.FC = () => {
         }}
       />
 
-      {/* 4. Operator Form Modal */}
       <OperatorFormModal
         isOpen={showOperatorModal}
         onClose={() => setShowOperatorModal(false)}
@@ -4266,7 +4222,6 @@ export const SettingsPage: React.FC = () => {
         }}
       />
 
-      {/* 5. Downtime Reason Form Modal */}
       <DowntimeFormModal
         isOpen={showDtModal}
         onClose={() => setShowDtModal(false)}
@@ -4287,7 +4242,6 @@ export const SettingsPage: React.FC = () => {
         }}
       />
 
-      {/* 6. Reject Reason Form Modal */}
       <RejectFormModal
         isOpen={showRejModal}
         onClose={() => setShowRejModal(false)}
@@ -4308,7 +4262,6 @@ export const SettingsPage: React.FC = () => {
         }}
       />
 
-      {/* 7. User Form Modal */}
       <UserFormModal
         isOpen={showUserModal}
         onClose={() => setShowUserModal(false)}
@@ -4329,7 +4282,6 @@ export const SettingsPage: React.FC = () => {
         }}
       />
 
-      {/* 8. Device Form Modal */}
       <DeviceFormModal
         isOpen={showDeviceModal}
         onClose={() => setShowDeviceModal(false)}
@@ -4351,7 +4303,6 @@ export const SettingsPage: React.FC = () => {
         }}
       />
 
-      {/* Live Toast Alert */}
       {toastMessage && (
         <div
           style={{

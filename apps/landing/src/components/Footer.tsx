@@ -14,7 +14,6 @@ export const Footer: React.FC = () => {
       }}
     >
       <div className="fv-landing-container">
-        {/* Footer Main 4 Columns */}
         <div
           style={{
             display: 'grid',
@@ -24,7 +23,6 @@ export const Footer: React.FC = () => {
           }}
           className="fv-footer-grid"
         >
-          {/* Col 1: Brand info */}
           <div>
             <div style={{ marginBottom: 'var(--space-4)' }}>
               <FactoryVisionLogo size="lg" variant="full" tone="white" />
@@ -40,7 +38,6 @@ export const Footer: React.FC = () => {
             </div>
           </div>
 
-          {/* Col 2: Product Modules */}
           <div>
             <h4 style={{ fontSize: '14px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-primary-soft)', marginBottom: 'var(--space-4)' }}>
               Product Modules
@@ -65,7 +62,6 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
 
-          {/* Col 3: Architecture & Security */}
           <div>
             <h4 style={{ fontSize: '14px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-primary-soft)', marginBottom: 'var(--space-4)' }}>
               Architecture
@@ -90,7 +86,6 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
 
-          {/* Col 4: Platform Links */}
           <div>
             <h4 style={{ fontSize: '14px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-primary-soft)', marginBottom: 'var(--space-4)' }}>
               Platform
@@ -116,7 +111,6 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        {/* Footer Bottom Strip */}
         <div
           style={{
             borderTop: '1px solid color-mix(in srgb, var(--color-on-primary) 18%, transparent)',

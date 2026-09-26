@@ -88,7 +88,6 @@ export const OnboardingChecklistDrawer: React.FC<OnboardingChecklistDrawerProps>
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Drawer Header */}
         <div
           style={{
             padding: `var(--space-5) var(--space-6)`,
@@ -233,7 +232,6 @@ export const OnboardingChecklistDrawer: React.FC<OnboardingChecklistDrawerProps>
           </div>
         )}
 
-        {/* Progress Snapshot */}
         <div
           style={{
             padding: `var(--space-4) var(--space-6)`,
@@ -270,7 +268,6 @@ export const OnboardingChecklistDrawer: React.FC<OnboardingChecklistDrawerProps>
           </div>
         </div>
 
-        {/* Checklist Items */}
         <div style={{ flex: 1, padding: `var(--space-4) var(--space-6)`, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
           {stepsList.map((stepItem, idx) => {
             const isCompleted = stepItem.status === 'completed';
@@ -334,7 +331,6 @@ export const OnboardingChecklistDrawer: React.FC<OnboardingChecklistDrawerProps>
           })}
         </div>
 
-        {/* Drawer Bottom CTA */}
         <div
           style={{
             padding: `var(--space-4) var(--space-6)`,

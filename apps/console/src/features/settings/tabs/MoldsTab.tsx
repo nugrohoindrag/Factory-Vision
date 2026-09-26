@@ -441,7 +441,6 @@ export const MoldsTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
         </div>
       )}
 
-      {/* --- Create / edit --- */}
       <Modal
         isOpen={form !== null}
         onClose={() => setForm(null)}
@@ -527,7 +526,6 @@ export const MoldsTab: React.FC<{ onToast: (message: string) => void }> = ({ onT
         )}
       </Modal>
 
-      {/* --- Add compatibility --- */}
       <Modal
         isOpen={addProductFor !== null}
         onClose={() => setAddProductFor(null)}

@@ -99,7 +99,6 @@ export const WorkOrderPicker: React.FC<WorkOrderPickerProps> = ({
         overflow: 'hidden',
       }}
     >
-      {/* header */}
       <header
         style={{
           flexShrink: 0,
@@ -199,7 +198,6 @@ export const WorkOrderPicker: React.FC<WorkOrderPickerProps> = ({
         </motion.button>
       </header>
 
-      {/* list */}
       <div
         style={{
           flex: 1,
@@ -364,7 +362,6 @@ export const WorkOrderPicker: React.FC<WorkOrderPickerProps> = ({
         })}
       </div>
 
-      {/* confirm bar */}
       <footer
         style={{
           flexShrink: 0,

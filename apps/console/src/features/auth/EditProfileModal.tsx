@@ -113,7 +113,6 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
             flexDirection: 'column',
           }}
         >
-          {/* Header */}
           <div
             style={{
               padding: `var(--space-4) var(--space-5)`,
@@ -168,7 +167,6 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
             </button>
           </div>
 
-          {/* Body Form */}
           <form
             onSubmit={handleSubmit}
             style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}
@@ -252,7 +250,6 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
               </div>
             </div>
 
-            {/* Grid Fields */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
               <div>
                 <label
@@ -410,7 +407,6 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
               />
             </div>
 
-            {/* Footer Actions */}
             <div
               style={{
                 marginTop: 'var(--space-2)',

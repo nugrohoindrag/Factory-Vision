@@ -631,7 +631,6 @@ export const TerminalDashboard: React.FC<TerminalDashboardProps> = ({
         </div>
       </header>
 
-      {/* ============ BOARD ============ */}
       <div
         style={{
           flex: 1,
@@ -643,7 +642,6 @@ export const TerminalDashboard: React.FC<TerminalDashboardProps> = ({
           padding: 'var(--space-3) var(--space-4)',
         }}
       >
-        {/* ---------- top row ---------- */}
         <div
           style={{
             display: 'grid',
@@ -652,7 +650,6 @@ export const TerminalDashboard: React.FC<TerminalDashboardProps> = ({
             minHeight: '288px',
           }}
         >
-          {/* status */}
           <Panel label="Status Mesin">
             <div style={{ flex: 1, display: 'flex', gap: 'var(--space-4)', alignItems: 'center', minHeight: 0 }}>
               <div
@@ -734,7 +731,6 @@ export const TerminalDashboard: React.FC<TerminalDashboardProps> = ({
             </div>
           </Panel>
 
-          {/* live counters */}
           <Panel
             label="Hitungan Live"
             trailing={<TonePill tone={running ? 'success' : 'neutral'}>{running ? 'RECORD' : 'IDLE'}</TonePill>}
@@ -823,7 +819,6 @@ export const TerminalDashboard: React.FC<TerminalDashboardProps> = ({
               </div>
             </div>
 
-            {/* one-touch entry — the same handlers the old quick pad used */}
             <div
               style={{
                 flexShrink: 0,
@@ -876,7 +871,6 @@ export const TerminalDashboard: React.FC<TerminalDashboardProps> = ({
             </div>
           </Panel>
 
-          {/* current job */}
           <Panel
             label="Work Order Aktif"
             trailing={
@@ -962,7 +956,6 @@ export const TerminalDashboard: React.FC<TerminalDashboardProps> = ({
           </Panel>
         </div>
 
-        {/* ---------- mid row ---------- */}
         <div
           style={{
             display: 'grid',
@@ -971,7 +964,6 @@ export const TerminalDashboard: React.FC<TerminalDashboardProps> = ({
             minHeight: '250px',
           }}
         >
-          {/* progress + OEE */}
           <Panel
             label="Progres & OEE"
             trailing={
@@ -1046,7 +1038,6 @@ export const TerminalDashboard: React.FC<TerminalDashboardProps> = ({
             </div>
           </Panel>
 
-          {/* downtime */}
           <Panel
             label="Downtime"
             labelTone={activeDowntimeId ? 'error' : undefined}
@@ -1129,7 +1120,6 @@ export const TerminalDashboard: React.FC<TerminalDashboardProps> = ({
             )}
           </Panel>
 
-          {/* alerts */}
           <Panel
             label="Peringatan"
             trailing={<TonePill tone={alerts.length ? 'warning' : 'neutral'}>{alerts.length} aktif</TonePill>}
@@ -1172,7 +1162,6 @@ export const TerminalDashboard: React.FC<TerminalDashboardProps> = ({
           </Panel>
         </div>
 
-        {/* ---------- shift timeline ---------- */}
         <Panel
           label="Linimasa Shift"
           trailing={
@@ -1239,7 +1228,6 @@ export const TerminalDashboard: React.FC<TerminalDashboardProps> = ({
           )}
         </Panel>
 
-        {/* ---------- quick actions ---------- */}
         <div
           style={{
             flexShrink: 0,

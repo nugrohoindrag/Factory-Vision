@@ -97,7 +97,6 @@ export const PlantOverviewHero: React.FC<PlantOverviewHeroProps> = ({
     >
       <FactoryHeroScene reduced={reduced} parallaxX={sceneX} parallaxY={sceneY} />
 
-      {/* Header: plant identity and OEE */}
       <div
         style={{
           display: 'flex',
@@ -156,7 +155,6 @@ export const PlantOverviewHero: React.FC<PlantOverviewHeroProps> = ({
         </div>
       </div>
 
-      {/* Throughput */}
       <div style={{ margin: '18px 0 20px', position: 'relative', zIndex: 1 }}>
         <div style={{ fontSize: '12px', fontWeight: 500, opacity: 0.85 }}>
           Throughput Produksi Real-time Shift Ini
@@ -201,7 +199,6 @@ export const PlantOverviewHero: React.FC<PlantOverviewHeroProps> = ({
         </div>
       </div>
 
-      {/* Actions */}
       <div
         style={{
           display: 'flex',

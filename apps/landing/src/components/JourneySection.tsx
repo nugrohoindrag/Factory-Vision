@@ -15,7 +15,6 @@ export const JourneySection: React.FC = () => {
   return (
     <section className="fv-section-py" style={{ backgroundColor: 'var(--color-surface)' }}>
       <div className="fv-landing-container">
-        {/* Header */}
         <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }}>
           <div className="fv-eyebrow">
             <Icon name="trending_up" size={16} />
@@ -30,7 +29,6 @@ export const JourneySection: React.FC = () => {
           </p>
         </div>
 
-        {/* Interactive Order Progress Card */}
         <div
           className="fv-card"
           style={{
@@ -40,7 +38,6 @@ export const JourneySection: React.FC = () => {
             margin: '0 auto',
           }}
         >
-          {/* Order Header Summary */}
           <div
             style={{
               display: 'flex',
@@ -78,7 +75,6 @@ export const JourneySection: React.FC = () => {
             </div>
           </div>
 
-          {/* Timeline 6 Stages */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
             {steps.map((st, idx) => {
               const isCompleted = st.status === 'completed';

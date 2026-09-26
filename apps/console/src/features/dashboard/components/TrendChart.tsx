@@ -118,7 +118,6 @@ export const TrendChart: React.FC<TrendChartProps> = ({
           </defs>
         )}
 
-        {/* Grid and y-axis ticks */}
         {gridLines.map((ratio) => {
           const value = max - ratio * (max - min);
           const gy = PAD.top + ratio * plotH;
@@ -146,7 +145,6 @@ export const TrendChart: React.FC<TrendChartProps> = ({
           );
         })}
 
-        {/* Area fill under the primary series */}
         {areaSeries && (
           <path
             d={`${pathFor(areaSeries.values)} L ${x(labels.length - 1).toFixed(1)} ${(PAD.top + plotH).toFixed(1)} L ${x(0).toFixed(1)} ${(PAD.top + plotH).toFixed(1)} Z`}
@@ -155,7 +153,6 @@ export const TrendChart: React.FC<TrendChartProps> = ({
           />
         )}
 
-        {/* Series */}
         {series.map((s) => (
           <path
             key={s.key}
@@ -188,7 +185,6 @@ export const TrendChart: React.FC<TrendChartProps> = ({
             )
           )}
 
-        {/* X-axis labels */}
         {labels.map((label, index) =>
           index % labelStep === 0 || index === labels.length - 1 ? (
             <text
@@ -205,7 +201,6 @@ export const TrendChart: React.FC<TrendChartProps> = ({
         )}
       </svg>
 
-      {/* Legend */}
       <div style={{ display: 'flex', gap: 'var(--space-4)', flexWrap: 'wrap', marginTop: 'var(--space-2)' }}>
         {series.map((s) => (
           <div key={s.key} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>

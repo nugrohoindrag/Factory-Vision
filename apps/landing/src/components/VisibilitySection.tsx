@@ -53,7 +53,6 @@ export const VisibilitySection: React.FC = () => {
   return (
     <section id="overview" className="fv-section-py" style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)' }}>
       <div className="fv-landing-container">
-        {/* Section Header */}
         <div style={{ textAlign: 'center', maxWidth: '780px', margin: '0 auto 48px' }}>
           <div className="fv-eyebrow-on-blue">
             <Icon name="visibility" size={16} />
@@ -69,7 +68,6 @@ export const VisibilitySection: React.FC = () => {
           </p>
         </div>
 
-        {/* 4 Pillars Grid with Photography + UI Data Snippets */}
         <div className="fv-grid-2" style={{ gap: 'var(--space-8)' }}>
           {pillars.map((pillar, idx) => (
             <motion.div
@@ -86,7 +84,6 @@ export const VisibilitySection: React.FC = () => {
                 backgroundColor: 'var(--color-surface)',
               }}
             >
-              {/* Photo Area with Overlay Badge */}
               <div style={{ position: 'relative', height: '240px', overflow: 'hidden' }}>
                 <img
                   src={pillar.image}
@@ -152,7 +149,6 @@ export const VisibilitySection: React.FC = () => {
                 </div>
               </div>
 
-              {/* Content Area */}
               <div style={{ padding: 'var(--space-8)', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-3)', gap: 'var(--space-2)', flexWrap: 'wrap' }}>

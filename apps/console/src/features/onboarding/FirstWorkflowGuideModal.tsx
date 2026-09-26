@@ -81,7 +81,6 @@ export const FirstWorkflowGuideModal: React.FC<FirstWorkflowGuideModalProps> = (
           overflow: 'hidden',
         }}
       >
-        {/* Header */}
         <div
           style={{
             padding: `var(--space-4) var(--space-6)`,
@@ -135,9 +134,7 @@ export const FirstWorkflowGuideModal: React.FC<FirstWorkflowGuideModalProps> = (
           </button>
         </div>
 
-        {/* Body */}
         <div style={{ padding: `var(--space-6)` }}>
-          {/* STEP 1: PO PARAMETERS */}
           {step === 1 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
               <p style={{ margin: 0, fontSize: '13.5px', color: 'var(--color-on-surface-variant)', lineHeight: 1.6 }}>
@@ -217,7 +214,6 @@ export const FirstWorkflowGuideModal: React.FC<FirstWorkflowGuideModalProps> = (
             </div>
           )}
 
-          {/* STEP 2: WORK ORDER & EXECUTION PREVIEW */}
           {step === 2 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
               <p style={{ margin: 0, fontSize: '13.5px', color: 'var(--color-on-surface-variant)', lineHeight: 1.6 }}>
@@ -322,7 +318,6 @@ export const FirstWorkflowGuideModal: React.FC<FirstWorkflowGuideModalProps> = (
                 </p>
               </div>
 
-              {/* Four Value Metrics Grid */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--space-3)' }}>
                 <SurfaceCard padding="md" style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface-variant)' }}>RENCANA</div>
@@ -366,7 +361,6 @@ export const FirstWorkflowGuideModal: React.FC<FirstWorkflowGuideModalProps> = (
           )}
         </div>
 
-        {/* Footer */}
         <div
           style={{
             padding: `var(--space-4) var(--space-6)`,

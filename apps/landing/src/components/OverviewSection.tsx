@@ -7,7 +7,6 @@ export const OverviewSection: React.FC = () => {
   return (
     <section className="fv-section-py" style={{ backgroundColor: 'var(--color-surface)' }}>
       <div className="fv-landing-container">
-        {/* Header */}
         <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }}>
           <div className="fv-eyebrow">
             <Icon name="hub" size={16} />
@@ -22,7 +21,6 @@ export const OverviewSection: React.FC = () => {
           </p>
         </div>
 
-        {/* Visual Ecosystem Architecture Diagram */}
         <div
           className="fv-card"
           style={{
@@ -32,7 +30,6 @@ export const OverviewSection: React.FC = () => {
             overflow: 'hidden',
           }}
         >
-          {/* Top Level: Central Engine */}
           <div style={{ textAlign: 'center', marginBottom: 'var(--space-10)', position: 'relative' }}>
             <div
               style={{
@@ -59,9 +56,7 @@ export const OverviewSection: React.FC = () => {
             </div>
           </div>
 
-          {/* 3 Main Pillars Grid */}
           <div className="fv-grid-3" style={{ position: 'relative', zIndex: 1, marginBottom: 'var(--space-8)' }}>
-            {/* Pillar 1: Production */}
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -110,7 +105,6 @@ export const OverviewSection: React.FC = () => {
               </ul>
             </motion.div>
 
-            {/* Pillar 2: Machines */}
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -160,7 +154,6 @@ export const OverviewSection: React.FC = () => {
               </ul>
             </motion.div>
 
-            {/* Pillar 3: People */}
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -211,7 +204,6 @@ export const OverviewSection: React.FC = () => {
             </motion.div>
           </div>
 
-          {/* Bottom Aggregate Layer: Quality, OEE & Insights */}
           <div
             style={{
               borderTop: '1px solid var(--color-border)',

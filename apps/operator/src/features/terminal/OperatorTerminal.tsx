@@ -133,11 +133,9 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
   const [selectedDowntimeReasonId, setSelectedDowntimeReasonId] = useState<string>('dt-breakdown');
   const [selectedRejectReasonId, setSelectedRejectReasonId] = useState<string>('rej-dimension');
 
-  // Active Downtime State
   const [activeDowntimeId, setActiveDowntimeId] = useState<string | null>(null);
   const [downtimeSeconds, setDowntimeSeconds] = useState<number>(0);
 
-  // Floating tap feedback animation
   const [lastTapBadge, setLastTapBadge] = useState<{ id: number; text: string; tone: Tone } | null>(null);
 
   // Connection state and the queue drain belong to the sync engine (started
@@ -151,7 +149,6 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
     return () => window.removeEventListener('online', refreshAfterSync);
   }, [queryClient]);
 
-  // Downtime Timer
   useEffect(() => {
     let timer: any;
     if (activeDowntimeId) {
@@ -164,7 +161,6 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
     return () => clearInterval(timer);
   }, [activeDowntimeId]);
 
-  // Fetch Work Orders
   const { data: workOrders } = useQuery({
     queryKey: ['work-orders'],
     queryFn: () => api.workOrders.list(),
@@ -182,7 +178,6 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
     queryFn: () => api.master.getBatches(),
   });
 
-  // Fetch Reasons
   const { data: downtimeReasons } = useQuery({
     queryKey: ['downtime-reasons'],
     queryFn: () => api.master.getDowntimeReasons(),
@@ -277,7 +272,6 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
     }, 1200);
   };
 
-  // Action Handlers
   const handleStartWo = async () => {
     if (!activeWo) return;
     await enqueueCommand({
@@ -634,7 +628,6 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
         position: 'relative',
       }}
     >
-      {/* Real-time Tap Feedback Toast Banner */}
       <AnimatePresence>
         {lastTapBadge && (
           <motion.div
@@ -716,7 +709,6 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
         onToggleTheme={onToggleTheme}
       />
 
-      {/* Reject Reason Modal */}
       <AnimatePresence>
         {showRejectModal && (
           <motion.div
@@ -804,7 +796,6 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Downtime Reason Modal */}
       <AnimatePresence>
         {showDowntimeModal && (
           <motion.div
@@ -918,7 +909,6 @@ export const OperatorTerminal: React.FC<OperatorTerminalProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Jumlah Lain modal */}
       <AnimatePresence>
         {showCustomQtyModal && (
           <motion.div

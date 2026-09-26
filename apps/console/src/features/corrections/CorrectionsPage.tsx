@@ -175,7 +175,6 @@ export const CorrectionsPage: React.FC<CorrectionsPageProps> = ({
 
   return (
     <Page>
-      {/* Header */}
       <Section>
         <h1
           style={{
@@ -193,7 +192,6 @@ export const CorrectionsPage: React.FC<CorrectionsPageProps> = ({
         </p>
       </Section>
 
-      {/* 24-Hour SLA Window Policy */}
       <WarningBanner
         title="24-Hour Correction Policy (Immutable Event Ledger)"
         description="Data corrections for output or downtime must be submitted within 24 hours of occurrence and require Supervisor or Production Manager sign-off before being committed to the ledger."
@@ -209,7 +207,6 @@ export const CorrectionsPage: React.FC<CorrectionsPageProps> = ({
           searchable={true}
         />
 
-        {/* Timeline Stream */}
         <div
           style={{
             backgroundColor: 'var(--color-surface)',
@@ -228,7 +225,6 @@ export const CorrectionsPage: React.FC<CorrectionsPageProps> = ({
         </div>
       </Section>
 
-      {/* Review Modal Dialog */}
       {selectedCorrection && (
         <Modal
           isOpen={!!selectedCorrection}

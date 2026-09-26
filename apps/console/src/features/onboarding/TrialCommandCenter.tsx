@@ -96,7 +96,6 @@ export const TrialCommandCenter: React.FC = () => {
           transition: 'all 200ms ease',
         }}
       >
-        {/* Top Header Bar */}
         <div
           style={{
             display: 'flex',
@@ -109,7 +108,6 @@ export const TrialCommandCenter: React.FC = () => {
             gap: 'var(--space-2)',
           }}
         >
-          {/* Trial Tag & Readiness Summary */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
             <div
               style={{
@@ -156,7 +154,6 @@ export const TrialCommandCenter: React.FC = () => {
             </div>
           </div>
 
-          {/* Action Buttons & Collapse Toggle */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
             <Button
               variant="outlined"
@@ -235,7 +232,6 @@ export const TrialCommandCenter: React.FC = () => {
           </div>
         </div>
 
-        {/* Expanded Progress Strip */}
         {!collapsed && (
           <div
             style={{
@@ -247,7 +243,6 @@ export const TrialCommandCenter: React.FC = () => {
               backgroundColor: 'var(--color-surface)',
             }}
           >
-            {/* 1. Factory Readiness Bar */}
             <div>
               <div
                 style={{
@@ -300,7 +295,6 @@ export const TrialCommandCenter: React.FC = () => {
               </div>
             </div>
 
-            {/* 2. MES Activation Bar */}
             <div>
               <div
                 style={{

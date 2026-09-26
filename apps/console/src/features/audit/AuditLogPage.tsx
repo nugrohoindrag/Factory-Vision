@@ -111,7 +111,6 @@ export const AuditLogPage: React.FC = () => {
 
   return (
     <Page>
-      {/* Header */}
       <Section>
         <h1
           style={{
@@ -129,7 +128,6 @@ export const AuditLogPage: React.FC = () => {
         </p>
       </Section>
 
-      {/* Filter Chips Toolbar */}
       <Section style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
         <span
           style={{
@@ -213,7 +211,6 @@ export const AuditLogPage: React.FC = () => {
           )}
         />
 
-        {/* Timeline Component */}
         <div
           style={{
             backgroundColor: 'var(--color-surface)',

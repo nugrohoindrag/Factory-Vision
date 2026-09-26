@@ -22,7 +22,6 @@ export const OeePerformanceSection: React.FC = () => {
   return (
     <section id="oee" className="fv-section-py" style={{ backgroundColor: 'var(--color-surface)' }}>
       <div className="fv-landing-container">
-        {/* Header */}
         <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }}>
           <div className="fv-eyebrow">
             <Icon name="insights" size={16} />
@@ -37,7 +36,6 @@ export const OeePerformanceSection: React.FC = () => {
           </p>
         </div>
 
-        {/* 4 OEE Gauges Banner */}
         <div
           style={{
             display: 'grid',
@@ -79,7 +77,6 @@ export const OeePerformanceSection: React.FC = () => {
           ))}
         </div>
 
-        {/* 2-Column Deep Dive: Loss Analysis & Real OEE Screenshot */}
         <div
           className="fv-card fv-oee-deepdive-grid"
           style={{
@@ -91,7 +88,6 @@ export const OeePerformanceSection: React.FC = () => {
             alignItems: 'center',
           }}
         >
-          {/* Left: Why Are We Losing Production? */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
               <span
@@ -155,7 +151,6 @@ export const OeePerformanceSection: React.FC = () => {
             </div>
           </div>
 
-          {/* Right: Actual Product OEE Analytics Screenshot Frame */}
           <div>
             <div className="fv-browser-frame">
               <div className="fv-browser-header">

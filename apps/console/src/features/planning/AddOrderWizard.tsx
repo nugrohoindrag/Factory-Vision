@@ -189,7 +189,6 @@ export const AddOrderWizard: React.FC<AddOrderWizardProps> = ({ isOpen, onClose,
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [requestedDeliveryDate, setRequestedDeliveryDate] = useState('');
 
-  // Step 2 — Produk
   const [products, setProducts] = useState<DraftProduct[]>([]);
   const [panel, setPanel] = useState<DraftProduct | null>(null); // the inline Tambah/Edit Produk panel
   const [panelErrors, setPanelErrors] = useState<ApiFieldError[]>([]);

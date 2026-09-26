@@ -65,7 +65,6 @@ export const MonitoringSection: React.FC = () => {
   return (
     <section className="fv-section-py" style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)' }}>
       <div className="fv-landing-container">
-        {/* Section Header */}
         <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }}>
           <div className="fv-eyebrow-on-blue">
             <Icon name="precision_manufacturing" size={16} />
@@ -80,7 +79,6 @@ export const MonitoringSection: React.FC = () => {
           </p>
         </div>
 
-        {/* Real-time Status Counter Banner */}
         <div
           style={{
             display: 'grid',
@@ -174,7 +172,6 @@ export const MonitoringSection: React.FC = () => {
           </div>
         </div>
 
-        {/* Machine Cards Matrix */}
         <div className="fv-grid-2" style={{ gap: 'var(--space-6)' }}>
           {filteredMachines.map((m) => {
             const progress = Math.min(100, Math.round((m.actual / m.target) * 100));
@@ -204,7 +201,6 @@ export const MonitoringSection: React.FC = () => {
                   gap: 'var(--space-4)',
                 }}
               >
-                {/* Header row */}
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 'var(--space-3)' }}>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
@@ -246,7 +242,6 @@ export const MonitoringSection: React.FC = () => {
                   </span>
                 </div>
 
-                {/* Product & Operator */}
                 <div
                   style={{
                     backgroundColor: 'var(--color-surface-container)',
@@ -272,7 +267,6 @@ export const MonitoringSection: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Target vs Actual Progress */}
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: 'var(--space-2)' }}>
                     <span style={{ color: 'var(--color-on-surface-variant)' }}>

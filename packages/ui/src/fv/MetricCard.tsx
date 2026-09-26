@@ -93,7 +93,6 @@ export const MetricCard: React.FC<MetricCardProps> = ({
       }}
       className={`morphic-metric-card ${className}`}
     >
-      {/* Concentric Radar Circular Vector Artwork in Background (Aligned with Color Palette) */}
       <svg
         style={{
           position: 'absolute',
@@ -108,7 +107,6 @@ export const MetricCard: React.FC<MetricCardProps> = ({
         viewBox="0 0 130 110"
         fill="none"
       >
-        {/* Outer Circular Ring with subtle slow rotation */}
         <motion.circle
           cx="102"
           cy="30"
@@ -120,11 +118,8 @@ export const MetricCard: React.FC<MetricCardProps> = ({
           transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
           style={{ transformOrigin: '102px 30px' }}
         />
-        {/* Middle Circular Ring */}
         <circle cx="102" cy="30" r="28" stroke={accent} strokeWidth="1" strokeDasharray="3 3" opacity="0.8" />
-        {/* Inner Circular Ring */}
         <circle cx="102" cy="30" r="16" stroke={accent} strokeWidth="0.8" strokeDasharray="2 3" opacity="0.6" />
-        {/* Subtle Crosshair Axis Lines */}
         <path
           d="M 102 0 V 85 M 35 30 H 130"
           stroke={accent}
@@ -132,11 +127,9 @@ export const MetricCard: React.FC<MetricCardProps> = ({
           strokeDasharray="2 4"
           opacity="0.7"
         />
-        {/* Diagonal Guideline */}
         <path d="M 68 64 L 130 0" stroke={accent} strokeWidth="0.8" strokeDasharray="3 4" opacity="0.4" />
       </svg>
 
-      {/* Top Header */}
       <div
         style={{
           display: 'flex',
@@ -169,7 +162,6 @@ export const MetricCard: React.FC<MetricCardProps> = ({
         )}
       </div>
 
-      {/* Bottom Metric & Live Waveform */}
       <div
         style={{
           display: 'flex',
@@ -193,7 +185,6 @@ export const MetricCard: React.FC<MetricCardProps> = ({
             {value}
           </div>
 
-          {/* Delta / Status / Subtitle text */}
           <div
             style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '3px', flexWrap: 'wrap' }}
           >
@@ -236,7 +227,6 @@ export const MetricCard: React.FC<MetricCardProps> = ({
           </div>
         </div>
 
-        {/* High-Tech Animated Vector Sparkline */}
         <div style={{ width: '76px', height: '28px', overflow: 'visible' }}>
           <svg width="90" height="34" viewBox="0 0 90 34" fill="none" style={{ overflow: 'visible' }}>
             <defs>
@@ -246,10 +236,8 @@ export const MetricCard: React.FC<MetricCardProps> = ({
               </linearGradient>
             </defs>
 
-            {/* Gradient Area Fill */}
             <polygon points={areaPoints} fill={`url(#sparkGrad-${gradId})`} />
 
-            {/* Drawing Vector Waveform Line */}
             <motion.polyline
               points={pointsString}
               fill="none"
@@ -262,7 +250,6 @@ export const MetricCard: React.FC<MetricCardProps> = ({
               transition={{ duration: 0.9, ease: 'easeOut' }}
             />
 
-            {/* Pulsing Leading Data Node */}
             {lastPoint && (
               <motion.circle
                 cx={lastPoint.x}

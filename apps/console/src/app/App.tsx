@@ -177,7 +177,6 @@ export const App: React.FC = () => {
     }
   });
 
-  // Sidebar Collapsed State
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   const [hoveredGroupId, setHoveredGroupId] = useState<string | null>(null);
   // Where the hovered group's button sits on screen. The collapsed flyout is
@@ -735,7 +734,6 @@ export const App: React.FC = () => {
           width: isCollapsed ? '72px' : '220px',
         }}
       >
-        {/* Brand Header */}
         <div
           style={{
             padding: isCollapsed ? '16px 8px 8px' : '20px 14px 12px',
@@ -856,7 +854,6 @@ export const App: React.FC = () => {
                     />
                   </button>
 
-                  {/* Flyout Sub-menu Popover on Hover (when Collapsed) */}
                   <AnimatePresence>
                     {isHovered && hoverAnchor && (
                       <motion.div
@@ -1039,7 +1036,6 @@ export const App: React.FC = () => {
                   </motion.div>
                 </button>
 
-                {/* Collapsible Sub-Menu Items */}
                 <AnimatePresence initial={false}>
                   {isExpanded && (
                     <motion.div
@@ -1113,9 +1109,7 @@ export const App: React.FC = () => {
         </nav>
       </aside>
 
-      {/* Main App Content Area */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
-        {/* Top App Bar Header with Expand/Collapse Trigger */}
         <header
           style={{
             height: '52px',
@@ -1127,7 +1121,6 @@ export const App: React.FC = () => {
             flexShrink: 0,
           }}
         >
-          {/* Left Context Info & Sidebar Toggle */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
             <button
               onClick={() => {
@@ -1152,7 +1145,6 @@ export const App: React.FC = () => {
               <Icon name={isCollapsed ? 'menu' : 'menu_open'} size={18} />
             </button>
 
-            {/* Sharp Vector Material Icon instead of raw emoji */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
               <Icon name="factory" size={17} color="var(--color-primary)" />
               <span style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--color-on-surface)' }}>
@@ -1171,7 +1163,6 @@ export const App: React.FC = () => {
             </span>
           </div>
 
-          {/* Right Controls: Telemetry + Onboarding Guide + Theme Selector + Quick User Photo */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
             <OnboardingHeaderTrigger />
             {/* StatusBadge is a mirror component with no solid-fill prop,
@@ -1181,7 +1172,6 @@ export const App: React.FC = () => {
  `}</style>
             <StatusBadge status="online" label="Live" className="fv-live-badge" />
 
-            {/* Dark / Light Toggle */}
             <button
               onClick={() => setThemeMode(themeMode === 'dark' ? 'light' : 'dark')}
               style={{
@@ -1201,7 +1191,6 @@ export const App: React.FC = () => {
               <Icon name={themeMode === 'dark' ? 'light_mode' : 'dark_mode'} size={16} />
             </button>
 
-            {/* Topbar Quick Profile Avatar Trigger */}
             <button
               onClick={() => setIsEditProfileOpen(true)}
               style={{
@@ -1267,10 +1256,8 @@ export const App: React.FC = () => {
           </div>
         </header>
 
-        {/* Onboarding Trial Command Center Banner & Overlays */}
         <OnboardingLayers />
 
-        {/* Page View Body */}
         <main style={{ flex: 1, overflowY: 'auto' }}>
           <Routes>
             <Route
@@ -1523,7 +1510,6 @@ export const App: React.FC = () => {
         </main>
       </div>
 
-      {/* Edit Profile Modal */}
       <EditProfileModal
         isOpen={isEditProfileOpen}
         onClose={() => setIsEditProfileOpen(false)}

@@ -103,7 +103,6 @@ export const FactoryHeroScene: React.FC<FactoryHeroSceneProps> = ({
         y: parallaxY,
       }}
     >
-      {/* Cell floor grid */}
       <g opacity="0.14">
         <path
           d="M 0 40 H 380 M 0 90 H 380 M 0 140 H 380 M 0 190 H 380"
@@ -119,7 +118,6 @@ export const FactoryHeroScene: React.FC<FactoryHeroSceneProps> = ({
         />
       </g>
 
-      {/* Sensor sweep over the cell */}
       {!reduced &&
         [0, 1.6, 3.2].map((delay) => (
           <motion.circle
@@ -137,7 +135,6 @@ export const FactoryHeroScene: React.FC<FactoryHeroSceneProps> = ({
         ))}
       <circle cx="300" cy="62" r="4" fill="var(--color-on-primary, currentColor)" opacity="0.8" />
 
-      {/* Drive gears */}
       <Gear cx={78} cy={66} r={26} teeth={10} seconds={14} direction={1} reduced={reduced} opacity={0.6} />
       <Gear cx={126} cy={92} r={17} teeth={8} seconds={9} direction={-1} reduced={reduced} opacity={0.45} />
 
@@ -153,7 +150,6 @@ export const FactoryHeroScene: React.FC<FactoryHeroSceneProps> = ({
         transition={reduced ? undefined : { duration: 1.6, repeat: Infinity, ease: 'linear' }}
       />
 
-      {/* Parts riding the conveyor */}
       {!reduced &&
         [0, 1.3, 2.6].map((delay) => (
           <motion.rect
@@ -182,7 +178,6 @@ export const FactoryHeroScene: React.FC<FactoryHeroSceneProps> = ({
         transition={{ duration: 1.5, ease: [0.05, 0.7, 0.1, 1] }}
       />
 
-      {/* Live tip of the trace */}
       <motion.circle
         cx="340"
         cy="34"

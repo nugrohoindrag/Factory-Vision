@@ -41,7 +41,6 @@ export const BusinessImpactSection: React.FC = () => {
   return (
     <section className="fv-section-py" style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)' }}>
       <div className="fv-landing-container">
-        {/* Header */}
         <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }}>
           <div className="fv-eyebrow-on-blue">
             <Icon name="verified" size={16} />
@@ -56,7 +55,6 @@ export const BusinessImpactSection: React.FC = () => {
           </p>
         </div>
 
-        {/* 4 Impact Pillars Grid */}
         <div className="fv-grid-2" style={{ gap: 'var(--space-8)' }}>
           {impacts.map((imp, idx) => (
             <motion.div

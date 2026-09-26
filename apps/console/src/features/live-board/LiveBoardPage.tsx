@@ -45,7 +45,6 @@ export const LiveBoardPage: React.FC = () => {
 
   return (
     <Page>
-      {/* Header */}
       <Section style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1
@@ -69,7 +68,6 @@ export const LiveBoardPage: React.FC = () => {
         </div>
       </Section>
 
-      {/* Top Status Cards */}
       <Section
         stagger
         style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)' }}
@@ -102,7 +100,6 @@ export const LiveBoardPage: React.FC = () => {
         />
       </Section>
 
-      {/* Filter Chips Bar */}
       <Section style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
         <span
           style={{
@@ -121,7 +118,6 @@ export const LiveBoardPage: React.FC = () => {
         ))}
       </Section>
 
-      {/* Production Lines Grid */}
       <Section
         stagger
         style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-4)' }}

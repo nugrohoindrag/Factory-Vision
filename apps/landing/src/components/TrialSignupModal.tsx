@@ -91,7 +91,6 @@ export const TrialSignupModal: React.FC<TrialSignupModalProps> = ({ isOpen, onCl
           position: 'relative',
         }}
       >
-        {/* Close Button */}
         <button
           onClick={onClose}
           disabled={submitting}
@@ -144,7 +143,6 @@ export const TrialSignupModal: React.FC<TrialSignupModalProps> = ({ isOpen, onCl
           </div>
         ) : (
           <div>
-            {/* Header */}
             <div style={{ marginBottom: 'var(--space-5)' }}>
               <div
                 style={{
@@ -325,7 +323,6 @@ export const TrialSignupModal: React.FC<TrialSignupModalProps> = ({ isOpen, onCl
                 </p>
               </div>
 
-              {/* Industry Selection */}
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: 'var(--space-2)', color: 'var(--color-on-surface)' }}>
                   Pilih Industri Pabrik Anda (Untuk template starter data) *
@@ -366,7 +363,6 @@ export const TrialSignupModal: React.FC<TrialSignupModalProps> = ({ isOpen, onCl
                 </div>
               </div>
 
-              {/* Plant Scale */}
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: 'var(--space-1)', color: 'var(--color-on-surface)' }}>
                   Perkiraan Jumlah Lini / Mesin
@@ -391,7 +387,6 @@ export const TrialSignupModal: React.FC<TrialSignupModalProps> = ({ isOpen, onCl
                 </select>
               </div>
 
-              {/* Submit CTA */}
               <div style={{ marginTop: 'var(--space-2)' }}>
                 <button
                   type="submit"

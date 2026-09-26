@@ -28,7 +28,6 @@ export const BookDemoModal: React.FC<BookDemoModalProps> = ({ isOpen, onClose })
   return (
     <div className="fv-modal-overlay" onClick={onClose}>
       <div className="fv-modal-content" onClick={(e) => e.stopPropagation()}>
-        {/* Close Button */}
         <button
           onClick={onClose}
           style={{

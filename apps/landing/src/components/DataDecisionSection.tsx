@@ -21,7 +21,6 @@ export const DataDecisionSection: React.FC = () => {
   return (
     <section className="fv-section-py" style={{ backgroundColor: 'var(--color-surface)' }}>
       <div className="fv-landing-container">
-        {/* Header */}
         <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }}>
           <div className="fv-eyebrow">
             <Icon name="analytics" size={16} />
@@ -36,7 +35,6 @@ export const DataDecisionSection: React.FC = () => {
           </p>
         </div>
 
-        {/* Data Pipeline Flow Diagram */}
         <div
           className="fv-card"
           style={{
@@ -54,7 +52,6 @@ export const DataDecisionSection: React.FC = () => {
             }}
             className="fv-pipeline-grid"
           >
-            {/* Step 1: Shopfloor Signals */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
               <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', marginBottom: 'var(--space-1)' }}>
                 01 Shopfloor Events
@@ -80,12 +77,10 @@ export const DataDecisionSection: React.FC = () => {
               ))}
             </div>
 
-            {/* Arrow 1 */}
             <div style={{ textAlign: 'center', color: 'var(--color-primary)' }} className="fv-pipeline-arrow">
               <Icon name="arrow_forward" size={32} />
             </div>
 
-            {/* Step 2: Factory Vision Engine */}
             <motion.div
               initial={{ scale: 0.96 }}
               whileInView={{ scale: 1 }}
@@ -123,12 +118,10 @@ export const DataDecisionSection: React.FC = () => {
               </div>
             </motion.div>
 
-            {/* Arrow 2 */}
             <div style={{ textAlign: 'center', color: 'var(--color-primary)' }} className="fv-pipeline-arrow">
               <Icon name="arrow_forward" size={32} />
             </div>
 
-            {/* Step 3: Actionable Decisions */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
               <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', marginBottom: 'var(--space-1)' }}>
                 02 Better Decisions

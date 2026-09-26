@@ -6,7 +6,6 @@ export const DeploymentSection: React.FC = () => {
   return (
     <section id="deployment" className="fv-section-py" style={{ backgroundColor: 'var(--color-surface)' }}>
       <div className="fv-landing-container">
-        {/* Header */}
         <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }}>
           <div className="fv-eyebrow">
             <Icon name="cloud" size={16} />
@@ -21,9 +20,7 @@ export const DeploymentSection: React.FC = () => {
           </p>
         </div>
 
-        {/* Cloud vs On-Premise 2 Columns */}
         <div className="fv-grid-2" style={{ gap: 'var(--space-8)', marginBottom: 'var(--space-10)' }}>
-          {/* Cloud Option */}
           <div
             className="fv-card"
             style={{
@@ -88,7 +85,6 @@ export const DeploymentSection: React.FC = () => {
             </div>
           </div>
 
-          {/* On-Premise Option */}
           <div
             className="fv-card"
             style={{
@@ -154,7 +150,6 @@ export const DeploymentSection: React.FC = () => {
           </div>
         </div>
 
-        {/* Security & Governance Highlights */}
         <div
           style={{
             display: 'grid',

@@ -19,7 +19,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenDemo, onOpenTria
       }}
     >
       <div className="fv-landing-container" style={{ position: 'relative', zIndex: 1 }}>
-        {/* Header Text & Positioning */}
         <div style={{ textAlign: 'center', maxWidth: '880px', margin: '0 auto 48px' }}>
           <motion.div
             initial={{ opacity: 0, y: 12 }}
@@ -62,7 +61,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenDemo, onOpenTria
             real-time operational platform.
           </motion.p>
 
-          {/* Action CTAs */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -110,14 +108,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenDemo, onOpenTria
           </motion.div>
         </div>
 
-        {/* Dashboard Product Hero Showcase with Floating Cards */}
         <motion.div
           initial={{ opacity: 0, y: 32 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.32, ease: [0.2, 0, 0, 1] }}
           style={{ position: 'relative', marginTop: 'var(--space-8)' }}
         >
-          {/* Main Dashboard Browser Frame */}
           <div className="fv-browser-frame">
             <div className="fv-browser-header">
               <div className="fv-browser-dots">
@@ -147,7 +143,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenDemo, onOpenTria
             </div>
           </div>
 
-          {/* Floating Operational Telemetry Card 1 - Live OEE */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -192,7 +187,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenDemo, onOpenTria
             </div>
           </motion.div>
 
-          {/* Floating Operational Telemetry Card 2 - Active Machines */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -237,7 +231,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenDemo, onOpenTria
             </div>
           </motion.div>
 
-          {/* Floating Operational Telemetry Card 3 - Quality Yield */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

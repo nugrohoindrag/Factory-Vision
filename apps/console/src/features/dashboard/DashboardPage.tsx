@@ -142,7 +142,6 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <Page>
-      {/* Period selector & live sync */}
       <Section
         style={{
           display: 'flex',
@@ -192,7 +191,6 @@ export const DashboardPage: React.FC = () => {
         </div>
       </Section>
 
-      {/* Flagship hero */}
       <PlantOverviewHero
         plantName="Factory Vision, Smart Plant #01 Cikarang"
         activeShift="Shift 1 (Morning) • 07:00 - 15:00 UTC+7"
@@ -206,11 +204,9 @@ export const DashboardPage: React.FC = () => {
         onReportIncident={() => navigate('/downtime-analytics')}
       />
 
-      {/* Executive KPI */}
       <SectionHeading icon="monitoring" title="Executive KPI" question="Bagaimana kondisi produksi saat ini?" />
       <ExecutiveKpiGrid kpis={kpis ?? []} daily={daily ?? []} isLoading={kpisLoading} />
 
-      {/* Production Performance · OEE Performance */}
       <SectionHeading
         icon="insights"
         title="Production & OEE Performance"
@@ -232,7 +228,6 @@ export const DashboardPage: React.FC = () => {
         />
       </Section>
 
-      {/* Plant / Line Performance */}
       <SectionHeading
         icon="precision_manufacturing"
         title="Plant / Line Performance"
@@ -247,7 +242,6 @@ export const DashboardPage: React.FC = () => {
         />
       </Section>
 
-      {/* Process Performance */}
       <SectionHeading
         icon="hub"
         title="Process Performance"
@@ -257,7 +251,6 @@ export const DashboardPage: React.FC = () => {
         <ProcessPerformanceTable processes={processPerformance ?? []} isLoading={processLoading} />
       </Section>
 
-      {/* Downtime Analysis · Quality Performance */}
       <SectionHeading
         icon="query_stats"
         title="Loss Analysis"
@@ -284,7 +277,6 @@ export const DashboardPage: React.FC = () => {
         />
       </Section>
 
-      {/* Order Status · Operational Alerts */}
       <SectionHeading
         icon="fact_check"
         title="Schedule & Exceptions"

@@ -85,7 +85,6 @@ export const ShowcaseSection: React.FC = () => {
   return (
     <section id="showcase" className="fv-section-py" style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)' }}>
       <div className="fv-landing-container">
-        {/* Header */}
         <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }}>
           <div className="fv-eyebrow-on-blue">
             <Icon name="visibility" size={16} />
@@ -99,7 +98,6 @@ export const ShowcaseSection: React.FC = () => {
           </p>
         </div>
 
-        {/* 9 Tabs Selector */}
         <div
           style={{
             display: 'flex',
@@ -140,7 +138,6 @@ export const ShowcaseSection: React.FC = () => {
           })}
         </div>
 
-        {/* Active Tab Screen Details & Live Screenshot */}
         <AnimatePresence mode="wait">
           <motion.div
             key={current.id}
@@ -154,7 +151,6 @@ export const ShowcaseSection: React.FC = () => {
               backgroundColor: 'var(--color-surface)',
             }}
           >
-            {/* Header info for active screen */}
             <div
               style={{
                 display: 'flex',
@@ -197,7 +193,6 @@ export const ShowcaseSection: React.FC = () => {
               </div>
             </div>
 
-            {/* Browser Screenshot Frame */}
             <div className="fv-browser-frame">
               <div className="fv-browser-header">
                 <div className="fv-browser-dots">

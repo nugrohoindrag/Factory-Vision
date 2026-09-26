@@ -32,63 +32,44 @@ export const App: React.FC = () => {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* Navigation Header */}
       <Navbar onOpenDemo={handleOpenDemo} onOpenTrial={handleOpenTrial} />
 
       <main style={{ flex: 1 }}>
-        {/* 01 HERO */}
         <HeroSection onOpenDemo={handleOpenDemo} onOpenTrial={handleOpenTrial} />
 
-        {/* 02 MANUFACTURING VISIBILITY */}
         <VisibilitySection />
 
-        {/* 03 FACTORY VISION OVERVIEW */}
         <OverviewSection />
 
-        {/* 04 PRODUCT MODULES */}
         <ModulesSection />
 
-        {/* 05 LIVE PRODUCTION */}
         <LiveProductionSection />
 
-        {/* 06 REAL-TIME FACTORY MONITORING */}
         <MonitoringSection />
 
-        {/* 07 OEE & PERFORMANCE */}
         <OeePerformanceSection />
 
-        {/* 08 QUALITY & TRACEABILITY */}
         <QualityTraceabilitySection />
 
-        {/* 09 ORDER → PRODUCTION JOURNEY */}
         <JourneySection />
 
-        {/* 10 USERS & INTERFACES */}
         <UsersInterfacesSection />
 
-        {/* 11 DATA → DECISION */}
         <DataDecisionSection />
 
-        {/* 12 PRODUCT SHOWCASE */}
         <ShowcaseSection />
 
-        {/* 13 DEPLOYMENT */}
         <DeploymentSection />
 
-        {/* 14 BUSINESS IMPACT */}
         <BusinessImpactSection />
 
-        {/* 15 FINAL CTA */}
         <CtaSection onOpenDemo={handleOpenDemo} onOpenTrial={handleOpenTrial} />
       </main>
 
-      {/* 16 FOOTER */}
       <Footer />
 
-      {/* Interactive Book a Demo Modal */}
       <BookDemoModal isOpen={demoModalOpen} onClose={handleCloseDemo} />
 
-      {/* Self-Service 14-Day Trial Registration Modal */}
       <TrialSignupModal isOpen={trialModalOpen} onClose={handleCloseTrial} />
       <WhatsAppButton />
     </div>

@@ -58,7 +58,6 @@ export const UpgradePlanModal: React.FC<UpgradePlanModalProps> = ({ isOpen, onCl
           overflow: 'hidden',
         }}
       >
-        {/* Header */}
         <div
           style={{
             padding: `var(--space-5) var(--space-6)`,
@@ -94,7 +93,6 @@ export const UpgradePlanModal: React.FC<UpgradePlanModalProps> = ({ isOpen, onCl
           </button>
         </div>
 
-        {/* Body */}
         <div style={{ flex: 1, padding: `var(--space-6)`, overflowY: 'auto' }}>
           {successMessage ? (
             <div style={{ textAlign: 'center', padding: `var(--space-8) 0` }}>
@@ -129,9 +127,7 @@ export const UpgradePlanModal: React.FC<UpgradePlanModalProps> = ({ isOpen, onCl
                 Pilih paket langganan yang sesuai dengan skala lini manufaktur Anda. Seluruh data trial dan riwayat produksi Anda akan tetap aman dan langsung dilanjutkan ke paket berbayar.
               </p>
 
-              {/* 3 Tier Cards Grid */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 'var(--space-4)' }}>
-                {/* 1. Starter Plan */}
                 <SurfaceCard padding="lg" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                   <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--color-on-surface-variant)', textTransform: 'uppercase' }}>
                     STARTER
@@ -161,7 +157,6 @@ export const UpgradePlanModal: React.FC<UpgradePlanModalProps> = ({ isOpen, onCl
                   </Button>
                 </SurfaceCard>
 
-                {/* 2. Growth Plan (Featured) */}
                 <SurfaceCard
                   padding="lg"
                   railTone="primary"
@@ -219,7 +214,6 @@ export const UpgradePlanModal: React.FC<UpgradePlanModalProps> = ({ isOpen, onCl
                   </Button>
                 </SurfaceCard>
 
-                {/* 3. Enterprise Plan */}
                 <SurfaceCard padding="lg" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                   <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--color-on-surface-variant)', textTransform: 'uppercase' }}>
                     ENTERPRISE

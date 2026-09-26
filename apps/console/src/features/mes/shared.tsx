@@ -114,7 +114,6 @@ const STATUS_TONE: Record<string, Tone> = {
   MAINTENANCE: 'warning',
   DOWNTIME: 'error',
 
-  // Severity and priority
   LOW: 'neutral',
   MEDIUM: 'info',
   HIGH: 'warning',

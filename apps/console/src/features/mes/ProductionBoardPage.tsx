@@ -232,7 +232,6 @@ const BoardTimeline: React.FC<{ board: ProductionBoard; onSelect: (item: BoardIt
     <SurfaceCard padding="none">
       <div style={{ overflowX: 'auto' }}>
         <div style={{ minWidth: '900px' }}>
-          {/* Time axis */}
           <div
             style={{
               display: 'flex',
@@ -283,7 +282,6 @@ const BoardTimeline: React.FC<{ board: ProductionBoard; onSelect: (item: BoardIt
             </div>
           </div>
 
-          {/* Lanes */}
           {board.lanes.map((lane) => (
             <div
               key={lane.id}
@@ -308,7 +306,6 @@ const BoardTimeline: React.FC<{ board: ProductionBoard; onSelect: (item: BoardIt
               </div>
 
               <div style={{ flex: 1, position: 'relative', minHeight: '56px', padding: 'var(--space-2) 0' }}>
-                {/* Hour gridlines */}
                 {marks.map((mark) => (
                   <div
                     key={`grid-${mark.left}`}

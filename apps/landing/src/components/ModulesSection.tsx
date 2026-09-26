@@ -88,7 +88,6 @@ export const ModulesSection: React.FC = () => {
   return (
     <section id="modules" className="fv-section-py" style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)' }}>
       <div className="fv-landing-container">
-        {/* Section Header */}
         <div style={{ textAlign: 'center', maxWidth: '780px', margin: '0 auto 48px' }}>
           <div className="fv-eyebrow-on-blue">
             <Icon name="widgets" size={16} />
@@ -102,7 +101,6 @@ export const ModulesSection: React.FC = () => {
           </p>
         </div>
 
-        {/* Module Switcher Tabs */}
         <div
           style={{
             display: 'flex',
@@ -143,7 +141,6 @@ export const ModulesSection: React.FC = () => {
           })}
         </div>
 
-        {/* Active Module Showcase Card */}
         <AnimatePresence mode="wait">
           <motion.div
             key={current.id}
@@ -161,7 +158,6 @@ export const ModulesSection: React.FC = () => {
               alignItems: 'center',
             }}
           >
-            {/* Left: Features Matrix */}
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' }}>
                 <span
@@ -186,7 +182,6 @@ export const ModulesSection: React.FC = () => {
                 Equipped with industrial capabilities designed to streamline daily shopfloor operations and eliminate manual paperwork.
               </p>
 
-              {/* 6 Capabilities in 2 Columns */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'var(--space-4)' }}>
                 {current.features.map((f) => (
                   <div
@@ -208,7 +203,6 @@ export const ModulesSection: React.FC = () => {
               </div>
             </div>
 
-            {/* Right: Actual Product Screenshot Frame */}
             <div>
               <div className="fv-browser-frame">
                 <div className="fv-browser-header">

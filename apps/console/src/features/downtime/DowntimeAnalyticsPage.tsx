@@ -27,7 +27,6 @@ export const DowntimeAnalyticsPage: React.FC = () => {
   const totalOccurrences = paretoData?.reduce((acc, item) => acc + item.occurrenceCount, 0) || 0;
   const topReason = paretoData?.[0]?.reasonName || 'None';
 
-  // Format data for HorizontalBarChart
   const barChartData = (paretoData || []).map((item) => ({
     label: `${item.reasonName} [${item.category}]`,
     value: item.percentageOfTotal,
@@ -47,7 +46,6 @@ export const DowntimeAnalyticsPage: React.FC = () => {
 
   return (
     <Page>
-      {/* Header */}
       <Section>
         <h1
           style={{
@@ -65,7 +63,6 @@ export const DowntimeAnalyticsPage: React.FC = () => {
         </p>
       </Section>
 
-      {/* KPI Filled Cards */}
       <Section
         stagger
         style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)' }}
@@ -101,9 +98,7 @@ export const DowntimeAnalyticsPage: React.FC = () => {
         />
       </Section>
 
-      {/* Visual Analytics Grid */}
       <Section stagger style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 'var(--space-4)' }}>
-        {/* Horizontal Pareto Chart */}
         <div>
           <HorizontalBarChart
             title="Peringkat Pareto Alasan Downtime"
@@ -113,7 +108,6 @@ export const DowntimeAnalyticsPage: React.FC = () => {
           />
         </div>
 
-        {/* Heatmap Grid Analysis */}
         <SurfaceCard padding="md">
           <div
             style={{

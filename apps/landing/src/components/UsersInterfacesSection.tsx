@@ -58,7 +58,6 @@ export const UsersInterfacesSection: React.FC = () => {
   return (
     <section className="fv-section-py" style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)' }}>
       <div className="fv-landing-container">
-        {/* Header */}
         <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }}>
           <div className="fv-eyebrow-on-blue">
             <Icon name="group" size={16} />
@@ -73,7 +72,6 @@ export const UsersInterfacesSection: React.FC = () => {
           </p>
         </div>
 
-        {/* Persona Selectors */}
         <div
           style={{
             display: 'flex',
@@ -113,7 +111,6 @@ export const UsersInterfacesSection: React.FC = () => {
           })}
         </div>
 
-        {/* Persona Showcase Box */}
         <AnimatePresence mode="wait">
           <motion.div
             key={current.id}
@@ -131,7 +128,6 @@ export const UsersInterfacesSection: React.FC = () => {
               alignItems: 'center',
             }}
           >
-            {/* Left: Role Benefits */}
             <div>
               <span
                 style={{
@@ -177,7 +173,6 @@ export const UsersInterfacesSection: React.FC = () => {
               </div>
             </div>
 
-            {/* Right: Persona UI Screenshot & Context Photo */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
               <div className="fv-browser-frame">
                 <div className="fv-browser-header">

@@ -138,7 +138,6 @@ export const WelcomeTourModal: React.FC<WelcomeTourModalProps> = ({ isOpen, onCl
           overflow: 'hidden',
         }}
       >
-        {/* Header with step pills */}
         <div
           style={{
             padding: `var(--space-4) var(--space-6)`,
@@ -169,7 +168,6 @@ export const WelcomeTourModal: React.FC<WelcomeTourModalProps> = ({ isOpen, onCl
             </span>
           </div>
 
-          {/* Stepper dots */}
           <div style={{ display: 'flex', gap: '6px' }}>
             {TOUR_STEPS.map((_, i) => (
               <div
@@ -186,7 +184,6 @@ export const WelcomeTourModal: React.FC<WelcomeTourModalProps> = ({ isOpen, onCl
           </div>
         </div>
 
-        {/* Tour Body */}
         <div style={{ padding: `var(--space-6)` }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-4)', marginBottom: 'var(--space-5)' }}>
             <div
@@ -253,7 +250,6 @@ export const WelcomeTourModal: React.FC<WelcomeTourModalProps> = ({ isOpen, onCl
           </SurfaceCard>
         </div>
 
-        {/* Footer controls */}
         <div
           style={{
             padding: `var(--space-4) var(--space-6)`,

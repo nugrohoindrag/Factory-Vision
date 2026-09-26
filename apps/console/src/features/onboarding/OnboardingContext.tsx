@@ -78,7 +78,6 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Modals & Drawers
   const [isWizardOpen, setIsWizardOpen] = useState<boolean>(false);
   const [isTourOpen, setIsTourOpen] = useState<boolean>(false);
   const [isChecklistOpen, setIsChecklistOpen] = useState<boolean>(false);

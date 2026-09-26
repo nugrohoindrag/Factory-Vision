@@ -135,7 +135,6 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
     newStatus: BillOfMaterialStatus;
   } | null>(null);
 
-  // Queries
   const { data: boms = [], isLoading: isLoadingBoms } = useQuery({
     queryKey: ['boms'],
     queryFn: () => api.master.getBoms(),
@@ -150,7 +149,6 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
     void queryClient.invalidateQueries({ queryKey: ['boms'] });
   };
 
-  // Mutations
   const saveMutation = useMutation({
     mutationFn: (payload: FormState) => {
       const input: CreateBomInput = {
@@ -348,7 +346,6 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-      {/* Header & Control Bar */}
       <SurfaceCard padding="md">
         <div
           style={{
@@ -379,7 +376,6 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
           )}
         </div>
 
-        {/* Filters Bar */}
         <div
           style={{
             display: 'flex',
@@ -413,7 +409,6 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
             />
           </div>
 
-          {/* Status Filter Chips */}
           <div style={{ display: 'flex', gap: 'var(--space-1)', alignItems: 'center' }}>
             {(['ALL', 'ACTIVE', 'DRAFT', 'INACTIVE'] as const).map((st) => (
               <FilterChip
@@ -434,7 +429,6 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
         </div>
       </SurfaceCard>
 
-      {/* List of BOMs */}
       {isLoadingBoms ? (
         <SurfaceCard padding="lg">
           <div style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--color-on-surface-variant)' }}>
@@ -553,7 +547,6 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
                   </div>
                 </div>
 
-                {/* Expanded Components Table */}
                 {isExpanded && (
                   <div
                     style={{
@@ -642,7 +635,6 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
         </div>
       )}
 
-      {/* Modal: Buat / Ubah BOM */}
       {form && (
         <Modal
           isOpen={true}
@@ -679,7 +671,6 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
               </div>
             )}
 
-            {/* Target Product */}
             <div>
               <label style={labelStyle}>Produk Hasil Produksi *</label>
               <select
@@ -698,7 +689,6 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
               </select>
             </div>
 
-            {/* BOM Name & Version */}
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 'var(--space-3)' }}>
               <div>
                 <label style={labelStyle}>Nama BOM *</label>
@@ -737,7 +727,6 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
               </div>
             </div>
 
-            {/* Revision & Effective Date */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
               <div>
                 <label style={labelStyle}>Revisi Produk (Opsional)</label>
@@ -761,7 +750,6 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
               </div>
             </div>
 
-            {/* Description */}
             <div>
               <label style={labelStyle}>Catatan / Deskripsi</label>
               <textarea
@@ -773,7 +761,6 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
               />
             </div>
 
-            {/* Components Editor Sub-Table */}
             <div
               style={{
                 marginTop: 'var(--space-2)',
@@ -859,7 +846,6 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
                         gap: 'var(--space-2)',
                       }}
                     >
-                      {/* Part Selector / SKU */}
                       <div>
                         <label style={{ ...labelStyle, fontSize: '10.5px' }}>Pilih Part / SKU *</label>
                         <select
@@ -876,7 +862,6 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
                         </select>
                       </div>
 
-                      {/* Component Type */}
                       <div>
                         <label style={{ ...labelStyle, fontSize: '10.5px' }}>Tipe Komponen *</label>
                         <select
@@ -897,7 +882,6 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
                         </select>
                       </div>
 
-                      {/* Quantity */}
                       <div>
                         <label style={{ ...labelStyle, fontSize: '10.5px' }}>Kuantitas *</label>
                         <input
@@ -913,7 +897,6 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
                         />
                       </div>
 
-                      {/* UOM */}
                       <div>
                         <label style={{ ...labelStyle, fontSize: '10.5px' }}>Satuan (UOM) *</label>
                         <input
@@ -926,7 +909,6 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
                         />
                       </div>
 
-                      {/* Scrap % */}
                       <div>
                         <label style={{ ...labelStyle, fontSize: '10.5px' }}>Scrap (%)</label>
                         <input
@@ -947,7 +929,6 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
                       </div>
                     </div>
 
-                    {/* Part Name Override & Notes */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
                       <div>
                         <label style={{ ...labelStyle, fontSize: '10.5px' }}>
@@ -978,7 +959,6 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
               </div>
             </div>
 
-            {/* Modal Actions */}
             <div
               style={{
                 display: 'flex',
@@ -1000,7 +980,6 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
         </Modal>
       )}
 
-      {/* Dialog: Konfirmasi Hapus BOM */}
       {pendingDelete && (
         <Dialog
           isOpen={true}
@@ -1014,7 +993,6 @@ export const BomTab: React.FC<{ onToast: (message: string) => void }> = ({ onToa
         />
       )}
 
-      {/* Dialog: Konfirmasi Ubah Status */}
       {pendingStatusChange && (
         <Dialog
           isOpen={true}

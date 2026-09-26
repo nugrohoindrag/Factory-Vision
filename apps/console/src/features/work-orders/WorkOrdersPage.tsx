@@ -32,13 +32,11 @@ export const WorkOrdersPage: React.FC = () => {
     NewlyCreatedBadge: PoNewlyCreatedBadge,
   } = useNewlyCreated<ProductionOrder>();
 
-  // Navigation & Filter states
   const [activeTab, setActiveTab] = useState<'WO' | 'PO'>('WO');
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
   const [selectedLineFilter, setSelectedLineFilter] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Modal States
   const [splitTarget, setSplitTarget] = useState<WorkOrder | null>(null);
   const [splitError, setSplitError] = useState<string>('');
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
@@ -46,7 +44,6 @@ export const WorkOrdersPage: React.FC = () => {
   const [showDetailModal, setShowDetailModal] = useState<boolean>(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false);
 
-  // Production Order Modal States
   const [showCreatePoModal, setShowCreatePoModal] = useState<boolean>(false);
   const [showEditPoModal, setShowEditPoModal] = useState<boolean>(false);
   const [showDeletePoDialog, setShowDeletePoDialog] = useState<boolean>(false);
@@ -55,7 +52,6 @@ export const WorkOrdersPage: React.FC = () => {
   const [selectedWo, setSelectedWo] = useState<WorkOrder | null>(null);
   const [selectedPo, setSelectedPo] = useState<ProductionOrder | null>(null);
 
-  // Toast notification state
   const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(
     null
   );
@@ -65,7 +61,6 @@ export const WorkOrdersPage: React.FC = () => {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // WO Form state
   const [formData, setFormData] = useState({
     productionOrderId: 'po-2026-08-001',
     productId: 'prod-bracket-heavy',
@@ -78,7 +73,6 @@ export const WorkOrdersPage: React.FC = () => {
     plannedEnd: new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 16),
   });
 
-  // PO Form state
   const [poFormData, setPoFormData] = useState({
     orderNumber: `PO-${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-003`,
     productId: 'prod-bracket-heavy',
@@ -87,7 +81,6 @@ export const WorkOrdersPage: React.FC = () => {
     createdBy: 'PPIC Supervisor',
   });
 
-  // Data Queries
   const { data: workOrders, isLoading: isLoadingWos } = useQuery({
     queryKey: ['work-orders'],
     queryFn: () => api.workOrders.list(),
@@ -135,7 +128,6 @@ export const WorkOrdersPage: React.FC = () => {
     queryFn: () => api.master.getBatches(),
   });
 
-  // Work Order Mutations
   const createWoMutation = useMutation({
     mutationFn: (payload: typeof formData) =>
       api.workOrders.create({
@@ -187,7 +179,6 @@ export const WorkOrdersPage: React.FC = () => {
     },
   });
 
-  // Action State Transitions
   const releaseMutation = useMutation({
     mutationFn: (id: string) => api.workOrders.release(id),
     onSuccess: () => {
@@ -229,7 +220,6 @@ export const WorkOrdersPage: React.FC = () => {
     },
   });
 
-  // Production Order Mutations
   const releasePoMutation = useMutation({
     mutationFn: (id: string) => api.productionOrders.release(id),
     onSuccess: () => {
@@ -261,7 +251,6 @@ export const WorkOrdersPage: React.FC = () => {
     },
   });
 
-  // Open Edit Modal helper
   const handleOpenEditWo = (wo: WorkOrder) => {
     setSelectedWo(wo);
     setFormData({
@@ -282,19 +271,16 @@ export const WorkOrdersPage: React.FC = () => {
     setShowEditModal(true);
   };
 
-  // Open Detail Modal helper
   const handleOpenDetailWo = (wo: WorkOrder) => {
     setSelectedWo(wo);
     setShowDetailModal(true);
   };
 
-  // Open Delete Dialog helper
   const handleOpenDeleteWo = (wo: WorkOrder) => {
     setSelectedWo(wo);
     setShowDeleteDialog(true);
   };
 
-  // Filtered dataset
   const rawFilteredWos = (workOrders || []).filter((wo) => {
     const matchesStatus = selectedStatus === 'ALL' || wo.status === selectedStatus;
     const matchesLine = selectedLineFilter === 'ALL' || wo.lineId === selectedLineFilter;
@@ -314,7 +300,6 @@ export const WorkOrdersPage: React.FC = () => {
       .length || 0;
   const completedWos = workOrders?.filter((w) => w.status === WorkOrderStatus.COMPLETED).length || 0;
 
-  // Status Chip Colors
   const getStatusColor = (status: WorkOrderStatus | string) => {
     switch (status) {
       case WorkOrderStatus.IN_PRODUCTION:
@@ -574,7 +559,6 @@ export const WorkOrdersPage: React.FC = () => {
 
   return (
     <Page>
-      {/* Toast Notification Alert */}
       {toastMessage && (
         <div
           style={{
@@ -607,7 +591,6 @@ export const WorkOrdersPage: React.FC = () => {
         </div>
       )}
 
-      {/* Top Header */}
       <Section
         style={{
           display: 'flex',
@@ -668,7 +651,6 @@ export const WorkOrdersPage: React.FC = () => {
         </div>
       </Section>
 
-      {/* KPI Metric Summary Cards */}
       <Section
         stagger
         style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)' }}
@@ -707,7 +689,6 @@ export const WorkOrdersPage: React.FC = () => {
         />
       </Section>
 
-      {/* Navigation Tabs (WO vs PO) */}
       <Section style={{ display: 'flex', borderBottom: '1px solid var(--color-border)', gap: 'var(--space-4)' }}>
         <button
           onClick={() => setActiveTab('WO')}
@@ -772,7 +753,6 @@ export const WorkOrdersPage: React.FC = () => {
 
       {activeTab === 'WO' ? (
         <>
-          {/* Filter Toolbar: Status Chips, Line Selector, and Search */}
           <Section
             style={{
               display: 'flex',
@@ -1033,7 +1013,6 @@ export const WorkOrdersPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Multi-Process Routing Pipeline Visualization */}
                   <div
                     style={{
                       backgroundColor: 'var(--color-surface-container)',
@@ -1149,7 +1128,6 @@ export const WorkOrdersPage: React.FC = () => {
         </Section>
       )}
 
-      {/* CREATE WORK ORDER MODAL */}
       <Modal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
@@ -1163,7 +1141,6 @@ export const WorkOrdersPage: React.FC = () => {
           }}
           style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}
         >
-          {/* Linked PO */}
           <div>
             <label
               style={{
@@ -1205,7 +1182,6 @@ export const WorkOrdersPage: React.FC = () => {
             </select>
           </div>
 
-          {/* Product Selector */}
           <div>
             <label
               style={{
@@ -1239,7 +1215,6 @@ export const WorkOrdersPage: React.FC = () => {
             </select>
           </div>
 
-          {/* Line and Machine Selectors in 2 Columns */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
             <div>
               <label
@@ -1308,7 +1283,6 @@ export const WorkOrdersPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Target Quantity & Unit */}
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 'var(--space-3)' }}>
             <div>
               <label
@@ -1375,7 +1349,6 @@ export const WorkOrdersPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Planned Schedule (Start & End) */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
             <div>
               <label
@@ -1449,7 +1422,6 @@ export const WorkOrdersPage: React.FC = () => {
         </form>
       </Modal>
 
-      {/* EDIT WORK ORDER MODAL */}
       <Modal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
@@ -1713,7 +1685,6 @@ export const WorkOrdersPage: React.FC = () => {
         </form>
       </Modal>
 
-      {/* DETAIL WORK ORDER MODAL */}
       {selectedWo && (
         <Modal
           isOpen={showDetailModal}
@@ -1722,7 +1693,6 @@ export const WorkOrdersPage: React.FC = () => {
           maxWidth="640px"
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
-            {/* Status and Summary Header */}
             <div
               style={{
                 backgroundColor: 'var(--color-surface-container-high)',
@@ -1769,7 +1739,6 @@ export const WorkOrdersPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Grid of Key Attributes */}
             <div
               style={{
                 display: 'grid',
@@ -1837,7 +1806,6 @@ export const WorkOrdersPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Modal Actions */}
             <div
               style={{
                 display: 'flex',
@@ -1900,7 +1868,6 @@ export const WorkOrdersPage: React.FC = () => {
         </Modal>
       )}
 
-      {/* SPLIT WO */}
       {splitTarget && (
         <SplitWorkOrderDialog
           workOrder={splitTarget}
@@ -1916,7 +1883,6 @@ export const WorkOrdersPage: React.FC = () => {
         />
       )}
 
-      {/* DELETE WO CONFIRMATION DIALOG */}
       <Dialog
         isOpen={showDeleteDialog}
         onClose={() => setShowDeleteDialog(false)}
@@ -1930,7 +1896,6 @@ export const WorkOrdersPage: React.FC = () => {
         }}
       />
 
-      {/* CREATE PO MODAL */}
       <Modal
         isOpen={showCreatePoModal}
         onClose={() => setShowCreatePoModal(false)}
@@ -2083,7 +2048,6 @@ export const WorkOrdersPage: React.FC = () => {
         </form>
       </Modal>
 
-      {/* DELETE PO CONFIRMATION DIALOG */}
       <Dialog
         isOpen={showDeletePoDialog}
         onClose={() => setShowDeletePoDialog(false)}

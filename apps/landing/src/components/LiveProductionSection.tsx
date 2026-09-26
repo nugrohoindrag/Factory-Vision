@@ -15,7 +15,6 @@ export const LiveProductionSection: React.FC = () => {
   return (
     <section id="shopfloor" className="fv-section-py" style={{ backgroundColor: 'var(--color-surface)' }}>
       <div className="fv-landing-container">
-        {/* Header */}
         <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 48px' }}>
           <div className="fv-eyebrow">
             <Icon name="play_arrow" size={16} />
@@ -30,7 +29,6 @@ export const LiveProductionSection: React.FC = () => {
           </p>
         </div>
 
-        {/* Workflow Pipeline Steps */}
         <div
           style={{
             display: 'grid',
@@ -79,7 +77,6 @@ export const LiveProductionSection: React.FC = () => {
           ))}
         </div>
 
-        {/* Live Operator Terminal Spotlight */}
         <div
           className="fv-card fv-live-production-grid"
           style={{
@@ -91,7 +88,6 @@ export const LiveProductionSection: React.FC = () => {
             alignItems: 'center',
           }}
         >
-          {/* Left: Terminal Mockup */}
           <div>
             <div className="fv-browser-frame">
               <div className="fv-browser-header">
@@ -120,7 +116,6 @@ export const LiveProductionSection: React.FC = () => {
             </div>
           </div>
 
-          {/* Right: Operational Details & Live Counters */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
             <div>
               <span
@@ -146,7 +141,6 @@ export const LiveProductionSection: React.FC = () => {
               </p>
             </div>
 
-            {/* Live Telemetry Tally Box */}
             <div
               style={{
                 backgroundColor: 'var(--color-surface-container)',
@@ -184,7 +178,6 @@ export const LiveProductionSection: React.FC = () => {
               </div>
             </div>
 
-            {/* Feature Highlights */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', fontSize: '14px', color: 'var(--color-on-surface)' }}>
                 <Icon name="check_circle" size={18} color="var(--color-primary)" />
