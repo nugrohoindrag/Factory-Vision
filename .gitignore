@@ -78,6 +78,12 @@ apps/landing/src/**/*.js.map
 apps/landing/src/**/*.d.ts
 apps/landing/src/**/*.d.ts.map
 
+# Showcase automation artifacts
+recordings/
+storage_state*.json
+*.webm
+*.mp4
+
 # Vision worker: local virtualenv, downloaded / exported model weights.
 .venv/
 *.pt
