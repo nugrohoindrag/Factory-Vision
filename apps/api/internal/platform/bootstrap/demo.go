@@ -28,9 +28,12 @@ type DemoServices struct {
 	ShopFloor  *shopfloor.Service
 }
 
-// PlantResult counts what the plant seed covered.
+// PlantResult counts what the plant seed covered. Materials counts the
+// catalogue rows upserted; Molds, MoldCompatibilities, Boms and BomItems count
+// only the rows this run added, so a second run reports zero for them.
 type PlantResult struct {
-	Plants, Lines, Processes, Products, ProductionOrders int
+	Plants, Lines, Processes, Products, ProductionOrders  int
+	Materials, Molds, MoldCompatibilities, Boms, BomItems int
 }
 
 // HistoryResult counts the rows the history seed added.
@@ -119,7 +122,12 @@ func SeedDemoPlant(ctx context.Context, tenantID string, svc DemoServices) (Plan
 			}
 			out.ProductionOrders += int(tag.RowsAffected())
 		}
-		return nil
+		// The catalogue references the fixture's products, so it belongs to
+		// the fixture's tenant only.
+		if tenantID != plant.Tenant.ID {
+			return nil
+		}
+		return seedDemoCatalog(ctx, tx, tenantID, &out)
 	})
 	if err != nil {
 		return out, err

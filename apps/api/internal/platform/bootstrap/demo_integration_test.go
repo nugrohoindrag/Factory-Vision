@@ -55,6 +55,27 @@ func TestDemoSeedIsIdempotent(t *testing.T) {
 		t.Fatalf("plant name after seed: %q %v", name, err)
 	}
 
+	// The catalogue is in place after a run, and a second run adds none of
+	// it again: moulds and BOMs are written only where missing.
+	again, err := SeedDemoPlant(ctx, testkit.Tenant, svc)
+	if err != nil {
+		t.Fatalf("plant again: %v", err)
+	}
+	if again.Materials != len(demoMaterials) || again.Molds != 0 || again.MoldCompatibilities != 0 || again.Boms != 0 || again.BomItems != 0 {
+		t.Fatalf("second run must add no moulds or BOMs: %+v", again)
+	}
+	var molds, activeBoms, items int
+	if err := pools.Owner.QueryRow(ctx, `SELECT
+		  (SELECT count(*) FROM mold WHERE tenant_id = $1 AND id = ANY($2)),
+		  (SELECT count(DISTINCT product_id) FROM bill_of_material WHERE tenant_id = $1 AND status = 'ACTIVE' AND product_id IN ('prod-tire-a','prod-tire-b','prod-tire-c')),
+		  (SELECT count(*) FROM bill_of_material_item WHERE tenant_id = $1 AND bom_id = 'bom-tire-a-v21')`,
+		testkit.Tenant, demoMoldIDs()).Scan(&molds, &activeBoms, &items); err != nil {
+		t.Fatal(err)
+	}
+	if molds != len(demoMolds) || activeBoms != 3 || items != len(demoBoms[0].lines) {
+		t.Fatalf("catalogue after seed: %d molds, %d products with an active BOM, %d lines on bom-tire-a-v21", molds, activeBoms, items)
+	}
+
 	first, err := SeedDemoHistory(ctx, testkit.Tenant, svc)
 	if err != nil {
 		t.Fatalf("history: %v", err)
@@ -89,4 +110,12 @@ func TestDemoSeedIsIdempotent(t *testing.T) {
 	if present != len(ids) {
 		t.Fatalf("%d of %d generated production rows present", present, len(ids))
 	}
+}
+
+func demoMoldIDs() []string {
+	ids := make([]string, len(demoMolds))
+	for i, m := range demoMolds {
+		ids[i] = m.id
+	}
+	return ids
 }

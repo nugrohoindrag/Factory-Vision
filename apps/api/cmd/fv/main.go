@@ -406,6 +406,7 @@ func runDemoSeed(ctx context.Context, log *slog.Logger, svc bootstrap.DemoServic
 		return fmt.Errorf("seed demo plant: %w", err)
 	}
 	log.Info(fmt.Sprintf("[seed] demo plant: %d lines, %d products, %d production orders, 0 work orders", plant.Lines, plant.Products, plant.ProductionOrders))
+	log.Info(fmt.Sprintf("[seed] demo catalogue: %d materials, %d new molds (%d compatibilities), %d new BOMs (%d lines)", plant.Materials, plant.Molds, plant.MoldCompatibilities, plant.Boms, plant.BomItems))
 	history, err := bootstrap.SeedDemoHistory(ctx, config.PilotTenant, svc)
 	if err != nil {
 		return fmt.Errorf("seed demo history: %w", err)
