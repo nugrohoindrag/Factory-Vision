@@ -11,13 +11,27 @@ interface OnboardingChecklistDrawerProps {
 
 export const OnboardingChecklistDrawer: React.FC<OnboardingChecklistDrawerProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
-  const { progress, openWizard, openFirstWorkflow, openTour } = useOnboarding();
+  const {
+    progress,
+    openWizard,
+    openFirstWorkflow,
+    openTour,
+    openUpgrade,
+    isTrialBannerDismissed,
+    restoreTrialBanner,
+  } = useOnboarding();
 
   if (!isOpen || !progress) return null;
 
   const stepsList = Object.values(progress.steps);
   const completedCount = stepsList.filter((s) => s.status === 'completed').length;
   const totalCount = stepsList.length;
+  const showTrial = progress.trialStatus !== 'converted';
+  const daysLeft = progress.daysRemaining ?? 14;
+  const trialFigures = [
+    { label: 'Kesiapan Data Pabrik', value: progress.readinessPercent ?? 0, tone: toneColor.primary },
+    { label: 'Aktivasi Alur Produksi', value: progress.activationPercent ?? 0, tone: toneColor.info },
+  ];
 
   const handleStepAction = (stepId: string) => {
     onClose();
@@ -109,6 +123,115 @@ export const OnboardingChecklistDrawer: React.FC<OnboardingChecklistDrawerProps>
             <Icon name="close" size={20} />
           </button>
         </div>
+
+        {/* Trial status: what the banner above the page shows, kept here so it
+            can still be checked from any page after the banner is closed. */}
+        {showTrial && (
+          <div
+            style={{
+              padding: `var(--space-4) var(--space-6)`,
+              borderBottom: '1px solid var(--color-border)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--space-3)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-2)' }}>
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 'var(--space-1)',
+                  padding: `var(--space-1) var(--space-3)`,
+                  borderRadius: 'var(--radius-full, 9999px)',
+                  backgroundColor: 'var(--color-primary)',
+                  color: 'var(--color-on-primary)',
+                  fontSize: '11px',
+                  fontWeight: 800,
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                <Icon name="timer" size={14} />
+                Free Trial · {daysLeft} hari tersisa
+              </span>
+              <Button
+                variant="filled"
+                size="sm"
+                icon={<Icon name="stars" size={16} />}
+                onClick={() => {
+                  onClose();
+                  openUpgrade();
+                }}
+                style={{ height: '30px', fontSize: '11.5px', fontWeight: 700 }}
+              >
+                Upgrade Paket
+              </Button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
+              {trialFigures.map((figure) => (
+                <div key={figure.label}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface-variant)' }}>
+                      {figure.label}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: '12px',
+                        fontWeight: 800,
+                        color: figure.value >= 100 ? toneColor.success : figure.tone,
+                      }}
+                    >
+                      {figure.value}%
+                    </span>
+                  </div>
+                  <div
+                    style={{
+                      height: '6px',
+                      borderRadius: '9999px',
+                      backgroundColor: 'var(--color-surface-container-highest)',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: '100%',
+                        width: `${figure.value}%`,
+                        backgroundColor: figure.value >= 100 ? toneColor.success : figure.tone,
+                        borderRadius: '9999px',
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {isTrialBannerDismissed && (
+              <button
+                type="button"
+                onClick={restoreTrialBanner}
+                style={{
+                  alignSelf: 'flex-start',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 'var(--space-1)',
+                  padding: 0,
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: 'var(--color-primary)',
+                  fontSize: '11.5px',
+                  fontWeight: 700,
+                  fontFamily: 'inherit',
+                }}
+              >
+                <Icon name="visibility" size={14} />
+                Tampilkan lagi banner trial di atas halaman
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Progress Snapshot */}
         <div

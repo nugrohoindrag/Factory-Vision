@@ -23,6 +23,9 @@ interface OnboardingContextValue {
   isChecklistOpen: boolean;
   isFirstWorkflowOpen: boolean;
   isUpgradeOpen: boolean;
+  isTrialBannerDismissed: boolean;
+  dismissTrialBanner: () => void;
+  restoreTrialBanner: () => void;
   openWizard: () => void;
   closeWizard: () => void;
   openTour: () => void;
@@ -45,6 +48,29 @@ interface OnboardingContextValue {
 
 const OnboardingContext = createContext<OnboardingContextValue | null>(null);
 
+// The trial banner sits above every page, the executive dashboard included, so
+// a user who has read it can put it away. The choice is per browser: the same
+// status stays one click away in the checklist drawer behind "Panduan
+// Onboarding" in the topbar, which is where the banner can be brought back.
+const TRIAL_BANNER_KEY = 'fv_trial_banner_dismissed';
+
+function readTrialBannerDismissed(): boolean {
+  try {
+    return localStorage.getItem(TRIAL_BANNER_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function writeTrialBannerDismissed(value: boolean): void {
+  try {
+    if (value) localStorage.setItem(TRIAL_BANNER_KEY, '1');
+    else localStorage.removeItem(TRIAL_BANNER_KEY);
+  } catch {
+    // Storage blocked: the choice lasts for this page load only.
+  }
+}
+
 export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [progress, setProgress] = useState<OnboardingProgress | null>(null);
   const [guidance, setGuidance] = useState<GuidanceState | null>(null);
@@ -58,6 +84,7 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [isChecklistOpen, setIsChecklistOpen] = useState<boolean>(false);
   const [isFirstWorkflowOpen, setIsFirstWorkflowOpen] = useState<boolean>(false);
   const [isUpgradeOpen, setIsUpgradeOpen] = useState<boolean>(false);
+  const [isTrialBannerDismissed, setIsTrialBannerDismissed] = useState<boolean>(readTrialBannerDismissed);
 
   const refreshStatus = useCallback(async () => {
     try {
@@ -123,6 +150,15 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   const openUpgrade = () => setIsUpgradeOpen(true);
   const closeUpgrade = () => setIsUpgradeOpen(false);
+
+  const dismissTrialBanner = () => {
+    writeTrialBannerDismissed(true);
+    setIsTrialBannerDismissed(true);
+  };
+  const restoreTrialBanner = () => {
+    writeTrialBannerDismissed(false);
+    setIsTrialBannerDismissed(false);
+  };
 
   const dismissTooltip = async (id: string) => {
     const updated = await api.updateGuidanceState({ dismissedTooltips: [id] });
@@ -199,6 +235,9 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         isChecklistOpen,
         isFirstWorkflowOpen,
         isUpgradeOpen,
+        isTrialBannerDismissed,
+        dismissTrialBanner,
+        restoreTrialBanner,
         openWizard,
         closeWizard,
         openTour,

@@ -65,10 +65,11 @@ const MissingItems: React.FC<{ items?: OnboardingChecklistItem[]; completeText: 
 };
 
 export const TrialCommandCenter: React.FC = () => {
-  const { progress, openChecklist, openUpgrade, openWizard } = useOnboarding();
+  const { progress, openChecklist, openUpgrade, openWizard, isTrialBannerDismissed, dismissTrialBanner } =
+    useOnboarding();
   const [collapsed, setCollapsed] = useState<boolean>(false);
 
-  if (!progress || progress.trialStatus === 'converted') {
+  if (!progress || progress.trialStatus === 'converted' || isTrialBannerDismissed) {
     return null;
   }
 
@@ -211,6 +212,25 @@ export const TrialCommandCenter: React.FC = () => {
               }}
             >
               <Icon name={collapsed ? 'expand_more' : 'expand_less'} size={20} />
+            </button>
+
+            <button
+              type="button"
+              onClick={dismissTrialBanner}
+              aria-label="Tutup banner trial"
+              title="Tutup banner. Status trial tetap bisa dicek lewat Panduan Onboarding di atas."
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 'var(--space-1)',
+                color: 'var(--color-on-surface-variant)',
+              }}
+            >
+              <Icon name="close" size={20} />
             </button>
           </div>
         </div>
